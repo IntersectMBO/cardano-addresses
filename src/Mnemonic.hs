@@ -23,7 +23,7 @@
 -- generate an invalid seed by using the smart constructors below, and trying to
 -- generate an entropy of an invalid size will result in a runtime error.
 
-module Cardano.Wallet.Primitive.Mnemonic
+module Mnemonic
     (
       -- * Creating @Mnemonic@ (resp. @Entropy@)
       -- $constructors

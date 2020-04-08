@@ -1,0 +1,8 @@
+resolver: lts-14.25
+
+packages:
+- .
+
+extra-deps:
+  - git: https://github.com/input-output-hk/cardano-crypto
+    commit: 05aa1bc640c42bfca787531d12595489c1fa3b82
