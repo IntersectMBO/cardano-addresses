@@ -1,7 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -32,6 +36,9 @@ module Cardano.Mnemonic
     , mkEntropy
     , mkMnemonic
     , genEntropy
+    , SomeMnemonic(..)
+    , FromMnemonic(..)
+    , FromMnemonicError(..)
 
       -- * Errors
     , MnemonicError(..)
@@ -87,18 +94,28 @@ import Crypto.Encoding.BIP39
     , toEntropy
     , wordsToEntropy
     )
+import Data.Bifunctor
+    ( bimap )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.List
+    ( intercalate )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
     ( Text )
+import Data.Type.Equality
+    ( (:~:) (..), testEquality )
 import Data.Typeable
     ( Typeable )
+import Fmt
+    ( Buildable (..) )
 import GHC.TypeLits
     ( KnownNat, Nat, natVal )
+import Type.Reflection
+    ( typeOf )
 
 import qualified Basement.Compat.Base as Basement
 import qualified Basement.String as Basement
@@ -263,3 +280,95 @@ mnemonicToText =
     . unListN
     . mnemonicSentenceToListN
     . mnemonicToSentence
+
+data SomeMnemonic where
+    SomeMnemonic :: forall mw. KnownNat mw => Mnemonic mw -> SomeMnemonic
+
+deriving instance Show SomeMnemonic
+instance Eq SomeMnemonic where
+    (SomeMnemonic mwa) == (SomeMnemonic mwb) =
+        case typeOf mwa `testEquality` typeOf mwb of
+            Nothing -> False
+            Just Refl -> mwa == mwb
+
+-- | Create a passphrase from a mnemonic sentence. This class enables caller to
+-- parse text list of variable length into mnemonic sentences.
+--
+-- >>> fromMnemonic @'[12,15,18,21] @"generation" ["toilet", "curse", ... ]
+-- Right (Passphrase <ScrubbedBytes>)
+--
+-- Note that the given 'Nat's **have** to be valid mnemonic sizes, otherwise the
+-- underlying code won't even compile, with not-so-friendly error messages.
+class FromMnemonic (sz :: [Nat]) where
+    fromMnemonic :: [Text] -> Either (FromMnemonicError sz) SomeMnemonic
+
+-- | Error reported from trying to create a passphrase from a given mnemonic
+newtype FromMnemonicError (sz :: [Nat]) =
+    FromMnemonicError { getFromMnemonicError :: String }
+    deriving stock (Eq, Show)
+    deriving newtype Buildable
+
+instance {-# OVERLAPS #-}
+    ( n ~ EntropySize mw
+    , csz ~ CheckSumBits n
+    , ConsistentEntropy n mw csz
+    , FromMnemonic rest
+    , NatVals rest
+    ) =>
+    FromMnemonic (mw ': rest)
+  where
+    fromMnemonic parts = case parseMW of
+        Left err -> left (promote err) parseRest
+        Right mw -> Right mw
+      where
+        parseMW = left (FromMnemonicError . getFromMnemonicError) $ -- coerce
+            fromMnemonic @'[mw] parts
+        parseRest = left (FromMnemonicError . getFromMnemonicError) $ -- coerce
+            fromMnemonic @rest parts
+        promote e e' =
+            let
+                sz = fromEnum <$> natVals (Proxy :: Proxy (mw ': rest))
+                mw = fromEnum $ natVal (Proxy :: Proxy mw)
+            in if length parts `notElem` sz
+                then FromMnemonicError
+                    $  "Invalid number of words: "
+                    <> intercalate ", " (show <$> init sz)
+                    <> (if length sz > 1 then " or " else "") <> show (last sz)
+                    <> " words are expected."
+                else if length parts == mw then e else e'
+
+-- | Small helper to collect 'Nat' values from a type-level list
+class NatVals (ns :: [Nat]) where
+    natVals :: Proxy ns -> [Integer]
+
+instance NatVals '[] where
+    natVals _ = []
+
+instance (KnownNat n, NatVals rest) => NatVals (n ': rest) where
+    natVals _ = natVal (Proxy :: Proxy n) : natVals (Proxy :: Proxy rest)
+
+instance
+    ( n ~ EntropySize mw
+    , csz ~ CheckSumBits n
+    , ConsistentEntropy n mw csz
+    ) =>
+    FromMnemonic (mw ': '[])
+  where
+    fromMnemonic parts = do
+        bimap (FromMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)
+      where
+        pretty = \case
+            ErrMnemonicWords ErrWrongNumberOfWords{} ->
+                "Invalid number of words: "
+                <> show (natVal (Proxy :: Proxy mw))
+                <> " words are expected."
+            ErrDictionary (ErrInvalidDictionaryWord _) ->
+                "Found an unknown word not present in the pre-defined dictionary. \
+                \The full dictionary is available here: \
+                \https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt"
+            ErrEntropy ErrInvalidEntropyChecksum{} ->
+                "Invalid entropy checksum: please double-check the last word of \
+                \your mnemonic sentence."
+            ErrEntropy ErrInvalidEntropyLength{} ->
+                "Something went wrong when trying to generate the entropy from \
+                \the given mnemonic. As a user, there's nothing you can do."
