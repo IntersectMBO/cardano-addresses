@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        plan:
+        - { build: stack, resolver: "--resolver lts-14.25"  }
+        include: []
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install OS Packages
+      uses: mstksg/get-package@v1
+      with:
+        apt-get: libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev
+
+    - uses: actions/checkout@v1
+
+    - name: Setup Stack
+      uses: mstksg/setup-stack@v1
+
+    - name: Build & Test
+      run: |
+        stack --no-terminal test --bench --only-dependencies
+        stack --no-terminal test --bench --no-run-benchmarks
