@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push: { "branches": [ "master" ] }
+  pull_request: { "branches": [ "master" ] }
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        plan:
+        - { build: stack, resolver: "--resolver lts-14.25"  }
+        include: []
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install OS Packages
+      uses: mstksg/get-package@v1
+      with:
+        apt-get: libgmp-dev libssl-dev
+
+    - uses: actions/checkout@v1
+
+    - name: Setup Stack
+      uses: mstksg/setup-stack@v1
+
+    - name: Cache Dependencies
+      id: cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.stack
+        key: ${{ matrix.os }}-stack
+
+    - name: Build Snapshot
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        stack --no-terminal test --bench --only-snapshot
+
+    - name: Build & Test
+      run: |
+        stack --no-terminal test --bench --no-run-benchmarks
+
+    - name: Documentation
+      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
+      run: |
+        stack --no-terminal build --no-haddock-deps --haddock
+        mkdir -p dist/haddock && mv $(stack path --local-pkg-db)/../doc/cardano-addresses-*/* dist/haddock
+
+    - name: Deploy Documentation
+      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: dist
+        enable_jekyll: true
