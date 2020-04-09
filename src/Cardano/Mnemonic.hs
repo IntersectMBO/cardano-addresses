@@ -207,9 +207,6 @@ genEntropy =
 -- >>> mkMnemonic @15 sentence
 -- Mnemonic {} :: Mnemonic 15
 --
--- See also [FromMnemonic](Cardano-Wallet-Primitive-AddressDerivation.html#t:FromMnemonic)
--- to build a 'Mnemonic' from lists of words of variable sizes.
---
 -- __Property__:
 --
 -- prop> mkMnemonic (mnemonicToText mnemonic) == Right mnemonic
@@ -291,11 +288,8 @@ instance Eq SomeMnemonic where
             Nothing -> False
             Just Refl -> mwa == mwb
 
--- | Create a passphrase from a mnemonic sentence. This class enables caller to
--- parse text list of variable length into mnemonic sentences.
---
--- >>> fromMnemonic @'[12,15,18,21] @"generation" ["toilet", "curse", ... ]
--- Right (Passphrase <ScrubbedBytes>)
+-- | This class enables caller to parse text list of variable length
+-- into mnemonic sentences.
 --
 -- Note that the given 'Nat's **have** to be valid mnemonic sizes, otherwise the
 -- underlying code won't even compile, with not-so-friendly error messages.
