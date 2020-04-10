@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module AddressDerivation
+module Cardano.AddressDerivation
     (
     -- * Overview
     -- $overview
@@ -37,8 +37,6 @@ import Prelude
 
 import Cardano.Crypto.Wallet
     ( XPrv, XPub )
-import Cardano.Mnemonic
-    ( SomeMnemonic )
 import Control.DeepSeq
     ( NFData )
 import Data.ByteArray
@@ -165,11 +163,6 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
     -- package for more details).
-    --
-    -- NOTE: The caller is expected to provide the corresponding passphrase (and
-    -- to have checked that the passphrase is valid). Providing a wrong passphrase
-    -- will not make the function fail but will instead, yield an incorrect new
-    -- key that doesn't belong to the wallet.
     deriveAccountPrivateKey
         :: ScrubbedBytes
         -> key 'RootK XPrv
@@ -179,14 +172,6 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- | Derives address private key from the given account private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
     -- package for more details).
-    --
-    -- It is preferred to use 'deriveAddressPublicKey' whenever possible to avoid
-    -- having to manipulate passphrases and private keys.
-    --
-    -- NOTE: The caller is expected to provide the corresponding passphrase (and
-    -- to have checked that the passphrase is valid). Providing a wrong passphrase
-    -- will not make the function fail but will instead, yield an incorrect new
-    -- key that doesn't belong to the wallet.
     deriveAddressPrivateKey
         :: ScrubbedBytes
         -> key 'AccountK XPrv
@@ -210,6 +195,7 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
 
 -- | Abstract interface for constructing a /Master Key/.
 class GenMasterKey (key :: Depth -> * -> *) where
+    type GenMasterKeyFrom key :: *
 
     -- | Generate a root key from a corresponding seed.
-    generateKeyFromSeed :: SomeMnemonic -> ScrubbedBytes -> key 'RootK XPrv
+    genMasterKey :: GenMasterKeyFrom key -> ScrubbedBytes -> key 'RootK XPrv
