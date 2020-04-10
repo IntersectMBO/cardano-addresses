@@ -9,6 +9,99 @@
 @package cardano-addresses
 @version 1.0.0
 
+module Cardano.AddressDerivation
+
+-- | Abstract interface for constructing a <i>Master Key</i>.
+class GenMasterKey (key :: Depth -> * -> *) where {
+    type family GenMasterKeyFrom key :: *;
+}
+
+-- | Generate a root key from a corresponding seed.
+genMasterKey :: GenMasterKey key => GenMasterKeyFrom key -> ScrubbedBytes -> key  'RootK XPrv
+
+-- | An interface for doing hard derivations from the root private key
+class HardDerivation (key :: Depth -> * -> *) where {
+    type family AddressIndexDerivationType key :: DerivationType;
+}
+
+-- | Derives account private key from the given root private key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index  'Hardened  'AccountK -> key  'AccountK XPrv
+
+-- | Derives address private key from the given account private key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+deriveAddressPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'AccountK XPrv -> AccountingStyle -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
+
+-- | An interface for doing soft derivations from an account public key
+class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
+
+-- | Derives address public key from the given account public key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+--   
+--   This is the preferred way of deriving new sequential address public
+--   keys.
+deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> key  'AddressK XPub
+
+-- | A derivation index, with phantom-types to disambiguate derivation
+--   type.
+--   
+--   <pre>
+--   let accountIx = Index 'Hardened 'AccountK
+--   let addressIx = Index 'Soft 'AddressK
+--   </pre>
+newtype Index (derivationType :: DerivationType) (level :: Depth)
+Index :: Word32 -> Index
+[getIndex] :: Index -> Word32
+
+-- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
+--   
+--   <pre>
+--   m | purpose' | cointype' | account' | change | address
+--   </pre>
+--   
+--   We do not manipulate purpose, cointype and change paths directly, so
+--   they are left out of the sum type.
+data Depth
+RootK :: Depth
+AccountK :: Depth
+AddressK :: Depth
+
+-- | Type of derivation that should be used with the given indexes.
+--   
+--   In theory, we should only consider two derivation types: soft and
+--   hard.
+--   
+--   However, historically, addresses in Cardano used to be generated
+--   across the both soft and hard domain. We therefore introduce a
+--   <a>WholeDomain</a> derivation type that is the exact union of
+--   <a>Hardened</a> and <a>Soft</a>.
+data DerivationType
+Hardened :: DerivationType
+Soft :: DerivationType
+WholeDomain :: DerivationType
+instance GHC.Classes.Ord (Cardano.AddressDerivation.Index derivationType level)
+instance GHC.Classes.Eq (Cardano.AddressDerivation.Index derivationType level)
+instance GHC.Show.Show (Cardano.AddressDerivation.Index derivationType level)
+instance GHC.Generics.Generic (Cardano.AddressDerivation.Index derivationType level)
+instance GHC.Enum.Bounded Cardano.AddressDerivation.AccountingStyle
+instance GHC.Classes.Ord Cardano.AddressDerivation.AccountingStyle
+instance GHC.Classes.Eq Cardano.AddressDerivation.AccountingStyle
+instance GHC.Show.Show Cardano.AddressDerivation.AccountingStyle
+instance GHC.Generics.Generic Cardano.AddressDerivation.AccountingStyle
+instance Control.DeepSeq.NFData (Cardano.AddressDerivation.Index derivationType level)
+instance GHC.Enum.Bounded (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.Hardened level)
+instance GHC.Enum.Bounded (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.Soft level)
+instance GHC.Enum.Bounded (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.WholeDomain level)
+instance GHC.Enum.Enum (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.Hardened level)
+instance GHC.Enum.Enum (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.Soft level)
+instance GHC.Enum.Enum (Cardano.AddressDerivation.Index 'Cardano.AddressDerivation.WholeDomain level)
+instance Formatting.Buildable.Buildable (Cardano.AddressDerivation.Index derivationType level)
+instance Control.DeepSeq.NFData Cardano.AddressDerivation.AccountingStyle
+instance GHC.Enum.Enum Cardano.AddressDerivation.AccountingStyle
+
 module Cardano.Mnemonic
 
 -- | Generate Entropy of a given size using a cryptographically secure
