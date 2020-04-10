@@ -40,6 +40,7 @@ library
     ghc-options:
       -Werror
   exposed-modules:
+      AddressDerivation
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses
@@ -51,6 +52,7 @@ library
     , bytestring
     , cardano-crypto
     , cryptonite
+    , deepseq
     , exceptions
     , fmt
     , memory
