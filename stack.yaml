@@ -1,8 +1,8 @@
-resolver: lts-14.25
+resolver: https://raw.githubusercontent.com/input-output-hk/cardano-haskell/master/snapshots/cardano-1.9.3.yaml
+
+# Generate files required by Weeder.
+# See https://github.com/ndmitchell/weeder/issues/53
+ghc-options: {"$locals": -ddump-to-file -ddump-hi}
 
 packages:
 - .
-
-extra-deps:
-  - git: https://github.com/input-output-hk/cardano-crypto
-    commit: 2547ad1e80aeabca2899951601079408becbc92c
