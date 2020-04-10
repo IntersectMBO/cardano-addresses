@@ -13,44 +13,35 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
--- |
--- Copyright: © 2018-2020 IOHK
--- License: Apache-2.0
---
--- This module provides mnemonic (backup phrase) creation, and conversion of a
--- mnemonic to seed for wallet restoration.
---
--- The module uses a lot of type-level machinery to ensure that entropy and
--- mnemonic sizes are all compatible and legit. Therefore, it isn't possible to
--- generate an invalid seed by using the smart constructors below, and trying to
--- generate an entropy of an invalid size will result in a runtime error.
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_HADDOCK prune #-}
 
 module Cardano.Mnemonic
     (
-      -- * Creating @Mnemonic@ (resp. @Entropy@)
-      -- $constructors
-      Mnemonic
-    , Entropy
-    , mkEntropy
-    , mkMnemonic
+      -- * Introduction
+      -- $introduction
+
+      -- * @Entropy@
+      Entropy
     , genEntropy
-    , SomeMnemonic(..)
-    , FromMnemonic(..)
-    , FromMnemonicError(..)
-
-      -- * Errors
-    , MnemonicError(..)
-    , MnemonicException(..)
-
-      -- * Converting from and to @Mnemonic@ (resp. @Entropy@)
-    , mnemonicToEntropy
-    , entropyToMnemonic
+    , mkEntropy
     , entropyToBytes
-    , mnemonicToText
+    , entropyToMnemonic
 
-      -- * Re-export from @Crypto.Encoding.BIP39@
+      -- * @Mnemonic@
+    , Mnemonic
+    , mkMnemonic
+    , MkMnemonicError(..)
+    , mnemonicToText
+    , mnemonicToEntropy
+
+      -- * @SomeMnemonic@
+    , SomeMnemonic(..)
+    , mkSomeMnemonic
+    , MkSomeMnemonicError(..)
+
+      -- Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
     , DictionaryError(..)
     , MnemonicWordsError(..)
@@ -61,7 +52,10 @@ module Cardano.Mnemonic
     , CheckSumBits
     , EntropySize
     , MnemonicWords
+    , MnemonicException(..)
 
+      -- * Troubleshooting
+      -- $troubleshooting
     ) where
 
 import Prelude
@@ -98,8 +92,6 @@ import Data.Bifunctor
     ( bimap )
 import Data.ByteArray
     ( ScrubbedBytes )
-import Data.ByteString
-    ( ByteString )
 import Data.List
     ( intercalate )
 import Data.Proxy
@@ -124,21 +116,51 @@ import qualified Crypto.Random.Entropy as Crypto
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
 
--- | A backup-phrase in the form of a non-empty of Mnemonic words
--- Constructor isn't exposed.
+
+-- $introduction
+--
+-- We call 'Entropy' an arbitrary sequence of bytes that has been generated through __high quality randomness methods__.
+-- The allowed size of an 'Entropy' is @96-256@ bits and is __necessarily a multiple of 32 bits__ (4 bytes).
+--
+-- We call 'Mnemonic' an 'Entropy' with an appended checksum calculated by taking the first @ent / 32@ bits of the /SHA256/ hash of it,
+-- where ent designates the 'Entropy' size in bits.
+--
+-- The concatenated result is split into groups of @11@ bits, each encoding a number from 0 to 2047 serving as an index into a [known dictionary](https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt).
+-- This makes for a __human-readable sentence__ of English words.
+--
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | Entropy Size        | Checksum Size | Sentence Length | Example                                                                                                                                         |
+-- +=====================+===============+=================+=================================================================================================================================================+
+-- | 96  bits (12 bytes) | 3 bits        | 9 words         | test child burst immense armed parrot company walk dog                                                                                          |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | 128 bits (16 bytes) | 4 bits        | 12 words        | test walk nut penalty hip pave soap entry language right filter choice                                                                          |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | 160 bits (20 bytes) | 5 bits        | 15 words        | art forum devote street sure rather head chuckle guard poverty release quote oak craft enemy                                                    |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | 192 bits (24 bytes) | 6 bits        | 18 words        | churn shaft spoon second erode useless thrive burst group seed element sign scrub buffalo jelly grace neck useless                              |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | 224 bits (28 bytes) | 7 bits        | 21 words        | draft ability female child jump maid roof hurt below live topple paper exclude ordinary coach churn sunset emerge blame ketchup much            |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+-- | 256 bits (32 bytes) | 8 bits        | 24 words        | excess behave track soul table wear ocean cash stay nature item turtle palm soccer lunch horror start stumble month panic right must lock dress |
+-- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+
+-- A opaque 'Mnemonic' type.
 data Mnemonic (mw :: Nat) = Mnemonic
     { mnemonicToEntropy  :: Entropy (EntropySize mw)
+        -- ^ Convert a 'Mnemonic' back to an 'Entropy'.
+        --
+        -- @since 1.0.0
     , mnemonicToSentence :: MnemonicSentence mw
     } deriving (Eq, Show)
 
--- | This wraps EntropyError of "Cardano.Encoding.BIP39"
+-- This wraps EntropyError of "Cardano.Encoding.BIP39"
 newtype MnemonicException csz =
     UnexpectedEntropyError (EntropyError csz)
     -- ^ Invalid entropy length or checksum
     deriving (Show, Typeable)
 
 -- | This wraps errors from "Cardano.Encoding.BIP39"
-data MnemonicError csz
+data MkMnemonicError csz
     = ErrMnemonicWords MnemonicWordsError
       -- ^ Wrong number of words in mnemonic.
     | ErrEntropy (EntropyError csz)
@@ -151,46 +173,34 @@ deriving instance Eq (EntropyError czs)
 deriving instance Eq MnemonicWordsError
 deriving instance Eq DictionaryError
 
--- $constructors
+-- | Smart-constructor for the 'Entropy'. Make sure the 'ByteString' comes from a highly random source or use 'genEntropy'.
 --
--- Type families 'EntropySize', 'MnemonicWords' and 'CheckSumBits' can be used
--- to disambiguate calls to smart constructors in a readable way.
+-- __example__:
 --
--- __TroubleShooting__:
---
--- - @Natural XX is out of bounds for Int@:
---   This usually occurs when ones is trying to specify an invalid size for an
---   'Entropy' or 'Mnemonic'. For example:
---
---   >>> genEntropy @42
---   error:
---     • Natural CheckSumBits 42 is out of bounds for Int
---
---   This could be the case as well when forgetting to use an adequate type
---   application:
---
---   >>> mkEntropy mempty
---   error:
---     • Natural ent is out of bounds for Int
-
--- | Smart-constructor for the Entropy
---
--- >>> mkEntropy @(EntropySize 15) bytes
+-- >>> mkEntropy @160 bytes
 -- Entropy {} :: Entropy 160
+--
+-- __property__:
+--
+-- prop> mkEntropy (entropyToBytes ent) == Right ent
+--
+-- @since 1.0.0
 mkEntropy
-    :: forall ent csz. (ValidEntropySize ent, ValidChecksumSize ent csz)
-    => ByteString
+    :: forall (ent :: Nat) csz. (ValidEntropySize ent, ValidChecksumSize ent csz)
+    => ScrubbedBytes
     -> Either (EntropyError csz) (Entropy ent)
 mkEntropy = toEntropy
 
--- | Generate Entropy of a given size using a random seed.
+-- | Generate Entropy of a given size using a cryptographically secure random seed.
 --
--- Example:
+-- __example:__
 --
--- >>> genEntropy @(EntropySize 12)
+-- >>> genEntropy @128
 -- Entropy {} :: Entropy 128
+--
+-- @since 1.0.0
 genEntropy
-    :: forall ent csz. (ValidEntropySize ent, ValidChecksumSize ent csz)
+    :: forall (ent :: Nat) csz. (ValidEntropySize ent, ValidChecksumSize ent csz)
     => IO (Entropy ent)
 genEntropy =
     let
@@ -202,21 +212,25 @@ genEntropy =
         (eitherToIO . mkEntropy) =<< Crypto.getEntropy (size `div` 8)
 
 -- | Smart-constructor for 'Mnemonic'. Requires a type application to
--- disambiguate the mnemonic size:
+-- disambiguate the mnemonic size.
+--
+-- __example__:
 --
 -- >>> mkMnemonic @15 sentence
 -- Mnemonic {} :: Mnemonic 15
 --
--- __Property__:
+-- __property__:
 --
 -- prop> mkMnemonic (mnemonicToText mnemonic) == Right mnemonic
+--
+-- @since 1.0.0
 mkMnemonic
-    :: forall mw ent csz.
+    :: forall (mw :: Nat) (ent :: Nat) csz.
      ( ConsistentEntropy ent mw csz
      , EntropySize mw ~ ent
      )
     => [Text]
-    -> Either (MnemonicError csz) (Mnemonic mw)
+    -> Either (MkMnemonicError csz) (Mnemonic mw)
 mkMnemonic wordsm = do
     phrase <- left ErrMnemonicWords
         $ mnemonicPhrase @mw (toUtf8String <$> wordsm)
@@ -235,6 +249,8 @@ mkMnemonic wordsm = do
 -- | Convert an Entropy to a corresponding Mnemonic Sentence. Since 'Entropy'
 -- and 'Mnemonic' can only be created through smart-constructors, this function
 -- cannot fail and is total.
+--
+-- @since 1.0.0
 entropyToMnemonic
     :: forall mw ent csz.
      ( ValidMnemonicSentence mw
@@ -250,7 +266,9 @@ entropyToMnemonic entropy = Mnemonic
     , mnemonicToEntropy  = entropy
     }
 
--- | Convert 'Entropy' to a plain bytes.
+-- | Convert 'Entropy' to plain bytes.
+--
+-- @since 1.0.0
 entropyToBytes
     :: Entropy n
     -> ScrubbedBytes
@@ -269,6 +287,8 @@ fromUtf8String = T.pack . Basement.toList
 instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
 
 -- | Convert a 'Mnemonic' to a sentence of English mnemonic words.
+--
+-- @since 1.0.0
 mnemonicToText
     :: Mnemonic mw
     -> [Text]
@@ -278,6 +298,11 @@ mnemonicToText =
     . mnemonicSentenceToListN
     . mnemonicToSentence
 
+-- | Ease the manipulation of 'Mnemonic' by encapsulating the type constraints inside a constructor.
+-- This is particularly useful for functions which do not require anything but a valid 'Mnemonic' without any
+-- particular pre-condition on the size of the 'Mnemonic' itself.
+--
+-- @since 1.0.0
 data SomeMnemonic where
     SomeMnemonic :: forall mw. KnownNat mw => Mnemonic mw -> SomeMnemonic
 
@@ -293,12 +318,27 @@ instance Eq SomeMnemonic where
 --
 -- Note that the given 'Nat's **have** to be valid mnemonic sizes, otherwise the
 -- underlying code won't even compile, with not-so-friendly error messages.
-class FromMnemonic (sz :: [Nat]) where
-    fromMnemonic :: [Text] -> Either (FromMnemonicError sz) SomeMnemonic
+class MkSomeMnemonic (sz :: [Nat]) where
+    -- | Construct a mnemonic from a list of words. This function is particularly useful when the
+    -- number of words is not necessarily known at runtime. The function is however /ambiguous/ and
+    -- requires thereby a type application.
+    --
+    -- __examples:__
+    --
+    -- >>> mkSomeMnemonic @'[ 12 ] [ "test", "child", "burst", "immense", "armed", "parrot", "company", "walk", "dog" ]
+    -- Left "Invalid number of words: 12 words are expected."
+    --
+    -- >>> mkSomeMnemonic @'[ 9, 12, 15 ] [ "test", "child", "burst", "immense", "armed", "parrot", "company", "walk", "dog" ]
+    -- Right (SomeMnemonic ...)
+    --
+    -- @since 1.0.0
+    mkSomeMnemonic :: [Text] -> Either (MkSomeMnemonicError sz) SomeMnemonic
 
 -- | Error reported from trying to create a passphrase from a given mnemonic
-newtype FromMnemonicError (sz :: [Nat]) =
-    FromMnemonicError { getFromMnemonicError :: String }
+--
+-- @since 1.0.0
+newtype MkSomeMnemonicError (sz :: [Nat]) =
+    MkSomeMnemonicError { getMkSomeMnemonicError :: String }
     deriving stock (Eq, Show)
     deriving newtype Buildable
 
@@ -306,25 +346,25 @@ instance {-# OVERLAPS #-}
     ( n ~ EntropySize mw
     , csz ~ CheckSumBits n
     , ConsistentEntropy n mw csz
-    , FromMnemonic rest
+    , MkSomeMnemonic rest
     , NatVals rest
     ) =>
-    FromMnemonic (mw ': rest)
+    MkSomeMnemonic (mw ': rest)
   where
-    fromMnemonic parts = case parseMW of
+    mkSomeMnemonic parts = case parseMW of
         Left err -> left (promote err) parseRest
         Right mw -> Right mw
       where
-        parseMW = left (FromMnemonicError . getFromMnemonicError) $ -- coerce
-            fromMnemonic @'[mw] parts
-        parseRest = left (FromMnemonicError . getFromMnemonicError) $ -- coerce
-            fromMnemonic @rest parts
+        parseMW = left (MkSomeMnemonicError . getMkSomeMnemonicError) $ -- coerce
+            mkSomeMnemonic @'[mw] parts
+        parseRest = left (MkSomeMnemonicError . getMkSomeMnemonicError) $ -- coerce
+            mkSomeMnemonic @rest parts
         promote e e' =
             let
                 sz = fromEnum <$> natVals (Proxy :: Proxy (mw ': rest))
                 mw = fromEnum $ natVal (Proxy :: Proxy mw)
             in if length parts `notElem` sz
-                then FromMnemonicError
+                then MkSomeMnemonicError
                     $  "Invalid number of words: "
                     <> intercalate ", " (show <$> init sz)
                     <> (if length sz > 1 then " or " else "") <> show (last sz)
@@ -346,10 +386,10 @@ instance
     , csz ~ CheckSumBits n
     , ConsistentEntropy n mw csz
     ) =>
-    FromMnemonic (mw ': '[])
+    MkSomeMnemonic (mw ': '[])
   where
-    fromMnemonic parts = do
-        bimap (FromMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)
+    mkSomeMnemonic parts = do
+        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)
       where
         pretty = \case
             ErrMnemonicWords ErrWrongNumberOfWords{} ->
@@ -366,3 +406,19 @@ instance
             ErrEntropy ErrInvalidEntropyLength{} ->
                 "Something went wrong when trying to generate the entropy from \
                 \the given mnemonic. As a user, there's nothing you can do."
+
+-- $troubleshooting
+--
+-- - /Natural XX is out of bounds for Int/:
+--   This usually occurs when ones is trying to specify an invalid size for an
+--   'Entropy' or 'Mnemonic'. For example:
+--
+--   >>> genEntropy @42
+--   error:
+--     • Natural CheckSumBits 42 is out of bounds for Int
+--
+-- - This could be the case as well when forgetting to use an adequate type application:
+--
+--   >>> mkEntropy mempty
+--   error:
+--     • Natural ent is out of bounds for Int
