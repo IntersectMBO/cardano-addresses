@@ -78,6 +78,7 @@ test-suite unit
   main-is: Main.hs
   other-modules:
       Cardano.AddressDerivationSpec
+      Cardano.AddressDerivation.ByronSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
   hs-source-dirs:
