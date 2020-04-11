@@ -41,6 +41,7 @@ library
       -Werror
   exposed-modules:
       Cardano.AddressDerivation
+      Cardano.AddressDerivation.Byron
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses
@@ -51,6 +52,7 @@ library
     , basement
     , bytestring
     , cardano-crypto
+    , cborg
     , cryptonite
     , deepseq
     , exceptions
