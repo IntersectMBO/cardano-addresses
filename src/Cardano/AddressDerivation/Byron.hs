@@ -142,7 +142,7 @@ unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = ByronKey
     seed  = entropyToBytes $ mnemonicToEntropy mw
     seed' = invariant
         ("seed length : " <> show (BA.length seed)
-            <> " in (Passphrase \"seed\") is not valid")
+            <> " seed passphrase is not valid")
         seed
         (\s -> BA.length s >= minSeedLengthBytes && BA.length s <= 255)
 
@@ -201,11 +201,6 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = ByronKey
 
 -- | Derives account private key from the given root private key, using
 -- derivation scheme 1.
---
--- NOTE: The caller is expected to provide the corresponding passphrase (and to
--- have checked that the passphrase is valid). Providing a wrong passphrase will
--- not make the function fail but will instead, yield an incorrect new key that
--- doesn't belong to the wallet.
 deriveAccountPrivateKey
     :: ScrubbedBytes
     -> ByronKey 'RootK XPrv
@@ -219,11 +214,6 @@ deriveAccountPrivateKey pwd masterKey idx@(Index accIx) = ByronKey
 
 -- | Derives address private key from the given account private key, using
 -- derivation scheme 1.
---
--- NOTE: The caller is expected to provide the corresponding passphrase (and to
--- have checked that the passphrase is valid). Providing a wrong passphrase will
--- not make the function fail but will instead, yield an incorrect new key that
--- doesn't belong to the wallet.
 deriveAddressPrivateKey
     :: ScrubbedBytes
     -> ByronKey 'AccountK XPrv
