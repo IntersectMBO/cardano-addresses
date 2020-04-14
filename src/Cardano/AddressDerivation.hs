@@ -166,7 +166,7 @@ class HardDerivation (key :: Depth -> * -> *) where
     deriveAccountPrivateKey
         :: ScrubbedBytes
         -> key 'RootK XPrv
-        -> Index 'Hardened 'AccountK
+        -> Index (AddressIndexDerivationType key) 'AccountK
         -> key 'AccountK XPrv
 
     -- | Derives address private key from the given account private key, using

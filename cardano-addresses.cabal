@@ -41,6 +41,7 @@ library
       -Werror
   exposed-modules:
       Cardano.AddressDerivation
+      Cardano.AddressDerivation.Byron
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses
@@ -51,6 +52,7 @@ library
     , basement
     , bytestring
     , cardano-crypto
+    , cborg
     , cryptonite
     , deepseq
     , exceptions
@@ -75,8 +77,11 @@ test-suite unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      Cardano.AddressDerivationSpec
+      Cardano.AddressDerivation.ByronSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
+      Test.Arbitrary
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
