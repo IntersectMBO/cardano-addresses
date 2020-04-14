@@ -10,10 +10,15 @@
 module Test.Arbitrary
     (
       genMnemonic
+    , unsafeMkMnemonic
     ) where
 
 import Prelude
 
+import Cardano.AddressDerivation
+    ( Depth (..), DerivationType (..), Index )
+import Cardano.Crypto.Wallet
+    ( XPrv, unXPrv, xprv )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -21,25 +26,35 @@ import Cardano.Mnemonic
     , Mnemonic
     , MnemonicException (..)
     , MnemonicWords
+    , SomeMnemonic (..)
     , entropyToMnemonic
     , mkEntropy
+    , mkMnemonic
     )
 import Crypto.Encoding.BIP39
     ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
 import Data.ByteString
     ( ByteString )
+import Data.Function
+    ( on )
 import Data.Proxy
     ( Proxy (..) )
+import Data.Text
+    ( Text )
 import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, vector )
+    ( Arbitrary (..), Gen, arbitraryBoundedEnum, vector )
 
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
+
+{-------------------------------------------------------------------------------
+                             Arbitrary Instances
+-------------------------------------------------------------------------------}
 
 -- | The initial seed has to be vector or length multiple of 4 bytes and shorter
 -- than 64 bytes. Note that this is good for testing or examples, but probably
@@ -70,6 +85,45 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
+
+instance Arbitrary (Index 'Soft 'AddressK) where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary (Index 'Hardened 'AccountK) where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary (Index 'Hardened 'AddressK) where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary (Index 'WholeDomain 'AddressK) where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary (Index 'WholeDomain 'AccountK) where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary SomeMnemonic where
+    arbitrary = SomeMnemonic <$> genMnemonic @12
+
+-- Necessary unsound Show instance for QuickCheck failure reporting
+instance Show XPrv where
+    show = show . unXPrv
+
+-- Necessary unsound Eq instance for QuickCheck properties
+instance Eq XPrv where
+    (==) = (==) `on` unXPrv
+
+instance Arbitrary XPrv where
+    arbitrary = unsafeXPrv . BS.pack <$> vector 128
+
+{-------------------------------------------------------------------------------
+                       Useful functions
+-------------------------------------------------------------------------------}
+
 -- | Generates an arbitrary mnemonic of a size according to the type parameter.
 --
 -- E.g:
@@ -95,3 +149,21 @@ unsafeMkEntropy
     => ByteString
     -> Entropy ent
 unsafeMkEntropy = either (error . show) id . mkEntropy . BA.convert
+
+-- | Build 'Mnemonic' from literals
+unsafeMkMnemonic
+    :: forall mw n csz
+    .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
+    => [Text]
+    -> Mnemonic mw
+unsafeMkMnemonic m =
+    case mkMnemonic m of
+        Left e -> error $ "unsafeMnemonic: " <> show e
+        Right a -> a
+
+-- | Build a 'XPrv' from a bytestring
+unsafeXPrv :: HasCallStack => ByteString -> XPrv
+unsafeXPrv bytes =
+    case xprv bytes of
+        Left e -> error $ "unsafeXPrv: " <> e
+        Right a -> a

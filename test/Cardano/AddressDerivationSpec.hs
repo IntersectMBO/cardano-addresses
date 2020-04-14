@@ -16,21 +16,12 @@ import Prelude
 
 import Cardano.AddressDerivation
     ( Depth (..), DerivationType (..), Index, getIndex )
-import Cardano.Mnemonic
-    ( SomeMnemonic (..) )
 import Test.Arbitrary
-    ( genMnemonic )
+    ()
 import Test.Hspec
     ( Spec, describe, it )
 import Test.QuickCheck
-    ( Arbitrary (..)
-    , Property
-    , arbitraryBoundedEnum
-    , expectFailure
-    , property
-    , (.&&.)
-    , (===)
-    )
+    ( Property, expectFailure, property, (.&&.), (===) )
 
 
 spec :: Spec
@@ -76,30 +67,3 @@ prop_roundtripEnumIndexHard ix =
 prop_roundtripEnumIndexSoft :: Index 'Soft 'AddressK -> Property
 prop_roundtripEnumIndexSoft ix =
     (toEnum . fromEnum) ix === ix .&&. (toEnum . fromEnum . getIndex) ix === ix
-
-{-------------------------------------------------------------------------------
-                             Arbitrary Instances
--------------------------------------------------------------------------------}
-
-instance Arbitrary (Index 'Soft 'AddressK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'Hardened 'AccountK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'Hardened 'AddressK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'WholeDomain 'AddressK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'WholeDomain 'AccountK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary SomeMnemonic where
-    arbitrary = SomeMnemonic <$> genMnemonic @12

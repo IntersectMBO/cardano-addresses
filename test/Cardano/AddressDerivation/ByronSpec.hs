@@ -26,17 +26,10 @@ import Cardano.AddressDerivation.Byron
     , unsafeGenerateKeyFromSeed
     , unsafeMkByronKeyFromMasterKey
     )
-import Cardano.AddressDerivationSpec
-    ()
 import Cardano.Crypto.Wallet
-    ( XPrv, unXPrv, xprv )
+    ( XPrv, xprv )
 import Cardano.Mnemonic
-    ( ConsistentEntropy
-    , EntropySize
-    , Mnemonic (..)
-    , SomeMnemonic (..)
-    , mkMnemonic
-    )
+    ( SomeMnemonic (..) )
 import Control.Monad
     ( (<=<) )
 import Data.ByteArray
@@ -47,8 +40,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Text
     ( Text )
-import GHC.Stack
-    ( HasCallStack )
+import Test.Arbitrary
+    ( unsafeMkMnemonic )
 import Test.Hspec
     ( Expectation, Spec, describe, it, shouldBe )
 import Test.QuickCheck
@@ -184,32 +177,3 @@ instance {-# OVERLAPS #-} Arbitrary Passphrase  where
         n <- choose (minSeedLengthBytes, 64)
         bytes <- BS.pack <$> vector n
         return $ Passphrase $ BA.convert bytes
-
--- Necessary unsound Show instance for QuickCheck failure reporting
-instance Show XPrv where
-    show = show . unXPrv
-
--- Necessary unsound Eq instance for QuickCheck properties
-instance Eq XPrv where
-    a == b = unXPrv a == unXPrv b
-
-instance Arbitrary XPrv where
-    arbitrary = unsafeXPrv . BS.pack <$> vector 128
-
--- | Build a 'XPrv' from a bytestring
-unsafeXPrv :: HasCallStack => ByteString -> XPrv
-unsafeXPrv bytes =
-    case xprv bytes of
-        Left e -> error $ "unsafeXPrv: " <> e
-        Right a -> a
-
--- | Build 'Mnemonic' from literals
-unsafeMkMnemonic
-    :: forall mw n csz
-    .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
-    => [Text]
-    -> Mnemonic mw
-unsafeMkMnemonic m =
-    case mkMnemonic m of
-        Left e -> error $ "unsafeMnemonic: " <> show e
-        Right a -> a

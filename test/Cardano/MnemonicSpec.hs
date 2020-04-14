@@ -43,8 +43,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Either
     ( isRight )
-import Data.Function
-    ( on )
 import Data.Text
     ( Text )
 import Test.Arbitrary
@@ -56,14 +54,8 @@ import Test.Hspec.QuickCheck
 import Test.QuickCheck
     ( (===) )
 
-import qualified Cardano.Crypto.Wallet as CC
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
-
--- | By default, private keys aren't comparable for security reasons (timing
--- attacks). We allow it here for testing purpose which is fine.
-instance Eq CC.XPrv where
-    (==) = (==) `on` CC.unXPrv
 
 data TestVector = TestVector
     {
@@ -76,7 +68,6 @@ data TestVector = TestVector
       -- | Corresponding Mnemonic
     , mnemonic :: Mnemonic 12
     }
-
 
 spec :: Spec
 spec = do
