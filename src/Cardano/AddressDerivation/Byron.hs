@@ -60,6 +60,8 @@ import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
 import Control.DeepSeq
     ( NFData )
+import Control.Exception.Base
+    ( assert )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
@@ -138,13 +140,12 @@ unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = ByronKey
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
   where
-    masterKey = generate (hashSeed seed') pwd
+    masterKey = generate (hashSeed seedValidated) pwd
     seed  = entropyToBytes $ mnemonicToEntropy mw
-    seed' = invariant
-        ("seed length : " <> show (BA.length seed)
-            <> " seed passphrase is not valid")
+    seedValidated = assert
+        (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
         seed
-        (\s -> BA.length s >= minSeedLengthBytes && BA.length s <= 255)
+
 
 -- | Hash the seed entropy (generated from mnemonic) used to initiate a HD
 -- wallet. This increases the key length to 34 bytes, selectKey is greater than the
@@ -224,29 +225,3 @@ deriveAddressPrivateKey pwd accountKey idx@(Index addrIx) = ByronKey
     , derivationPath = (derivationPath accountKey, idx)
     , payloadPassphrase = payloadPassphrase accountKey
     }
-
-{-------------------------------------------------------------------------------
-                                     Utils
--------------------------------------------------------------------------------}
-
--- | Checks whether or not an invariant holds, by applying the given predicate
---   to the given value.
---
--- If the invariant does not hold (indicated by the predicate function
--- returning 'False'), throws an error with the specified message.
---
--- >>> invariant "not empty" [1,2,3] (not . null)
--- [1, 2, 3]
---
--- >>> invariant "not empty" [] (not . null)
--- *** Exception: not empty
-invariant
-    :: String
-        -- ^ The message
-    -> a
-        -- ^ The value to test
-    -> (a -> Bool)
-        -- ^ The predicate
-    -> a
-invariant msg a predicate =
-    if predicate a then a else error msg
