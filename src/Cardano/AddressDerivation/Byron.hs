@@ -38,15 +38,20 @@ module Cardano.AddressDerivation.Byron
     , mkByronKeyFromMasterKey
 
       -- * Derivation
-    , deriveAccountPrivateKey
-    , deriveAddressPrivateKey
+    , deriveAccountPrivateKeyImpl
+    , deriveAddressPrivateKeyImpl
 
     ) where
 
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..), DerivationType (..), Index (..) )
+    ( Depth (..)
+    , DerivationType (..)
+    , GenMasterKey (..)
+    , HardDerivation (..)
+    , Index (..)
+    )
 import Cardano.Crypto.Wallet
     ( DerivationScheme (DerivationScheme1)
     , XPrv
@@ -108,6 +113,16 @@ type family DerivationPath (depth :: Depth) :: * where
     -- The address key is generated from the account key and address index.
     DerivationPath 'AddressK =
         (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
+
+instance GenMasterKey ByronKey where
+    type GenMasterKeyFrom ByronKey = SomeMnemonic
+    genMasterKey = generateKeyFromSeed
+
+instance HardDerivation ByronKey where
+    type AddressIndexDerivationType ByronKey = 'WholeDomain
+    deriveAccountPrivateKey = deriveAccountPrivateKeyImpl
+    deriveAddressPrivateKey pwd accXPrv _accStyle ix =
+        deriveAddressPrivateKeyImpl pwd accXPrv ix
 
 {-------------------------------------------------------------------------------
                                  Key generation
@@ -202,12 +217,12 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = ByronKey
 
 -- | Derives account private key from the given root private key, using
 -- derivation scheme 1.
-deriveAccountPrivateKey
+deriveAccountPrivateKeyImpl
     :: ScrubbedBytes
     -> ByronKey 'RootK XPrv
     -> Index 'WholeDomain 'AccountK
     -> ByronKey 'AccountK XPrv
-deriveAccountPrivateKey pwd masterKey idx@(Index accIx) = ByronKey
+deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = ByronKey
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey masterKey) accIx
     , derivationPath = idx
     , payloadPassphrase = payloadPassphrase masterKey
@@ -215,12 +230,12 @@ deriveAccountPrivateKey pwd masterKey idx@(Index accIx) = ByronKey
 
 -- | Derives address private key from the given account private key, using
 -- derivation scheme 1.
-deriveAddressPrivateKey
+deriveAddressPrivateKeyImpl
     :: ScrubbedBytes
     -> ByronKey 'AccountK XPrv
     -> Index 'WholeDomain 'AddressK
     -> ByronKey 'AddressK XPrv
-deriveAddressPrivateKey pwd accountKey idx@(Index addrIx) = ByronKey
+deriveAddressPrivateKeyImpl pwd accountKey idx@(Index addrIx) = ByronKey
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey accountKey) addrIx
     , derivationPath = (derivationPath accountKey, idx)
     , payloadPassphrase = payloadPassphrase accountKey
