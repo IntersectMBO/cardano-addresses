@@ -9,12 +9,14 @@
 
 module Test.Arbitrary
     (
+      genMnemonic
     ) where
 
 import Prelude
 
 import Cardano.Mnemonic
-    ( Entropy
+    ( ConsistentEntropy
+    , Entropy
     , EntropySize
     , Mnemonic
     , MnemonicException (..)
@@ -24,14 +26,19 @@ import Cardano.Mnemonic
     )
 import Crypto.Encoding.BIP39
     ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
+import Data.ByteString
+    ( ByteString )
 import Data.Proxy
     ( Proxy (..) )
+import GHC.Stack
+    ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
 import Test.QuickCheck
-    ( Arbitrary, arbitrary, vector )
+    ( Arbitrary (..), Gen, vector )
 
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 
 -- | The initial seed has to be vector or length multiple of 4 bytes and shorter
@@ -62,3 +69,29 @@ instance
     ) => Arbitrary (Mnemonic mw) where
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
+
+-- | Generates an arbitrary mnemonic of a size according to the type parameter.
+--
+-- E.g:
+-- >>> arbitrary = SomeMnemonic <$> genMnemonic @12
+genMnemonic
+    :: forall mw ent csz.
+     ( ConsistentEntropy ent mw csz
+     , EntropySize mw ~ ent
+     )
+    => Gen (Mnemonic mw)
+genMnemonic = do
+        let n = fromIntegral (natVal $ Proxy @(EntropySize mw)) `div` 8
+        bytes <- BS.pack <$> vector n
+        let ent = unsafeMkEntropy @(EntropySize mw) bytes
+        return $ entropyToMnemonic ent
+
+unsafeMkEntropy
+    :: forall ent csz.
+        ( HasCallStack
+        , ValidEntropySize ent
+        , ValidChecksumSize ent csz
+        )
+    => ByteString
+    -> Entropy ent
+unsafeMkEntropy = either (error . show) id . mkEntropy . BA.convert
