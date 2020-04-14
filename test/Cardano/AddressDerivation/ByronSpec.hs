@@ -21,7 +21,6 @@ import Cardano.AddressDerivation
     ( Depth (..), DerivationType (..), Index (..) )
 import Cardano.AddressDerivation.Byron
     ( Byron (..)
-    , generateKeyFromSeed
     , minSeedLengthBytes
     , unsafeGenerateKeyFromSeed
     , unsafeMkByronKeyFromMasterKey
@@ -110,11 +109,10 @@ data GenerateKeyFromSeed = GenerateKeyFromSeed
 
 generateTest :: GenerateKeyFromSeed -> Expectation
 generateTest (GenerateKeyFromSeed mnemonic (Passphrase pwdEnc) rootXPrv)  =
-    getKey (generateKeyFromSeed mw pwdEnc)
-    `shouldBe`
-    getKey rootXPrv
+    getKey masterKey `shouldBe` getKey rootXPrv
   where
     mw = SomeMnemonic $ unsafeMkMnemonic @12 mnemonic
+    masterKey = unsafeGenerateKeyFromSeed () mw pwdEnc :: Byron 'RootK XPrv
 
 generateTest1 :: GenerateKeyFromSeed
 generateTest1 = GenerateKeyFromSeed

@@ -32,14 +32,9 @@ module Cardano.AddressDerivation.Byron
 
       -- * Generation
     , unsafeGenerateKeyFromSeed
-    , generateKeyFromSeed
     , minSeedLengthBytes
     , unsafeMkByronKeyFromMasterKey
     , mkByronKeyFromMasterKey
-
-      -- * Derivation
-    , deriveAccountPrivateKeyImpl
-    , deriveAddressPrivateKeyImpl
 
     ) where
 
