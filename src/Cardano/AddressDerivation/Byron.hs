@@ -28,7 +28,7 @@
 
 module Cardano.AddressDerivation.Byron
     ( -- * Types
-      ByronKey(..)
+      Byron(..)
 
       -- * Generation
     , unsafeGenerateKeyFromSeed
@@ -89,7 +89,7 @@ import qualified Data.ByteArray as BA
 
 -- | Material for deriving HD random scheme keys, which can be used for making
 -- addresses.
-data ByronKey (depth :: Depth) key = ByronKey
+data Byron (depth :: Depth) key = Byron
     { getKey :: key
     -- ^ The raw private or public key.
     , derivationPath :: DerivationPath depth
@@ -98,9 +98,9 @@ data ByronKey (depth :: Depth) key = ByronKey
     -- ^ Used for encryption of payload containing address derivation path.
     } deriving stock (Generic)
 
-instance (NFData key, NFData (DerivationPath depth)) => NFData (ByronKey depth key)
-deriving instance (Show key, Show (DerivationPath depth)) => Show (ByronKey depth key)
-deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (ByronKey depth key)
+instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
+deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
+deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
 
 -- | The hierarchical derivation indices for a given level/depth.
 type family DerivationPath (depth :: Depth) :: * where
@@ -114,15 +114,15 @@ type family DerivationPath (depth :: Depth) :: * where
     DerivationPath 'AddressK =
         (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
 
-instance GenMasterKey ByronKey where
-    type GenMasterKeyFrom ByronKey = SomeMnemonic
+instance GenMasterKey Byron where
+    type GenMasterKeyFrom Byron = SomeMnemonic
     genMasterKey = generateKeyFromSeed
 
-instance HardDerivation ByronKey where
-    type AddressIndexDerivationType ByronKey = 'WholeDomain
+instance HardDerivation Byron where
+    type AddressIndexDerivationType Byron = 'WholeDomain
     deriveAccountPrivateKey = deriveAccountPrivateKeyImpl
-    deriveAddressPrivateKey pwd accXPrv _accStyle ix =
-        deriveAddressPrivateKeyImpl pwd accXPrv ix
+    deriveAddressPrivateKey pwd accXPrv _accStyle =
+        deriveAddressPrivateKeyImpl pwd accXPrv
 
 {-------------------------------------------------------------------------------
                                  Key generation
@@ -137,7 +137,7 @@ minSeedLengthBytes = 16
 generateKeyFromSeed
     :: SomeMnemonic
     -> ScrubbedBytes
-    -> ByronKey 'RootK XPrv
+    -> Byron 'RootK XPrv
 generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
 
 -- | Generate a new key from seed. Note that the @depth@ is left open so that
@@ -148,8 +148,8 @@ unsafeGenerateKeyFromSeed
     :: DerivationPath depth
     -> SomeMnemonic
     -> ScrubbedBytes
-    -> ByronKey depth XPrv
-unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = ByronKey
+    -> Byron depth XPrv
+unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = Byron
     { getKey = masterKey
     , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
@@ -198,14 +198,14 @@ hdPassphrase masterKey =
 
 mkByronKeyFromMasterKey
     :: XPrv
-    -> ByronKey 'RootK XPrv
+    -> Byron 'RootK XPrv
 mkByronKeyFromMasterKey = unsafeMkByronKeyFromMasterKey ()
 
 unsafeMkByronKeyFromMasterKey
     :: DerivationPath depth
     -> XPrv
-    -> ByronKey depth XPrv
-unsafeMkByronKeyFromMasterKey derivationPath masterKey = ByronKey
+    -> Byron depth XPrv
+unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
     { getKey = masterKey
     , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
@@ -219,10 +219,10 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = ByronKey
 -- derivation scheme 1.
 deriveAccountPrivateKeyImpl
     :: ScrubbedBytes
-    -> ByronKey 'RootK XPrv
+    -> Byron 'RootK XPrv
     -> Index 'WholeDomain 'AccountK
-    -> ByronKey 'AccountK XPrv
-deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = ByronKey
+    -> Byron 'AccountK XPrv
+deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = Byron
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey masterKey) accIx
     , derivationPath = idx
     , payloadPassphrase = payloadPassphrase masterKey
@@ -232,10 +232,10 @@ deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = ByronKey
 -- derivation scheme 1.
 deriveAddressPrivateKeyImpl
     :: ScrubbedBytes
-    -> ByronKey 'AccountK XPrv
+    -> Byron 'AccountK XPrv
     -> Index 'WholeDomain 'AddressK
-    -> ByronKey 'AddressK XPrv
-deriveAddressPrivateKeyImpl pwd accountKey idx@(Index addrIx) = ByronKey
+    -> Byron 'AddressK XPrv
+deriveAddressPrivateKeyImpl pwd accountKey idx@(Index addrIx) = Byron
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey accountKey) addrIx
     , derivationPath = (derivationPath accountKey, idx)
     , payloadPassphrase = payloadPassphrase accountKey
