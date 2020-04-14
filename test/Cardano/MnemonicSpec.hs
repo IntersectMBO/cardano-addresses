@@ -22,8 +22,6 @@ import Cardano.Mnemonic
     , MkMnemonicError (..)
     , MkSomeMnemonicError (..)
     , Mnemonic
-    , MnemonicException (..)
-    , MnemonicWords
     , entropyToBytes
     , entropyToMnemonic
     , genEntropy
@@ -39,9 +37,6 @@ import Crypto.Encoding.BIP39
     ( DictionaryError (..)
     , EntropyError (..)
     , MnemonicWordsError (..)
-    , ValidChecksumSize
-    , ValidEntropySize
-    , ValidMnemonicSentence
     , toEntropy
     )
 import Data.ByteString
@@ -50,22 +45,19 @@ import Data.Either
     ( isRight )
 import Data.Function
     ( on )
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Text
     ( Text )
-import GHC.TypeLits
-    ( natVal )
+import Test.Arbitrary
+    ()
 import Test.Hspec
     ( Spec, describe, it, shouldBe, shouldReturn, shouldSatisfy )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Arbitrary, arbitrary, vector, (===) )
+    ( (===) )
 
 import qualified Cardano.Crypto.Wallet as CC
 import qualified Data.ByteArray as BA
-import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 
 -- | By default, private keys aren't comparable for security reasons (timing
@@ -353,32 +345,3 @@ spec = do
     isErrInvalidEntropyChecksum = \case
         Left (ErrEntropy ErrInvalidEntropyChecksum{}) -> True
         _ -> False
-
--- | The initial seed has to be vector or length multiple of 4 bytes and shorter
--- than 64 bytes. Note that this is good for testing or examples, but probably
--- not for generating truly random Mnemonic words.
---
--- See 'Crypto.Random.Entropy (getEntropy)'
-instance
-    ( ValidEntropySize n
-    , ValidChecksumSize n csz
-    ) => Arbitrary (Entropy n) where
-    arbitrary =
-        let
-            size = fromIntegral $ natVal @n Proxy
-            entropy =
-                mkEntropy  @n . BA.convert . B8.pack <$> vector (size `quot` 8)
-        in
-            either (error . show . UnexpectedEntropyError) id <$> entropy
-
--- | Same remark from 'Arbitrary Entropy' applies here.
-instance
-    ( n ~ EntropySize mw
-    , mw ~ MnemonicWords n
-    , ValidChecksumSize n csz
-    , ValidEntropySize n
-    , ValidMnemonicSentence mw
-    , Arbitrary (Entropy n)
-    ) => Arbitrary (Mnemonic mw) where
-    arbitrary =
-        entropyToMnemonic <$> arbitrary @(Entropy n)

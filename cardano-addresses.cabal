@@ -81,6 +81,7 @@ test-suite unit
       Cardano.AddressDerivation.ByronSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
+      Test.Arbitrary
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
