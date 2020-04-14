@@ -27,7 +27,7 @@ class HardDerivation (key :: Depth -> * -> *) where {
 -- | Derives account private key from the given root private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index  'Hardened  'AccountK -> key  'AccountK XPrv
+deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index (AddressIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
 
 -- | Derives address private key from the given account private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
@@ -225,3 +225,44 @@ instance (GHC.TypeNats.KnownNat n, Cardano.Mnemonic.NatVals rest) => Cardano.Mne
 instance (n Data.Type.Equality.~ Crypto.Encoding.BIP39.EntropySize mw, csz Data.Type.Equality.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz) => Cardano.Mnemonic.MkSomeMnemonic '[mw]
 instance GHC.Classes.Eq Cardano.Mnemonic.SomeMnemonic
 instance GHC.TypeNats.KnownNat csz => GHC.Exception.Type.Exception (Cardano.Mnemonic.MnemonicException csz)
+
+
+-- | Implementation of address derivation for the random scheme, as
+--   implemented by the legacy Cardano wallets.
+--   
+--   For full documentation of the key derivation schemes, see the
+--   <a>Cardano.Crypto.Wallet</a> module, and the implementation in
+--   <a>cardano-crypto</a>.
+module Cardano.AddressDerivation.Byron
+
+-- | Material for deriving HD random scheme keys, which can be used for
+--   making addresses.
+data Byron (depth :: Depth) key
+Byron :: key -> DerivationPath depth -> ScrubbedBytes -> Byron key
+
+-- | The raw private or public key.
+[getKey] :: Byron key -> key
+
+-- | The address derivation indices for the level of this key.
+[derivationPath] :: Byron key -> DerivationPath depth
+
+-- | Used for encryption of payload containing address derivation path.
+[payloadPassphrase] :: Byron key -> ScrubbedBytes
+
+-- | Generate a new key from seed. Note that the <tt>depth</tt> is left
+--   open so that the caller gets to decide what type of key this is. This
+--   is mostly for testing, in practice, seeds are used to represent root
+--   keys, and one should use <a>generateKeyFromSeed</a>.
+unsafeGenerateKeyFromSeed :: DerivationPath depth -> SomeMnemonic -> ScrubbedBytes -> Byron depth XPrv
+
+-- | The amount of entropy carried by a BIP-39 12-word mnemonic is 16
+--   bytes.
+minSeedLengthBytes :: Int
+unsafeMkByronKeyFromMasterKey :: DerivationPath depth -> XPrv -> Byron depth XPrv
+mkByronKeyFromMasterKey :: XPrv -> Byron  'RootK XPrv
+instance GHC.Generics.Generic (Cardano.AddressDerivation.Byron.Byron depth key)
+instance (GHC.Show.Show key, GHC.Show.Show (Cardano.AddressDerivation.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.AddressDerivation.Byron.Byron depth key)
+instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.AddressDerivation.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.AddressDerivation.Byron.Byron depth key)
+instance (Control.DeepSeq.NFData key, Control.DeepSeq.NFData (Cardano.AddressDerivation.Byron.DerivationPath depth)) => Control.DeepSeq.NFData (Cardano.AddressDerivation.Byron.Byron depth key)
+instance Cardano.AddressDerivation.GenMasterKey Cardano.AddressDerivation.Byron.Byron
+instance Cardano.AddressDerivation.HardDerivation Cardano.AddressDerivation.Byron.Byron
