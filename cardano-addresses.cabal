@@ -80,6 +80,7 @@ test-suite unit
   other-modules:
       Cardano.AddressDerivationSpec
       Cardano.AddressDerivation.ByronSpec
+      Cardano.AddressDerivation.IcarusSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
       Test.Arbitrary

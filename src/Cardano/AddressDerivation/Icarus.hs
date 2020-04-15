@@ -113,7 +113,7 @@ instance GenMasterKey Icarus where
     genMasterKey = generateKeyFromSeed
 
 instance HardDerivation Icarus where
-    type AddressIndexDerivationType Icarus = 'Soft
+    type AddressIndexDerivationType Icarus = 'Hardened
 
     deriveAccountPrivateKey pwd (Icarus rootXPrv) (Index accIx) =
         let

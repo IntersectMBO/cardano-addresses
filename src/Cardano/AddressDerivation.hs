@@ -30,6 +30,7 @@ module Cardano.AddressDerivation
     , Index (..)
     , Depth (..)
     , DerivationType (..)
+    , AccountingStyle (..)
 
     ) where
 
