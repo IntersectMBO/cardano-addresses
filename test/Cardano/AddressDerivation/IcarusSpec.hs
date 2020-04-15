@@ -104,7 +104,7 @@ prop_accountKeyDerivation seed (Passphrase encPwd) ix =
     accXPrv `seq` property () -- NOTE Making sure this doesn't throw
   where
     rootXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Icarus 'RootK XPrv
-    accXPrv = deriveAccountPrivateKey encPwd rootXPrv ix
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv (coerce ix)
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
