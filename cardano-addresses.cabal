@@ -42,6 +42,7 @@ library
   exposed-modules:
       Cardano.AddressDerivation
       Cardano.AddressDerivation.Byron
+      Cardano.AddressDerivation.Icarus
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses

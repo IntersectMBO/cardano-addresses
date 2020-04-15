@@ -54,7 +54,8 @@ import GHC.Generics
 
 -- $overview
 --
--- These abstractions when combined together enable address derivation
+-- These abstractions allow generating root private key, also called /Master Key/
+-- and then basing on it enable address derivation
 
 
 -- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
@@ -156,7 +157,7 @@ instance Buildable (Index derivationType level) where
 -- type that is the exact union of `Hardened` and `Soft`.
 data DerivationType = Hardened | Soft | WholeDomain
 
--- | An interface for doing hard derivations from the root private key
+-- | An interface for doing hard derivations from the root private key, /Master Key/
 class HardDerivation (key :: Depth -> * -> *) where
     type AddressIndexDerivationType key :: DerivationType
 
