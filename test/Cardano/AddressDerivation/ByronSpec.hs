@@ -18,10 +18,16 @@ module Cardano.AddressDerivation.ByronSpec
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..), DerivationType (..), Index (..) )
+    ( AccountingStyle
+    , Depth (..)
+    , DerivationType (..)
+    , HardDerivation (..)
+    , Index (..)
+    )
 import Cardano.AddressDerivation.Byron
     ( Byron (..)
     , minSeedLengthBytes
+    , mkByronKeyFromMasterKey
     , unsafeGenerateKeyFromSeed
     , unsafeMkByronKeyFromMasterKey
     )
@@ -57,33 +63,64 @@ spec = do
             property prop_keyDerivationFromSeed
         it "Key derivation from master key works for various indexes" $
             property prop_keyDerivationFromXPrv
+        it "Key derivation from seed works for various indexes - unsafe" $
+            property prop_keyDerivationFromSeedUnsafe
+        it "Key derivation from master key works for various indexes - unsafe" $
+            property prop_keyDerivationFromXPrvUnsafe
 
 {-------------------------------------------------------------------------------
                                Properties
 -------------------------------------------------------------------------------}
 
-prop_keyDerivationFromSeed
+prop_keyDerivationFromSeedUnsafe
     :: SomeMnemonic
     -> Passphrase
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromSeed seed (Passphrase encPwd) accIx addrIx =
-    rndKey `seq` property () -- NOTE Making sure this doesn't throw
+prop_keyDerivationFromSeedUnsafe seed (Passphrase encPwd) accIx addrIx =
+    rndKey `seq` property ()
   where
     rndKey :: Byron 'AddressK XPrv
     rndKey = unsafeGenerateKeyFromSeed (accIx, addrIx) seed encPwd
 
-prop_keyDerivationFromXPrv
+prop_keyDerivationFromXPrvUnsafe
     :: XPrv
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromXPrv masterkey accIx addrIx =
-    rndKey `seq` property () -- NOTE Making sure this doesn't throw
+prop_keyDerivationFromXPrvUnsafe masterkey accIx addrIx =
+    rndKey `seq` property ()
   where
     rndKey :: Byron 'AddressK XPrv
     rndKey = unsafeMkByronKeyFromMasterKey (accIx, addrIx) masterkey
+
+prop_keyDerivationFromSeed
+    :: SomeMnemonic
+    -> Passphrase
+    -> AccountingStyle
+    -> Index 'WholeDomain 'AccountK
+    -> Index 'WholeDomain 'AddressK
+    -> Property
+prop_keyDerivationFromSeed seed (Passphrase encPwd) style accIx addrIx =
+    addrXPrv `seq` property ()
+  where
+    rootXPrv = unsafeGenerateKeyFromSeed () seed encPwd :: Byron 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv accIx
+    addrXPrv = deriveAddressPrivateKey encPwd accXPrv style addrIx
+
+prop_keyDerivationFromXPrv
+    :: XPrv
+    -> AccountingStyle
+    -> Index 'WholeDomain 'AccountK
+    -> Index 'WholeDomain 'AddressK
+    -> Property
+prop_keyDerivationFromXPrv masterkey style accIx addrIx =
+    addrXPrv `seq` property ()
+  where
+    rootXPrv@(Byron _ _ encPwd) = mkByronKeyFromMasterKey masterkey :: Byron 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv accIx
+    addrXPrv = deriveAddressPrivateKey encPwd accXPrv style addrIx
 
 {-------------------------------------------------------------------------------
                                   Golden tests
@@ -91,10 +128,10 @@ prop_keyDerivationFromXPrv masterkey accIx addrIx =
 
 goldenSpec :: Spec
 goldenSpec = describe "Golden tests" $ do
-    it "generateKeyFromSeed - no passphrase" $
+    it "unsafeGenerateKeyFromSeed - no passphrase" $
         generateTest generateTest1
 
-    it "generateKeyFromSeed - with passphrase" $
+    it "unsafeGenerateKeyFromSeed - with passphrase" $
         generateTest generateTest2
 
 {-------------------------------------------------------------------------------

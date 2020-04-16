@@ -42,6 +42,7 @@ library
   exposed-modules:
       Cardano.AddressDerivation
       Cardano.AddressDerivation.Byron
+      Cardano.AddressDerivation.Icarus
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses
@@ -79,6 +80,7 @@ test-suite unit
   other-modules:
       Cardano.AddressDerivationSpec
       Cardano.AddressDerivation.ByronSpec
+      Cardano.AddressDerivation.IcarusSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
       Test.Arbitrary
