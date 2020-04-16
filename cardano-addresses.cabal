@@ -56,6 +56,7 @@ library
     , cborg
     , cryptonite
     , deepseq
+    , digest
     , exceptions
     , fmt
     , memory

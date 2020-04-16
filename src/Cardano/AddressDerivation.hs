@@ -30,6 +30,9 @@ module Cardano.AddressDerivation
     -- * Network Discrimination
     , NetworkDiscriminant (..)
     , NetworkDiscriminantVal
+    , ProtocolMagic (..)
+    , mainnetMagic
+    , testnetMagic
     , networkDiscriminantVal
 
     -- * Helper types
@@ -50,6 +53,8 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Int
+    ( Int32 )
 import Data.Proxy
     ( Proxy (..) )
 import Data.String
@@ -240,6 +245,18 @@ instance NetworkDiscriminantVal 'Mainnet where
 instance KnownNat pm => NetworkDiscriminantVal ('Testnet pm) where
     networkDiscriminantVal =
         "testnet (" <> T.pack (show $ natVal $ Proxy @pm) <> ")"
+
+-- | Magic constant associated to a given network
+newtype ProtocolMagic = ProtocolMagic { getProtocolMagic :: Int32 }
+    deriving (Generic, Show, Eq)
+
+-- | Hard-coded protocol magic for the Byron MainNet
+mainnetMagic :: ProtocolMagic
+mainnetMagic =  ProtocolMagic 764824073
+
+-- | Derive testnet magic from a type-level Nat
+testnetMagic :: forall pm. KnownNat pm => ProtocolMagic
+testnetMagic = ProtocolMagic $ fromIntegral $ natVal $ Proxy @pm
 
 -- | Encoding of addresses for certain key types and backend targets.
 class PaymentAddress (network :: NetworkDiscriminant) key where
