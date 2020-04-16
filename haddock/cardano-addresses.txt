@@ -19,15 +19,17 @@ class GenMasterKey (key :: Depth -> * -> *) where {
 -- | Generate a root key from a corresponding seed.
 genMasterKey :: GenMasterKey key => GenMasterKeyFrom key -> ScrubbedBytes -> key  'RootK XPrv
 
--- | An interface for doing hard derivations from the root private key
+-- | An interface for doing hard derivations from the root private key,
+--   <i>Master Key</i>
 class HardDerivation (key :: Depth -> * -> *) where {
+    type family AccountIndexDerivationType key :: DerivationType;
     type family AddressIndexDerivationType key :: DerivationType;
 }
 
 -- | Derives account private key from the given root private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index (AddressIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
+deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index (AccountIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
 
 -- | Derives address private key from the given account private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
@@ -82,6 +84,18 @@ data DerivationType
 Hardened :: DerivationType
 Soft :: DerivationType
 WholeDomain :: DerivationType
+
+-- | Marker for addresses type engaged. We want to handle three cases here.
+--   The first two are pertinent to UTxO accounting and the last one
+--   handles rewards from participation in staking. (a) external chain is
+--   used for addresses that are part of the <tt>advertised</tt> targets of
+--   a given transaction (b) internal change is for addresses used to
+--   handle the change of a the transaction within a given wallet (c) the
+--   addresses for a reward (chimeric) account
+data AccountingStyle
+UTxOExternal :: AccountingStyle
+UTxOInternal :: AccountingStyle
+MutableAccount :: AccountingStyle
 instance GHC.Classes.Ord (Cardano.AddressDerivation.Index derivationType level)
 instance GHC.Classes.Eq (Cardano.AddressDerivation.Index derivationType level)
 instance GHC.Show.Show (Cardano.AddressDerivation.Index derivationType level)
@@ -228,6 +242,60 @@ instance GHC.TypeNats.KnownNat csz => GHC.Exception.Type.Exception (Cardano.Mnem
 
 
 -- | Implementation of address derivation for the random scheme, as
+--   implemented by the Icarus wallet.
+--   
+--   For full documentation of the key derivation schemes, see the
+--   <a>Cardano.Crypto.Wallet</a> module, and the implementation in
+--   <a>cardano-crypto</a>.
+module Cardano.AddressDerivation.Icarus
+
+-- | A cryptographic key for sequential-scheme address derivation, with
+--   phantom-types to disambiguate key types.
+--   
+--   <pre>
+--   let rootPrivateKey = Icarus 'RootK XPrv
+--   let accountPubKey = Icarus 'AccountK XPub
+--   let addressPubKey = Icarus 'AddressK XPub
+--   </pre>
+newtype Icarus (depth :: Depth) key
+Icarus :: key -> Icarus key
+[getKey] :: Icarus key -> key
+
+-- | Hardware Ledger devices generates keys from mnemonic using a different
+--   approach (different from the rest of Cardano).
+--   
+--   It is a combination of:
+--   
+--   <ul>
+--   <li><a>SLIP 0010</a></li>
+--   <li><a>BIP 0032</a></li>
+--   <li><a>BIP 0039</a></li>
+--   <li><a>RFC 8032</a></li>
+--   <li>What seems to be arbitrary changes from Ledger regarding the
+--   calculation of the initial chain code and generation of the root
+--   private key.</li>
+--   </ul>
+unsafeGenerateKeyFromHardwareLedger :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
+
+-- | Generate a new key from seed. Note that the <tt>depth</tt> is left
+--   open so that the caller gets to decide what type of key this is. This
+--   is mostly for testing, in practice, seeds are used to represent root
+--   keys, and one should use <tt>generateKeyFromSeed</tt>.
+unsafeGenerateKeyFromSeed :: SomeMnemonic -> ScrubbedBytes -> Icarus depth XPrv
+
+-- | The minimum seed length for <tt>generateKeyFromSeed</tt> and
+--   <a>unsafeGenerateKeyFromSeed</a>.
+minSeedLengthBytes :: Int
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.AddressDerivation.Icarus.Icarus depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.AddressDerivation.Icarus.Icarus depth key)
+instance GHC.Generics.Generic (Cardano.AddressDerivation.Icarus.Icarus depth key)
+instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.AddressDerivation.Icarus.Icarus depth key)
+instance Cardano.AddressDerivation.GenMasterKey Cardano.AddressDerivation.Icarus.Icarus
+instance Cardano.AddressDerivation.HardDerivation Cardano.AddressDerivation.Icarus.Icarus
+instance Cardano.AddressDerivation.SoftDerivation Cardano.AddressDerivation.Icarus.Icarus
+
+
+-- | Implementation of address derivation for the random scheme, as
 --   implemented by the legacy Cardano wallets.
 --   
 --   For full documentation of the key derivation schemes, see the
@@ -258,8 +326,8 @@ unsafeGenerateKeyFromSeed :: DerivationPath depth -> SomeMnemonic -> ScrubbedByt
 -- | The amount of entropy carried by a BIP-39 12-word mnemonic is 16
 --   bytes.
 minSeedLengthBytes :: Int
-unsafeMkByronKeyFromMasterKey :: DerivationPath depth -> XPrv -> Byron depth XPrv
 mkByronKeyFromMasterKey :: XPrv -> Byron  'RootK XPrv
+unsafeMkByronKeyFromMasterKey :: DerivationPath depth -> XPrv -> Byron depth XPrv
 instance GHC.Generics.Generic (Cardano.AddressDerivation.Byron.Byron depth key)
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.AddressDerivation.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.AddressDerivation.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.AddressDerivation.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.AddressDerivation.Byron.Byron depth key)
