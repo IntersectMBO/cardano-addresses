@@ -25,13 +25,19 @@ module Cardano.AddressDerivation
       GenMasterKey (..)
     , HardDerivation (..)
     , SoftDerivation (..)
+    , PaymentAddress (..)
+
+    -- * Network Discrimination
+    , NetworkDiscriminant (..)
+    , NetworkDiscriminantVal
+    , networkDiscriminantVal
 
     -- * Helper types
     , Index (..)
     , Depth (..)
     , DerivationType (..)
     , AccountingStyle (..)
-
+    , Address (..)
     ) where
 
 import Prelude
@@ -42,8 +48,14 @@ import Control.DeepSeq
     ( NFData )
 import Data.ByteArray
     ( ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
+import Data.Proxy
+    ( Proxy (..) )
 import Data.String
     ( fromString )
+import Data.Text
+    ( Text )
 import Data.Typeable
     ( Typeable )
 import Data.Word
@@ -52,6 +64,10 @@ import Fmt
     ( Buildable (..) )
 import GHC.Generics
     ( Generic )
+import GHC.TypeLits
+    ( KnownNat, Nat, natVal )
+
+import qualified Data.Text as T
 
 -- $overview
 --
@@ -202,3 +218,36 @@ class GenMasterKey (key :: Depth -> * -> *) where
 
     -- | Generate a root key from a corresponding seed.
     genMasterKey :: GenMasterKeyFrom key -> ScrubbedBytes -> key 'RootK XPrv
+
+
+-- | Address is mere wrapper around a ByteString and represents an encoded address.
+newtype Address = Address
+    { unAddress :: ByteString
+    } deriving (Show, Generic, Eq, Ord)
+
+instance NFData Address
+
+-- | Available network options.
+data NetworkDiscriminant = Mainnet | Testnet Nat
+
+class NetworkDiscriminantVal (n :: NetworkDiscriminant) where
+    networkDiscriminantVal :: Text
+
+instance NetworkDiscriminantVal 'Mainnet where
+    networkDiscriminantVal =
+        "mainnet"
+
+instance KnownNat pm => NetworkDiscriminantVal ('Testnet pm) where
+    networkDiscriminantVal =
+        "testnet (" <> T.pack (show $ natVal $ Proxy @pm) <> ")"
+
+-- | Encoding of addresses for certain key types and backend targets.
+class PaymentAddress (network :: NetworkDiscriminant) key where
+    -- | Convert a public key to a payment 'Address' valid for the given
+    -- network discrimination.
+    --
+    -- Note that 'paymentAddress' is ambiguous and requires therefore a type
+    -- application.
+    paymentAddress
+        :: key 'AddressK XPub
+        -> Address
