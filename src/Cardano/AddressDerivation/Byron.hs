@@ -96,14 +96,22 @@ deriving instance (Eq key) => Eq (Byron depth key)
 
 instance GenMasterKey Byron where
     type GenMasterKeyFrom Byron = SomeMnemonic
+
     genMasterKey = unsafeGenerateKeyFromSeed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
-    deriveAccountPrivateKey = deriveAccountPrivateKeyImpl
-    deriveAddressPrivateKey pwd accXPrv _accStyle =
-        deriveAddressPrivateKeyImpl pwd accXPrv
+
+    deriveAccountPrivateKey pwd rootXPrv (Index accIx) = Byron
+        { getKey = deriveXPrv DerivationScheme1 pwd (getKey rootXPrv) accIx
+        , payloadPassphrase = payloadPassphrase rootXPrv
+        }
+
+    deriveAddressPrivateKey pwd accXPrv _accStyle (Index addrIx) = Byron
+        { getKey = deriveXPrv DerivationScheme1 pwd (getKey accXPrv) addrIx
+        , payloadPassphrase = payloadPassphrase accXPrv
+        }
 
 {-------------------------------------------------------------------------------
                                  Key generation
@@ -171,32 +179,4 @@ mkByronKeyFromMasterKey
 mkByronKeyFromMasterKey masterKey = Byron
     { getKey = masterKey
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-
-{-------------------------------------------------------------------------------
-                                 HD derivation
--------------------------------------------------------------------------------}
-
--- | Derives account private key from the given root private key, using
--- derivation scheme 1.
-deriveAccountPrivateKeyImpl
-    :: ScrubbedBytes
-    -> Byron 'RootK XPrv
-    -> Index 'WholeDomain 'AccountK
-    -> Byron 'AccountK XPrv
-deriveAccountPrivateKeyImpl pwd masterKey (Index accIx) = Byron
-    { getKey = deriveXPrv DerivationScheme1 pwd (getKey masterKey) accIx
-    , payloadPassphrase = payloadPassphrase masterKey
-    }
-
--- | Derives address private key from the given account private key, using
--- derivation scheme 1.
-deriveAddressPrivateKeyImpl
-    :: ScrubbedBytes
-    -> Byron 'AccountK XPrv
-    -> Index 'WholeDomain 'AddressK
-    -> Byron 'AddressK XPrv
-deriveAddressPrivateKeyImpl pwd accountKey (Index addrIx) = Byron
-    { getKey = deriveXPrv DerivationScheme1 pwd (getKey accountKey) addrIx
-    , payloadPassphrase = payloadPassphrase accountKey
     }

@@ -110,6 +110,7 @@ instance (NFData key) => NFData (Icarus depth key)
 
 instance GenMasterKey Icarus where
     type GenMasterKeyFrom Icarus = SomeMnemonic
+
     genMasterKey = unsafeGenerateKeyFromSeed
 
 instance HardDerivation Icarus where
