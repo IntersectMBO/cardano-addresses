@@ -11,6 +11,7 @@ module Test.Arbitrary
     (
       genMnemonic
     , unsafeMkMnemonic
+    , unsafeFromHex
     ) where
 
 import Prelude
@@ -33,6 +34,8 @@ import Cardano.Mnemonic
     )
 import Crypto.Encoding.BIP39
     ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
+import Data.ByteArray.Encoding
+    ( Base (..), convertFromBase )
 import Data.ByteString
     ( ByteString )
 import Data.Function
@@ -171,3 +174,8 @@ unsafeXPrv bytes =
     case xprv bytes of
         Left e -> error $ "unsafeXPrv: " <> e
         Right a -> a
+
+-- | Decode an hex-encoded 'ByteString' into raw bytes, or fail.
+unsafeFromHex :: HasCallStack => ByteString -> ByteString
+unsafeFromHex =
+    either (error . show) id . convertFromBase @ByteString @ByteString Base16

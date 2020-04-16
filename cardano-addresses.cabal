@@ -59,6 +59,7 @@ library
     , deepseq
     , digest
     , exceptions
+    , extra
     , fmt
     , memory
     , text
@@ -82,6 +83,7 @@ test-suite unit
   other-modules:
       Cardano.AddressDerivationSpec
       Cardano.AddressDerivation.ByronSpec
+      Cardano.AddressDerivation.CborSpec
       Cardano.AddressDerivation.IcarusSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
