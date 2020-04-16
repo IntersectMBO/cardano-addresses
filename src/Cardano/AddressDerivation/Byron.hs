@@ -33,8 +33,8 @@ module Cardano.AddressDerivation.Byron
       -- * Generation
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
-    , unsafeMkByronKeyFromMasterKey
     , mkByronKeyFromMasterKey
+    , unsafeMkByronKeyFromMasterKey
 
     ) where
 
@@ -111,13 +111,24 @@ type family DerivationPath (depth :: Depth) :: * where
 
 instance GenMasterKey Byron where
     type GenMasterKeyFrom Byron = SomeMnemonic
+
     genMasterKey = generateKeyFromSeed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
-    deriveAccountPrivateKey = deriveAccountPrivateKeyImpl
-    deriveAddressPrivateKey pwd accXPrv _accStyle =
-        deriveAddressPrivateKeyImpl pwd accXPrv
+    type AccountIndexDerivationType Byron = 'WholeDomain
+
+    deriveAccountPrivateKey pwd rootXPrv idx@(Index accIx) = Byron
+        { getKey = deriveXPrv DerivationScheme1 pwd (getKey rootXPrv) accIx
+        , derivationPath = idx
+        , payloadPassphrase = payloadPassphrase rootXPrv
+        }
+
+    deriveAddressPrivateKey pwd accXPrv _accStyle idx@(Index addrIx) = Byron
+        { getKey = deriveXPrv DerivationScheme1 pwd (getKey accXPrv) addrIx
+        , derivationPath = (derivationPath accXPrv, idx)
+        , payloadPassphrase = payloadPassphrase accXPrv
+        }
 
 {-------------------------------------------------------------------------------
                                  Key generation
@@ -155,7 +166,6 @@ unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = Byron
     seedValidated = assert
         (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
         seed
-
 
 -- | Hash the seed entropy (generated from mnemonic) used to initiate a HD
 -- wallet. This increases the key length to 34 bytes, selectKey is greater than the
@@ -204,34 +214,4 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
     { getKey = masterKey
     , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-
-{-------------------------------------------------------------------------------
-                                 HD derivation
--------------------------------------------------------------------------------}
-
--- | Derives account private key from the given root private key, using
--- derivation scheme 1.
-deriveAccountPrivateKeyImpl
-    :: ScrubbedBytes
-    -> Byron 'RootK XPrv
-    -> Index 'WholeDomain 'AccountK
-    -> Byron 'AccountK XPrv
-deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = Byron
-    { getKey = deriveXPrv DerivationScheme1 pwd (getKey masterKey) accIx
-    , derivationPath = idx
-    , payloadPassphrase = payloadPassphrase masterKey
-    }
-
--- | Derives address private key from the given account private key, using
--- derivation scheme 1.
-deriveAddressPrivateKeyImpl
-    :: ScrubbedBytes
-    -> Byron 'AccountK XPrv
-    -> Index 'WholeDomain 'AddressK
-    -> Byron 'AddressK XPrv
-deriveAddressPrivateKeyImpl pwd accountKey idx@(Index addrIx) = Byron
-    { getKey = deriveXPrv DerivationScheme1 pwd (getKey accountKey) addrIx
-    , derivationPath = (derivationPath accountKey, idx)
-    , payloadPassphrase = payloadPassphrase accountKey
     }

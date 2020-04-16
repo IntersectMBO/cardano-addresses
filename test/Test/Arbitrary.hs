@@ -16,7 +16,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..), DerivationType (..), Index )
+    ( AccountingStyle, Depth (..), DerivationType (..), Index )
 import Cardano.Crypto.Wallet
     ( XPrv, unXPrv, xprv )
 import Cardano.Mnemonic
@@ -119,6 +119,10 @@ instance Eq XPrv where
 
 instance Arbitrary XPrv where
     arbitrary = unsafeXPrv . BS.pack <$> vector 128
+
+instance Arbitrary AccountingStyle where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
 
 {-------------------------------------------------------------------------------
                        Useful functions
