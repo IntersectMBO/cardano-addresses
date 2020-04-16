@@ -30,7 +30,7 @@ module Cardano.AddressDerivation.Icarus
       Icarus (..)
 
       -- * Generation
-    , generateKeyFromHardwareLedger
+    , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
 
@@ -110,7 +110,7 @@ instance (NFData key) => NFData (Icarus depth key)
 
 instance GenMasterKey Icarus where
     type GenMasterKeyFrom Icarus = SomeMnemonic
-    genMasterKey = generateKeyFromSeed
+    genMasterKey = unsafeGenerateKeyFromSeed
 
 instance HardDerivation Icarus where
     type AccountIndexDerivationType Icarus = 'Hardened
@@ -187,16 +187,6 @@ coinTypeIndex = 0x80000717
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
 
--- | Generate a root key from a corresponding seed.
--- The seed should be at least 16 bytes.
-generateKeyFromSeed
-    :: SomeMnemonic
-        -- ^ The root mnemonic
-    -> ScrubbedBytes
-        -- ^ Master encryption passphrase
-    -> Icarus 'RootK XPrv
-generateKeyFromSeed = unsafeGenerateKeyFromSeed
-
 -- | Hardware Ledger devices generates keys from mnemonic using a different
 -- approach (different from the rest of Cardano).
 --
@@ -208,13 +198,13 @@ generateKeyFromSeed = unsafeGenerateKeyFromSeed
 -- - [RFC 8032](https://tools.ietf.org/html/rfc8032#section-5.1.5)
 -- - What seems to be arbitrary changes from Ledger regarding the calculation of
 --   the initial chain code and generation of the root private key.
-generateKeyFromHardwareLedger
+unsafeGenerateKeyFromHardwareLedger
     :: SomeMnemonic
         -- ^ The root mnemonic
     -> ScrubbedBytes
         -- ^ Master encryption passphrase
     -> Icarus 'RootK XPrv
-generateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
+unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
     let seed = pbkdf2HmacSha512
             $ T.encodeUtf8
             $ T.intercalate " "
@@ -231,7 +221,7 @@ generateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
     prv <- left show $ xprv $ iL <> iR <> pA <> cc
     pure $ Icarus (xPrvChangePass (mempty :: ByteString) pwd prv)
   where
-    -- Errors yielded in the body of 'generateKeyFromHardwareLedger' are
+    -- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are
     -- programmer errors (out-of-range byte buffer access or, invalid length for
     -- cryptographic operations). Therefore, we throw badly if we encounter any.
     unsafeFromRight :: Either String a -> a

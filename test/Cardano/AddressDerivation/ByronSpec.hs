@@ -100,10 +100,10 @@ prop_keyDerivationFromXPrv masterkey style accIx addrIx =
 
 goldenSpec :: Spec
 goldenSpec = describe "Golden tests" $ do
-    it "generateKeyFromSeed - no passphrase" $
+    it "unsafeGenerateKeyFromSeed - no passphrase" $
         generateTest generateTest1
 
-    it "generateKeyFromSeed - with passphrase" $
+    it "unsafeGenerateKeyFromSeed - with passphrase" $
         generateTest generateTest2
 
 {-------------------------------------------------------------------------------
