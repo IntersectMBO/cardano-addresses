@@ -34,6 +34,7 @@ module Cardano.AddressDerivation.Byron
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
     , mkByronKeyFromMasterKey
+    , unsafeMkByronKeyFromMasterKey
 
     ) where
 
@@ -86,30 +87,46 @@ import qualified Data.ByteArray as BA
 data Byron (depth :: Depth) key = Byron
     { getKey :: key
     -- ^ The raw private or public key.
+    , derivationPath :: DerivationPath depth
+    -- ^ The address derivation indices for the level of this key.
     , payloadPassphrase :: ScrubbedBytes
     -- ^ Used for encryption of payload containing address derivation path.
     } deriving stock (Generic)
 
-instance (NFData key) => NFData (Byron depth key)
-deriving instance (Show key) => Show (Byron depth key)
-deriving instance (Eq key) => Eq (Byron depth key)
+instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
+deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
+deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
+
+-- | The hierarchical derivation indices for a given level/depth.
+type family DerivationPath (depth :: Depth) :: * where
+    -- The root key is generated from the seed.
+    DerivationPath 'RootK =
+        ()
+    -- The account key is generated from the root key and account index.
+    DerivationPath 'AccountK =
+        Index 'WholeDomain 'AccountK
+    -- The address key is generated from the account key and address index.
+    DerivationPath 'AddressK =
+        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
 
 instance GenMasterKey Byron where
     type GenMasterKeyFrom Byron = SomeMnemonic
 
-    genMasterKey = unsafeGenerateKeyFromSeed
+    genMasterKey = generateKeyFromSeed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
 
-    deriveAccountPrivateKey pwd rootXPrv (Index accIx) = Byron
+    deriveAccountPrivateKey pwd rootXPrv idx@(Index accIx) = Byron
         { getKey = deriveXPrv DerivationScheme1 pwd (getKey rootXPrv) accIx
+        , derivationPath = idx
         , payloadPassphrase = payloadPassphrase rootXPrv
         }
 
-    deriveAddressPrivateKey pwd accXPrv _accStyle (Index addrIx) = Byron
+    deriveAddressPrivateKey pwd accXPrv _accStyle idx@(Index addrIx) = Byron
         { getKey = deriveXPrv DerivationScheme1 pwd (getKey accXPrv) addrIx
+        , derivationPath = (derivationPath accXPrv, idx)
         , payloadPassphrase = payloadPassphrase accXPrv
         }
 
@@ -123,12 +140,24 @@ minSeedLengthBytes = 16
 
 -- | Generate a root key from a corresponding seed.
 -- The seed should be at least 16 bytes.
-unsafeGenerateKeyFromSeed
+generateKeyFromSeed
     :: SomeMnemonic
     -> ScrubbedBytes
     -> Byron 'RootK XPrv
-unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd = Byron
+generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
+
+-- | Generate a new key from seed. Note that the @depth@ is left open so that
+-- the caller gets to decide what type of key this is. This is mostly for
+-- testing, in practice, seeds are used to represent root keys, and one should
+-- use 'generateKeyFromSeed'.
+unsafeGenerateKeyFromSeed
+    :: DerivationPath depth
+    -> SomeMnemonic
+    -> ScrubbedBytes
+    -> Byron depth XPrv
+unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = Byron
     { getKey = masterKey
+    , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
   where
@@ -137,7 +166,6 @@ unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd = Byron
     seedValidated = assert
         (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
         seed
-
 
 -- | Hash the seed entropy (generated from mnemonic) used to initiate a HD
 -- wallet. This increases the key length to 34 bytes, selectKey is greater than the
@@ -176,7 +204,14 @@ hdPassphrase masterKey =
 mkByronKeyFromMasterKey
     :: XPrv
     -> Byron 'RootK XPrv
-mkByronKeyFromMasterKey masterKey = Byron
+mkByronKeyFromMasterKey = unsafeMkByronKeyFromMasterKey ()
+
+unsafeMkByronKeyFromMasterKey
+    :: DerivationPath depth
+    -> XPrv
+    -> Byron depth XPrv
+unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
     { getKey = masterKey
+    , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
