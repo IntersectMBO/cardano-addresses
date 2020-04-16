@@ -94,6 +94,9 @@ test-suite unit
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , base58-bytestring
+    , bech32
+    , bech32-th
     , bytestring
     , cardano-addresses
     , cardano-crypto

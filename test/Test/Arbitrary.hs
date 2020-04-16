@@ -11,6 +11,7 @@ module Test.Arbitrary
     (
       genMnemonic
     , unsafeMkMnemonic
+    , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
     ) where
 
@@ -167,6 +168,22 @@ unsafeMkMnemonic m =
     case mkMnemonic m of
         Left e -> error $ "unsafeMnemonic: " <> show e
         Right a -> a
+
+unsafeMkSomeMnemonicFromEntropy
+    :: forall mw ent csz.
+        ( HasCallStack
+        , ValidEntropySize ent
+        , ValidChecksumSize ent csz
+        , ValidMnemonicSentence mw
+        , ent ~ EntropySize mw
+        , mw ~ MnemonicWords ent
+        )
+    => Proxy mw
+    -> ByteString
+    -> SomeMnemonic
+unsafeMkSomeMnemonicFromEntropy _ = SomeMnemonic
+    . entropyToMnemonic
+    . unsafeMkEntropy @ent
 
 -- | Build a 'XPrv' from a bytestring
 unsafeXPrv :: HasCallStack => ByteString -> XPrv

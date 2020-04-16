@@ -6,3 +6,7 @@ ghc-options: {"$locals": -ddump-to-file -ddump-hi}
 
 packages:
 - .
+
+extra-deps:
+- bech32-1.0.2
+- bech32-th-1.0.2
