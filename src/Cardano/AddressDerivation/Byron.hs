@@ -33,7 +33,6 @@ module Cardano.AddressDerivation.Byron
       -- * Generation
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
-    , unsafeMkByronKeyFromMasterKey
     , mkByronKeyFromMasterKey
 
     ) where
@@ -87,31 +86,17 @@ import qualified Data.ByteArray as BA
 data Byron (depth :: Depth) key = Byron
     { getKey :: key
     -- ^ The raw private or public key.
-    , derivationPath :: DerivationPath depth
-    -- ^ The address derivation indices for the level of this key.
     , payloadPassphrase :: ScrubbedBytes
     -- ^ Used for encryption of payload containing address derivation path.
     } deriving stock (Generic)
 
-instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
-deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
-deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
-
--- | The hierarchical derivation indices for a given level/depth.
-type family DerivationPath (depth :: Depth) :: * where
-    -- The root key is generated from the seed.
-    DerivationPath 'RootK =
-        ()
-    -- The account key is generated from the root key and account index.
-    DerivationPath 'AccountK =
-        Index 'WholeDomain 'AccountK
-    -- The address key is generated from the account key and address index.
-    DerivationPath 'AddressK =
-        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
+instance (NFData key) => NFData (Byron depth key)
+deriving instance (Show key) => Show (Byron depth key)
+deriving instance (Eq key) => Eq (Byron depth key)
 
 instance GenMasterKey Byron where
     type GenMasterKeyFrom Byron = SomeMnemonic
-    genMasterKey = generateKeyFromSeed
+    genMasterKey = unsafeGenerateKeyFromSeed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
@@ -130,24 +115,12 @@ minSeedLengthBytes = 16
 
 -- | Generate a root key from a corresponding seed.
 -- The seed should be at least 16 bytes.
-generateKeyFromSeed
+unsafeGenerateKeyFromSeed
     :: SomeMnemonic
     -> ScrubbedBytes
     -> Byron 'RootK XPrv
-generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
-
--- | Generate a new key from seed. Note that the @depth@ is left open so that
--- the caller gets to decide what type of key this is. This is mostly for
--- testing, in practice, seeds are used to represent root keys, and one should
--- use 'generateKeyFromSeed'.
-unsafeGenerateKeyFromSeed
-    :: DerivationPath depth
-    -> SomeMnemonic
-    -> ScrubbedBytes
-    -> Byron depth XPrv
-unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = Byron
+unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd = Byron
     { getKey = masterKey
-    , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
   where
@@ -195,15 +168,8 @@ hdPassphrase masterKey =
 mkByronKeyFromMasterKey
     :: XPrv
     -> Byron 'RootK XPrv
-mkByronKeyFromMasterKey = unsafeMkByronKeyFromMasterKey ()
-
-unsafeMkByronKeyFromMasterKey
-    :: DerivationPath depth
-    -> XPrv
-    -> Byron depth XPrv
-unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
+mkByronKeyFromMasterKey masterKey = Byron
     { getKey = masterKey
-    , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
 
@@ -218,9 +184,8 @@ deriveAccountPrivateKeyImpl
     -> Byron 'RootK XPrv
     -> Index 'WholeDomain 'AccountK
     -> Byron 'AccountK XPrv
-deriveAccountPrivateKeyImpl pwd masterKey idx@(Index accIx) = Byron
+deriveAccountPrivateKeyImpl pwd masterKey (Index accIx) = Byron
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey masterKey) accIx
-    , derivationPath = idx
     , payloadPassphrase = payloadPassphrase masterKey
     }
 
@@ -231,8 +196,7 @@ deriveAddressPrivateKeyImpl
     -> Byron 'AccountK XPrv
     -> Index 'WholeDomain 'AddressK
     -> Byron 'AddressK XPrv
-deriveAddressPrivateKeyImpl pwd accountKey idx@(Index addrIx) = Byron
+deriveAddressPrivateKeyImpl pwd accountKey (Index addrIx) = Byron
     { getKey = deriveXPrv DerivationScheme1 pwd (getKey accountKey) addrIx
-    , derivationPath = (derivationPath accountKey, idx)
     , payloadPassphrase = payloadPassphrase accountKey
     }

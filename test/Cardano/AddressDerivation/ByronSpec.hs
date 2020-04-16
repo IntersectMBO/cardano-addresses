@@ -18,12 +18,17 @@ module Cardano.AddressDerivation.ByronSpec
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..), DerivationType (..), Index (..) )
+    ( AccountingStyle
+    , Depth (..)
+    , DerivationType (..)
+    , HardDerivation (..)
+    , Index (..)
+    )
 import Cardano.AddressDerivation.Byron
     ( Byron (..)
     , minSeedLengthBytes
+    , mkByronKeyFromMasterKey
     , unsafeGenerateKeyFromSeed
-    , unsafeMkByronKeyFromMasterKey
     )
 import Cardano.Crypto.Wallet
     ( XPrv, xprv )
@@ -65,25 +70,29 @@ spec = do
 prop_keyDerivationFromSeed
     :: SomeMnemonic
     -> Passphrase
+    -> AccountingStyle
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromSeed seed (Passphrase encPwd) accIx addrIx =
-    rndKey `seq` property () -- NOTE Making sure this doesn't throw
+prop_keyDerivationFromSeed seed (Passphrase encPwd) style accIx addrIx =
+    addrXPrv `seq` property ()
   where
-    rndKey :: Byron 'AddressK XPrv
-    rndKey = unsafeGenerateKeyFromSeed (accIx, addrIx) seed encPwd
+    rootXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Byron 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv accIx
+    addrXPrv = deriveAddressPrivateKey encPwd accXPrv style addrIx
 
 prop_keyDerivationFromXPrv
     :: XPrv
+    -> AccountingStyle
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromXPrv masterkey accIx addrIx =
-    rndKey `seq` property () -- NOTE Making sure this doesn't throw
+prop_keyDerivationFromXPrv masterkey style accIx addrIx =
+    addrXPrv `seq` property ()
   where
-    rndKey :: Byron 'AddressK XPrv
-    rndKey = unsafeMkByronKeyFromMasterKey (accIx, addrIx) masterkey
+    rootXPrv@(Byron _ encPwd) = mkByronKeyFromMasterKey masterkey :: Byron 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv accIx
+    addrXPrv = deriveAddressPrivateKey encPwd accXPrv style addrIx
 
 {-------------------------------------------------------------------------------
                                   Golden tests
@@ -112,7 +121,7 @@ generateTest (GenerateKeyFromSeed mnemonic (Passphrase pwdEnc) rootXPrv)  =
     getKey masterKey `shouldBe` getKey rootXPrv
   where
     mw = SomeMnemonic $ unsafeMkMnemonic @12 mnemonic
-    masterKey = unsafeGenerateKeyFromSeed () mw pwdEnc :: Byron 'RootK XPrv
+    masterKey = unsafeGenerateKeyFromSeed mw pwdEnc :: Byron 'RootK XPrv
 
 generateTest1 :: GenerateKeyFromSeed
 generateTest1 = GenerateKeyFromSeed
@@ -148,7 +157,7 @@ defMnemonic =
 
 -- | Get a private key from a hex string, without error checking.
 xprv16 :: ByteString -> Byron 'RootK XPrv
-xprv16 hex = Byron k () (error "passphrase not used for tests")
+xprv16 hex = Byron k (error "passphrase not used for tests")
   where
     Right k = xprvFromText hex
     xprvFromText = xprv <=< fromHexText

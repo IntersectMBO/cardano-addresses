@@ -17,7 +17,7 @@ module Cardano.AddressDerivation.IcarusSpec
 import Prelude
 
 import Cardano.AddressDerivation
-    ( AccountingStyle (..)
+    ( AccountingStyle
     , Depth (..)
     , DerivationType (..)
     , HardDerivation (..)
@@ -37,14 +37,7 @@ import Test.Arbitrary
 import Test.Hspec
     ( Spec, describe, it )
 import Test.QuickCheck
-    ( Arbitrary (..)
-    , Property
-    , arbitraryBoundedEnum
-    , choose
-    , property
-    , vector
-    , (===)
-    )
+    ( Arbitrary (..), Property, choose, property, vector, (===) )
 
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -107,10 +100,6 @@ prop_accountKeyDerivation seed (Passphrase encPwd) ix =
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
 -------------------------------------------------------------------------------}
-
-instance Arbitrary AccountingStyle where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
 
 newtype Passphrase = Passphrase ScrubbedBytes
     deriving stock (Eq, Show)
