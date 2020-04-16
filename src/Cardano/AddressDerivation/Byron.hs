@@ -115,6 +115,7 @@ instance GenMasterKey Byron where
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
+    type AccountIndexDerivationType Byron = 'WholeDomain
     deriveAccountPrivateKey = deriveAccountPrivateKeyImpl
     deriveAddressPrivateKey pwd accXPrv _accStyle =
         deriveAddressPrivateKeyImpl pwd accXPrv

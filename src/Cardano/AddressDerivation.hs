@@ -160,6 +160,7 @@ data DerivationType = Hardened | Soft | WholeDomain
 
 -- | An interface for doing hard derivations from the root private key, /Master Key/
 class HardDerivation (key :: Depth -> * -> *) where
+    type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
 
     -- | Derives account private key from the given root private key, using
@@ -168,7 +169,7 @@ class HardDerivation (key :: Depth -> * -> *) where
     deriveAccountPrivateKey
         :: ScrubbedBytes
         -> key 'RootK XPrv
-        -> Index (AddressIndexDerivationType key) 'AccountK
+        -> Index (AccountIndexDerivationType key) 'AccountK
         -> key 'AccountK XPrv
 
     -- | Derives address private key from the given account private key, using

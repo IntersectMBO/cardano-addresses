@@ -32,8 +32,6 @@ import Cardano.Mnemonic
     ( SomeMnemonic (..) )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
-import Data.Coerce
-    ( coerce )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -90,7 +88,7 @@ prop_publicChildKeyDerivation seed (Passphrase encPwd) cc ix =
   where
     accXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Icarus 'AccountK XPrv
     -- N(CKDpriv((kpar, cpar), i))
-    addrXPub1 = publicKey $ deriveAddressPrivateKey encPwd accXPrv cc (coerce ix)
+    addrXPub1 = publicKey $ deriveAddressPrivateKey encPwd accXPrv cc ix
     -- CKDpub(N(kpar, cpar), i)
     addrXPub2 = deriveAddressPublicKey (publicKey accXPrv) cc ix
     publicKey (Icarus k) = Icarus $ toXPub k
@@ -104,7 +102,7 @@ prop_accountKeyDerivation seed (Passphrase encPwd) ix =
     accXPrv `seq` property () -- NOTE Making sure this doesn't throw
   where
     rootXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Icarus 'RootK XPrv
-    accXPrv = deriveAccountPrivateKey encPwd rootXPrv (coerce ix)
+    accXPrv = deriveAccountPrivateKey encPwd rootXPrv ix
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
