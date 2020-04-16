@@ -6,6 +6,7 @@
   <a href="https://hackage.haskell.org/package/cardano-addresses"><img src="https://img.shields.io/hackage/v/cardano-addresses?style=for-the-badge" /></a>
   <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
   <a href="https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3ATest"><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Test?style=for-the-badge" /></a>
+  <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
 </p>
 
 ## Overview
