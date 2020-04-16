@@ -43,13 +43,14 @@ jobs:
 
     - name: Build & Test
       run: |
-         stack --no-terminal test --bench --no-run-benchmarks --coverage
+        stack --no-terminal test --bench --no-run-benchmarks --coverage
 
     - name: Coverage
       if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
       run: |
         mkdir -p dist/coverage && stack hpc report --all --destdir dist/coverage
-        mv dist/coverage/hpc_index.html dist/coverage/index.html
+        curl https://raw.githubusercontent.com/input-output-hk/adrestia/master/.github/make-badge.sh > make-badge
+        bash make-badge dist/coverage/hpc_index.html > dist/coverage/badge.svg
 
     - name: Documentation
       if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
