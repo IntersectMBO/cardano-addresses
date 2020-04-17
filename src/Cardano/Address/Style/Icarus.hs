@@ -13,18 +13,17 @@
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
---
--- Implementation of address derivation for the random scheme, as
--- implemented by the Icarus wallet.
---
--- For full documentation of the key derivation schemes,
--- see the "Cardano.Crypto.Wallet" module, and the implementation in
--- <https://github.com/input-output-hk/cardano-crypto/blob/4590efa638397e952a51a8994b5543e4ea3c1ecd/cbits/encrypted_sign.c cardano-crypto>.
 
 module Cardano.Address.Style.Icarus
-    ( -- * Icarus
+    ( -- $overview
+
+      -- * Icarus
       Icarus
+
+      -- * Accessors
     , getKey
+
+      -- * Unsafe
     , liftXPrv
 
       -- Internals
@@ -89,6 +88,51 @@ import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
+-- $overview
+--
+-- This module provides an implementation of:
+--
+-- - 'GenMasterKey': for generating Icarus master keys from mnemonic sentences
+-- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
+-- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'PaymentAddress': for constructing addresses from a public key
+--
+-- We call 'Icarus' addresses the new format of Cardano addresses which came
+-- after 'Byron'. This is the format used by /Yoroi/ and now also used by
+-- /Daedalus/.
+--
+-- == Examples
+--
+-- === Generating a root key from 'SomeMnemonic'
+--
+-- > import Cardano.Mnemonic
+-- >     ( mkSomeMnemonic )
+-- > import Cardano.Address.Derivation
+-- >     ( GenMasterKey(..) )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[ 15 ] [ "test", "child", ... , "dog" ]
+-- > let sndFactor = mempty -- Or alternatively, a second factor passphrase
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus RootK XPrv
+--
+-- === Generating an 'Address' from a root key
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
+--
+--
+-- > import Cardano.Address
+-- >     ( PaymentAddress(..), base58, mainnetDiscriminant )
+-- > import Cardano.Address.Derivation
+-- >     ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- >
+-- > base58 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
+-- > "Ae2tdPwUPEZ8rVsdBE6EMZpac32MLzciY75MrwrPs8ikjf6MWYFJUHkGaw5"
+
 {-------------------------------------------------------------------------------
                                    Key Types
 -------------------------------------------------------------------------------}
@@ -97,11 +141,17 @@ import qualified Data.Text.Encoding as T
 --
 -- @
 -- let rootPrivateKey = Icarus 'RootK XPrv
--- let accountPubKey = Icarus 'AccountK XPub
--- let addressPubKey = Icarus 'AddressK XPub
+-- let accountPubKey  = Icarus 'AccountK XPub
+-- let addressPubKey  = Icarus 'AddressK XPub
 -- @
-newtype Icarus (depth :: Depth) key =
-    Icarus { getKey :: key }
+--
+-- @since 1.0.0
+newtype Icarus (depth :: Depth) key = Icarus
+    { getKey :: key
+        -- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.
+        --
+        -- @since 1.0.0
+    }
     deriving stock (Generic, Show, Eq)
 
 deriving instance (Functor (Icarus depth))
@@ -113,6 +163,8 @@ instance (NFData key) => NFData (Icarus depth key)
 -- This can be useful however when serializing / deserializing such type, or to
 -- speed up test code (and avoid having to do needless derivations from a master
 -- key down to an address key for instance).
+--
+-- @since 1.0.0
 liftXPrv :: XPrv -> Icarus depth XPrv
 liftXPrv = Icarus
 
@@ -215,7 +267,7 @@ purposeIndex = 0x8000002C
 coinTypeIndex :: Word32
 coinTypeIndex = 0x80000717
 
--- | The minimum seed length for 'generateKeyFromMnemonic' and 'unsafeGenerateKeyFromMnemonic'.
+-- The minimum seed length for 'generateKeyFromMnemonic' and 'unsafeGenerateKeyFromMnemonic'.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
 

@@ -11,6 +11,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Cardano.Address.Style.ByronSpec
     ( spec
