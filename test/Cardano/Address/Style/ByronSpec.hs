@@ -6,25 +6,26 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.AddressDerivation.ByronSpec
+module Cardano.Address.Style.ByronSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
     , DerivationType (..)
     , HardDerivation (..)
     , Index (..)
     )
-import Cardano.AddressDerivation.Byron
+import Cardano.Address.Style.Byron
     ( Byron (..)
     , minSeedLengthBytes
     , mkByronKeyFromMasterKey

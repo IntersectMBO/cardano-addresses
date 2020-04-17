@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
@@ -15,9 +16,9 @@ module Cardano.Codec.CborSpec
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address.Derivation
     ( Depth (..), DerivationType (..), Index (..) )
-import Cardano.AddressDerivation.Byron
+import Cardano.Address.Style.Byron
     ( Byron (..), unsafeGenerateKeyFromSeed )
 import Cardano.Codec.Cbor
     ( decodeAddressDerivationPath

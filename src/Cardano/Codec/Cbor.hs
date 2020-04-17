@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
@@ -44,13 +45,10 @@ module Cardano.Codec.Cbor
 
 import Prelude
 
-import Cardano.AddressDerivation
-    ( Address (..)
-    , Depth (..)
-    , DerivationType (..)
-    , Index (..)
-    , ProtocolMagic (..)
-    )
+import Cardano.Address
+    ( Address (..), ProtocolMagic (..) )
+import Cardano.Address.Derivation
+    ( Depth (..), DerivationType (..), Index (..) )
 import Cardano.Crypto.Wallet
     ( ChainCode (..), XPub (..) )
 import Control.Monad

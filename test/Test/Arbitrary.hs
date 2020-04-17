@@ -17,7 +17,7 @@ module Test.Arbitrary
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address.Derivation
     ( AccountingStyle, Depth (..), DerivationType (..), Index )
 import Cardano.Crypto.Wallet
     ( XPrv, unXPrv, xprv )

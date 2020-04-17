@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -25,7 +25,7 @@
 -- see the "Cardano.Crypto.Wallet" module, and the implementation in
 -- <https://github.com/input-output-hk/cardano-crypto/blob/4590efa638397e952a51a8994b5543e4ea3c1ecd/cbits/encrypted_sign.c cardano-crypto>.
 
-module Cardano.AddressDerivation.Icarus
+module Cardano.Address.Style.Icarus
     ( -- * Types
       Icarus (..)
 
@@ -40,17 +40,19 @@ module Cardano.AddressDerivation.Icarus
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address
     ( Address (..)
-    , Depth (..)
+    , NetworkDiscriminant (..)
+    , PaymentAddress (..)
+    , testnetMagic
+    )
+import Cardano.Address.Derivation
+    ( Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index (..)
-    , NetworkDiscriminant (..)
-    , PaymentAddress (..)
     , SoftDerivation (..)
-    , testnetMagic
     )
 import Cardano.Crypto.Wallet
     ( DerivationScheme (..)

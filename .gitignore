@@ -26,6 +26,9 @@ cabal.project.local~
 *.tix
 *.lock
 
+### hpack ###
+*.cabal
+
 ### Nix ###
 result*
 .stack-to-nix.cache

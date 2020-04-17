@@ -8,21 +8,21 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.AddressDerivationSpec
+module Cardano.Address.DerivationSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address.Derivation
     ( Depth (..), DerivationType (..), Index, getIndex )
-import Test.Arbitrary
-    ()
 import Test.Hspec
     ( Spec, describe, it )
 import Test.QuickCheck
     ( Property, expectFailure, property, (.&&.), (===) )
 
+import Test.Arbitrary
+    ()
 
 spec :: Spec
 spec = describe "Checking auxiliary address derivations types" $ do
