@@ -6,6 +6,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_HADDOCK hide #-}
+
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
@@ -41,10 +43,6 @@ module Cardano.Codec.Cbor
 
 import Prelude
 
-import Cardano.Address
-    ( Address (..), ProtocolMagic (..) )
-import Cardano.Address.Derivation
-    ( Depth (..), DerivationType (..), Index (..) )
 import Cardano.Crypto.Wallet
     ( ChainCode (..), XPub (..) )
 import Control.Monad
@@ -68,7 +66,7 @@ import Data.Either.Extra
 import Data.List
     ( find )
 import Data.Word
-    ( Word8 )
+    ( Word32, Word8 )
 import GHC.Stack
     ( HasCallStack )
 
@@ -188,21 +186,18 @@ encodeAttributes attrs = CBOR.encodeMapLen l <> mconcat attrs
   where
     l = fromIntegral (length attrs)
 
-encodeProtocolMagicAttr :: ProtocolMagic -> CBOR.Encoding
+encodeProtocolMagicAttr :: Word32 -> CBOR.Encoding
 encodeProtocolMagicAttr pm = mempty
     <> CBOR.encodeWord 2 -- Tag for 'ProtocolMagic' attribute
-    <> CBOR.encodeBytes (CBOR.toStrictByteString $ encodeProtocolMagic pm)
-
-encodeProtocolMagic :: ProtocolMagic -> CBOR.Encoding
-encodeProtocolMagic (ProtocolMagic i) = CBOR.encodeWord32 i
+    <> CBOR.encodeBytes (CBOR.toStrictByteString $ CBOR.encodeWord32 pm)
 
 -- This is the opposite of 'decodeDerivationPathAttr'.
 --
 -- NOTE: The caller must ensure that the passphrase length is 32 bytes.
 encodeDerivationPathAttr
     :: ScrubbedBytes
-    -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
+    -> Word32
+    -> Word32
     -> CBOR.Encoding
 encodeDerivationPathAttr pwd acctIx addrIx = mempty
     <> CBOR.encodeWord8 1 -- Tag for 'DerivationPath' attribute
@@ -211,10 +206,10 @@ encodeDerivationPathAttr pwd acctIx addrIx = mempty
     path = encodeDerivationPath acctIx addrIx
 
 encodeDerivationPath
-    :: Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
+    :: Word32
+    -> Word32
     -> CBOR.Encoding
-encodeDerivationPath (Index acctIx) (Index addrIx) = mempty
+encodeDerivationPath acctIx addrIx = mempty
     <> CBOR.encodeListLenIndef
     <> CBOR.encodeWord32 acctIx
     <> CBOR.encodeWord32 addrIx
@@ -250,7 +245,7 @@ encryptDerivationPath pwd payload = unsafeSerialize $ do
 cardanoNonce :: ByteString
 cardanoNonce = "serokellfore"
 
-decodeAddress :: CBOR.Decoder s Address
+decodeAddress :: CBOR.Decoder s ByteString
 decodeAddress = do
     _ <- CBOR.decodeListLenCanonicalOf 2
         -- CRC Protection Wrapper
@@ -266,7 +261,7 @@ decodeAddress = do
     --
     -- NOTE 2:
     -- We may want to check the CRC at this level as-well... maybe not.
-    return $ Address $ CBOR.toStrictByteString $ mempty
+    return $ CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 2
         <> CBOR.encodeTag tag
         <> CBOR.encodeBytes bytes
@@ -282,10 +277,7 @@ decodeAddressPayload = do
 
 decodeAddressDerivationPath
     :: ScrubbedBytes
-    -> CBOR.Decoder s (Maybe
-        ( Index 'WholeDomain 'AccountK
-        , Index 'WholeDomain 'AddressK
-        ))
+    -> CBOR.Decoder s (Maybe (Word32, Word32))
 decodeAddressDerivationPath pwd = do
     _ <- CBOR.decodeListLenCanonicalOf 3
     _ <- CBOR.decodeBytes
@@ -299,19 +291,16 @@ decodeAddressDerivationPath pwd = do
     pure path
 
 decodeProtocolMagicAttr
-    :: CBOR.Decoder s (Maybe ProtocolMagic)
+    :: CBOR.Decoder s (Maybe Word32)
 decodeProtocolMagicAttr = do
     _ <- CBOR.decodeListLenCanonicalOf 3
     _ <- CBOR.decodeBytes
     attrs <- decodeAllAttributes
     case find ((== 2) . fst) attrs of
         Nothing -> pure Nothing
-        Just (_, bytes) -> case deserialiseCbor decodeProtocolMagic bytes of
+        Just (_, bytes) -> case deserialiseCbor CBOR.decodeWord32 bytes of
             Nothing -> fail "unable to decode attribute into protocol magic"
             Just pm -> pure (Just pm)
-  where
-    decodeProtocolMagic :: CBOR.Decoder s ProtocolMagic
-    decodeProtocolMagic = ProtocolMagic <$> CBOR.decodeWord32
 
 -- | The attributes are pairs of numeric tags and bytes, where the bytes will be
 -- CBOR-encoded stuff. This decoder does not enforce "canonicity" of entries.
@@ -326,10 +315,7 @@ decodeAllAttributes = do
 decodeDerivationPathAttr
     :: ScrubbedBytes
     -> [(Word8, ByteString)]
-    -> CBOR.Decoder s (Maybe
-        ( Index 'WholeDomain 'AccountK
-        , Index 'WholeDomain 'AddressK
-        ))
+    -> CBOR.Decoder s (Maybe (Word32, Word32))
 decodeDerivationPathAttr pwd attrs = do
     case lookup derPathTag attrs of
         Just payload -> do
@@ -340,10 +326,7 @@ decodeDerivationPathAttr pwd attrs = do
             ]
   where
     derPathTag = 1
-    decoder :: CBOR.Decoder s (Maybe
-        ( Index 'WholeDomain 'AccountK
-        , Index 'WholeDomain 'AddressK
-        ))
+    decoder :: CBOR.Decoder s (Maybe (Word32, Word32))
     decoder = do
         bytes <- CBOR.decodeBytes
         case decryptDerivationPath pwd bytes of
@@ -371,15 +354,12 @@ decryptDerivationPath pwd bytes = do
 
 -- Opposite of 'encodeDerivationPath'.
 decodeDerivationPath
-    :: CBOR.Decoder s
-        ( Index 'WholeDomain 'AccountK
-        , Index 'WholeDomain 'AddressK
-        )
+    :: CBOR.Decoder s (Word32, Word32)
 decodeDerivationPath = do
     ixs <- decodeListIndef CBOR.decodeWord32
     case ixs of
         [acctIx, addrIx] ->
-            pure (toEnum $ fromIntegral acctIx, toEnum $ fromIntegral addrIx)
+            pure (acctIx, addrIx)
         _ ->
             fail $ mconcat
                 [ "decodeDerivationPath: invalid derivation path payload: "

@@ -17,7 +17,7 @@ module Cardano.Codec.CborSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), DerivationType (..), Index (..) )
+    ( Depth (..) )
 import Cardano.Address.Style.Byron
     ( Byron (..), unsafeGenerateKeyFromSeed )
 import Cardano.Codec.Cbor
@@ -138,7 +138,7 @@ arbitraryMnemonic =
 
 decodeDerivationPathTest :: DecodeDerivationPath -> Expectation
 decodeDerivationPathTest DecodeDerivationPath{..} =
-    decoded `shouldBe` Just (Just (Index accIndex, Index addrIndex))
+    decoded `shouldBe` Just (Just (accIndex, addrIndex))
   where
     payload = unsafeDeserialiseCbor decodeAddressPayload $
         BL.fromStrict (unsafeFromHex addr)
@@ -154,8 +154,8 @@ decodeDerivationPathTest DecodeDerivationPath{..} =
 prop_derivationPathRoundTrip
     :: Passphrase
     -> Passphrase
-    -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
+    -> Word32
+    -> Word32
     -> Property
 prop_derivationPathRoundTrip (Passphrase pwd) (Passphrase pwd') acctIx addrIx =
     let

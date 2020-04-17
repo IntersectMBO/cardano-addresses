@@ -22,12 +22,10 @@ module Cardano.Mnemonic
       -- * Introduction
       -- $introduction
 
-      -- * @Entropy@
-      Entropy
-    , genEntropy
-    , mkEntropy
-    , entropyToBytes
-    , entropyToMnemonic
+      -- * @SomeMnemonic@
+      SomeMnemonic(..)
+    , mkSomeMnemonic
+    , MkSomeMnemonicError(..)
 
       -- * @Mnemonic@
     , Mnemonic
@@ -36,10 +34,12 @@ module Cardano.Mnemonic
     , mnemonicToText
     , mnemonicToEntropy
 
-      -- * @SomeMnemonic@
-    , SomeMnemonic(..)
-    , mkSomeMnemonic
-    , MkSomeMnemonicError(..)
+      -- * @Entropy@
+    , Entropy
+    , genEntropy
+    , mkEntropy
+    , entropyToBytes
+    , entropyToMnemonic
 
       -- Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
