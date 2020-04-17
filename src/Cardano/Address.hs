@@ -152,7 +152,7 @@ stagingDiscriminant = RequiresNoMagic
 testnetDiscriminant :: NetworkDiscriminant
 testnetDiscriminant = RequiresMagic testnetMagic
 
--- | Magic constant associated to a given network. This is mainly use in two
+-- | Magic constant associated with a given network. This is mainly used in two
 -- places:
 --
 -- (1) In 'Address' payloads, to discriminate addresses between networks.
