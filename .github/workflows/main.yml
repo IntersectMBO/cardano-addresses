@@ -9,8 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        plan:
-        - { build: stack, resolver: "--resolver lts-14.25"  }
         include: []
 
     runs-on: ${{ matrix.os }}
