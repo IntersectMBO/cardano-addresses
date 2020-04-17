@@ -1,0 +1,374 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE DeriveGeneric #-}
+<span class="lineno">    3 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    4 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    5 </span>{-# LANGUAGE FlexibleInstances #-}
+<span class="lineno">    6 </span>{-# LANGUAGE InstanceSigs #-}
+<span class="lineno">    7 </span>{-# LANGUAGE MultiParamTypeClasses #-}
+<span class="lineno">    8 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    9 </span>{-# LANGUAGE RankNTypes #-}
+<span class="lineno">   10 </span>{-# LANGUAGE RoleAnnotations #-}
+<span class="lineno">   11 </span>{-# LANGUAGE ScopedTypeVariables #-}
+<span class="lineno">   12 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">   13 </span>{-# LANGUAGE TypeFamilies #-}
+<span class="lineno">   14 </span>{-# LANGUAGE TypeOperators #-}
+<span class="lineno">   15 </span>{-# LANGUAGE UndecidableInstances #-}
+<span class="lineno">   16 </span>
+<span class="lineno">   17 </span>-- |
+<span class="lineno">   18 </span>-- Copyright: © 2018-2020 IOHK
+<span class="lineno">   19 </span>-- License: Apache-2.0
+<span class="lineno">   20 </span>--
+<span class="lineno">   21 </span>-- Implementation of address derivation for the random scheme, as
+<span class="lineno">   22 </span>-- implemented by the Icarus wallet.
+<span class="lineno">   23 </span>--
+<span class="lineno">   24 </span>-- For full documentation of the key derivation schemes,
+<span class="lineno">   25 </span>-- see the &quot;Cardano.Crypto.Wallet&quot; module, and the implementation in
+<span class="lineno">   26 </span>-- &lt;https://github.com/input-output-hk/cardano-crypto/blob/4590efa638397e952a51a8994b5543e4ea3c1ecd/cbits/encrypted_sign.c cardano-crypto&gt;.
+<span class="lineno">   27 </span>
+<span class="lineno">   28 </span>module Cardano.Address.Style.Icarus
+<span class="lineno">   29 </span>    ( -- * Types
+<span class="lineno">   30 </span>      Icarus (..)
+<span class="lineno">   31 </span>
+<span class="lineno">   32 </span>      -- * Generation
+<span class="lineno">   33 </span>    , unsafeGenerateKeyFromHardwareLedger
+<span class="lineno">   34 </span>    , unsafeGenerateKeyFromSeed
+<span class="lineno">   35 </span>    , minSeedLengthBytes
+<span class="lineno">   36 </span>
+<span class="lineno">   37 </span>      -- * Helpers
+<span class="lineno">   38 </span>    , publicKey
+<span class="lineno">   39 </span>    ) where
+<span class="lineno">   40 </span>
+<span class="lineno">   41 </span>import Prelude
+<span class="lineno">   42 </span>
+<span class="lineno">   43 </span>import Cardano.Address
+<span class="lineno">   44 </span>    ( Address (..)
+<span class="lineno">   45 </span>    , NetworkDiscriminant (..)
+<span class="lineno">   46 </span>    , PaymentAddress (..)
+<span class="lineno">   47 </span>    , testnetMagic
+<span class="lineno">   48 </span>    )
+<span class="lineno">   49 </span>import Cardano.Address.Derivation
+<span class="lineno">   50 </span>    ( Depth (..)
+<span class="lineno">   51 </span>    , DerivationType (..)
+<span class="lineno">   52 </span>    , GenMasterKey (..)
+<span class="lineno">   53 </span>    , HardDerivation (..)
+<span class="lineno">   54 </span>    , Index (..)
+<span class="lineno">   55 </span>    , SoftDerivation (..)
+<span class="lineno">   56 </span>    )
+<span class="lineno">   57 </span>import Cardano.Crypto.Wallet
+<span class="lineno">   58 </span>    ( DerivationScheme (..)
+<span class="lineno">   59 </span>    , XPrv
+<span class="lineno">   60 </span>    , XPub
+<span class="lineno">   61 </span>    , deriveXPrv
+<span class="lineno">   62 </span>    , deriveXPub
+<span class="lineno">   63 </span>    , generateNew
+<span class="lineno">   64 </span>    , toXPub
+<span class="lineno">   65 </span>    , xPrvChangePass
+<span class="lineno">   66 </span>    , xprv
+<span class="lineno">   67 </span>    )
+<span class="lineno">   68 </span>import Cardano.Mnemonic
+<span class="lineno">   69 </span>    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
+<span class="lineno">   70 </span>import Control.Arrow
+<span class="lineno">   71 </span>    ( first, left )
+<span class="lineno">   72 </span>import Control.DeepSeq
+<span class="lineno">   73 </span>    ( NFData )
+<span class="lineno">   74 </span>import Control.Exception.Base
+<span class="lineno">   75 </span>    ( assert )
+<span class="lineno">   76 </span>import Crypto.Error
+<span class="lineno">   77 </span>    ( eitherCryptoError )
+<span class="lineno">   78 </span>import Crypto.Hash.Algorithms
+<span class="lineno">   79 </span>    ( SHA256 (..), SHA512 (..) )
+<span class="lineno">   80 </span>import Crypto.MAC.HMAC
+<span class="lineno">   81 </span>    ( HMAC, hmac )
+<span class="lineno">   82 </span>import Data.Bits
+<span class="lineno">   83 </span>    ( clearBit, setBit, testBit )
+<span class="lineno">   84 </span>import Data.ByteArray
+<span class="lineno">   85 </span>    ( ScrubbedBytes )
+<span class="lineno">   86 </span>import Data.ByteString
+<span class="lineno">   87 </span>    ( ByteString )
+<span class="lineno">   88 </span>import Data.Function
+<span class="lineno">   89 </span>    ( (&amp;) )
+<span class="lineno">   90 </span>import Data.Maybe
+<span class="lineno">   91 </span>    ( fromMaybe )
+<span class="lineno">   92 </span>import Data.Word
+<span class="lineno">   93 </span>    ( Word32 )
+<span class="lineno">   94 </span>import GHC.Generics
+<span class="lineno">   95 </span>    ( Generic )
+<span class="lineno">   96 </span>import GHC.TypeLits
+<span class="lineno">   97 </span>    ( KnownNat )
+<span class="lineno">   98 </span>
+<span class="lineno">   99 </span>import qualified Cardano.Codec.Cbor as CBOR
+<span class="lineno">  100 </span>import qualified Crypto.ECC.Edwards25519 as Ed25519
+<span class="lineno">  101 </span>import qualified Crypto.KDF.PBKDF2 as PBKDF2
+<span class="lineno">  102 </span>import qualified Data.ByteArray as BA
+<span class="lineno">  103 </span>import qualified Data.ByteString as BS
+<span class="lineno">  104 </span>import qualified Data.Text as T
+<span class="lineno">  105 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">  106 </span>
+<span class="lineno">  107 </span>{-------------------------------------------------------------------------------
+<span class="lineno">  108 </span>                                   Key Types
+<span class="lineno">  109 </span>-------------------------------------------------------------------------------}
+<span class="lineno">  110 </span>-- | A cryptographic key for sequential-scheme address derivation, with
+<span class="lineno">  111 </span>-- phantom-types to disambiguate key types.
+<span class="lineno">  112 </span>--
+<span class="lineno">  113 </span>-- @
+<span class="lineno">  114 </span>-- let rootPrivateKey = Icarus 'RootK XPrv
+<span class="lineno">  115 </span>-- let accountPubKey = Icarus 'AccountK XPub
+<span class="lineno">  116 </span>-- let addressPubKey = Icarus 'AddressK XPub
+<span class="lineno">  117 </span>-- @
+<span class="lineno">  118 </span>newtype Icarus (depth :: Depth) key =
+<span class="lineno">  119 </span>    Icarus { <span class="istickedoff"><span class="decl"><span class="istickedoff">getKey</span></span></span> :: key }
+<span class="lineno">  120 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  121 </span>
+<span class="lineno">  122 </span>instance (NFData key) =&gt; NFData (Icarus depth key)
+<span class="lineno">  123 </span>
+<span class="lineno">  124 </span>instance GenMasterKey Icarus where
+<span class="lineno">  125 </span>    type GenMasterKeyFrom Icarus = SomeMnemonic
+<span class="lineno">  126 </span>
+<span class="lineno">  127 </span>    <span class="decl"><span class="nottickedoff">genMasterKey = unsafeGenerateKeyFromSeed</span></span>
+<span class="lineno">  128 </span>
+<span class="lineno">  129 </span>instance HardDerivation Icarus where
+<span class="lineno">  130 </span>    type AccountIndexDerivationType Icarus = 'Hardened
+<span class="lineno">  131 </span>    type AddressIndexDerivationType Icarus = 'Soft
+<span class="lineno">  132 </span>
+<span class="lineno">  133 </span>    <span class="decl"><span class="istickedoff">deriveAccountPrivateKey pwd (Icarus rootXPrv) (Index accIx) =</span>
+<span class="lineno">  134 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  135 </span><span class="spaces">            </span><span class="istickedoff">purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'</span>
+<span class="lineno">  136 </span><span class="spaces">                </span><span class="istickedoff">deriveXPrv DerivationScheme2 pwd rootXPrv purposeIndex</span>
+<span class="lineno">  137 </span><span class="spaces">            </span><span class="istickedoff">coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'</span>
+<span class="lineno">  138 </span><span class="spaces">                </span><span class="istickedoff">deriveXPrv DerivationScheme2 pwd purposeXPrv coinTypeIndex</span>
+<span class="lineno">  139 </span><span class="spaces">            </span><span class="istickedoff">acctXPrv = -- lvl3 derivation; hardened derivation of account' index</span>
+<span class="lineno">  140 </span><span class="spaces">                </span><span class="istickedoff">deriveXPrv DerivationScheme2 pwd coinTypeXPrv accIx</span>
+<span class="lineno">  141 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  142 </span><span class="spaces">            </span><span class="istickedoff">Icarus acctXPrv</span></span>
+<span class="lineno">  143 </span>
+<span class="lineno">  144 </span>    <span class="decl"><span class="istickedoff">deriveAddressPrivateKey pwd (Icarus accXPrv) accountingStyle (Index addrIx) =</span>
+<span class="lineno">  145 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  146 </span><span class="spaces">            </span><span class="istickedoff">changeCode =</span>
+<span class="lineno">  147 </span><span class="spaces">                </span><span class="istickedoff">fromIntegral $ fromEnum accountingStyle</span>
+<span class="lineno">  148 </span><span class="spaces">            </span><span class="istickedoff">changeXPrv = -- lvl4 derivation; soft derivation of change chain</span>
+<span class="lineno">  149 </span><span class="spaces">                </span><span class="istickedoff">deriveXPrv DerivationScheme2 pwd accXPrv changeCode</span>
+<span class="lineno">  150 </span><span class="spaces">            </span><span class="istickedoff">addrXPrv = -- lvl5 derivation; soft derivation of address index</span>
+<span class="lineno">  151 </span><span class="spaces">                </span><span class="istickedoff">deriveXPrv DerivationScheme2 pwd changeXPrv addrIx</span>
+<span class="lineno">  152 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  153 </span><span class="spaces">            </span><span class="istickedoff">Icarus addrXPrv</span></span>
+<span class="lineno">  154 </span>
+<span class="lineno">  155 </span>instance SoftDerivation Icarus where
+<span class="lineno">  156 </span>    <span class="decl"><span class="istickedoff">deriveAddressPublicKey (Icarus accXPub) accountingStyle (Index addrIx) =</span>
+<span class="lineno">  157 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe <span class="nottickedoff">errWrongIndex</span> $ do</span>
+<span class="lineno">  158 </span><span class="spaces">            </span><span class="istickedoff">let changeCode = fromIntegral $ fromEnum accountingStyle</span>
+<span class="lineno">  159 </span><span class="spaces">            </span><span class="istickedoff">changeXPub &lt;- -- lvl4 derivation in bip44 is derivation of change chain</span>
+<span class="lineno">  160 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 accXPub changeCode</span>
+<span class="lineno">  161 </span><span class="spaces">            </span><span class="istickedoff">addrXPub &lt;- -- lvl5 derivation in bip44 is derivation of address chain</span>
+<span class="lineno">  162 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 changeXPub addrIx</span>
+<span class="lineno">  163 </span><span class="spaces">            </span><span class="istickedoff">return $ Icarus addrXPub</span>
+<span class="lineno">  164 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  165 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">errWrongIndex = error $</span></span>
+<span class="lineno">  166 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span></span>
+<span class="lineno">  167 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span></span>
+<span class="lineno">  168 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\either a programmer error, or, we may have reached the maximum \</span></span>
+<span class="lineno">  169 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\number of addresses for a given wallet.&quot;</span></span></span>
+<span class="lineno">  170 </span>
+<span class="lineno">  171 </span>instance PaymentAddress 'Mainnet Icarus where
+<span class="lineno">  172 </span>    <span class="decl"><span class="istickedoff">paymentAddress k = Address</span>
+<span class="lineno">  173 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.toStrictByteString</span>
+<span class="lineno">  174 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.encodeAddress (getKey k) []</span></span>
+<span class="lineno">  175 </span>
+<span class="lineno">  176 </span>instance KnownNat pm =&gt; PaymentAddress ('Testnet pm) Icarus where
+<span class="lineno">  177 </span>    <span class="decl"><span class="nottickedoff">paymentAddress k = Address</span>
+<span class="lineno">  178 </span><span class="spaces">        </span><span class="nottickedoff">$ CBOR.toStrictByteString</span>
+<span class="lineno">  179 </span><span class="spaces">        </span><span class="nottickedoff">$ CBOR.encodeAddress (getKey k)</span>
+<span class="lineno">  180 </span><span class="spaces">            </span><span class="nottickedoff">[ CBOR.encodeProtocolMagicAttr (testnetMagic @pm)</span>
+<span class="lineno">  181 </span><span class="spaces">            </span><span class="nottickedoff">]</span></span>
+<span class="lineno">  182 </span>
+<span class="lineno">  183 </span>{-------------------------------------------------------------------------------
+<span class="lineno">  184 </span>                                 Key generation
+<span class="lineno">  185 </span>-------------------------------------------------------------------------------}
+<span class="lineno">  186 </span>
+<span class="lineno">  187 </span>-- | Purpose is a constant set to 44' (or 0x8000002C) following the original
+<span class="lineno">  188 </span>-- BIP-44 specification.
+<span class="lineno">  189 </span>--
+<span class="lineno">  190 </span>-- It indicates that the subtree of this node is used according to this
+<span class="lineno">  191 </span>-- specification.
+<span class="lineno">  192 </span>--
+<span class="lineno">  193 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  194 </span>purposeIndex :: Word32
+<span class="lineno">  195 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000002C</span></span>
+<span class="lineno">  196 </span>
+<span class="lineno">  197 </span>-- | One master node (seed) can be used for unlimited number of independent
+<span class="lineno">  198 </span>-- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
+<span class="lineno">  199 </span>-- same space for various cryptocoins has some disadvantages.
+<span class="lineno">  200 </span>--
+<span class="lineno">  201 </span>-- This level creates a separate subtree for every cryptocoin, avoiding reusing
+<span class="lineno">  202 </span>-- addresses across cryptocoins and improving privacy issues.
+<span class="lineno">  203 </span>--
+<span class="lineno">  204 </span>-- Coin type is a constant, set for each cryptocoin. For Cardano this constant
+<span class="lineno">  205 </span>-- is set to 1815' (or 0x80000717). 1815 is the birthyear of our beloved Ada
+<span class="lineno">  206 </span>-- Lovelace.
+<span class="lineno">  207 </span>--
+<span class="lineno">  208 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  209 </span>coinTypeIndex :: Word32
+<span class="lineno">  210 </span><span class="decl"><span class="istickedoff">coinTypeIndex = 0x80000717</span></span>
+<span class="lineno">  211 </span>
+<span class="lineno">  212 </span>-- | The minimum seed length for 'generateKeyFromSeed' and 'unsafeGenerateKeyFromSeed'.
+<span class="lineno">  213 </span>minSeedLengthBytes :: Int
+<span class="lineno">  214 </span><span class="decl"><span class="istickedoff">minSeedLengthBytes = 16</span></span>
+<span class="lineno">  215 </span>
+<span class="lineno">  216 </span>-- | Hardware Ledger devices generates keys from mnemonic using a different
+<span class="lineno">  217 </span>-- approach (different from the rest of Cardano).
+<span class="lineno">  218 </span>--
+<span class="lineno">  219 </span>-- It is a combination of:
+<span class="lineno">  220 </span>--
+<span class="lineno">  221 </span>-- - [SLIP 0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
+<span class="lineno">  222 </span>-- - [BIP 0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+<span class="lineno">  223 </span>-- - [BIP 0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
+<span class="lineno">  224 </span>-- - [RFC 8032](https://tools.ietf.org/html/rfc8032#section-5.1.5)
+<span class="lineno">  225 </span>-- - What seems to be arbitrary changes from Ledger regarding the calculation of
+<span class="lineno">  226 </span>--   the initial chain code and generation of the root private key.
+<span class="lineno">  227 </span>unsafeGenerateKeyFromHardwareLedger
+<span class="lineno">  228 </span>    :: SomeMnemonic
+<span class="lineno">  229 </span>        -- ^ The root mnemonic
+<span class="lineno">  230 </span>    -&gt; ScrubbedBytes
+<span class="lineno">  231 </span>        -- ^ Master encryption passphrase
+<span class="lineno">  232 </span>    -&gt; Icarus 'RootK XPrv
+<span class="lineno">  233 </span><span class="decl"><span class="istickedoff">unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do</span>
+<span class="lineno">  234 </span><span class="spaces">    </span><span class="istickedoff">let seed = pbkdf2HmacSha512</span>
+<span class="lineno">  235 </span><span class="spaces">            </span><span class="istickedoff">$ T.encodeUtf8</span>
+<span class="lineno">  236 </span><span class="spaces">            </span><span class="istickedoff">$ T.intercalate &quot; &quot;</span>
+<span class="lineno">  237 </span><span class="spaces">            </span><span class="istickedoff">$ mnemonicToText mw</span>
+<span class="lineno">  238 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  239 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE</span>
+<span class="lineno">  240 </span><span class="spaces">    </span><span class="istickedoff">-- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code</span>
+<span class="lineno">  241 </span><span class="spaces">    </span><span class="istickedoff">-- is obtained as a hash of the initial seed whereas iR is used to make part</span>
+<span class="lineno">  242 </span><span class="spaces">    </span><span class="istickedoff">-- of the root private key itself.</span>
+<span class="lineno">  243 </span><span class="spaces">    </span><span class="istickedoff">let cc = hmacSha256 (BS.pack [1] &lt;&gt; seed)</span>
+<span class="lineno">  244 </span><span class="spaces">    </span><span class="istickedoff">let (iL, iR) = first pruneBuffer $ hashRepeatedly seed</span>
+<span class="lineno">  245 </span><span class="spaces">    </span><span class="istickedoff">pA &lt;- ed25519ScalarMult iL</span>
+<span class="lineno">  246 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  247 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- left <span class="nottickedoff">show</span> $ xprv $ iL &lt;&gt; iR &lt;&gt; pA &lt;&gt; cc</span>
+<span class="lineno">  248 </span><span class="spaces">    </span><span class="istickedoff">pure $ Icarus (xPrvChangePass (mempty :: ByteString) pwd prv)</span>
+<span class="lineno">  249 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span>
+<span class="lineno">  251 </span><span class="spaces">    </span><span class="istickedoff">-- programmer errors (out-of-range byte buffer access or, invalid length for</span>
+<span class="lineno">  252 </span><span class="spaces">    </span><span class="istickedoff">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span>
+<span class="lineno">  253 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight :: Either String a -&gt; a</span>
+<span class="lineno">  254 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either <span class="nottickedoff">error</span> id</span>
+<span class="lineno">  255 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  256 </span><span class="spaces">    </span><span class="istickedoff">-- This is the algorithm described in SLIP 0010 for master key generation</span>
+<span class="lineno">  257 </span><span class="spaces">    </span><span class="istickedoff">-- with an extra step to discard _some_ of the potential private keys. Why</span>
+<span class="lineno">  258 </span><span class="spaces">    </span><span class="istickedoff">-- this extra step remains a mystery as of today.</span>
+<span class="lineno">  259 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  260 </span><span class="spaces">    </span><span class="istickedoff">--      1. Generate a seed byte sequence S of 512 bits according to BIP-0039.</span>
+<span class="lineno">  261 </span><span class="spaces">    </span><span class="istickedoff">--         (done in a previous step, passed as argument).</span>
+<span class="lineno">  262 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  263 </span><span class="spaces">    </span><span class="istickedoff">--      2. Calculate I = HMAC-SHA512(Key = &quot;ed25519 seed&quot;, Data = S)</span>
+<span class="lineno">  264 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  265 </span><span class="spaces">    </span><span class="istickedoff">--      3. Split I into two 32-byte sequences, IL and IR.</span>
+<span class="lineno">  266 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  267 </span><span class="spaces">    </span><span class="istickedoff">-- extra *******************************************************************</span>
+<span class="lineno">  268 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
+<span class="lineno">  269 </span><span class="spaces">    </span><span class="istickedoff">-- *    3.5 If the third highest bit of the last byte of IL is not zero    *</span>
+<span class="lineno">  270 </span><span class="spaces">    </span><span class="istickedoff">-- *        S = I and go back to step 2.                                   *</span>
+<span class="lineno">  271 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
+<span class="lineno">  272 </span><span class="spaces">    </span><span class="istickedoff">-- *************************************************************************</span>
+<span class="lineno">  273 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  274 </span><span class="spaces">    </span><span class="istickedoff">--      4. Use parse256(IL) as master secret key, and IR as master chain code.</span>
+<span class="lineno">  275 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly :: ByteString -&gt; (ByteString, ByteString)</span>
+<span class="lineno">  276 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly bytes = case BS.splitAt 32 (hmacSha512 bytes) of</span>
+<span class="lineno">  277 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) | isInvalidKey iL -&gt; hashRepeatedly (iL &lt;&gt; iR)</span>
+<span class="lineno">  278 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) -&gt; (iL, iR)</span>
+<span class="lineno">  279 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  280 </span><span class="spaces">        </span><span class="istickedoff">isInvalidKey k = testBit (k `BS.index` 31) 5</span>
+<span class="lineno">  281 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  282 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the lowest 3 bits of the first byte</span>
+<span class="lineno">  283 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the highest bit of the last byte</span>
+<span class="lineno">  284 </span><span class="spaces">    </span><span class="istickedoff">-- - Set the second highest bit of the last byte</span>
+<span class="lineno">  285 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  286 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [RFC 8032 - 5.1.5](https://tools.ietf.org/html/rfc8032#section-5.1.5)</span>
+<span class="lineno">  287 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer :: ByteString -&gt; ByteString</span>
+<span class="lineno">  288 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer bytes =</span>
+<span class="lineno">  289 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  290 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no first byte&quot;)</span> $</span>
+<span class="lineno">  291 </span><span class="spaces">                </span><span class="istickedoff">BS.uncons bytes</span>
+<span class="lineno">  292 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  293 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no last byte&quot;)</span> $</span>
+<span class="lineno">  294 </span><span class="spaces">                </span><span class="istickedoff">BS.unsnoc rest</span>
+<span class="lineno">  295 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  296 </span><span class="spaces">            </span><span class="istickedoff">firstPruned = firstByte</span>
+<span class="lineno">  297 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 0)</span>
+<span class="lineno">  298 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 1)</span>
+<span class="lineno">  299 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 2)</span>
+<span class="lineno">  300 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  301 </span><span class="spaces">            </span><span class="istickedoff">lastPruned = lastByte</span>
+<span class="lineno">  302 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`setBit` 6)</span>
+<span class="lineno">  303 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 7)</span>
+<span class="lineno">  304 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  305 </span><span class="spaces">            </span><span class="istickedoff">(firstPruned `BS.cons` BS.snoc rest' lastPruned)</span>
+<span class="lineno">  306 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  307 </span><span class="spaces">    </span><span class="istickedoff">ed25519ScalarMult :: ByteString -&gt; Either String ByteString</span>
+<span class="lineno">  308 </span><span class="spaces">    </span><span class="istickedoff">ed25519ScalarMult bytes = do</span>
+<span class="lineno">  309 </span><span class="spaces">        </span><span class="istickedoff">scalar &lt;- left <span class="nottickedoff">show</span> $ eitherCryptoError $ Ed25519.scalarDecodeLong bytes</span>
+<span class="lineno">  310 </span><span class="spaces">        </span><span class="istickedoff">pure $ Ed25519.pointEncode $ Ed25519.toPoint scalar</span>
+<span class="lineno">  311 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  312 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)</span>
+<span class="lineno">  313 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  314 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 bytes = PBKDF2.generate</span>
+<span class="lineno">  315 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.prfHMAC <span class="nottickedoff">SHA512</span>)</span>
+<span class="lineno">  316 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.Parameters 2048 64)</span>
+<span class="lineno">  317 </span><span class="spaces">        </span><span class="istickedoff">bytes</span>
+<span class="lineno">  318 </span><span class="spaces">        </span><span class="istickedoff">(&quot;mnemonic&quot; :: ByteString)</span>
+<span class="lineno">  319 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  320 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  321 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 =</span>
+<span class="lineno">  322 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA256) . hmac salt</span>
+<span class="lineno">  323 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [SLIP 0010 - Master Key Generation](https://github.com/satoshilabs/slips/blob/master/slip-0010.md#master-key-generation)</span>
+<span class="lineno">  325 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  326 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 =</span>
+<span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA512) . hmac salt</span>
+<span class="lineno">  328 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  329 </span><span class="spaces">    </span><span class="istickedoff">salt :: ByteString</span>
+<span class="lineno">  330 </span><span class="spaces">    </span><span class="istickedoff">salt = &quot;ed25519 seed&quot;</span></span>
+<span class="lineno">  331 </span>
+<span class="lineno">  332 </span>-- | Generate a new key from seed. Note that the @depth@ is left open so that
+<span class="lineno">  333 </span>-- the caller gets to decide what type of key this is. This is mostly for
+<span class="lineno">  334 </span>-- testing, in practice, seeds are used to represent root keys, and one should
+<span class="lineno">  335 </span>-- use 'generateKeyFromSeed'.
+<span class="lineno">  336 </span>unsafeGenerateKeyFromSeed
+<span class="lineno">  337 </span>    :: SomeMnemonic
+<span class="lineno">  338 </span>        -- ^ The root mnemonic
+<span class="lineno">  339 </span>    -&gt; ScrubbedBytes
+<span class="lineno">  340 </span>        -- ^ Master encryption passphrase
+<span class="lineno">  341 </span>    -&gt; Icarus depth XPrv
+<span class="lineno">  342 </span><span class="decl"><span class="istickedoff">unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd =</span>
+<span class="lineno">  343 </span><span class="spaces">    </span><span class="istickedoff">let</span>
+<span class="lineno">  344 </span><span class="spaces">        </span><span class="istickedoff">seed  = entropyToBytes $ mnemonicToEntropy mw</span>
+<span class="lineno">  345 </span><span class="spaces">        </span><span class="istickedoff">seedValidated = assert</span>
+<span class="lineno">  346 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  347 </span><span class="spaces">            </span><span class="istickedoff">seed</span>
+<span class="lineno">  348 </span><span class="spaces">    </span><span class="istickedoff">in Icarus $ generateNew seedValidated (mempty :: ByteString) pwd</span></span>
+<span class="lineno">  349 </span>
+<span class="lineno">  350 </span>publicKey :: Icarus depth1 XPrv -&gt; Icarus depth2 XPub
+<span class="lineno">  351 </span><span class="decl"><span class="istickedoff">publicKey (Icarus k) = Icarus $ toXPub k</span></span>
+
+</pre>
+</body>
+</html>
