@@ -31,6 +31,8 @@ module Cardano.Address.Style.Byron
     , mkByronKeyFromMasterKey
     , unsafeMkByronKeyFromMasterKey
 
+      -- * Temporary
+    , publicKey
     ) where
 
 import Prelude
@@ -239,6 +241,14 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
 --
 -- Internal
 --
+
+-- Temporary, we should really make 'Byron' a 'Functor'
+publicKey :: Byron depth XPrv -> Byron depth XPub
+publicKey Byron{getKey,derivationPath,payloadPassphrase} = Byron
+    { getKey = toXPub getKey
+    , derivationPath
+    , payloadPassphrase
+    }
 
 word32 :: Enum a => a -> Word32
 word32 = fromIntegral . fromEnum
