@@ -42,8 +42,8 @@ library
   exposed-modules:
       Cardano.AddressDerivation
       Cardano.AddressDerivation.Byron
-      Cardano.AddressDerivation.Cbor
       Cardano.AddressDerivation.Icarus
+      Cardano.Codec.Cbor
       Cardano.Mnemonic
   other-modules:
       Paths_cardano_addresses
@@ -51,7 +51,10 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , base58-bytestring
     , basement
+    , bech32
+    , bech32-th
     , bytestring
     , cardano-crypto
     , cborg
@@ -83,8 +86,8 @@ test-suite unit
   other-modules:
       Cardano.AddressDerivationSpec
       Cardano.AddressDerivation.ByronSpec
-      Cardano.AddressDerivation.CborSpec
       Cardano.AddressDerivation.IcarusSpec
+      Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
       Paths_cardano_addresses
       Test.Arbitrary
@@ -94,9 +97,6 @@ test-suite unit
   build-depends:
       QuickCheck
     , base >=4.7 && <5
-    , base58-bytestring
-    , bech32
-    , bech32-th
     , bytestring
     , cardano-addresses
     , cardano-crypto

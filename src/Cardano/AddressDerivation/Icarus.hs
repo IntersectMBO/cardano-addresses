@@ -34,6 +34,8 @@ module Cardano.AddressDerivation.Icarus
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
 
+      -- * Helpers
+    , publicKey
     ) where
 
 import Prelude
@@ -53,9 +55,11 @@ import Cardano.AddressDerivation
 import Cardano.Crypto.Wallet
     ( DerivationScheme (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , toXPub
     , xPrvChangePass
     , xprv
     )
@@ -90,7 +94,7 @@ import GHC.Generics
 import GHC.TypeLits
     ( KnownNat )
 
-import qualified Cardano.AddressDerivation.Cbor as CBOR
+import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.ECC.Edwards25519 as Ed25519
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
@@ -340,3 +344,6 @@ unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd =
             (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
             seed
     in Icarus $ generateNew seedValidated (mempty :: ByteString) pwd
+
+publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
+publicKey (Icarus k) = Icarus $ toXPub k

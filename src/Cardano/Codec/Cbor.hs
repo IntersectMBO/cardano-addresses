@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -15,7 +16,7 @@
 -- therefore, we needn't to care about verifying signatures and blocks
 -- themselves).
 
-module Cardano.AddressDerivation.Cbor
+module Cardano.Codec.Cbor
     ( -- * Encoders
       encodeAddress
     , encodeAttributes
@@ -36,6 +37,9 @@ module Cardano.AddressDerivation.Cbor
     , CBOR.encodeBytes
     , CBOR.toStrictByteString
     , CBOR.toLazyByteString
+
+     -- * Useful helpers
+    , addressToText
     ) where
 
 import Prelude
@@ -63,17 +67,25 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.ByteString.Base58
+    ( bitcoinAlphabet, encodeBase58 )
 import Data.Digest.CRC32
     ( crc32 )
 import Data.Either.Extra
     ( eitherToMaybe )
 import Data.List
     ( find )
+import Data.Maybe
+    ( isJust )
+import Data.Text
+    ( Text )
 import Data.Word
     ( Word8 )
 import GHC.Stack
     ( HasCallStack )
 
+import qualified Codec.Binary.Bech32 as Bech32
+import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Decoding as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Codec.CBOR.Read as CBOR
@@ -82,6 +94,7 @@ import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Text.Encoding as T
 
 {-------------------------------------------------------------------------------
                        Byron Address Binary Format
@@ -196,7 +209,7 @@ encodeProtocolMagicAttr pm = mempty
     <> CBOR.encodeBytes (CBOR.toStrictByteString $ encodeProtocolMagic pm)
 
 encodeProtocolMagic :: ProtocolMagic -> CBOR.Encoding
-encodeProtocolMagic (ProtocolMagic i) = CBOR.encodeInt32 i
+encodeProtocolMagic (ProtocolMagic i) = CBOR.encodeWord32 i
 
 -- This is the opposite of 'decodeDerivationPathAttr'.
 --
@@ -313,7 +326,7 @@ decodeProtocolMagicAttr = do
             Just pm -> pure (Just pm)
   where
     decodeProtocolMagic :: CBOR.Decoder s ProtocolMagic
-    decodeProtocolMagic = ProtocolMagic <$> CBOR.decodeInt32
+    decodeProtocolMagic = ProtocolMagic <$> CBOR.decodeWord32
 
 -- | The attributes are pairs of numeric tags and bytes, where the bytes will be
 -- CBOR-encoded stuff. This decoder does not enforce "canonicity" of entries.
@@ -437,3 +450,14 @@ unsafeDeserialiseCbor decoder bytes = either
     (\e -> error $ "unsafeSerializeCbor: " <> show e)
     snd
     (CBOR.deserialiseFromBytes decoder bytes)
+
+-- | Transform address to text
+addressToText :: Address -> Text
+addressToText (Address bytes) =
+    if isJust (deserialiseCbor decodeAddressPayload bytes)
+        then base58
+        else bech32
+  where
+    base58 = T.decodeUtf8 $ encodeBase58 bitcoinAlphabet bytes
+    bech32 = Bech32.encodeLenient hrp (Bech32.dataPartFromBytes bytes)
+    hrp = [Bech32.humanReadablePart|addr|]

@@ -9,7 +9,7 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.AddressDerivation.CborSpec
+module Cardano.Codec.CborSpec
     ( spec
     ) where
 
@@ -19,7 +19,7 @@ import Cardano.AddressDerivation
     ( Depth (..), DerivationType (..), Index (..) )
 import Cardano.AddressDerivation.Byron
     ( Byron (..), unsafeGenerateKeyFromSeed )
-import Cardano.AddressDerivation.Cbor
+import Cardano.Codec.Cbor
     ( decodeAddressDerivationPath
     , decodeAddressPayload
     , decodeAllAttributes

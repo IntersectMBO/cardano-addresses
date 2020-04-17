@@ -29,11 +29,9 @@ module Cardano.AddressDerivation
 
     -- * Network Discrimination
     , NetworkDiscriminant (..)
-    , NetworkDiscriminantVal
     , ProtocolMagic (..)
     , mainnetMagic
     , testnetMagic
-    , networkDiscriminantVal
 
     -- * Helper types
     , Index (..)
@@ -53,14 +51,10 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
-import Data.Int
-    ( Int32 )
 import Data.Proxy
     ( Proxy (..) )
 import Data.String
     ( fromString )
-import Data.Text
-    ( Text )
 import Data.Typeable
     ( Typeable )
 import Data.Word
@@ -71,8 +65,6 @@ import GHC.Generics
     ( Generic )
 import GHC.TypeLits
     ( KnownNat, Nat, natVal )
-
-import qualified Data.Text as T
 
 -- $overview
 --
@@ -235,19 +227,8 @@ instance NFData Address
 -- | Available network options.
 data NetworkDiscriminant = Mainnet | Testnet Nat
 
-class NetworkDiscriminantVal (n :: NetworkDiscriminant) where
-    networkDiscriminantVal :: Text
-
-instance NetworkDiscriminantVal 'Mainnet where
-    networkDiscriminantVal =
-        "mainnet"
-
-instance KnownNat pm => NetworkDiscriminantVal ('Testnet pm) where
-    networkDiscriminantVal =
-        "testnet (" <> T.pack (show $ natVal $ Proxy @pm) <> ")"
-
 -- | Magic constant associated to a given network
-newtype ProtocolMagic = ProtocolMagic { getProtocolMagic :: Int32 }
+newtype ProtocolMagic = ProtocolMagic { getProtocolMagic :: Word32 }
     deriving (Generic, Show, Eq)
 
 -- | Hard-coded protocol magic for the Byron MainNet
@@ -265,6 +246,4 @@ class PaymentAddress (network :: NetworkDiscriminant) key where
     --
     -- Note that 'paymentAddress' is ambiguous and requires therefore a type
     -- application.
-    paymentAddress
-        :: key 'AddressK XPub
-        -> Address
+    paymentAddress :: key 'AddressK XPub -> Address

@@ -5,7 +5,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -20,7 +19,6 @@ import Prelude
 
 import Cardano.AddressDerivation
     ( AccountingStyle (..)
-    , Address (..)
     , Depth (..)
     , DerivationType (..)
     , HardDerivation (..)
@@ -29,16 +27,17 @@ import Cardano.AddressDerivation
     , PaymentAddress (..)
     , SoftDerivation (..)
     )
-import Cardano.AddressDerivation.Cbor
-    ( decodeAddressPayload, deserialiseCbor )
 import Cardano.AddressDerivation.Icarus
     ( Icarus (..)
     , minSeedLengthBytes
+    , publicKey
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     )
+import Cardano.Codec.Cbor
+    ( addressToText )
 import Cardano.Crypto.Wallet
-    ( XPrv, XPub, toXPub )
+    ( XPrv )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
@@ -50,10 +49,6 @@ import Control.Monad
     ( forM_ )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
-import Data.ByteString.Base58
-    ( bitcoinAlphabet, encodeBase58 )
-import Data.Maybe
-    ( isJust )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
@@ -65,12 +60,9 @@ import Test.Hspec
 import Test.QuickCheck
     ( Arbitrary (..), Property, choose, property, vector, (===) )
 
-import qualified Codec.Binary.Bech32 as Bech32
-import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
@@ -263,7 +255,7 @@ goldenAddressGeneration test = it title $ do
         , goldAddr
         ]
 
-    base58 = T.unpack . encodeAddress
+    base58 = T.unpack . addressToText
 
     -- e.g. m/.../0'/0/0
     fmtPath p3 p4 p5 = mconcat
@@ -296,12 +288,11 @@ goldenHardwareLedger (Passphrase encPwd) sentence addrs =
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
-            base58 (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` addr
+            addressToText (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` addr
   where
     title = T.unpack
         $ T.unwords
         $ take 3 sentence ++ [ "..." ] ++ drop (length sentence - 3) sentence
-    base58 = encodeAddress
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
@@ -316,16 +307,3 @@ instance Arbitrary Passphrase where
         n <- choose (minSeedLengthBytes, 64)
         bytes <- BS.pack <$> vector n
         return $ Passphrase $ BA.convert bytes
-
-publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
-publicKey (Icarus k) = Icarus $ toXPub k
-
-encodeAddress :: Address -> Text
-encodeAddress (Address bytes) =
-    if isJust (deserialiseCbor decodeAddressPayload bytes)
-        then base58
-        else bech32
-  where
-    base58 = T.decodeUtf8 $ encodeBase58 bitcoinAlphabet bytes
-    bech32 = Bech32.encodeLenient hrp (Bech32.dataPartFromBytes bytes)
-    hrp = [Bech32.humanReadablePart|addr|]

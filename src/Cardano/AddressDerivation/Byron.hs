@@ -79,7 +79,7 @@ import GHC.Generics
 import GHC.TypeLits
     ( KnownNat )
 
-import qualified Cardano.AddressDerivation.Cbor as CBOR
+import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
 
