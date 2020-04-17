@@ -17,10 +17,16 @@ module Test.Arbitrary
 
 import Prelude
 
+import Cardano.Address
+    ( NetworkDiscriminant (..), ProtocolMagic (..) )
 import Cardano.Address.Derivation
     ( AccountingStyle, Depth (..), DerivationType (..), Index )
+import Cardano.Address.Style.Byron
+    ( Byron )
+import Cardano.Address.Style.Icarus
+    ( Icarus )
 import Cardano.Crypto.Wallet
-    ( XPrv, unXPrv, xprv )
+    ( XPrv, XPub, unXPrv, xprv )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -50,15 +56,17 @@ import GHC.Stack
 import GHC.TypeLits
     ( natVal )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, vector )
+    ( Arbitrary (..), Gen, arbitraryBoundedEnum, oneof, vector )
 
+import qualified Cardano.Address.Style.Byron as Byron
+import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 
-{-------------------------------------------------------------------------------
-                             Arbitrary Instances
--------------------------------------------------------------------------------}
+--
+-- Arbitrary Instances
+--
 
 -- | The initial seed has to be vector or length multiple of 4 bytes and shorter
 -- than 64 bytes. Note that this is good for testing or examples, but probably
@@ -89,7 +97,6 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
-
 instance Arbitrary (Index 'Soft 'AddressK) where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
@@ -113,6 +120,40 @@ instance Arbitrary (Index 'WholeDomain 'AccountK) where
 instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12
 
+instance Arbitrary XPrv where
+    arbitrary = unsafeXPrv . BS.pack <$> vector 128
+
+instance Arbitrary AccountingStyle where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary (Byron 'AddressK XPub) where
+    shrink _ = []
+    arbitrary = do
+        mw <- SomeMnemonic <$> genMnemonic @12
+        path <- (,) <$> arbitrary <*> arbitrary
+        pure $ Byron.publicKey $ Byron.unsafeGenerateKeyFromSeed path mw mempty
+
+instance Arbitrary (Icarus 'AddressK XPub) where
+    shrink _ = []
+    arbitrary = do
+        mw <- SomeMnemonic <$> genMnemonic @15
+        pure $ Icarus.publicKey $ Icarus.unsafeGenerateKeyFromSeed mw mempty
+
+instance Arbitrary NetworkDiscriminant where
+    arbitrary = oneof
+        [ pure RequiresNoMagic
+        , RequiresMagic <$> arbitrary
+        ]
+
+instance Arbitrary ProtocolMagic where
+    shrink (ProtocolMagic pm) = ProtocolMagic <$> shrink pm
+    arbitrary = ProtocolMagic <$> arbitrary
+
+--
+-- Extra Instances
+--
+
 -- Necessary unsound Show instance for QuickCheck failure reporting
 instance Show XPrv where
     show = show . unXPrv
@@ -121,16 +162,9 @@ instance Show XPrv where
 instance Eq XPrv where
     (==) = (==) `on` unXPrv
 
-instance Arbitrary XPrv where
-    arbitrary = unsafeXPrv . BS.pack <$> vector 128
-
-instance Arbitrary AccountingStyle where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-{-------------------------------------------------------------------------------
-                       Useful functions
--------------------------------------------------------------------------------}
+--
+-- Useful functions
+--
 
 -- | Generates an arbitrary mnemonic of a size according to the type parameter.
 --
