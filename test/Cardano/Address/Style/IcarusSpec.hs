@@ -25,10 +25,10 @@ import Cardano.Address.Derivation
     , Index
     , SoftDerivation (..)
     , XPrv
+    , toXPub
     )
 import Cardano.Address.Style.Icarus
     ( Icarus (..)
-    , publicKey
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     )
@@ -176,9 +176,9 @@ prop_publicChildKeyDerivation seed cc ix =
   where
     accXPrv = unsafeGenerateKeyFromSeed seed :: Icarus 'AccountK XPrv
     -- N(CKDpriv((kpar, cpar), i))
-    addrXPub1 = publicKey $ deriveAddressPrivateKey accXPrv cc ix
+    addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
     -- CKDpub(N(kpar, cpar), i)
-    addrXPub2 = deriveAddressPublicKey (publicKey accXPrv) cc ix
+    addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
 
 prop_accountKeyDerivation
     :: SomeMnemonic
@@ -211,7 +211,7 @@ goldenAddressGeneration test = it title $ do
     let rootXPrv = unsafeGenerateKeyFromSeed goldSeed
     let acctXPrv = deriveAccountPrivateKey rootXPrv goldAcctIx
     let addrXPrv = deriveAddressPrivateKey acctXPrv goldAcctStyle goldAddrIx
-    base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+    base58 (paymentAddress mainnetDiscriminant $ toXPub <$> addrXPrv)
         `shouldBe` goldAddr
   where
     GoldenAddressGeneration
@@ -257,7 +257,7 @@ goldenHardwareLedger sentence addrs =
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
-            base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+            base58 (paymentAddress mainnetDiscriminant $ toXPub <$> addrXPrv)
                 `shouldBe` addr
   where
     title = T.unpack

@@ -28,6 +28,7 @@ import Cardano.Address.Derivation
     , XPub
     , generate
     , generateNew
+    , toXPub
     , xprvToBytes
     )
 import Cardano.Address.Style.Byron
@@ -142,13 +143,13 @@ instance Arbitrary (Byron 'AddressK XPub) where
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @12
         path <- (,) <$> arbitrary <*> arbitrary
-        pure $ Byron.publicKey $ Byron.unsafeGenerateKeyFromSeed path mw
+        pure $ toXPub <$> Byron.unsafeGenerateKeyFromSeed path mw
 
 instance Arbitrary (Icarus 'AddressK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
-        pure $ Icarus.publicKey $ Icarus.unsafeGenerateKeyFromSeed mw
+        pure $ toXPub <$> Icarus.unsafeGenerateKeyFromSeed mw
 
 instance Arbitrary NetworkDiscriminant where
     arbitrary = oneof

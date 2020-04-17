@@ -167,9 +167,9 @@ defMnemonic =
 
 -- | Get a private key from a hex string, without error checking.
 xprv16 :: ByteString -> Byron 'RootK XPrv
-xprv16 hex = Byron k () (error "passphrase not used for tests")
+xprv16 hex = mkByronKeyFromMasterKey prv
   where
-    Just k = (xprvFromBytes <=< fromHexText) hex
+    Just prv = (xprvFromBytes <=< fromHexText) hex
     fromHexText :: ByteString -> Maybe ByteString
     fromHexText = either (const Nothing) Just . convertFromBase Base16
 

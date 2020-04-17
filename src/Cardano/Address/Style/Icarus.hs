@@ -1,8 +1,10 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -19,15 +21,13 @@
 
 module Cardano.Address.Style.Icarus
     ( -- * Types
-      Icarus (..)
+      Icarus
+    , getKey
 
       -- * Generation
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
-
-      -- * Helpers
-    , publicKey
     ) where
 
 import Prelude
@@ -47,11 +47,9 @@ import Cardano.Address.Derivation
     , Index
     , SoftDerivation (..)
     , XPrv
-    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , toXPub
     , xprvFromBytes
     )
 import Cardano.Mnemonic
@@ -103,6 +101,7 @@ newtype Icarus (depth :: Depth) key =
     Icarus { getKey :: key }
     deriving stock (Generic, Show, Eq)
 
+deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
 instance GenMasterKey Icarus where
@@ -323,6 +322,3 @@ unsafeGenerateKeyFromSeed (SomeMnemonic mw) =
             (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
             seed
     in Icarus $ generateNew seedValidated (mempty :: ScrubbedBytes)
-
-publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
-publicKey (Icarus k) = Icarus $ toXPub k

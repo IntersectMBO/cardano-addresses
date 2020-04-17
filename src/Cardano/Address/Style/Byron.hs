@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,16 +24,16 @@
 
 module Cardano.Address.Style.Byron
     ( -- * Types
-      Byron(..)
+      Byron
+    , payloadPassphrase
+    , derivationPath
+    , getKey
 
       -- * Generation
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
     , mkByronKeyFromMasterKey
     , unsafeMkByronKeyFromMasterKey
-
-      -- * Temporary
-    , publicKey
     ) where
 
 import Prelude
@@ -100,6 +101,7 @@ data Byron (depth :: Depth) key = Byron
 instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
 deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
 deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
+deriving instance (Functor (Byron depth))
 
 -- | The hierarchical derivation indices for a given level/depth.
 type family DerivationPath (depth :: Depth) :: * where
@@ -238,14 +240,6 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
 --
 -- Internal
 --
-
--- Temporary, we should really make 'Byron' a 'Functor'
-publicKey :: Byron depth XPrv -> Byron depth XPub
-publicKey Byron{getKey,derivationPath,payloadPassphrase} = Byron
-    { getKey = toXPub getKey
-    , derivationPath
-    , payloadPassphrase
-    }
 
 word32 :: Enum a => a -> Word32
 word32 = fromIntegral . fromEnum
