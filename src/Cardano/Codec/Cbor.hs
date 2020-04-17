@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -38,9 +37,6 @@ module Cardano.Codec.Cbor
     , CBOR.encodeBytes
     , CBOR.toStrictByteString
     , CBOR.toLazyByteString
-
-     -- * Useful helpers
-    , addressToText
     ) where
 
 import Prelude
@@ -65,25 +61,17 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
-import Data.ByteString.Base58
-    ( bitcoinAlphabet, encodeBase58 )
 import Data.Digest.CRC32
     ( crc32 )
 import Data.Either.Extra
     ( eitherToMaybe )
 import Data.List
     ( find )
-import Data.Maybe
-    ( isJust )
-import Data.Text
-    ( Text )
 import Data.Word
     ( Word8 )
 import GHC.Stack
     ( HasCallStack )
 
-import qualified Codec.Binary.Bech32 as Bech32
-import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Decoding as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Codec.CBOR.Read as CBOR
@@ -92,7 +80,6 @@ import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
-import qualified Data.Text.Encoding as T
 
 {-------------------------------------------------------------------------------
                        Byron Address Binary Format
@@ -448,14 +435,3 @@ unsafeDeserialiseCbor decoder bytes = either
     (\e -> error $ "unsafeSerializeCbor: " <> show e)
     snd
     (CBOR.deserialiseFromBytes decoder bytes)
-
--- | Transform address to text
-addressToText :: Address -> Text
-addressToText (Address bytes) =
-    if isJust (deserialiseCbor decodeAddressPayload bytes)
-        then base58
-        else bech32
-  where
-    base58 = T.decodeUtf8 $ encodeBase58 bitcoinAlphabet bytes
-    bech32 = Bech32.encodeLenient hrp (Bech32.dataPartFromBytes bytes)
-    hrp = [Bech32.humanReadablePart|addr|]

@@ -1,11 +1,17 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Cardano.Address
     ( -- * Address
       Address (..)
     , PaymentAddress (..)
+
+      -- * Conversion To Text
+    , base58
+    , bech32
 
       -- * Network Discrimination
     , NetworkDiscriminant (..)
@@ -30,16 +36,34 @@ import Control.DeepSeq
     ( NFData )
 import Data.ByteString
     ( ByteString )
+import Data.ByteString.Base58
+    ( bitcoinAlphabet, encodeBase58 )
+import Data.Text
+    ( Text )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
+
+import qualified Codec.Binary.Bech32 as Bech32
+import qualified Codec.Binary.Bech32.TH as Bech32
+import qualified Data.Text.Encoding as T
 
 -- | Address is mere wrapper around a ByteString and represents an encoded address.
 newtype Address = Address
     { unAddress :: ByteString
     } deriving (Generic, Show, Eq, Ord)
 instance NFData Address
+
+-- | Encode an address to base58.
+base58 :: Address -> Text
+base58 = T.decodeUtf8 . encodeBase58 bitcoinAlphabet . unAddress
+
+-- | Encode an address to bech32, using @addr@ as a human readable prefix.
+bech32 :: Address -> Text
+bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
+  where
+    hrp = [Bech32.humanReadablePart|addr|]
 
 -- | Encoding of addresses for certain key types and backend targets.
 class PaymentAddress key where
