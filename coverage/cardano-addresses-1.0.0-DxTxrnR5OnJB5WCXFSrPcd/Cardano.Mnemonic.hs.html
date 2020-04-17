@@ -408,7 +408,7 @@ span.spaces    { background: white }
 <span class="lineno">  389 </span>    MkSomeMnemonic (mw ': '[])
 <span class="lineno">  390 </span>  where
 <span class="lineno">  391 </span>    <span class="decl"><span class="istickedoff">mkSomeMnemonic parts = do</span>
-<span class="lineno">  392 </span><span class="spaces">        </span><span class="istickedoff">bimap (MkSomeMnemonicError . pretty) <span class="nottickedoff">SomeMnemonic</span> (mkMnemonic @mw parts)</span>
+<span class="lineno">  392 </span><span class="spaces">        </span><span class="istickedoff">bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)</span>
 <span class="lineno">  393 </span><span class="spaces">      </span><span class="istickedoff">where</span>
 <span class="lineno">  394 </span><span class="spaces">        </span><span class="istickedoff">pretty = \case</span>
 <span class="lineno">  395 </span><span class="spaces">            </span><span class="istickedoff">ErrMnemonicWords ErrWrongNumberOfWords{} -&gt;</span>
