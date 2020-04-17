@@ -11,42 +11,6 @@
 
 module Cardano.Address.Derivation
 
--- | Abstract interface for constructing a <i>Master Key</i>.
-class GenMasterKey (key :: Depth -> * -> *) where {
-    type family GenMasterKeyFrom key :: *;
-}
-
--- | Generate a root key from a corresponding seed.
-genMasterKey :: GenMasterKey key => GenMasterKeyFrom key -> ScrubbedBytes -> key  'RootK XPrv
-
--- | An interface for doing hard derivations from the root private key,
---   <i>Master Key</i>
-class HardDerivation (key :: Depth -> * -> *) where {
-    type family AccountIndexDerivationType key :: DerivationType;
-    type family AddressIndexDerivationType key :: DerivationType;
-}
-
--- | Derives account private key from the given root private key, using
---   derivation scheme 2 (see <a>cardano-crypto</a> package for more
---   details).
-deriveAccountPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'RootK XPrv -> Index (AccountIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
-
--- | Derives address private key from the given account private key, using
---   derivation scheme 2 (see <a>cardano-crypto</a> package for more
---   details).
-deriveAddressPrivateKey :: HardDerivation key => ScrubbedBytes -> key  'AccountK XPrv -> AccountingStyle -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
-
--- | An interface for doing soft derivations from an account public key
-class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
-
--- | Derives address public key from the given account public key, using
---   derivation scheme 2 (see <a>cardano-crypto</a> package for more
---   details).
---   
---   This is the preferred way of deriving new sequential address public
---   keys.
-deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> key  'AddressK XPub
-
 -- | A derivation index, with phantom-types to disambiguate derivation
 --   type.
 --   
@@ -54,18 +18,17 @@ deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> Accountin
 --   let accountIx = Index 'Hardened 'AccountK
 --   let addressIx = Index 'Soft 'AddressK
 --   </pre>
-newtype Index (derivationType :: DerivationType) (level :: Depth)
-Index :: Word32 -> Index
-[getIndex] :: Index -> Word32
+data Index (derivationType :: DerivationType) (depth :: Depth)
 
 -- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
 --   
 --   <pre>
---   m | purpose' | cointype' | account' | change | address
+--   root | purpose' | cointype' | account' | change | address@
+--   0th      1st         2nd        3rd        4th      5th
 --   </pre>
 --   
 --   We do not manipulate purpose, cointype and change paths directly, so
---   they are left out of the sum type.
+--   there are no constructors for these.
 data Depth
 RootK :: Depth
 AccountK :: Depth
@@ -77,7 +40,7 @@ AddressK :: Depth
 --   hard.
 --   
 --   However, historically, addresses in Cardano used to be generated
---   across the both soft and hard domain. We therefore introduce a
+--   across both the soft and the hard domain. We therefore introduce a
 --   <a>WholeDomain</a> derivation type that is the exact union of
 --   <a>Hardened</a> and <a>Soft</a>.
 data DerivationType
@@ -96,23 +59,90 @@ data AccountingStyle
 UTxOExternal :: AccountingStyle
 UTxOInternal :: AccountingStyle
 MutableAccount :: AccountingStyle
-instance GHC.Classes.Ord (Cardano.Address.Derivation.Index derivationType level)
-instance GHC.Classes.Eq (Cardano.Address.Derivation.Index derivationType level)
-instance GHC.Show.Show (Cardano.Address.Derivation.Index derivationType level)
-instance GHC.Generics.Generic (Cardano.Address.Derivation.Index derivationType level)
+
+-- | Abstract interface for constructing a <i>Master Key</i>.
+class GenMasterKey (key :: Depth -> * -> *) where {
+    type family GenMasterKeyFrom key :: *;
+}
+
+-- | Generate a root key from a corresponding seed.
+genMasterKey :: GenMasterKey key => GenMasterKeyFrom key -> key  'RootK XPrv
+
+-- | An interface for doing hard derivations from the root private key,
+--   <i>Master Key</i>
+class HardDerivation (key :: Depth -> * -> *) where {
+    type family AccountIndexDerivationType key :: DerivationType;
+    type family AddressIndexDerivationType key :: DerivationType;
+}
+
+-- | Derives account private key from the given root private key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+deriveAccountPrivateKey :: HardDerivation key => key  'RootK XPrv -> Index (AccountIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
+
+-- | Derives address private key from the given account private key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> AccountingStyle -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
+
+-- | An interface for doing soft derivations from an account public key
+class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
+
+-- | Derives address public key from the given account public key, using
+--   derivation scheme 2 (see <a>cardano-crypto</a> package for more
+--   details).
+--   
+--   This is the preferred way of deriving new sequential address public
+--   keys.
+deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> key  'AddressK XPub
+
+-- | An opaque type representing an extended public key.
+type XPub = XPub
+
+-- | Construct an <a>XPub</a> from raw <a>ByteString</a>
+xpubFromBytes :: ByteString -> Maybe XPub
+
+-- | Convert an <a>XPub</a> to a raw <a>ByteString</a>
+xpubToBytes :: XPub -> ByteString
+
+-- | An opaque type representing an extended private key.
+type XPrv = XPrv
+
+-- | Construct an <a>XPrv</a> from raw <a>ByteString</a>.
+xprvFromBytes :: ByteString -> Maybe XPrv
+
+-- | Convert an <a>XPrv</a> to a raw <a>ByteString</a>.
+xprvToBytes :: XPrv -> ByteString
+
+-- | Derive the <a>XPub</a> from a corresponding <a>XPrv</a>.
+toXPub :: HasCallStack => XPrv -> XPub
+
+-- | An opaque type representing a signature made from an <a>XPrv</a>
+type XSignature = XSignature
+
+-- | Produce a signature of the given <tt>msg</tt> from an <a>XPrv</a>.
+sign :: ByteArrayAccess msg => XPrv -> msg -> XSignature
+
+-- | Verify the <a>XSignature</a> of a <tt>msg</tt> with the <a>XPub</a>
+--   associated with the <a>XPrv</a> used for signing.
+verify :: ByteArrayAccess msg => XPub -> msg -> XSignature -> Bool
+instance GHC.Classes.Ord (Cardano.Address.Derivation.Index derivationType depth)
+instance GHC.Classes.Eq (Cardano.Address.Derivation.Index derivationType depth)
+instance GHC.Show.Show (Cardano.Address.Derivation.Index derivationType depth)
+instance GHC.Generics.Generic (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Enum.Bounded Cardano.Address.Derivation.AccountingStyle
 instance GHC.Classes.Ord Cardano.Address.Derivation.AccountingStyle
 instance GHC.Classes.Eq Cardano.Address.Derivation.AccountingStyle
 instance GHC.Show.Show Cardano.Address.Derivation.AccountingStyle
 instance GHC.Generics.Generic Cardano.Address.Derivation.AccountingStyle
-instance Control.DeepSeq.NFData (Cardano.Address.Derivation.Index derivationType level)
-instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Hardened level)
-instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft level)
-instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain level)
-instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Hardened level)
-instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft level)
-instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain level)
-instance Formatting.Buildable.Buildable (Cardano.Address.Derivation.Index derivationType level)
+instance Control.DeepSeq.NFData (Cardano.Address.Derivation.Index derivationType depth)
+instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Hardened depth)
+instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft depth)
+instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain depth)
+instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Hardened depth)
+instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft depth)
+instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain depth)
+instance Formatting.Buildable.Buildable (Cardano.Address.Derivation.Index derivationType depth)
 instance Control.DeepSeq.NFData Cardano.Address.Derivation.AccountingStyle
 instance GHC.Enum.Enum Cardano.Address.Derivation.AccountingStyle
 
@@ -339,9 +369,8 @@ module Cardano.Address.Style.Icarus
 --   let accountPubKey = Icarus 'AccountK XPub
 --   let addressPubKey = Icarus 'AddressK XPub
 --   </pre>
-newtype Icarus (depth :: Depth) key
-Icarus :: key -> Icarus key
-[getKey] :: Icarus key -> key
+data Icarus (depth :: Depth) key
+getKey :: Icarus depth key -> key
 
 -- | Hardware Ledger devices generates keys from mnemonic using a different
 --   approach (different from the rest of Cardano).
@@ -357,21 +386,21 @@ Icarus :: key -> Icarus key
 --   calculation of the initial chain code and generation of the root
 --   private key.</li>
 --   </ul>
-unsafeGenerateKeyFromHardwareLedger :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
+unsafeGenerateKeyFromHardwareLedger :: SomeMnemonic -> Icarus  'RootK XPrv
 
 -- | Generate a new key from seed. Note that the <tt>depth</tt> is left
 --   open so that the caller gets to decide what type of key this is. This
 --   is mostly for testing, in practice, seeds are used to represent root
 --   keys, and one should use <tt>generateKeyFromSeed</tt>.
-unsafeGenerateKeyFromSeed :: SomeMnemonic -> ScrubbedBytes -> Icarus depth XPrv
+unsafeGenerateKeyFromSeed :: SomeMnemonic -> Icarus depth XPrv
 
 -- | The minimum seed length for <tt>generateKeyFromSeed</tt> and
 --   <a>unsafeGenerateKeyFromSeed</a>.
 minSeedLengthBytes :: Int
-publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Icarus.Icarus depth key)
+instance GHC.Base.Functor (Cardano.Address.Style.Icarus.Icarus depth)
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Icarus.Icarus depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
@@ -390,32 +419,31 @@ module Cardano.Address.Style.Byron
 -- | Material for deriving HD random scheme keys, which can be used for
 --   making addresses.
 data Byron (depth :: Depth) key
-Byron :: key -> DerivationPath depth -> ScrubbedBytes -> Byron key
-
--- | The raw private or public key.
-[getKey] :: Byron key -> key
-
--- | The address derivation indices for the level of this key.
-[derivationPath] :: Byron key -> DerivationPath depth
 
 -- | Used for encryption of payload containing address derivation path.
-[payloadPassphrase] :: Byron key -> ScrubbedBytes
+payloadPassphrase :: Byron depth key -> ScrubbedBytes
+
+-- | The address derivation indices for the level of this key.
+derivationPath :: Byron depth key -> DerivationPath depth
+
+-- | The raw private or public key.
+getKey :: Byron depth key -> key
 
 -- | Generate a new key from seed. Note that the <tt>depth</tt> is left
 --   open so that the caller gets to decide what type of key this is. This
 --   is mostly for testing, in practice, seeds are used to represent root
 --   keys, and one should use <a>generateKeyFromSeed</a>.
-unsafeGenerateKeyFromSeed :: DerivationPath depth -> SomeMnemonic -> ScrubbedBytes -> Byron depth XPrv
+unsafeGenerateKeyFromSeed :: DerivationPath depth -> SomeMnemonic -> Byron depth XPrv
 
 -- | The amount of entropy carried by a BIP-39 12-word mnemonic is 16
 --   bytes.
 minSeedLengthBytes :: Int
 mkByronKeyFromMasterKey :: XPrv -> Byron  'RootK XPrv
 unsafeMkByronKeyFromMasterKey :: DerivationPath depth -> XPrv -> Byron depth XPrv
-publicKey :: Byron depth XPrv -> Byron depth XPub
 instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.Address.Style.Byron.Byron depth key)
+instance GHC.Base.Functor (Cardano.Address.Style.Byron.Byron depth)
 instance (Control.DeepSeq.NFData key, Control.DeepSeq.NFData (Cardano.Address.Style.Byron.DerivationPath depth)) => Control.DeepSeq.NFData (Cardano.Address.Style.Byron.Byron depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Byron.Byron
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Byron.Byron
