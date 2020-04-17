@@ -12,23 +12,23 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.AddressDerivation.IcarusSpec
+module Cardano.Address.Style.IcarusSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.AddressDerivation
+import Cardano.Address
+    ( NetworkDiscriminant (..), PaymentAddress (..) )
+import Cardano.Address.Derivation
     ( AccountingStyle (..)
     , Depth (..)
     , DerivationType (..)
     , HardDerivation (..)
     , Index (..)
-    , NetworkDiscriminant (..)
-    , PaymentAddress (..)
     , SoftDerivation (..)
     )
-import Cardano.AddressDerivation.Icarus
+import Cardano.Address.Style.Icarus
     ( Icarus (..)
     , minSeedLengthBytes
     , publicKey
@@ -72,6 +72,7 @@ spec = do
             property prop_accountKeyDerivation
         it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i)" $
             property prop_publicChildKeyDerivation
+
     describe "Golden Tests - Icarus' style addresses" $ do
         let seed0 = unsafeMkSomeMnemonicFromEntropy (Proxy @15)
                 "4\175\242L\184\243\191 \169]\171 \207\r\v\233\NUL~&\ETB"
@@ -87,6 +88,7 @@ spec = do
         goldenAddressGeneration $ GoldenAddressGeneration
             seed0 (toEnum 0x8000000E) UTxOInternal (toEnum 0x0000002A)
             "Ae2tdPwUPEZFRbyhz3cpfC2CumGzNkFBN2L42rcUc2yjQpEkxDbkPodpMAi"
+
         let (Right seed1) = mkSomeMnemonic @'[12]
               [ "ghost", "buddy", "neutral", "broccoli", "face", "rack"
               , "relief", "odor", "swallow", "real", "once", "ecology"
@@ -103,6 +105,7 @@ spec = do
         goldenAddressGeneration $ GoldenAddressGeneration
             seed1 (toEnum 0x80000000) UTxOExternal (toEnum 0x00000002)
             "Ae2tdPwUPEZFJtMH1m5HvsaQZrmgLcVcyuk5TxYtdRHZFo8yV7yEnnJyqTs"
+
     describe "Hardware Ledger" $ do
         goldenHardwareLedger @12 (Passphrase mempty)
             [ "struggle", "section", "scissors", "siren", "garbage", "yellow"
