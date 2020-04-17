@@ -41,11 +41,15 @@ module Cardano.AddressDerivation.Byron
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..)
+    ( Address (..)
+    , Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index (..)
+    , NetworkDiscriminant (..)
+    , PaymentAddress (..)
+    , testnetMagic
     )
 import Cardano.Crypto.Wallet
     ( DerivationScheme (DerivationScheme1)
@@ -72,9 +76,10 @@ import Data.ByteString
     ( ByteString )
 import GHC.Generics
     ( Generic )
+import GHC.TypeLits
+    ( KnownNat )
 
-import qualified Codec.CBOR.Encoding as CBOR
-import qualified Codec.CBOR.Write as CBOR
+import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
 
@@ -129,6 +134,26 @@ instance HardDerivation Byron where
         , derivationPath = (derivationPath accXPrv, idx)
         , payloadPassphrase = payloadPassphrase accXPrv
         }
+
+instance KnownNat pm => PaymentAddress ('Testnet pm) Byron where
+    paymentAddress k = Address
+        $ CBOR.toStrictByteString
+        $ CBOR.encodeAddress (getKey k)
+            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+            , CBOR.encodeProtocolMagicAttr (testnetMagic @pm)
+            ]
+      where
+        (acctIx, addrIx) = derivationPath k
+        pwd = payloadPassphrase k
+
+instance PaymentAddress 'Mainnet Byron where
+    paymentAddress k = Address
+        $ CBOR.toStrictByteString
+        $ CBOR.encodeAddress (getKey k)
+            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx ]
+      where
+        (acctIx, addrIx) = derivationPath k
+        pwd = payloadPassphrase k
 
 {-------------------------------------------------------------------------------
                                  Key generation

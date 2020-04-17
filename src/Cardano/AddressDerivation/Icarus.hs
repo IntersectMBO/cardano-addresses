@@ -34,24 +34,32 @@ module Cardano.AddressDerivation.Icarus
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
 
+      -- * Helpers
+    , publicKey
     ) where
 
 import Prelude
 
 import Cardano.AddressDerivation
-    ( Depth (..)
+    ( Address (..)
+    , Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index (..)
+    , NetworkDiscriminant (..)
+    , PaymentAddress (..)
     , SoftDerivation (..)
+    , testnetMagic
     )
 import Cardano.Crypto.Wallet
     ( DerivationScheme (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , toXPub
     , xPrvChangePass
     , xprv
     )
@@ -83,7 +91,10 @@ import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
+import GHC.TypeLits
+    ( KnownNat )
 
+import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.ECC.Edwards25519 as Ed25519
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
@@ -154,6 +165,18 @@ instance SoftDerivation Icarus where
             \index for soft path derivation ( " ++ show addrIx ++ "). This is \
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
+
+instance PaymentAddress 'Mainnet Icarus where
+    paymentAddress k = Address
+        $ CBOR.toStrictByteString
+        $ CBOR.encodeAddress (getKey k) []
+
+instance KnownNat pm => PaymentAddress ('Testnet pm) Icarus where
+    paymentAddress k = Address
+        $ CBOR.toStrictByteString
+        $ CBOR.encodeAddress (getKey k)
+            [ CBOR.encodeProtocolMagicAttr (testnetMagic @pm)
+            ]
 
 {-------------------------------------------------------------------------------
                                  Key generation
@@ -321,3 +344,6 @@ unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd =
             (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
             seed
     in Icarus $ generateNew seedValidated (mempty :: ByteString) pwd
+
+publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
+publicKey (Icarus k) = Icarus $ toXPub k
