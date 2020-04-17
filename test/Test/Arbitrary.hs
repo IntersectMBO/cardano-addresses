@@ -10,9 +10,7 @@
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Test.Arbitrary
-    (
-      genMnemonic
-    , unsafeMkMnemonic
+    ( unsafeMkMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
     ) where
