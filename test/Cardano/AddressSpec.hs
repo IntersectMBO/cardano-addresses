@@ -29,15 +29,14 @@ import Data.Function
     ( (&) )
 import Data.Text
     ( Text )
+import Test.Arbitrary
+    ()
 import Test.Hspec
     ( Spec, describe )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
     ( Property, counterexample, label )
-
-import Test.Arbitrary
-    ()
 
 import qualified Data.Text as T
 
@@ -55,8 +54,8 @@ spec = describe "Text Encoding Roundtrips" $ do
     prop "bech32 . fromBech32 - Icarus" $
         prop_roundtripTextEncoding @Icarus bech32 fromBech32
 
--- Ensure that any address public key can be encoded to an address and that
--- address can be encoded and decoded without issue.
+-- Ensure that any address public key can be encoded to an address and that the
+-- address can be encoded and decoded without issues.
 prop_roundtripTextEncoding
     :: PaymentAddress k
     => (Address -> Text)
@@ -68,7 +67,7 @@ prop_roundtripTextEncoding
     -> NetworkDiscriminant
         -- ^ An arbitrary network discriminant
     -> Property
-prop_roundtripTextEncoding encode decode pub discrimination =
+prop_roundtripTextEncoding encode decode addXPub discrimination =
     (result == pure address)
         & counterexample (unlines
             [ "Address " <> T.unpack (encode address)
@@ -76,7 +75,7 @@ prop_roundtripTextEncoding encode decode pub discrimination =
             ])
         & label (constructor discrimination)
   where
-    address = paymentAddress discrimination pub
+    address = paymentAddress discrimination addXPub
     result  = decode (encode address)
     constructor = \case
         RequiresMagic{} -> "RequiresMagic"
