@@ -43,8 +43,6 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
-import Data.ByteArray
-    ( ByteArrayAccess )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
@@ -67,7 +65,6 @@ import qualified Data.Text.Encoding as T
 newtype Address = Address
     { unAddress :: ByteString
     } deriving stock (Generic, Show, Eq, Ord)
-      deriving newtype (ByteArrayAccess)
 instance NFData Address
 
 -- Unsafe constructor for easily lifting bytes inside an 'Address'.
@@ -158,7 +155,7 @@ testnetDiscriminant = RequiresMagic testnetMagic
 --
 -- @since 1.0.0
 newtype ProtocolMagic
-    = ProtocolMagic { getProtocolMagic :: Word32 }
+    = ProtocolMagic Word32
     deriving (Generic, Show, Eq)
 instance NFData ProtocolMagic
 
