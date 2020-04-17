@@ -1,0 +1,69 @@
+name:                cardano-addresses
+version:             1.0.0
+github:              input-output-hk/cardano-addresses
+license:             Apache-2.0
+author:              IOHK
+maintainer:          operations@iohk.io
+copyright:           2020 IOHK
+synopsis:            Library utilities for mnemonic generation and address derivation.
+category:            Cardano
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+description: |
+  Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  ghc-options:
+  - -Werror
+  - -Wall
+  - -Wcompat
+  - -fwarn-redundant-constraints
+  default-extensions:
+  - NoImplicitPrelude
+  dependencies:
+  - base58-bytestring
+  - basement
+  - bech32
+  - bech32-th
+  - bytestring
+  - cardano-crypto
+  - cborg
+  - cryptonite
+  - deepseq
+  - digest
+  - exceptions
+  - extra
+  - fmt
+  - memory
+  - text
+  - transformers
+
+tests:
+  unit:
+    source-dirs: test
+    main: Main.hs
+    default-extensions:
+    - NoImplicitPrelude
+    ghc-options:
+    - -Werror
+    - -Wall
+    - -Wcompat
+    - -fwarn-redundant-constraints
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - bytestring
+    - cardano-addresses
+    - cardano-crypto
+    - hspec
+    - memory
+    - QuickCheck
+    - text
