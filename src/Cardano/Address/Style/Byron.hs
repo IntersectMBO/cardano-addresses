@@ -36,7 +36,7 @@ module Cardano.Address.Style.Byron
 import Prelude
 
 import Cardano.Address
-    ( Address (..), NetworkDiscriminant (..), PaymentAddress (..) )
+    ( NetworkDiscriminant (..), PaymentAddress (..), unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -127,7 +127,7 @@ instance HardDerivation Byron where
         }
 
 instance PaymentAddress Byron where
-    paymentAddress discrimination k = Address
+    paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where

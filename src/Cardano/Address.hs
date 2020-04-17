@@ -1,13 +1,18 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# OPTIONS_HADDOCK prune #-}
+
 module Cardano.Address
     ( -- * Address
-      Address (..)
+      Address
     , PaymentAddress (..)
+    , unsafeMkAddress
 
       -- * Conversion To Text
     , base58
@@ -34,6 +39,8 @@ import Cardano.Crypto.Wallet
     ( XPub )
 import Control.DeepSeq
     ( NFData )
+import Data.ByteArray
+    ( ByteArrayAccess )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
@@ -49,11 +56,19 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Data.Text.Encoding as T
 
--- | Address is mere wrapper around a ByteString and represents an encoded address.
+-- | An 'Address' type representing 'Cardano' addresses. Internals are
+-- irrevelant to the user.
 newtype Address = Address
     { unAddress :: ByteString
-    } deriving (Generic, Show, Eq, Ord)
+    } deriving stock (Generic, Show, Eq, Ord)
+      deriving newtype (ByteArrayAccess)
 instance NFData Address
+
+-- Unsafe constructor for easily lifting bytes inside an 'Address'.
+--
+-- /!\ Use at your own risks.
+unsafeMkAddress :: ByteString -> Address
+unsafeMkAddress = Address
 
 -- | Encode an address to base58.
 base58 :: Address -> Text

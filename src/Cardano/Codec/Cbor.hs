@@ -6,6 +6,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_HADDOCK hide #-}
+
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
@@ -42,7 +44,7 @@ module Cardano.Codec.Cbor
 import Prelude
 
 import Cardano.Address
-    ( Address (..), ProtocolMagic (..) )
+    ( Address, ProtocolMagic (..), unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..), DerivationType (..), Index (..) )
 import Cardano.Crypto.Wallet
@@ -266,7 +268,7 @@ decodeAddress = do
     --
     -- NOTE 2:
     -- We may want to check the CRC at this level as-well... maybe not.
-    return $ Address $ CBOR.toStrictByteString $ mempty
+    return $ unsafeMkAddress $ CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 2
         <> CBOR.encodeTag tag
         <> CBOR.encodeBytes bytes

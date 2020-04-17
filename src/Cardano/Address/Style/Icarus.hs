@@ -33,7 +33,7 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( Address (..), NetworkDiscriminant (..), PaymentAddress (..) )
+    ( NetworkDiscriminant (..), PaymentAddress (..), unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -155,7 +155,7 @@ instance SoftDerivation Icarus where
             \number of addresses for a given wallet."
 
 instance PaymentAddress Icarus where
-    paymentAddress discrimination k = Address
+    paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
