@@ -1,18 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE RoleAnnotations #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 -- |
 -- Copyright: © 2018-2020 IOHK
@@ -41,11 +33,7 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( Address (..)
-    , NetworkDiscriminant (..)
-    , PaymentAddress (..)
-    , testnetMagic
-    )
+    ( Address (..), NetworkDiscriminant (..), PaymentAddress (..) )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -93,8 +81,6 @@ import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
-import GHC.TypeLits
-    ( KnownNat )
 
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.ECC.Edwards25519 as Ed25519
@@ -168,17 +154,14 @@ instance SoftDerivation Icarus where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance PaymentAddress 'Mainnet Icarus where
-    paymentAddress k = Address
+instance PaymentAddress Icarus where
+    paymentAddress discrimination k = Address
         $ CBOR.toStrictByteString
-        $ CBOR.encodeAddress (getKey k) []
-
-instance KnownNat pm => PaymentAddress ('Testnet pm) Icarus where
-    paymentAddress k = Address
-        $ CBOR.toStrictByteString
-        $ CBOR.encodeAddress (getKey k)
-            [ CBOR.encodeProtocolMagicAttr (testnetMagic @pm)
-            ]
+        $ CBOR.encodeAddress (getKey k) attrs
+      where
+        attrs = case discrimination of
+            RequiresNoMagic  -> []
+            RequiresMagic pm -> [CBOR.encodeProtocolMagicAttr pm]
 
 {-------------------------------------------------------------------------------
                                  Key generation

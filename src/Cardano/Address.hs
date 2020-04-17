@@ -1,10 +1,6 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Cardano.Address
     ( -- * Address
@@ -13,8 +9,14 @@ module Cardano.Address
 
       -- * Network Discrimination
     , NetworkDiscriminant (..)
+    , mainnetDiscriminant
+    , stagingDiscriminant
+    , testnetDiscriminant
+
+      -- * Protocol Magic
     , ProtocolMagic (..)
     , mainnetMagic
+    , stagingMagic
     , testnetMagic
     ) where
 
@@ -28,42 +30,63 @@ import Control.DeepSeq
     ( NFData )
 import Data.ByteString
     ( ByteString )
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
-import GHC.TypeLits
-    ( KnownNat, Nat, natVal )
 
 -- | Address is mere wrapper around a ByteString and represents an encoded address.
 newtype Address = Address
     { unAddress :: ByteString
-    } deriving (Show, Generic, Eq, Ord)
+    } deriving (Generic, Show, Eq, Ord)
+instance NFData Address
 
 -- | Encoding of addresses for certain key types and backend targets.
-class PaymentAddress (network :: NetworkDiscriminant) key where
+class PaymentAddress key where
     -- | Convert a public key to a payment 'Address' valid for the given
     -- network discrimination.
     --
     -- Note that 'paymentAddress' is ambiguous and requires therefore a type
     -- application.
-    paymentAddress :: key 'AddressK XPub -> Address
-
-instance NFData Address
+    paymentAddress :: NetworkDiscriminant -> key 'AddressK XPub -> Address
 
 -- | Available network options.
-data NetworkDiscriminant = Mainnet | Testnet Nat
-
--- | Magic constant associated to a given network
-newtype ProtocolMagic = ProtocolMagic { getProtocolMagic :: Word32 }
+data NetworkDiscriminant
+    = RequiresNoMagic
+    | RequiresMagic ProtocolMagic
     deriving (Generic, Show, Eq)
+instance NFData NetworkDiscriminant
 
--- | Hard-coded protocol magic for the Byron MainNet
+-- | Required network discrimination settings for mainnet
+mainnetDiscriminant :: NetworkDiscriminant
+mainnetDiscriminant = RequiresNoMagic
+
+-- | Required network discrimination settings for staging
+stagingDiscriminant :: NetworkDiscriminant
+stagingDiscriminant = RequiresNoMagic
+
+-- | Required network discrimination settings for testnet
+testnetDiscriminant :: NetworkDiscriminant
+testnetDiscriminant = RequiresMagic testnetMagic
+
+-- | Magic constant associated to a given network. This is mainly use in two
+-- places:
+--
+-- a) In 'Address' payloads, to discriminate addresses between networks.
+-- b) At the network-level, when doing handshake with nodes.
+newtype ProtocolMagic
+    = ProtocolMagic { getProtocolMagic :: Word32 }
+    deriving (Generic, Show, Eq)
+instance NFData ProtocolMagic
+
+-- | Hard-coded 'ProtocolMagic' for Cardano MainNet
 mainnetMagic :: ProtocolMagic
 mainnetMagic =  ProtocolMagic 764824073
 
--- | Derive testnet magic from a type-level Nat
-testnetMagic :: forall pm. KnownNat pm => ProtocolMagic
-testnetMagic = ProtocolMagic $ fromIntegral $ natVal $ Proxy @pm
+-- | Hard-coded 'ProtocolMagic' for Cardano Staging
+stagingMagic :: ProtocolMagic
+stagingMagic = ProtocolMagic 633343913
+
+-- | Hard-coded 'ProtocolMagic' for Cardano standard TestNet
+testnetMagic :: ProtocolMagic
+testnetMagic = ProtocolMagic 1097911063

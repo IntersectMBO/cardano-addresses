@@ -19,7 +19,7 @@ module Cardano.Address.Style.IcarusSpec
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..), PaymentAddress (..) )
+    ( PaymentAddress (..), mainnetDiscriminant )
 import Cardano.Address.Derivation
     ( AccountingStyle (..)
     , Depth (..)
@@ -243,7 +243,8 @@ goldenAddressGeneration test = it title $ do
     let rootXPrv = unsafeGenerateKeyFromSeed goldSeed encPwd
     let acctXPrv = deriveAccountPrivateKey encPwd rootXPrv goldAcctIx
     let addrXPrv = deriveAddressPrivateKey encPwd acctXPrv goldAcctStyle goldAddrIx
-    base58 (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` goldAddr
+    base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+        `shouldBe` goldAddr
   where
     GoldenAddressGeneration
         { goldSeed
@@ -292,7 +293,8 @@ goldenHardwareLedger (Passphrase encPwd) sentence addrs =
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
-            addressToText (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` addr
+            addressToText (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+                `shouldBe` addr
   where
     title = T.unpack
         $ T.unwords
