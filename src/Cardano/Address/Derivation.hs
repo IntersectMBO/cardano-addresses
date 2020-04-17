@@ -25,7 +25,7 @@ module Cardano.Address.Derivation
     , HardDerivation (..)
     , SoftDerivation (..)
 
-    -- * Low-Level Cryptography
+    -- * Low-Level Cryptography Primitives
     -- ** XPub
     , XPub
     , xpubFromBytes
@@ -86,7 +86,7 @@ import qualified Crypto.ECC.Edwards25519 as Ed25519
 -- and then basing on it enable address derivation
 
 --
--- Low-Level Cryptography
+-- Low-Level Cryptography Primitives
 --
 
 -- | An opaque type representing an extended private key.
@@ -204,6 +204,8 @@ deriveXPub ds pub (Index ix) =
 -- Generate an XPrv using the legacy method (Byron).
 --
 -- The seed needs to be at least 32 bytes, otherwise an asynchronous error is thrown.
+--
+-- __internal__
 generate
     :: ByteArrayAccess seed
     => seed
@@ -214,6 +216,8 @@ generate seed =
 -- Generate an XPrv using the new method (Icarus).
 --
 -- The seed needs to be at least 16 bytes.
+--
+-- __internal__
 generateNew
     :: (ByteArrayAccess seed, ByteArrayAccess sndFactor)
     => seed
@@ -228,10 +232,15 @@ generateNew seed sndFactor =
 
 -- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
 --
--- @m | purpose' | cointype' | account' | change | address@
+-- @
+-- root | purpose' | cointype' | account' | change | address@
+-- 0th      1st         2nd        3rd        4th      5th
+-- @
 --
--- We do not manipulate purpose, cointype and change paths directly, so they are
--- left out of the sum type.
+-- We do not manipulate purpose, cointype and change paths directly, so there
+-- are no constructors for these.
+--
+-- @since 1.0.0
 data Depth = RootK | AccountK | AddressK
 
 -- | Marker for addresses type engaged. We want to handle three cases here.
@@ -270,25 +279,27 @@ instance Enum AccountingStyle where
 -- let accountIx = Index 'Hardened 'AccountK
 -- let addressIx = Index 'Soft 'AddressK
 -- @
-newtype Index (derivationType :: DerivationType) (level :: Depth) = Index
+--
+-- @since 1.0.0
+newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
     { getIndex :: Word32 }
     deriving stock (Generic, Show, Eq, Ord)
 
-instance NFData (Index derivationType level)
+instance NFData (Index derivationType depth)
 
-instance Bounded (Index 'Hardened level) where
+instance Bounded (Index 'Hardened depth) where
     minBound = Index 0x80000000
     maxBound = Index maxBound
 
-instance Bounded (Index 'Soft level) where
+instance Bounded (Index 'Soft depth) where
     minBound = Index minBound
     maxBound = let (Index ix) = minBound @(Index 'Hardened _) in Index (ix - 1)
 
-instance Bounded (Index 'WholeDomain level) where
+instance Bounded (Index 'WholeDomain depth) where
     minBound = Index minBound
     maxBound = Index maxBound
 
-instance Enum (Index 'Hardened level) where
+instance Enum (Index 'Hardened depth) where
     fromEnum (Index ix) = fromIntegral ix
     toEnum ix
         | Index (fromIntegral ix) < minBound @(Index 'Hardened _) =
@@ -296,7 +307,7 @@ instance Enum (Index 'Hardened level) where
         | otherwise =
             Index (fromIntegral ix)
 
-instance Enum (Index 'Soft level) where
+instance Enum (Index 'Soft depth) where
     fromEnum (Index ix) = fromIntegral ix
     toEnum ix
         | Index (fromIntegral ix) > maxBound @(Index 'Soft _) =
@@ -304,7 +315,7 @@ instance Enum (Index 'Soft level) where
         | otherwise =
             Index (fromIntegral ix)
 
-instance Enum (Index 'WholeDomain level) where
+instance Enum (Index 'WholeDomain depth) where
     fromEnum (Index ix) = fromIntegral ix
     toEnum ix
         | Index (fromIntegral ix) > maxBound @(Index 'WholeDomain _) =
@@ -312,7 +323,7 @@ instance Enum (Index 'WholeDomain level) where
         | otherwise =
             Index (fromIntegral ix)
 
-instance Buildable (Index derivationType level) where
+instance Buildable (Index derivationType depth) where
     build (Index ix) = fromString (show ix)
 
 
@@ -320,12 +331,16 @@ instance Buildable (Index derivationType level) where
 --
 -- In theory, we should only consider two derivation types: soft and hard.
 --
--- However, historically, addresses in Cardano used to be generated across the
--- both soft and hard domain. We therefore introduce a 'WholeDomain' derivation
+-- However, historically, addresses in Cardano used to be generated across both
+-- the soft and the hard domain. We therefore introduce a 'WholeDomain' derivation
 -- type that is the exact union of `Hardened` and `Soft`.
+--
+-- @since 1.0.0
 data DerivationType = Hardened | Soft | WholeDomain
 
 -- | An interface for doing hard derivations from the root private key, /Master Key/
+--
+-- @since 1.0.0
 class HardDerivation (key :: Depth -> * -> *) where
     type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
@@ -333,6 +348,8 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
     -- package for more details).
+    --
+    -- @since 1.0.0
     deriveAccountPrivateKey
         :: key 'RootK XPrv
         -> Index (AccountIndexDerivationType key) 'AccountK
@@ -341,6 +358,8 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- | Derives address private key from the given account private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
     -- package for more details).
+    --
+    -- @since 1.0.0
     deriveAddressPrivateKey
         :: key 'AccountK XPrv
         -> AccountingStyle
@@ -354,6 +373,8 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
     -- package for more details).
     --
     -- This is the preferred way of deriving new sequential address public keys.
+    --
+    -- @since 1.0.0
     deriveAddressPublicKey
         :: key 'AccountK XPub
         -> AccountingStyle
@@ -362,10 +383,14 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
 
 
 -- | Abstract interface for constructing a /Master Key/.
+--
+-- @since 1.0.0
 class GenMasterKey (key :: Depth -> * -> *) where
     type GenMasterKeyFrom key :: *
 
     -- | Generate a root key from a corresponding seed.
+    --
+    -- @since 1.0.0
     genMasterKey :: GenMasterKeyFrom key -> key 'RootK XPrv
 
 
