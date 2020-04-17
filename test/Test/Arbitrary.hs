@@ -142,6 +142,10 @@ instance Arbitrary XPrv where
         , generate . BS.pack <$> vector 32
         ]
 
+instance Arbitrary XPub where
+    arbitrary =
+        toXPub <$> arbitrary
+
 instance Arbitrary AccountingStyle where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
