@@ -33,7 +33,11 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..), PaymentAddress (..), unsafeMkAddress )
+    ( NetworkDiscriminant (..)
+    , PaymentAddress (..)
+    , ProtocolMagic (..)
+    , unsafeMkAddress
+    )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -161,7 +165,9 @@ instance PaymentAddress Icarus where
       where
         attrs = case discrimination of
             RequiresNoMagic  -> []
-            RequiresMagic pm -> [CBOR.encodeProtocolMagicAttr pm]
+            RequiresMagic (ProtocolMagic pm) ->
+                [ CBOR.encodeProtocolMagicAttr pm
+                ]
 
 {-------------------------------------------------------------------------------
                                  Key generation

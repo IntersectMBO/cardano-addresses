@@ -36,7 +36,11 @@ module Cardano.Address.Style.Byron
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..), PaymentAddress (..), unsafeMkAddress )
+    ( NetworkDiscriminant (..)
+    , PaymentAddress (..)
+    , ProtocolMagic (..)
+    , unsafeMkAddress
+    )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -63,10 +67,14 @@ import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
     ( Blake2b_256, SHA512 (..) )
+import Data.Bifunctor
+    ( bimap )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Word
+    ( Word32 )
 import GHC.Generics
     ( Generic )
 
@@ -131,13 +139,13 @@ instance PaymentAddress Byron where
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        (acctIx, addrIx) = derivationPath k
+        (acctIx, addrIx) = bimap word32 word32 $ derivationPath k
         pwd = payloadPassphrase k
         attrs = case discrimination of
             RequiresNoMagic ->
                 [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
                 ]
-            RequiresMagic pm ->
+            RequiresMagic (ProtocolMagic pm) ->
                 [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
                 , CBOR.encodeProtocolMagicAttr pm
                 ]
@@ -227,3 +235,10 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
     , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
+
+--
+-- Internal
+--
+
+word32 :: Enum a => a -> Word32
+word32 = fromIntegral . fromEnum
