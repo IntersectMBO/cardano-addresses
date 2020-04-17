@@ -18,13 +18,11 @@ import Cardano.Address
     , fromBech32
     )
 import Cardano.Address.Derivation
-    ( Depth (..) )
+    ( Depth (..), XPub )
 import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
-import Cardano.Crypto.Wallet
-    ( XPub )
 import Data.Function
     ( (&) )
 import Data.Text

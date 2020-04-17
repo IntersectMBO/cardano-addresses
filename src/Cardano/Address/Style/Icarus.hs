@@ -1,8 +1,10 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -19,15 +21,13 @@
 
 module Cardano.Address.Style.Icarus
     ( -- * Types
-      Icarus (..)
+      Icarus
+    , getKey
 
       -- * Generation
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
-
-      -- * Helpers
-    , publicKey
     ) where
 
 import Prelude
@@ -40,33 +40,26 @@ import Cardano.Address
     )
 import Cardano.Address.Derivation
     ( Depth (..)
+    , DerivationScheme (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index (..)
+    , Index
     , SoftDerivation (..)
-    )
-import Cardano.Crypto.Wallet
-    ( DerivationScheme (..)
     , XPrv
-    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , toXPub
-    , xPrvChangePass
-    , xprv
+    , xprvFromBytes
     )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Control.Arrow
-    ( first, left )
+    ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
-import Crypto.Error
-    ( eitherCryptoError )
 import Crypto.Hash.Algorithms
     ( SHA256 (..), SHA512 (..) )
 import Crypto.MAC.HMAC
@@ -87,7 +80,6 @@ import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Codec.Cbor as CBOR
-import qualified Crypto.ECC.Edwards25519 as Ed25519
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -109,6 +101,7 @@ newtype Icarus (depth :: Depth) key =
     Icarus { getKey :: key }
     deriving stock (Generic, Show, Eq)
 
+deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
 instance GenMasterKey Icarus where
@@ -120,32 +113,36 @@ instance HardDerivation Icarus where
     type AccountIndexDerivationType Icarus = 'Hardened
     type AddressIndexDerivationType Icarus = 'Soft
 
-    deriveAccountPrivateKey pwd (Icarus rootXPrv) (Index accIx) =
+    deriveAccountPrivateKey (Icarus rootXPrv) accIx =
         let
+            purposeIx =
+                toEnum @(Index 'Hardened _) $ fromEnum purposeIndex
+            coinTypeIx =
+                toEnum @(Index 'Hardened _) $ fromEnum coinTypeIndex
             purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
-                deriveXPrv DerivationScheme2 pwd rootXPrv purposeIndex
+                deriveXPrv DerivationScheme2 rootXPrv purposeIx
             coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
-                deriveXPrv DerivationScheme2 pwd purposeXPrv coinTypeIndex
+                deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
             acctXPrv = -- lvl3 derivation; hardened derivation of account' index
-                deriveXPrv DerivationScheme2 pwd coinTypeXPrv accIx
+                deriveXPrv DerivationScheme2 coinTypeXPrv accIx
         in
             Icarus acctXPrv
 
-    deriveAddressPrivateKey pwd (Icarus accXPrv) accountingStyle (Index addrIx) =
+    deriveAddressPrivateKey (Icarus accXPrv) accountingStyle addrIx =
         let
             changeCode =
-                fromIntegral $ fromEnum accountingStyle
+                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 pwd accXPrv changeCode
+                deriveXPrv DerivationScheme2 accXPrv changeCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 pwd changeXPrv addrIx
+                deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
             Icarus addrXPrv
 
 instance SoftDerivation Icarus where
-    deriveAddressPublicKey (Icarus accXPub) accountingStyle (Index addrIx) =
+    deriveAddressPublicKey (Icarus accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = fromIntegral $ fromEnum accountingStyle
+            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
                 deriveXPub DerivationScheme2 accXPub changeCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
@@ -216,10 +213,8 @@ minSeedLengthBytes = 16
 unsafeGenerateKeyFromHardwareLedger
     :: SomeMnemonic
         -- ^ The root mnemonic
-    -> ScrubbedBytes
-        -- ^ Master encryption passphrase
     -> Icarus 'RootK XPrv
-unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
+unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
     let seed = pbkdf2HmacSha512
             $ T.encodeUtf8
             $ T.intercalate " "
@@ -231,10 +226,9 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
     -- of the root private key itself.
     let cc = hmacSha256 (BS.pack [1] <> seed)
     let (iL, iR) = first pruneBuffer $ hashRepeatedly seed
-    pA <- ed25519ScalarMult iL
 
-    prv <- left show $ xprv $ iL <> iR <> pA <> cc
-    pure $ Icarus (xPrvChangePass (mempty :: ByteString) pwd prv)
+    prv <- maybe (Left "invalid xprv") pure $ xprvFromBytes $ iL <> iR <> cc
+    pure $ Icarus prv
   where
     -- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are
     -- programmer errors (out-of-range byte buffer access or, invalid length for
@@ -293,11 +287,6 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
         in
             (firstPruned `BS.cons` BS.snoc rest' lastPruned)
 
-    ed25519ScalarMult :: ByteString -> Either String ByteString
-    ed25519ScalarMult bytes = do
-        scalar <- left show $ eitherCryptoError $ Ed25519.scalarDecodeLong bytes
-        pure $ Ed25519.pointEncode $ Ed25519.toPoint scalar
-
     -- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)
     pbkdf2HmacSha512 :: ByteString -> ByteString
     pbkdf2HmacSha512 bytes = PBKDF2.generate
@@ -325,16 +314,11 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) pwd = unsafeFromRight $ do
 unsafeGenerateKeyFromSeed
     :: SomeMnemonic
         -- ^ The root mnemonic
-    -> ScrubbedBytes
-        -- ^ Master encryption passphrase
     -> Icarus depth XPrv
-unsafeGenerateKeyFromSeed (SomeMnemonic mw) pwd =
+unsafeGenerateKeyFromSeed (SomeMnemonic mw) =
     let
         seed  = entropyToBytes $ mnemonicToEntropy mw
         seedValidated = assert
             (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
             seed
-    in Icarus $ generateNew seedValidated (mempty :: ByteString) pwd
-
-publicKey :: Icarus depth1 XPrv -> Icarus depth2 XPub
-publicKey (Icarus k) = Icarus $ toXPub k
+    in Icarus $ generateNew seedValidated (mempty :: ScrubbedBytes)

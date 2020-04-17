@@ -44,6 +44,7 @@
   - {name: [Data.Set, Data.HashSet], as: Set}
   - {name: [Data.Text, Data.Text.Encoding], as: T}
   - {name: [Data.Vector], as: V}
+  - {name: Cardano.Crypto.Wallet, within: [Cardano.Address.Derivation,Cardano.Codec.Cbor]} # Import wrapped types & methods from 'Cardano.Address.Derivation' instead
 
 # Ignore some build-in rules
 - ignore: {name: "Reduce duplication"} # This is a decision left to developers and reviewers

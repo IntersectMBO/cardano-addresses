@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,16 +24,16 @@
 
 module Cardano.Address.Style.Byron
     ( -- * Types
-      Byron(..)
+      Byron
+    , payloadPassphrase
+    , derivationPath
+    , getKey
 
       -- * Generation
     , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
     , mkByronKeyFromMasterKey
     , unsafeMkByronKeyFromMasterKey
-
-      -- * Temporary
-    , publicKey
     ) where
 
 import Prelude
@@ -45,19 +46,17 @@ import Cardano.Address
     )
 import Cardano.Address.Derivation
     ( Depth (..)
+    , DerivationScheme (DerivationScheme1)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index (..)
-    )
-import Cardano.Crypto.Wallet
-    ( DerivationScheme (DerivationScheme1)
+    , Index
     , XPrv
     , XPub
     , deriveXPrv
     , generate
     , toXPub
-    , unXPub
+    , xpubToBytes
     )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
@@ -102,6 +101,7 @@ data Byron (depth :: Depth) key = Byron
 instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
 deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
 deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
+deriving instance (Functor (Byron depth))
 
 -- | The hierarchical derivation indices for a given level/depth.
 type family DerivationPath (depth :: Depth) :: * where
@@ -124,15 +124,15 @@ instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
 
-    deriveAccountPrivateKey pwd rootXPrv idx@(Index accIx) = Byron
-        { getKey = deriveXPrv DerivationScheme1 pwd (getKey rootXPrv) accIx
-        , derivationPath = idx
+    deriveAccountPrivateKey rootXPrv accIx = Byron
+        { getKey = deriveXPrv DerivationScheme1 (getKey rootXPrv) accIx
+        , derivationPath = accIx
         , payloadPassphrase = payloadPassphrase rootXPrv
         }
 
-    deriveAddressPrivateKey pwd accXPrv _accStyle idx@(Index addrIx) = Byron
-        { getKey = deriveXPrv DerivationScheme1 pwd (getKey accXPrv) addrIx
-        , derivationPath = (derivationPath accXPrv, idx)
+    deriveAddressPrivateKey accXPrv _accStyle addrIx = Byron
+        { getKey = deriveXPrv DerivationScheme1 (getKey accXPrv) addrIx
+        , derivationPath = (derivationPath accXPrv, addrIx)
         , payloadPassphrase = payloadPassphrase accXPrv
         }
 
@@ -164,7 +164,6 @@ minSeedLengthBytes = 16
 -- The seed should be at least 16 bytes.
 generateKeyFromSeed
     :: SomeMnemonic
-    -> ScrubbedBytes
     -> Byron 'RootK XPrv
 generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
 
@@ -175,15 +174,14 @@ generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
 unsafeGenerateKeyFromSeed
     :: DerivationPath depth
     -> SomeMnemonic
-    -> ScrubbedBytes
     -> Byron depth XPrv
-unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) pwd = Byron
+unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) = Byron
     { getKey = masterKey
     , derivationPath
     , payloadPassphrase = hdPassphrase (toXPub masterKey)
     }
   where
-    masterKey = generate (hashSeed seedValidated) pwd
+    masterKey = generate (hashSeed seedValidated)
     seed  = entropyToBytes $ mnemonicToEntropy mw
     seedValidated = assert
         (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
@@ -220,13 +218,14 @@ hdPassphrase masterKey =
     PBKDF2.generate
     (PBKDF2.prfHMAC SHA512)
     (PBKDF2.Parameters 500 32)
-    (unXPub masterKey)
+    (xpubToBytes masterKey)
     ("address-hashing" :: ByteString)
 
 mkByronKeyFromMasterKey
     :: XPrv
     -> Byron 'RootK XPrv
-mkByronKeyFromMasterKey = unsafeMkByronKeyFromMasterKey ()
+mkByronKeyFromMasterKey =
+    unsafeMkByronKeyFromMasterKey ()
 
 unsafeMkByronKeyFromMasterKey
     :: DerivationPath depth
@@ -241,14 +240,6 @@ unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
 --
 -- Internal
 --
-
--- Temporary, we should really make 'Byron' a 'Functor'
-publicKey :: Byron depth XPrv -> Byron depth XPub
-publicKey Byron{getKey,derivationPath,payloadPassphrase} = Byron
-    { getKey = toXPub getKey
-    , derivationPath
-    , payloadPassphrase
-    }
 
 word32 :: Enum a => a -> Word32
 word32 = fromIntegral . fromEnum
