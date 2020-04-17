@@ -19,7 +19,7 @@ module Cardano.Address.Style.IcarusSpec
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..), PaymentAddress (..) )
+    ( PaymentAddress (..), base58, mainnetDiscriminant )
 import Cardano.Address.Derivation
     ( AccountingStyle (..)
     , Depth (..)
@@ -35,8 +35,6 @@ import Cardano.Address.Style.Icarus
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     )
-import Cardano.Codec.Cbor
-    ( addressToText )
 import Cardano.Crypto.Wallet
     ( XPrv )
 import Cardano.Mnemonic
@@ -230,7 +228,7 @@ data GoldenAddressGeneration = GoldenAddressGeneration
     , goldAcctIx :: Index 'Hardened 'AccountK
     , goldAcctStyle :: AccountingStyle
     , goldAddrIx :: Index 'Soft 'AddressK
-    , goldAddr :: String
+    , goldAddr :: Text
     }
 
 -- | Compare addresses obtained from a given derivation path and a root seed to
@@ -243,7 +241,8 @@ goldenAddressGeneration test = it title $ do
     let rootXPrv = unsafeGenerateKeyFromSeed goldSeed encPwd
     let acctXPrv = deriveAccountPrivateKey encPwd rootXPrv goldAcctIx
     let addrXPrv = deriveAddressPrivateKey encPwd acctXPrv goldAcctStyle goldAddrIx
-    base58 (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` goldAddr
+    base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+        `shouldBe` goldAddr
   where
     GoldenAddressGeneration
         { goldSeed
@@ -256,10 +255,8 @@ goldenAddressGeneration test = it title $ do
     title = unwords
         [ fmtPath goldAcctIx goldAcctStyle goldAddrIx
         , "-->"
-        , goldAddr
+        , T.unpack goldAddr
         ]
-
-    base58 = T.unpack . addressToText
 
     -- e.g. m/.../0'/0/0
     fmtPath p3 p4 p5 = mconcat
@@ -292,7 +289,8 @@ goldenHardwareLedger (Passphrase encPwd) sentence addrs =
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
-            addressToText (paymentAddress @'Mainnet $ publicKey addrXPrv) `shouldBe` addr
+            base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
+                `shouldBe` addr
   where
     title = T.unpack
         $ T.unwords

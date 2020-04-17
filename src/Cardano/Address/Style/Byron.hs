@@ -2,18 +2,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE RoleAnnotations #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- |
@@ -42,11 +36,7 @@ module Cardano.Address.Style.Byron
 import Prelude
 
 import Cardano.Address
-    ( Address (..)
-    , NetworkDiscriminant (..)
-    , PaymentAddress (..)
-    , testnetMagic
-    )
+    ( Address (..), NetworkDiscriminant (..), PaymentAddress (..) )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -79,8 +69,6 @@ import Data.ByteString
     ( ByteString )
 import GHC.Generics
     ( Generic )
-import GHC.TypeLits
-    ( KnownNat )
 
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
@@ -138,25 +126,21 @@ instance HardDerivation Byron where
         , payloadPassphrase = payloadPassphrase accXPrv
         }
 
-instance KnownNat pm => PaymentAddress ('Testnet pm) Byron where
-    paymentAddress k = Address
+instance PaymentAddress Byron where
+    paymentAddress discrimination k = Address
         $ CBOR.toStrictByteString
-        $ CBOR.encodeAddress (getKey k)
-            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
-            , CBOR.encodeProtocolMagicAttr (testnetMagic @pm)
-            ]
+        $ CBOR.encodeAddress (getKey k) attrs
       where
         (acctIx, addrIx) = derivationPath k
         pwd = payloadPassphrase k
-
-instance PaymentAddress 'Mainnet Byron where
-    paymentAddress k = Address
-        $ CBOR.toStrictByteString
-        $ CBOR.encodeAddress (getKey k)
-            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx ]
-      where
-        (acctIx, addrIx) = derivationPath k
-        pwd = payloadPassphrase k
+        attrs = case discrimination of
+            RequiresNoMagic ->
+                [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+                ]
+            RequiresMagic pm ->
+                [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+                , CBOR.encodeProtocolMagicAttr pm
+                ]
 
 {-------------------------------------------------------------------------------
                                  Key generation
