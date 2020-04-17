@@ -160,7 +160,7 @@ instance (NFData key) => NFData (Icarus depth key)
 -- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
 -- unsafe because it lets the caller choose the actually derivation 'depth'.
 --
--- This can be useful however when serializing / deserializing such type, or to
+-- This can be useful however when serializing / deserializing such a type, or to
 -- speed up test code (and avoid having to do needless derivations from a master
 -- key down to an address key for instance).
 --
