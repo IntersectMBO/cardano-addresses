@@ -3,14 +3,11 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cardano.Address.Style.IcarusSpec
     ( spec
@@ -25,18 +22,16 @@ import Cardano.Address.Derivation
     , Depth (..)
     , DerivationType (..)
     , HardDerivation (..)
-    , Index (..)
+    , Index
     , SoftDerivation (..)
+    , XPrv
     )
 import Cardano.Address.Style.Icarus
     ( Icarus (..)
-    , minSeedLengthBytes
     , publicKey
     , unsafeGenerateKeyFromHardwareLedger
     , unsafeGenerateKeyFromSeed
     )
-import Cardano.Crypto.Wallet
-    ( XPrv )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
@@ -46,8 +41,6 @@ import Cardano.Mnemonic
     )
 import Control.Monad
     ( forM_ )
-import Data.ByteArray
-    ( ByteArrayAccess, ScrubbedBytes )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
@@ -57,10 +50,8 @@ import Test.Arbitrary
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
-    ( Arbitrary (..), Property, choose, property, vector, (===) )
+    ( Property, property, (===) )
 
-import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
 import qualified Data.Text as T
 
 spec :: Spec
@@ -105,7 +96,7 @@ spec = do
             "Ae2tdPwUPEZFJtMH1m5HvsaQZrmgLcVcyuk5TxYtdRHZFo8yV7yEnnJyqTs"
 
     describe "Hardware Ledger" $ do
-        goldenHardwareLedger @12 (Passphrase mempty)
+        goldenHardwareLedger @12
             [ "struggle", "section", "scissors", "siren", "garbage", "yellow"
             , "maximum", "finger", "duty", "require", "mule", "earn"
             ]
@@ -121,7 +112,7 @@ spec = do
             , "Ae2tdPwUPEZHRMjjXMT2icJXp5h2k2j3Ph6dB5iGRashA2QxHLgFZbHzdms"
             ]
 
-        goldenHardwareLedger @18 (Passphrase mempty)
+        goldenHardwareLedger @18
             [ "vague" , "wrist" , "poet" , "crazy" , "danger" , "dinner"
             , "grace" , "home" , "naive" , "unfold" , "april" , "exile"
             , "relief" , "rifle" , "ranch" , "tone" , "betray" , "wrong"
@@ -138,7 +129,7 @@ spec = do
             , "Ae2tdPwUPEYvq2fnzqs9EWxFF2j87nZzBAZZ7y3qoj5oTce1ZGvsc4potp3"
             ]
 
-        goldenHardwareLedger @24 (Passphrase mempty)
+        goldenHardwareLedger @24
             [ "recall" , "grace" , "sport" , "punch" , "exhibit" , "mad"
             , "harbor" , "stand" , "obey" , "short" , "width" , "stem"
             , "awkward" , "used" , "stairs" , "wool" , "ugly" , "trap"
@@ -154,24 +145,6 @@ spec = do
             , "Ae2tdPwUPEZ4K16qFm6qVRWTEGpq5TJiyt8ZojmRANTSpPDAWZuH2Ge85uB"
             , "Ae2tdPwUPEZMMYd8JP9F16HJgCsDsPjUoERWoFzZugN4mNjhR9ZnFwPonCs"
             , "Ae2tdPwUPEZ3anXo172NFuumSGjrvbk1pHK9LiF82nGmPKC52NMYR77V2dM"
-            ]
-
-        goldenHardwareLedger @24 (Passphrase "very secure passphrase")
-            [ "burden", "destroy", "client", "air", "agent", "episode"
-            , "horror", "orient", "scrap", "car", "point", "easy"
-            , "local", "primary", "grunt", "seminar", "goose", "spin"
-            , "charge", "olive", "angry", "hour", "start", "shop"
-            ]
-            [ "Ae2tdPwUPEZHiTeWAxzLFm5qYAGqLLwZ35huQJ7Dg5fJ4SN97d1QwhsuDrG"
-            , "Ae2tdPwUPEZBD4rL6Msf2DdthRYLuYFxeG1hawjqtKYzMw2USoFQ9VmuU9C"
-            , "Ae2tdPwUPEZH5dhpwZHFVsemEpvgMMpSboyrM1PEThh6MwQTCXG2FoCCPHR"
-            , "Ae2tdPwUPEYz1AhmV59DNL92P8rrU8Wa9x9ttPTUoBSCvnEoJacmZbTahRu"
-            , "Ae2tdPwUPEZKqr3xfBLtQuhwNqtnFLq7ttptUxwyatoFF1ofgSaUTFmqiBb"
-            , "Ae2tdPwUPEZL1exTaCW3yfMj8eosgg7zcG35qfTQFyetgcJ3969agkrXXU5"
-            , "Ae2tdPwUPEZL2X1g23MKScFTvaLACCgpdWxozSjb5aXmg3YCESeiSftHyGJ"
-            , "Ae2tdPwUPEZKHqZcXY3AqLhWHzKVieBhedr7ixRmMsxsVKA1aVTEHPVK5aG"
-            , "Ae2tdPwUPEZLU4TEkPMmkT2dfQ23YyKLFWXBwuxLi4rxF4kT6najwAi6APQ"
-            , "Ae2tdPwUPEZBFKNnz2F1Bn5pLkhp2rm9byDAyW1JzN7ZUYSgRPqrH3Jgs88"
             ]
 
 {-------------------------------------------------------------------------------
@@ -195,29 +168,27 @@ spec = do
 -- For details see <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#private-parent-key--public-child-key bip-0039>
 prop_publicChildKeyDerivation
     :: SomeMnemonic
-    -> Passphrase
     -> AccountingStyle
     -> Index 'Soft 'AddressK
     -> Property
-prop_publicChildKeyDerivation seed (Passphrase encPwd) cc ix =
+prop_publicChildKeyDerivation seed cc ix =
     addrXPub1 === addrXPub2
   where
-    accXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Icarus 'AccountK XPrv
+    accXPrv = unsafeGenerateKeyFromSeed seed :: Icarus 'AccountK XPrv
     -- N(CKDpriv((kpar, cpar), i))
-    addrXPub1 = publicKey $ deriveAddressPrivateKey encPwd accXPrv cc ix
+    addrXPub1 = publicKey $ deriveAddressPrivateKey accXPrv cc ix
     -- CKDpub(N(kpar, cpar), i)
     addrXPub2 = deriveAddressPublicKey (publicKey accXPrv) cc ix
 
 prop_accountKeyDerivation
     :: SomeMnemonic
-    -> Passphrase
     -> Index 'Hardened 'AccountK
     -> Property
-prop_accountKeyDerivation seed (Passphrase encPwd) ix =
+prop_accountKeyDerivation seed ix =
     accXPrv `seq` property () -- NOTE Making sure this doesn't throw
   where
-    rootXPrv = unsafeGenerateKeyFromSeed seed encPwd :: Icarus 'RootK XPrv
-    accXPrv = deriveAccountPrivateKey encPwd rootXPrv ix
+    rootXPrv = unsafeGenerateKeyFromSeed seed :: Icarus 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey rootXPrv ix
 
 {-------------------------------------------------------------------------------
                                Golden Tests
@@ -237,10 +208,9 @@ goldenAddressGeneration
     :: GoldenAddressGeneration
     -> Spec
 goldenAddressGeneration test = it title $ do
-    let encPwd = mempty
-    let rootXPrv = unsafeGenerateKeyFromSeed goldSeed encPwd
-    let acctXPrv = deriveAccountPrivateKey encPwd rootXPrv goldAcctIx
-    let addrXPrv = deriveAddressPrivateKey encPwd acctXPrv goldAcctStyle goldAddrIx
+    let rootXPrv = unsafeGenerateKeyFromSeed goldSeed
+    let acctXPrv = deriveAccountPrivateKey rootXPrv goldAcctIx
+    let addrXPrv = deriveAddressPrivateKey acctXPrv goldAcctStyle goldAddrIx
     base58 (paymentAddress mainnetDiscriminant $ publicKey addrXPrv)
         `shouldBe` goldAddr
   where
@@ -273,19 +243,17 @@ goldenHardwareLedger
         ( ConsistentEntropy ent mw csz
         , EntropySize mw ~ ent
         )
-    => Passphrase
-        -- ^ An encryption passphrase
-    -> [Text]
+    => [Text]
         -- ^ 24-word mnemonic
     -> [Text]
         -- ^ Some addresses, starting at index 0
     -> Spec
-goldenHardwareLedger (Passphrase encPwd) sentence addrs =
+goldenHardwareLedger sentence addrs =
     it title $ do
         let Right mnemonic = SomeMnemonic <$> mkMnemonic @mw sentence
-        let rootXPrv = unsafeGenerateKeyFromHardwareLedger mnemonic encPwd
-        let acctXPrv = deriveAccountPrivateKey encPwd rootXPrv minBound
-        let deriveAddr = deriveAddressPrivateKey encPwd acctXPrv UTxOExternal
+        let rootXPrv = unsafeGenerateKeyFromHardwareLedger mnemonic
+        let acctXPrv = deriveAccountPrivateKey rootXPrv minBound
+        let deriveAddr = deriveAddressPrivateKey acctXPrv UTxOExternal
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
@@ -295,17 +263,3 @@ goldenHardwareLedger (Passphrase encPwd) sentence addrs =
     title = T.unpack
         $ T.unwords
         $ take 3 sentence ++ [ "..." ] ++ drop (length sentence - 3) sentence
-
-{-------------------------------------------------------------------------------
-                             Arbitrary Instances
--------------------------------------------------------------------------------}
-
-newtype Passphrase = Passphrase ScrubbedBytes
-    deriving stock (Eq, Show)
-    deriving newtype (ByteArrayAccess)
-
-instance Arbitrary Passphrase where
-    arbitrary = do
-        n <- choose (minSeedLengthBytes, 64)
-        bytes <- BS.pack <$> vector n
-        return $ Passphrase $ BA.convert bytes

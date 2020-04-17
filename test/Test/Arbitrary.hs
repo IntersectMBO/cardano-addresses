@@ -20,13 +20,20 @@ import Prelude
 import Cardano.Address
     ( NetworkDiscriminant (..), ProtocolMagic (..) )
 import Cardano.Address.Derivation
-    ( AccountingStyle, Depth (..), DerivationType (..), Index )
+    ( AccountingStyle
+    , Depth (..)
+    , DerivationType (..)
+    , Index
+    , XPrv
+    , XPub
+    , generate
+    , generateNew
+    , xprvToBytes
+    )
 import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
-import Cardano.Crypto.Wallet
-    ( XPrv, XPub, unXPrv, xprv )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -121,7 +128,10 @@ instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12
 
 instance Arbitrary XPrv where
-    arbitrary = unsafeXPrv . BS.pack <$> vector 128
+    arbitrary = oneof
+        [ flip generateNew (mempty :: ByteString) . BS.pack <$> vector 16
+        , generate . BS.pack <$> vector 32
+        ]
 
 instance Arbitrary AccountingStyle where
     shrink _ = []
@@ -132,13 +142,13 @@ instance Arbitrary (Byron 'AddressK XPub) where
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @12
         path <- (,) <$> arbitrary <*> arbitrary
-        pure $ Byron.publicKey $ Byron.unsafeGenerateKeyFromSeed path mw mempty
+        pure $ Byron.publicKey $ Byron.unsafeGenerateKeyFromSeed path mw
 
 instance Arbitrary (Icarus 'AddressK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
-        pure $ Icarus.publicKey $ Icarus.unsafeGenerateKeyFromSeed mw mempty
+        pure $ Icarus.publicKey $ Icarus.unsafeGenerateKeyFromSeed mw
 
 instance Arbitrary NetworkDiscriminant where
     arbitrary = oneof
@@ -156,11 +166,11 @@ instance Arbitrary ProtocolMagic where
 
 -- Necessary unsound Show instance for QuickCheck failure reporting
 instance Show XPrv where
-    show = show . unXPrv
+    show = show . xprvToBytes
 
 -- Necessary unsound Eq instance for QuickCheck properties
 instance Eq XPrv where
-    (==) = (==) `on` unXPrv
+    (==) = (==) `on` xprvToBytes
 
 --
 -- Useful functions
@@ -218,13 +228,6 @@ unsafeMkSomeMnemonicFromEntropy
 unsafeMkSomeMnemonicFromEntropy _ = SomeMnemonic
     . entropyToMnemonic
     . unsafeMkEntropy @ent
-
--- | Build a 'XPrv' from a bytestring
-unsafeXPrv :: HasCallStack => ByteString -> XPrv
-unsafeXPrv bytes =
-    case xprv bytes of
-        Left e -> error $ "unsafeXPrv: " <> e
-        Right a -> a
 
 -- | Decode an hex-encoded 'ByteString' into raw bytes, or fail.
 unsafeFromHex :: HasCallStack => ByteString -> ByteString

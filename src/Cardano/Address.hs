@@ -36,11 +36,9 @@ module Cardano.Address
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..) )
+    ( Depth (..), XPub )
 import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
-import Cardano.Crypto.Wallet
-    ( XPub )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
