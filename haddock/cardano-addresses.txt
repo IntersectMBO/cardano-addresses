@@ -125,37 +125,65 @@ Address :: ByteString -> Address
 [unAddress] :: Address -> ByteString
 
 -- | Encoding of addresses for certain key types and backend targets.
-class PaymentAddress (network :: NetworkDiscriminant) key
+class PaymentAddress key
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
 --   
 --   Note that <a>paymentAddress</a> is ambiguous and requires therefore a
 --   type application.
-paymentAddress :: PaymentAddress network key => key  'AddressK XPub -> Address
+paymentAddress :: PaymentAddress key => NetworkDiscriminant -> key  'AddressK XPub -> Address
+
+-- | Encode an address to base58.
+base58 :: Address -> Text
+
+-- | Encode an address to bech32, using <tt>addr</tt> as a human readable
+--   prefix.
+bech32 :: Address -> Text
 
 -- | Available network options.
 data NetworkDiscriminant
-Mainnet :: NetworkDiscriminant
-Testnet :: Nat -> NetworkDiscriminant
+RequiresNoMagic :: NetworkDiscriminant
+RequiresMagic :: ProtocolMagic -> NetworkDiscriminant
 
--- | Magic constant associated to a given network
+-- | Required network discrimination settings for mainnet
+mainnetDiscriminant :: NetworkDiscriminant
+
+-- | Required network discrimination settings for staging
+stagingDiscriminant :: NetworkDiscriminant
+
+-- | Required network discrimination settings for testnet
+testnetDiscriminant :: NetworkDiscriminant
+
+-- | Magic constant associated to a given network. This is mainly use in
+--   two places:
+--   
+--   a) In <a>Address</a> payloads, to discriminate addresses between
+--   networks. b) At the network-level, when doing handshake with nodes.
 newtype ProtocolMagic
 ProtocolMagic :: Word32 -> ProtocolMagic
 [getProtocolMagic] :: ProtocolMagic -> Word32
 
--- | Hard-coded protocol magic for the Byron MainNet
+-- | Hard-coded <a>ProtocolMagic</a> for Cardano MainNet
 mainnetMagic :: ProtocolMagic
 
--- | Derive testnet magic from a type-level Nat
-testnetMagic :: forall pm. KnownNat pm => ProtocolMagic
+-- | Hard-coded <a>ProtocolMagic</a> for Cardano Staging
+stagingMagic :: ProtocolMagic
+
+-- | Hard-coded <a>ProtocolMagic</a> for Cardano standard TestNet
+testnetMagic :: ProtocolMagic
+instance GHC.Classes.Eq Cardano.Address.NetworkDiscriminant
+instance GHC.Show.Show Cardano.Address.NetworkDiscriminant
+instance GHC.Generics.Generic Cardano.Address.NetworkDiscriminant
 instance GHC.Classes.Eq Cardano.Address.ProtocolMagic
 instance GHC.Show.Show Cardano.Address.ProtocolMagic
 instance GHC.Generics.Generic Cardano.Address.ProtocolMagic
 instance GHC.Classes.Ord Cardano.Address.Address
 instance GHC.Classes.Eq Cardano.Address.Address
-instance GHC.Generics.Generic Cardano.Address.Address
 instance GHC.Show.Show Cardano.Address.Address
+instance GHC.Generics.Generic Cardano.Address.Address
+instance Control.DeepSeq.NFData Cardano.Address.NetworkDiscriminant
+instance Control.DeepSeq.NFData Cardano.Address.ProtocolMagic
 instance Control.DeepSeq.NFData Cardano.Address.Address
 
 
@@ -220,9 +248,6 @@ unsafeDeserialiseCbor :: HasCallStack => (forall s. Decoder s a) -> ByteString -
 encodeBytes :: ByteString -> Encoding
 toStrictByteString :: Encoding -> ByteString
 toLazyByteString :: Encoding -> ByteString
-
--- | Transform address to text
-addressToText :: Address -> Text
 
 module Cardano.Mnemonic
 
@@ -402,8 +427,7 @@ instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.S
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Icarus.Icarus
-instance Cardano.Address.PaymentAddress 'Cardano.Address.Mainnet Cardano.Address.Style.Icarus.Icarus
-instance GHC.TypeNats.KnownNat pm => Cardano.Address.PaymentAddress ('Cardano.Address.Testnet pm) Cardano.Address.Style.Icarus.Icarus
+instance Cardano.Address.PaymentAddress Cardano.Address.Style.Icarus.Icarus
 
 
 -- | Implementation of address derivation for the random scheme, as
@@ -445,5 +469,4 @@ instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.Deriva
 instance (Control.DeepSeq.NFData key, Control.DeepSeq.NFData (Cardano.Address.Style.Byron.DerivationPath depth)) => Control.DeepSeq.NFData (Cardano.Address.Style.Byron.Byron depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Byron.Byron
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Byron.Byron
-instance GHC.TypeNats.KnownNat pm => Cardano.Address.PaymentAddress ('Cardano.Address.Testnet pm) Cardano.Address.Style.Byron.Byron
-instance Cardano.Address.PaymentAddress 'Cardano.Address.Mainnet Cardano.Address.Style.Byron.Byron
+instance Cardano.Address.PaymentAddress Cardano.Address.Style.Byron.Byron
