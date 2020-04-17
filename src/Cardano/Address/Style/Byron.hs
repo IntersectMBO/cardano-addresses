@@ -140,7 +140,7 @@ deriving instance (Functor (Byron depth))
 -- of key this is. This is mostly for testing, in practice, seeds are used to
 -- represent root keys, and one should 'genMasterKeyFromXPrv'
 --
--- The first argument is a type-family 'DerivationPath' and its type depend on
+-- The first argument is a type-family 'DerivationPath' and its type depends on
 -- the 'depth' of the key.
 --
 -- __examples:__
