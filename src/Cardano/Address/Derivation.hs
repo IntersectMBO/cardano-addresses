@@ -76,6 +76,8 @@ import GHC.Generics
     ( Generic )
 import Crypto.Error
     ( eitherCryptoError )
+import Cardano.Mnemonic
+    ( SomeMnemonic )
 
 import qualified Cardano.Crypto.Wallet as CC
 import qualified Data.ByteString as BS
@@ -345,6 +347,7 @@ data DerivationType = Hardened | Soft | WholeDomain
 class HardDerivation (key :: Depth -> * -> *) where
     type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
+    type WithAccountStyle key :: *
 
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
@@ -363,7 +366,7 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- @since 1.0.0
     deriveAddressPrivateKey
         :: key 'AccountK XPrv
-        -> AccountingStyle
+        -> WithAccountStyle key
         -> Index (AddressIndexDerivationType key) 'AddressK
         -> key 'AddressK XPrv
 
@@ -387,9 +390,16 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
 --
 -- @since 1.0.0
 class GenMasterKey (key :: Depth -> * -> *) where
-    type GenMasterKeyFrom key :: *
+    type SecondFactor key :: *
 
-    -- | Generate a root key from a corresponding seed.
+    -- | Generate a root key from a corresponding mnemonic.
     --
     -- @since 1.0.0
-    genMasterKey :: GenMasterKeyFrom key -> key 'RootK XPrv
+    genMasterKeyFromMnemonic
+        :: SomeMnemonic -> SecondFactor key -> key 'RootK XPrv
+
+    -- | Generate a root key from a corresponding root 'XPrv'
+    --
+    -- @since 1.0.0
+    genMasterKeyFromXPrv
+        :: XPrv -> key 'RootK XPrv

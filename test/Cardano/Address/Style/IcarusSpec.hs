@@ -21,6 +21,7 @@ import Cardano.Address.Derivation
     ( AccountingStyle (..)
     , Depth (..)
     , DerivationType (..)
+    , GenMasterKey (..)
     , HardDerivation (..)
     , Index
     , SoftDerivation (..)
@@ -28,10 +29,7 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Style.Icarus
-    ( Icarus (..)
-    , unsafeGenerateKeyFromHardwareLedger
-    , unsafeGenerateKeyFromSeed
-    )
+    ( Icarus (..), unsafeGenerateKeyFromHardwareLedger )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
@@ -171,10 +169,11 @@ prop_publicChildKeyDerivation
     -> AccountingStyle
     -> Index 'Soft 'AddressK
     -> Property
-prop_publicChildKeyDerivation seed cc ix =
+prop_publicChildKeyDerivation mw cc ix =
     addrXPub1 === addrXPub2
   where
-    accXPrv = unsafeGenerateKeyFromSeed seed :: Icarus 'AccountK XPrv
+    rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
+    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     -- N(CKDpriv((kpar, cpar), i))
     addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
     -- CKDpub(N(kpar, cpar), i)
@@ -184,10 +183,10 @@ prop_accountKeyDerivation
     :: SomeMnemonic
     -> Index 'Hardened 'AccountK
     -> Property
-prop_accountKeyDerivation seed ix =
+prop_accountKeyDerivation mw ix =
     accXPrv `seq` property () -- NOTE Making sure this doesn't throw
   where
-    rootXPrv = unsafeGenerateKeyFromSeed seed :: Icarus 'RootK XPrv
+    rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
 
 {-------------------------------------------------------------------------------
@@ -208,7 +207,7 @@ goldenAddressGeneration
     :: GoldenAddressGeneration
     -> Spec
 goldenAddressGeneration test = it title $ do
-    let rootXPrv = unsafeGenerateKeyFromSeed goldSeed
+    let rootXPrv = genMasterKeyFromMnemonic goldSeed mempty :: Icarus 'RootK XPrv
     let acctXPrv = deriveAccountPrivateKey rootXPrv goldAcctIx
     let addrXPrv = deriveAddressPrivateKey acctXPrv goldAcctStyle goldAddrIx
     base58 (paymentAddress mainnetDiscriminant $ toXPub <$> addrXPrv)

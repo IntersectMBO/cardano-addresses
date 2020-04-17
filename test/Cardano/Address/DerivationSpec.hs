@@ -15,9 +15,20 @@ module Cardano.Address.DerivationSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), DerivationType (..), Index )
+    ( Depth (..)
+    , DerivationType (..)
+    , Index
+    , xprvFromBytes
+    , xprvToBytes
+    , xpubFromBytes
+    , xpubToBytes
+    )
+import Data.ByteString
+    ( ByteString )
 import Test.Hspec
     ( Spec, describe, it )
+import Test.Hspec.QuickCheck
+    ( prop )
 import Test.QuickCheck
     ( Property, expectFailure, property, (.&&.), (===) )
 
@@ -40,9 +51,24 @@ spec = describe "Checking auxiliary address derivations types" $ do
         it "Index @'Hardened _" (property prop_roundtripEnumIndexHard)
         it "Index @'Soft _" (property prop_roundtripEnumIndexSoft)
 
+    describe "bytes roundtrips" $ do
+        prop "xpubToBytes . xpubFromBytes" $
+            prop_roundtripBytes xpubToBytes xpubFromBytes
+        prop "xprvToBytes . xprvFromBytes" $
+            prop_roundtripBytes xprvToBytes xprvFromBytes
+
 {-------------------------------------------------------------------------------
                                Properties
 -------------------------------------------------------------------------------}
+
+prop_roundtripBytes
+    :: (Eq a, Show a)
+    => (a -> ByteString)
+    -> (ByteString -> Maybe a)
+    -> a
+    -> Property
+prop_roundtripBytes encode decode a =
+    decode (encode a) === pure a
 
 prop_succMaxBoundHardIx :: Property
 prop_succMaxBoundHardIx = expectFailure $

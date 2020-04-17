@@ -11,6 +11,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Cardano.Address.Style.ByronSpec
     ( spec
@@ -19,21 +20,16 @@ module Cardano.Address.Style.ByronSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationType (..)
+    , GenMasterKey (..)
     , HardDerivation (..)
     , Index
     , XPrv
     , xprvFromBytes
     )
 import Cardano.Address.Style.Byron
-    ( Byron (..)
-    , minSeedLengthBytes
-    , mkByronKeyFromMasterKey
-    , unsafeGenerateKeyFromSeed
-    , unsafeMkByronKeyFromMasterKey
-    )
+    ( Byron (..), minSeedLengthBytes )
 import Cardano.Mnemonic
     ( SomeMnemonic (..) )
 import Control.Monad
@@ -64,62 +60,34 @@ spec = do
             property prop_keyDerivationFromSeed
         it "Key derivation from master key works for various indexes" $
             property prop_keyDerivationFromXPrv
-        it "Key derivation from seed works for various indexes - unsafe" $
-            property prop_keyDerivationFromSeedUnsafe
-        it "Key derivation from master key works for various indexes - unsafe" $
-            property prop_keyDerivationFromXPrvUnsafe
 
 {-------------------------------------------------------------------------------
                                Properties
 -------------------------------------------------------------------------------}
 
-prop_keyDerivationFromSeedUnsafe
-    :: SomeMnemonic
-    -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
-    -> Property
-prop_keyDerivationFromSeedUnsafe seed accIx addrIx =
-    rndKey `seq` property ()
-  where
-    rndKey :: Byron 'AddressK XPrv
-    rndKey = unsafeGenerateKeyFromSeed (accIx, addrIx) seed
-
-prop_keyDerivationFromXPrvUnsafe
-    :: XPrv
-    -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
-    -> Property
-prop_keyDerivationFromXPrvUnsafe masterkey accIx addrIx =
-    rndKey `seq` property ()
-  where
-    rndKey :: Byron 'AddressK XPrv
-    rndKey = unsafeMkByronKeyFromMasterKey (accIx, addrIx) masterkey
-
 prop_keyDerivationFromSeed
     :: SomeMnemonic
-    -> AccountingStyle
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromSeed seed style accIx addrIx =
+prop_keyDerivationFromSeed mw accIx addrIx =
     addrXPrv `seq` property ()
   where
-    rootXPrv = unsafeGenerateKeyFromSeed () seed :: Byron 'RootK XPrv
+    rootXPrv = genMasterKeyFromMnemonic mw () :: Byron 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv accIx
-    addrXPrv = deriveAddressPrivateKey accXPrv style addrIx
+    addrXPrv = deriveAddressPrivateKey accXPrv () addrIx
 
 prop_keyDerivationFromXPrv
     :: XPrv
-    -> AccountingStyle
     -> Index 'WholeDomain 'AccountK
     -> Index 'WholeDomain 'AddressK
     -> Property
-prop_keyDerivationFromXPrv masterkey style accIx addrIx =
+prop_keyDerivationFromXPrv xprv accIx addrIx =
     addrXPrv `seq` property ()
   where
-    rootXPrv = mkByronKeyFromMasterKey masterkey :: Byron 'RootK XPrv
+    rootXPrv = genMasterKeyFromXPrv xprv :: Byron 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv accIx
-    addrXPrv = deriveAddressPrivateKey accXPrv style addrIx
+    addrXPrv = deriveAddressPrivateKey accXPrv () addrIx
 
 {-------------------------------------------------------------------------------
                                   Golden tests
@@ -144,7 +112,7 @@ generateTest (GenerateKeyFromSeed mnemonic rootXPrv)  =
     getKey masterKey `shouldBe` getKey rootXPrv
   where
     mw = SomeMnemonic $ unsafeMkMnemonic @12 mnemonic
-    masterKey = unsafeGenerateKeyFromSeed () mw  :: Byron 'RootK XPrv
+    masterKey = genMasterKeyFromMnemonic mw () :: Byron 'RootK XPrv
 
 generateTest1 :: GenerateKeyFromSeed
 generateTest1 = GenerateKeyFromSeed
@@ -167,7 +135,7 @@ defMnemonic =
 
 -- | Get a private key from a hex string, without error checking.
 xprv16 :: ByteString -> Byron 'RootK XPrv
-xprv16 hex = mkByronKeyFromMasterKey prv
+xprv16 hex = genMasterKeyFromXPrv prv
   where
     Just prv = (xprvFromBytes <=< fromHexText) hex
     fromHexText :: ByteString -> Maybe ByteString

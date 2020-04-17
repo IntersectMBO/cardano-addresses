@@ -11,29 +11,28 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{-# OPTIONS_HADDOCK prune #-}
+
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
---
--- Implementation of address derivation for the random scheme, as
--- implemented by the legacy Cardano wallets.
---
--- For full documentation of the key derivation schemes,
--- see the "Cardano.Crypto.Wallet" module, and the implementation in
--- <https://github.com/input-output-hk/cardano-crypto/blob/4590efa638397e952a51a8994b5543e4ea3c1ecd/cbits/encrypted_sign.c cardano-crypto>.
 
 module Cardano.Address.Style.Byron
-    ( -- * Types
+    ( -- $overview
+      -- * Byron
       Byron
+    , DerivationPath
+
+      -- * Accessors
     , payloadPassphrase
     , derivationPath
     , getKey
 
-      -- * Generation
-    , unsafeGenerateKeyFromSeed
+      -- * Unsafe
+    , liftXPrv
+
+      -- Internal
     , minSeedLengthBytes
-    , mkByronKeyFromMasterKey
-    , unsafeMkByronKeyFromMasterKey
     ) where
 
 import Prelude
@@ -83,27 +82,93 @@ import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
 
+-- $overview
+--
+-- This module provides an implementation of:
+--
+-- - 'GenMasterKey': for generating Byron master keys from mnemonic sentences
+-- - 'HardDerivation': for hierarchical derivation of parent to child keys
+-- - 'PaymentAddress': for constructing addresses from a public key
+--
+-- We call 'Byron' addresses the old address type used by Daedalus in the early
+-- days of Cardano. Using this type of addresses and underlying key scheme is
+-- now considered __deprecated__ because of some security implications.
+--
+-- Unless you have good reason to do so (like writing backward-compatible code
+-- with an existing piece), any new implementation __should use__ the 'Icarus'
+-- style for key and addresses.
+--
+-- The internals of the 'Byron' does not matter for the reader, but basically
+-- contains what is necessary to perform key derivation and generate addresses
+-- from a 'Byron' type.
+
 {-------------------------------------------------------------------------------
                                    Key Types
 -------------------------------------------------------------------------------}
 
 -- | Material for deriving HD random scheme keys, which can be used for making
 -- addresses.
+--
+-- @since 1.0.0
 data Byron (depth :: Depth) key = Byron
     { getKey :: key
     -- ^ The raw private or public key.
+    --
+    -- @since 1.0.0
     , derivationPath :: DerivationPath depth
     -- ^ The address derivation indices for the level of this key.
+    --
+    -- @since 1.0.0
     , payloadPassphrase :: ScrubbedBytes
-    -- ^ Used for encryption of payload containing address derivation path.
+    -- ^ Used for encryption of the derivation path payload within an address.
+    --
+    -- @since 1.0.0
     } deriving stock (Generic)
+{-# DEPRECATED Byron "see Cardano.Address.Style.Icarus" #-}
+{-# DEPRECATED getKey "see Cardano.Address.Style.Icarus" #-}
+{-# DEPRECATED derivationPath "see Cardano.Address.Style.Icarus" #-}
+{-# DEPRECATED payloadPassphrase "see Cardano.Address.Style.Icarus" #-}
 
 instance (NFData key, NFData (DerivationPath depth)) => NFData (Byron depth key)
 deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth key)
 deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
 deriving instance (Functor (Byron depth))
 
+-- | Backdoor for generating a new key from a raw XPrv.
+--
+-- Note that the @depth@ is left open so that the caller gets to decide what type
+-- of key this is. This is mostly for testing, in practice, seeds are used to
+-- represent root keys, and one should 'genMasterKeyFromXPrv'
+--
+-- The first argument is a type-family 'DerivationPath' and its type depends on
+-- the 'depth' of the key.
+--
+-- __examples:__
+--
+-- >>> liftXPrv () prv
+-- _ :: Byron RootK XPrv
+--
+-- >>> liftXPrv minBound prv
+-- _ :: Byron AccountK XPrv
+--
+-- >>> liftXPrv (minBound, minBound) prv
+-- _ :: Byron AddressK XPrv
+--
+-- @since 1.0.0
+liftXPrv
+    :: DerivationPath depth
+    -> XPrv
+    -> Byron depth XPrv
+liftXPrv derivationPath getKey = Byron
+    { getKey
+    , derivationPath
+    , payloadPassphrase = hdPassphrase (toXPub getKey)
+    }
+{-# DEPRECATED liftXPrv "see Cardano.Address.Style.Icarus" #-}
+
 -- | The hierarchical derivation indices for a given level/depth.
+--
+-- @since 1.0.0
 type family DerivationPath (depth :: Depth) :: * where
     -- The root key is generated from the seed.
     DerivationPath 'RootK =
@@ -114,15 +179,25 @@ type family DerivationPath (depth :: Depth) :: * where
     -- The address key is generated from the account key and address index.
     DerivationPath 'AddressK =
         (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
+{-# DEPRECATED DerivationPath "see Cardano.Address.Style.Icarus" #-}
 
 instance GenMasterKey Byron where
-    type GenMasterKeyFrom Byron = SomeMnemonic
+    type SecondFactor Byron = ()
 
-    genMasterKey = generateKeyFromSeed
+    genMasterKeyFromXPrv = liftXPrv ()
+    genMasterKeyFromMnemonic (SomeMnemonic mw) () =
+        liftXPrv () xprv
+      where
+        xprv = generate (hashSeed seedValidated)
+        seed  = entropyToBytes $ mnemonicToEntropy mw
+        seedValidated = assert
+            (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
+            seed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
+    type WithAccountStyle Byron = ()
 
     deriveAccountPrivateKey rootXPrv accIx = Byron
         { getKey = deriveXPrv DerivationScheme1 (getKey rootXPrv) accIx
@@ -130,7 +205,7 @@ instance HardDerivation Byron where
         , payloadPassphrase = payloadPassphrase rootXPrv
         }
 
-    deriveAddressPrivateKey accXPrv _accStyle addrIx = Byron
+    deriveAddressPrivateKey accXPrv () addrIx = Byron
         { getKey = deriveXPrv DerivationScheme1 (getKey accXPrv) addrIx
         , derivationPath = (derivationPath accXPrv, addrIx)
         , payloadPassphrase = payloadPassphrase accXPrv
@@ -152,40 +227,13 @@ instance PaymentAddress Byron where
                 , CBOR.encodeProtocolMagicAttr pm
                 ]
 
-{-------------------------------------------------------------------------------
-                                 Key generation
--------------------------------------------------------------------------------}
+--
+-- Internal
+--
 
--- | The amount of entropy carried by a BIP-39 12-word mnemonic is 16 bytes.
+-- The amount of entropy carried by a BIP-39 12-word mnemonic is 16 bytes.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
-
--- | Generate a root key from a corresponding seed.
--- The seed should be at least 16 bytes.
-generateKeyFromSeed
-    :: SomeMnemonic
-    -> Byron 'RootK XPrv
-generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
-
--- | Generate a new key from seed. Note that the @depth@ is left open so that
--- the caller gets to decide what type of key this is. This is mostly for
--- testing, in practice, seeds are used to represent root keys, and one should
--- use 'generateKeyFromSeed'.
-unsafeGenerateKeyFromSeed
-    :: DerivationPath depth
-    -> SomeMnemonic
-    -> Byron depth XPrv
-unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) = Byron
-    { getKey = masterKey
-    , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-  where
-    masterKey = generate (hashSeed seedValidated)
-    seed  = entropyToBytes $ mnemonicToEntropy mw
-    seedValidated = assert
-        (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-        seed
 
 -- | Hash the seed entropy (generated from mnemonic) used to initiate a HD
 -- wallet. This increases the key length to 34 bytes, selectKey is greater than the
@@ -220,26 +268,6 @@ hdPassphrase masterKey =
     (PBKDF2.Parameters 500 32)
     (xpubToBytes masterKey)
     ("address-hashing" :: ByteString)
-
-mkByronKeyFromMasterKey
-    :: XPrv
-    -> Byron 'RootK XPrv
-mkByronKeyFromMasterKey =
-    unsafeMkByronKeyFromMasterKey ()
-
-unsafeMkByronKeyFromMasterKey
-    :: DerivationPath depth
-    -> XPrv
-    -> Byron depth XPrv
-unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
-    { getKey = masterKey
-    , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-
---
--- Internal
---
 
 word32 :: Enum a => a -> Word32
 word32 = fromIntegral . fromEnum
