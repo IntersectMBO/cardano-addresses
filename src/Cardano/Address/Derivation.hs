@@ -53,6 +53,7 @@ module Cardano.Address.Derivation
 
 import Prelude
 
+import Data.Either.Extra (eitherToMaybe)
 import GHC.Stack
     (HasCallStack )
 import Cardano.Crypto.Wallet
@@ -177,7 +178,7 @@ verify
     -> XSignature
     -> Bool
 verify =
-    CC.verify -- re-exported like to allow documenting it.
+    CC.verify -- re-exported for the sake of documentation.
 
 -- Derive a child extended private key from an extended private key
 --
@@ -392,13 +393,3 @@ class GenMasterKey (key :: Depth -> * -> *) where
     --
     -- @since 1.0.0
     genMasterKey :: GenMasterKeyFrom key -> key 'RootK XPrv
-
-
---
--- Internals
---
-
--- Simple helper to convert 'Either e' to 'Maybe' until we have a slightly
--- better approach for error.
-eitherToMaybe :: Either e a -> Maybe a
-eitherToMaybe = either (const Nothing) Just
