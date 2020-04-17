@@ -87,7 +87,7 @@ span.spaces    { background: white }
 <span class="lineno">   68 </span>-- @since 1.0.0
 <span class="lineno">   69 </span>newtype Address = Address
 <span class="lineno">   70 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">unAddress</span></span></span> :: ByteString
-<span class="lineno">   71 </span>    } deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   71 </span>    } deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">   72 </span>      deriving newtype (<span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">ByteArrayAccess</span></span></span></span></span></span>)
 <span class="lineno">   73 </span>instance NFData Address
 <span class="lineno">   74 </span>
@@ -107,27 +107,27 @@ span.spaces    { background: white }
 <span class="lineno">   88 </span>--
 <span class="lineno">   89 </span>-- @since 1.0.0
 <span class="lineno">   90 </span>fromBase58 :: Text -&gt; Maybe Address
-<span class="lineno">   91 </span><span class="decl"><span class="nottickedoff">fromBase58 =</span>
-<span class="lineno">   92 </span><span class="spaces">    </span><span class="nottickedoff">deserialiseCbor (unsafeMkAddress &lt;$&gt; decodeAddress)</span>
-<span class="lineno">   93 </span><span class="spaces">   </span><span class="nottickedoff">&lt;=&lt;</span>
-<span class="lineno">   94 </span><span class="spaces">    </span><span class="nottickedoff">decodeBase58 bitcoinAlphabet . T.encodeUtf8</span></span>
+<span class="lineno">   91 </span><span class="decl"><span class="istickedoff">fromBase58 =</span>
+<span class="lineno">   92 </span><span class="spaces">    </span><span class="istickedoff">deserialiseCbor (unsafeMkAddress &lt;$&gt; decodeAddress)</span>
+<span class="lineno">   93 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
+<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">decodeBase58 bitcoinAlphabet . T.encodeUtf8</span></span>
 <span class="lineno">   95 </span>
 <span class="lineno">   96 </span>-- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
 <span class="lineno">   97 </span>--
 <span class="lineno">   98 </span>-- @since 1.0.0
 <span class="lineno">   99 </span>bech32 :: Address -&gt; Text
-<span class="lineno">  100 </span><span class="decl"><span class="nottickedoff">bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress</span>
-<span class="lineno">  101 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">  102 </span><span class="spaces">    </span><span class="nottickedoff">hrp = [Bech32.humanReadablePart|addr|]</span></span>
+<span class="lineno">  100 </span><span class="decl"><span class="istickedoff">bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress</span>
+<span class="lineno">  101 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">hrp = [Bech32.humanReadablePart|addr|]</span></span>
 <span class="lineno">  103 </span>
 <span class="lineno">  104 </span>-- | Decode a bech32-encoded  'Text' into an 'Address'
 <span class="lineno">  105 </span>--
 <span class="lineno">  106 </span>-- @since 1.0.0
 <span class="lineno">  107 </span>fromBech32 :: Text -&gt; Maybe Address
-<span class="lineno">  108 </span><span class="decl"><span class="nottickedoff">fromBech32 =</span>
-<span class="lineno">  109 </span><span class="spaces">    </span><span class="nottickedoff">fmap unsafeMkAddress . Bech32.dataPartToBytes</span>
-<span class="lineno">  110 </span><span class="spaces">   </span><span class="nottickedoff">&lt;=&lt;</span>
-<span class="lineno">  111 </span><span class="spaces">    </span><span class="nottickedoff">either (const Nothing) (Just . snd) . Bech32.decodeLenient</span></span>
+<span class="lineno">  108 </span><span class="decl"><span class="istickedoff">fromBech32 =</span>
+<span class="lineno">  109 </span><span class="spaces">    </span><span class="istickedoff">fmap unsafeMkAddress . Bech32.dataPartToBytes</span>
+<span class="lineno">  110 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
+<span class="lineno">  111 </span><span class="spaces">    </span><span class="istickedoff">either <span class="nottickedoff">(const Nothing)</span> (Just . snd) . Bech32.decodeLenient</span></span>
 <span class="lineno">  112 </span>
 <span class="lineno">  113 </span>-- | Encoding of addresses for certain key types and backend targets.
 <span class="lineno">  114 </span>--

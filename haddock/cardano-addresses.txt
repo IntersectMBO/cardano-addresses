@@ -412,6 +412,7 @@ unsafeGenerateKeyFromSeed :: DerivationPath depth -> SomeMnemonic -> ScrubbedByt
 minSeedLengthBytes :: Int
 mkByronKeyFromMasterKey :: XPrv -> Byron  'RootK XPrv
 unsafeMkByronKeyFromMasterKey :: DerivationPath depth -> XPrv -> Byron depth XPrv
+publicKey :: Byron depth XPrv -> Byron depth XPub
 instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.Address.Style.Byron.Byron depth key)

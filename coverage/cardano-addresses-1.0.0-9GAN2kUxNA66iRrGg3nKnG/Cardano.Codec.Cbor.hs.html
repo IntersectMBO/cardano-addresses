@@ -206,9 +206,9 @@ span.spaces    { background: white }
 <span class="lineno">  187 </span><span class="spaces">    </span><span class="istickedoff">l = fromIntegral (length attrs)</span></span>
 <span class="lineno">  188 </span>
 <span class="lineno">  189 </span>encodeProtocolMagicAttr :: Word32 -&gt; CBOR.Encoding
-<span class="lineno">  190 </span><span class="decl"><span class="nottickedoff">encodeProtocolMagicAttr pm = mempty</span>
-<span class="lineno">  191 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; CBOR.encodeWord 2 -- Tag for 'ProtocolMagic' attribute</span>
-<span class="lineno">  192 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; CBOR.encodeBytes (CBOR.toStrictByteString $ CBOR.encodeWord32 pm)</span></span>
+<span class="lineno">  190 </span><span class="decl"><span class="istickedoff">encodeProtocolMagicAttr pm = mempty</span>
+<span class="lineno">  191 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord 2 -- Tag for 'ProtocolMagic' attribute</span>
+<span class="lineno">  192 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes (CBOR.toStrictByteString $ CBOR.encodeWord32 pm)</span></span>
 <span class="lineno">  193 </span>
 <span class="lineno">  194 </span>-- This is the opposite of 'decodeDerivationPathAttr'.
 <span class="lineno">  195 </span>--
@@ -265,26 +265,26 @@ span.spaces    { background: white }
 <span class="lineno">  246 </span><span class="decl"><span class="istickedoff">cardanoNonce = &quot;serokellfore&quot;</span></span>
 <span class="lineno">  247 </span>
 <span class="lineno">  248 </span>decodeAddress :: CBOR.Decoder s ByteString
-<span class="lineno">  249 </span><span class="decl"><span class="nottickedoff">decodeAddress = do</span>
-<span class="lineno">  250 </span><span class="spaces">    </span><span class="nottickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 2</span>
-<span class="lineno">  251 </span><span class="spaces">        </span><span class="nottickedoff">-- CRC Protection Wrapper</span>
-<span class="lineno">  252 </span><span class="spaces">    </span><span class="nottickedoff">tag &lt;- CBOR.decodeTag</span>
-<span class="lineno">  253 </span><span class="spaces">        </span><span class="nottickedoff">-- Mysterious hard-coded tag cardano-sl seems to so much like</span>
-<span class="lineno">  254 </span><span class="spaces">    </span><span class="nottickedoff">bytes &lt;- CBOR.decodeBytes</span>
-<span class="lineno">  255 </span><span class="spaces">        </span><span class="nottickedoff">-- Addr Root + Attributes + Type</span>
-<span class="lineno">  256 </span><span class="spaces">    </span><span class="nottickedoff">crc &lt;- CBOR.decodeWord32 -- CRC</span>
-<span class="lineno">  257 </span><span class="spaces">    </span><span class="nottickedoff">-- NOTE 1:</span>
-<span class="lineno">  258 </span><span class="spaces">    </span><span class="nottickedoff">-- Treating addresses as a blob here, so we just re-encode them as such</span>
-<span class="lineno">  259 </span><span class="spaces">    </span><span class="nottickedoff">-- Ultimately for us, addresses are nothing more than a bunch of bytes that</span>
-<span class="lineno">  260 </span><span class="spaces">    </span><span class="nottickedoff">-- we display in a Base58 format when we have to.</span>
-<span class="lineno">  261 </span><span class="spaces">    </span><span class="nottickedoff">--</span>
-<span class="lineno">  262 </span><span class="spaces">    </span><span class="nottickedoff">-- NOTE 2:</span>
-<span class="lineno">  263 </span><span class="spaces">    </span><span class="nottickedoff">-- We may want to check the CRC at this level as-well... maybe not.</span>
-<span class="lineno">  264 </span><span class="spaces">    </span><span class="nottickedoff">return $ CBOR.toStrictByteString $ mempty</span>
-<span class="lineno">  265 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; CBOR.encodeListLen 2</span>
-<span class="lineno">  266 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; CBOR.encodeTag tag</span>
-<span class="lineno">  267 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; CBOR.encodeBytes bytes</span>
-<span class="lineno">  268 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; CBOR.encodeWord32 crc</span></span>
+<span class="lineno">  249 </span><span class="decl"><span class="istickedoff">decodeAddress = do</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 2</span>
+<span class="lineno">  251 </span><span class="spaces">        </span><span class="istickedoff">-- CRC Protection Wrapper</span>
+<span class="lineno">  252 </span><span class="spaces">    </span><span class="istickedoff">tag &lt;- CBOR.decodeTag</span>
+<span class="lineno">  253 </span><span class="spaces">        </span><span class="istickedoff">-- Mysterious hard-coded tag cardano-sl seems to so much like</span>
+<span class="lineno">  254 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  255 </span><span class="spaces">        </span><span class="istickedoff">-- Addr Root + Attributes + Type</span>
+<span class="lineno">  256 </span><span class="spaces">    </span><span class="istickedoff">crc &lt;- CBOR.decodeWord32 -- CRC</span>
+<span class="lineno">  257 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE 1:</span>
+<span class="lineno">  258 </span><span class="spaces">    </span><span class="istickedoff">-- Treating addresses as a blob here, so we just re-encode them as such</span>
+<span class="lineno">  259 </span><span class="spaces">    </span><span class="istickedoff">-- Ultimately for us, addresses are nothing more than a bunch of bytes that</span>
+<span class="lineno">  260 </span><span class="spaces">    </span><span class="istickedoff">-- we display in a Base58 format when we have to.</span>
+<span class="lineno">  261 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  262 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE 2:</span>
+<span class="lineno">  263 </span><span class="spaces">    </span><span class="istickedoff">-- We may want to check the CRC at this level as-well... maybe not.</span>
+<span class="lineno">  264 </span><span class="spaces">    </span><span class="istickedoff">return $ CBOR.toStrictByteString $ mempty</span>
+<span class="lineno">  265 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLen 2</span>
+<span class="lineno">  266 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeTag tag</span>
+<span class="lineno">  267 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes bytes</span>
+<span class="lineno">  268 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord32 crc</span></span>
 <span class="lineno">  269 </span>
 <span class="lineno">  270 </span>decodeAddressPayload :: CBOR.Decoder s ByteString
 <span class="lineno">  271 </span><span class="decl"><span class="istickedoff">decodeAddressPayload = do</span>
