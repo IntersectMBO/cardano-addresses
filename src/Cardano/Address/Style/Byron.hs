@@ -11,6 +11,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{-# OPTIONS_HADDOCK prune #-}
+
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
@@ -28,12 +30,10 @@ module Cardano.Address.Style.Byron
     , payloadPassphrase
     , derivationPath
     , getKey
+    , liftXPrv
 
-      -- * Generation
-    , unsafeGenerateKeyFromSeed
+      -- Internal
     , minSeedLengthBytes
-    , mkByronKeyFromMasterKey
-    , unsafeMkByronKeyFromMasterKey
     ) where
 
 import Prelude
@@ -103,6 +103,21 @@ deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth k
 deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
 deriving instance (Functor (Byron depth))
 
+-- | Backdoor for generating a new key from a raw XPrv.
+--
+-- Note that the @depth@ is left open so that the caller gets to decide what type
+-- of key this is. This is mostly for testing, in practice, seeds are used to
+-- represent root keys, and one should 'genMasterKeyFromXPrv'
+liftXPrv
+    :: DerivationPath depth
+    -> XPrv
+    -> Byron depth XPrv
+liftXPrv derivationPath getKey = Byron
+    { getKey
+    , derivationPath
+    , payloadPassphrase = hdPassphrase (toXPub getKey)
+    }
+
 -- | The hierarchical derivation indices for a given level/depth.
 type family DerivationPath (depth :: Depth) :: * where
     -- The root key is generated from the seed.
@@ -116,13 +131,22 @@ type family DerivationPath (depth :: Depth) :: * where
         (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
 
 instance GenMasterKey Byron where
-    type GenMasterKeyFrom Byron = SomeMnemonic
+    type SecondFactor Byron = ()
 
-    genMasterKey = generateKeyFromSeed
+    genMasterKeyFromXPrv = liftXPrv ()
+    genMasterKeyFromMnemonic (SomeMnemonic mw) () =
+        liftXPrv () xprv
+      where
+        xprv = generate (hashSeed seedValidated)
+        seed  = entropyToBytes $ mnemonicToEntropy mw
+        seedValidated = assert
+            (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
+            seed
 
 instance HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
+    type WithAccountStyle Byron = ()
 
     deriveAccountPrivateKey rootXPrv accIx = Byron
         { getKey = deriveXPrv DerivationScheme1 (getKey rootXPrv) accIx
@@ -130,7 +154,7 @@ instance HardDerivation Byron where
         , payloadPassphrase = payloadPassphrase rootXPrv
         }
 
-    deriveAddressPrivateKey accXPrv _accStyle addrIx = Byron
+    deriveAddressPrivateKey accXPrv () addrIx = Byron
         { getKey = deriveXPrv DerivationScheme1 (getKey accXPrv) addrIx
         , derivationPath = (derivationPath accXPrv, addrIx)
         , payloadPassphrase = payloadPassphrase accXPrv
@@ -152,40 +176,13 @@ instance PaymentAddress Byron where
                 , CBOR.encodeProtocolMagicAttr pm
                 ]
 
-{-------------------------------------------------------------------------------
-                                 Key generation
--------------------------------------------------------------------------------}
+--
+-- Internal
+--
 
 -- | The amount of entropy carried by a BIP-39 12-word mnemonic is 16 bytes.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
-
--- | Generate a root key from a corresponding seed.
--- The seed should be at least 16 bytes.
-generateKeyFromSeed
-    :: SomeMnemonic
-    -> Byron 'RootK XPrv
-generateKeyFromSeed = unsafeGenerateKeyFromSeed ()
-
--- | Generate a new key from seed. Note that the @depth@ is left open so that
--- the caller gets to decide what type of key this is. This is mostly for
--- testing, in practice, seeds are used to represent root keys, and one should
--- use 'generateKeyFromSeed'.
-unsafeGenerateKeyFromSeed
-    :: DerivationPath depth
-    -> SomeMnemonic
-    -> Byron depth XPrv
-unsafeGenerateKeyFromSeed derivationPath (SomeMnemonic mw) = Byron
-    { getKey = masterKey
-    , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-  where
-    masterKey = generate (hashSeed seedValidated)
-    seed  = entropyToBytes $ mnemonicToEntropy mw
-    seedValidated = assert
-        (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-        seed
 
 -- | Hash the seed entropy (generated from mnemonic) used to initiate a HD
 -- wallet. This increases the key length to 34 bytes, selectKey is greater than the
@@ -220,26 +217,6 @@ hdPassphrase masterKey =
     (PBKDF2.Parameters 500 32)
     (xpubToBytes masterKey)
     ("address-hashing" :: ByteString)
-
-mkByronKeyFromMasterKey
-    :: XPrv
-    -> Byron 'RootK XPrv
-mkByronKeyFromMasterKey =
-    unsafeMkByronKeyFromMasterKey ()
-
-unsafeMkByronKeyFromMasterKey
-    :: DerivationPath depth
-    -> XPrv
-    -> Byron depth XPrv
-unsafeMkByronKeyFromMasterKey derivationPath masterKey = Byron
-    { getKey = masterKey
-    , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub masterKey)
-    }
-
---
--- Internal
---
 
 word32 :: Enum a => a -> Word32
 word32 = fromIntegral . fromEnum

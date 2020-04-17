@@ -23,6 +23,8 @@ import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
     , DerivationType (..)
+    , GenMasterKey (..)
+    , HardDerivation (..)
     , Index
     , XPrv
     , XPub
@@ -64,10 +66,8 @@ import GHC.Stack
 import GHC.TypeLits
     ( natVal )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, oneof, vector )
+    ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
-import qualified Cardano.Address.Style.Byron as Byron
-import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
@@ -142,14 +142,21 @@ instance Arbitrary (Byron 'AddressK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @12
-        path <- (,) <$> arbitrary <*> arbitrary
-        pure $ toXPub <$> Byron.unsafeGenerateKeyFromSeed path mw
+        rootK <- genMasterKeyFromMnemonic mw   <$> arbitrary
+        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
+        addrK <- deriveAddressPrivateKey acctK () <$> arbitrary
+        pure $ toXPub <$> addrK
+
 
 instance Arbitrary (Icarus 'AddressK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
-        pure $ toXPub <$> Icarus.unsafeGenerateKeyFromSeed mw
+        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
+        let rootK = genMasterKeyFromMnemonic mw bytes
+        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
+        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        pure $ toXPub <$> addrK
 
 instance Arbitrary NetworkDiscriminant where
     arbitrary = oneof

@@ -17,9 +17,9 @@ module Cardano.Codec.CborSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), XPrv )
+    ( Depth (..), GenMasterKey (..), XPrv )
 import Cardano.Address.Style.Byron
-    ( Byron (..), unsafeGenerateKeyFromSeed )
+    ( Byron (..) )
 import Cardano.Codec.Cbor
     ( decodeAddressDerivationPath
     , decodeAddressPayload
@@ -141,8 +141,8 @@ decodeDerivationPathTest DecodeDerivationPath{..} =
     payload = unsafeDeserialiseCbor decodeAddressPayload $
         BL.fromStrict (unsafeFromHex addr)
     decoded = deserialiseCbor (decodeAddressDerivationPath pwd) payload
-    Right seed = mkSomeMnemonic @'[12] mnem
-    key = unsafeGenerateKeyFromSeed () seed :: Byron 'RootK XPrv
+    Right mw = mkSomeMnemonic @'[12] mnem
+    key = genMasterKeyFromMnemonic mw () :: Byron 'RootK XPrv
     pwd = payloadPassphrase key
 
 {-------------------------------------------------------------------------------

@@ -8,6 +8,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_HADDOCK prune #-}
+
 -- |
 -- Copyright: © 2018-2020 IOHK
 -- License: Apache-2.0
@@ -20,13 +22,13 @@
 -- <https://github.com/input-output-hk/cardano-crypto/blob/4590efa638397e952a51a8994b5543e4ea3c1ecd/cbits/encrypted_sign.c cardano-crypto>.
 
 module Cardano.Address.Style.Icarus
-    ( -- * Types
+    ( -- * Icarus
       Icarus
     , getKey
+    , liftXPrv
 
-      -- * Generation
+      -- Internals
     , unsafeGenerateKeyFromHardwareLedger
-    , unsafeGenerateKeyFromSeed
     , minSeedLengthBytes
     ) where
 
@@ -39,7 +41,8 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( Depth (..)
+    ( AccountingStyle
+    , Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
     , GenMasterKey (..)
@@ -104,14 +107,31 @@ newtype Icarus (depth :: Depth) key =
 deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
-instance GenMasterKey Icarus where
-    type GenMasterKeyFrom Icarus = SomeMnemonic
+-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+liftXPrv :: XPrv -> Icarus depth XPrv
+liftXPrv = Icarus
 
-    genMasterKey = unsafeGenerateKeyFromSeed
+instance GenMasterKey Icarus where
+    type SecondFactor Icarus = ScrubbedBytes
+
+    genMasterKeyFromXPrv = liftXPrv
+    genMasterKeyFromMnemonic (SomeMnemonic mw) sndFactor =
+        let
+            seed  = entropyToBytes $ mnemonicToEntropy mw
+            seedValidated = assert
+                (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
+                seed
+        in Icarus $ generateNew seedValidated sndFactor
 
 instance HardDerivation Icarus where
     type AccountIndexDerivationType Icarus = 'Hardened
     type AddressIndexDerivationType Icarus = 'Soft
+    type WithAccountStyle Icarus = AccountingStyle
 
     deriveAccountPrivateKey (Icarus rootXPrv) accIx =
         let
@@ -195,11 +215,11 @@ purposeIndex = 0x8000002C
 coinTypeIndex :: Word32
 coinTypeIndex = 0x80000717
 
--- | The minimum seed length for 'generateKeyFromSeed' and 'unsafeGenerateKeyFromSeed'.
+-- | The minimum seed length for 'generateKeyFromMnemonic' and 'unsafeGenerateKeyFromMnemonic'.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
 
--- | Hardware Ledger devices generates keys from mnemonic using a different
+-- Hardware Ledger devices generates keys from mnemonic using a different
 -- approach (different from the rest of Cardano).
 --
 -- It is a combination of:
@@ -306,19 +326,3 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
 
     salt :: ByteString
     salt = "ed25519 seed"
-
--- | Generate a new key from seed. Note that the @depth@ is left open so that
--- the caller gets to decide what type of key this is. This is mostly for
--- testing, in practice, seeds are used to represent root keys, and one should
--- use 'generateKeyFromSeed'.
-unsafeGenerateKeyFromSeed
-    :: SomeMnemonic
-        -- ^ The root mnemonic
-    -> Icarus depth XPrv
-unsafeGenerateKeyFromSeed (SomeMnemonic mw) =
-    let
-        seed  = entropyToBytes $ mnemonicToEntropy mw
-        seedValidated = assert
-            (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-            seed
-    in Icarus $ generateNew seedValidated (mempty :: ScrubbedBytes)
