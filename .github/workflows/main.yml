@@ -1,4 +1,4 @@
-name: Test
+name: Continuous Integration
 
 on:
   push: { "branches": [ "master" ] }
@@ -9,54 +9,45 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        include: []
 
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install OS Packages
+    - name: 💽 Install OS Packages
       uses: mstksg/get-package@v1
       with:
         apt-get: libgmp-dev libssl-dev
 
-    - uses: actions/checkout@v1
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v1
 
-    - name: Setup Stack
+    - name: 🧰 Setup Stack
       uses: mstksg/setup-stack@v1
 
-    - name: Cache Key
+    - name: 🔑 Cache Key
       id: cache_key
       run: echo ::set-output name=key::$(md5sum stack.yaml | awk '{print $1}')
 
-    - name: Cache Dependencies
+    - name: 💾 Cache Dependencies
       id: cache
       uses: actions/cache@v1
       with:
         path: ~/.stack
         key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
 
-    - name: Build Snapshot
+    - name: 📸 Build Snapshot
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         stack --no-terminal test --bench --only-snapshot
 
-    - name: Build & Test
+    - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --no-run-benchmarks --coverage
+        stack --no-terminal test --bench --no-run-benchmarks --haddock --no-haddock-deps --coverage
+        wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.coverage/Makefile
+        mkdir -p .coverage && touch .coverage/template.overlay
+        DESTDIR=dist/coverage make report  && DESTDIR=dist/coverage make badge
+        mkdir -p dist/haddock  && mv $(stack path --local-install-root)/doc/* dist/haddock
 
-    - name: Coverage
-      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
-      run: |
-        mkdir -p dist/coverage && stack hpc report --all --destdir dist/coverage
-        curl https://raw.githubusercontent.com/input-output-hk/adrestia/master/.github/make-badge.sh > make-badge
-        bash make-badge dist/coverage/hpc_index.html > dist/coverage/badge.svg
-
-    - name: Documentation
-      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
-      run: |
-        stack --no-terminal build --no-haddock-deps --haddock
-        mkdir -p dist/haddock && mv $(stack path --local-pkg-db)/../doc/cardano-addresses-*/* dist/haddock
-
-    - name: Deploy Documentation
+    - name: 📘 Publish Artifacts
       if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v3
       with:
