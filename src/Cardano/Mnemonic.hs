@@ -102,8 +102,6 @@ import Data.Type.Equality
     ( (:~:) (..), testEquality )
 import Data.Typeable
     ( Typeable )
-import Fmt
-    ( Buildable (..) )
 import GHC.TypeLits
     ( KnownNat, Nat, natVal )
 import Type.Reflection
@@ -340,7 +338,6 @@ class MkSomeMnemonic (sz :: [Nat]) where
 newtype MkSomeMnemonicError (sz :: [Nat]) =
     MkSomeMnemonicError { getMkSomeMnemonicError :: String }
     deriving stock (Eq, Show)
-    deriving newtype Buildable
 
 instance {-# OVERLAPS #-}
     ( n ~ EntropySize mw
