@@ -1,0 +1,42 @@
+module "Cardano.Address" {
+  tick function "showsPrec" [Show instance];
+  tick function "compare" [Ord instance];
+  tick function "==" [Eq instance];
+}
+
+module "Cardano.Address.Derivation" {
+  tick function "showsPrec" [Show instance];
+  tick function "compare" [Ord instance];
+  tick function "==" [Eq instance];
+}
+
+module "Cardano.Address.Style.Byron" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+  tick "()" [Never evaluated];
+}
+
+module "Cardano.Address.Style.Icarus" {
+  tick function "showsPrec" [Show instance];
+  tick function "=="  [Eq instance];
+
+  inside "unsafeGenerateKeyFromHardwareLedger" {
+    tick "(error \"pruneBuffer: no first byte\")" [Invariant];
+    tick "(error \"pruneBuffer: no last byte\")" [Invariant];
+    tick "(Left \"invalid xprv\")" [Invariant];
+  }
+}
+
+module "Cardano.Mnemonic" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+  tick "Proxy" [Never evaluated];
+  tick "(Proxy :: Proxy n)" [Never evaluated];
+  tick "(Proxy :: Proxy rest)" [Never evaluated];
+  tick "(Proxy :: Proxy mw)" [Never evaluated];
+  tick "(Proxy :: Proxy (mw ': rest))" [Never evaluated];
+
+  inside "genEntropy" {
+    tick "(throwM . UnexpectedEntropyError)" on line 208 [Invariant];
+  }
+}
