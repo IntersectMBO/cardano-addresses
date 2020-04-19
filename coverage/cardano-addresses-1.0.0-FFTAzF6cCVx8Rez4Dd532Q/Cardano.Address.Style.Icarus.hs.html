@@ -171,7 +171,7 @@ span.spaces    { background: white }
 <span class="lineno">  152 </span>        --
 <span class="lineno">  153 </span>        -- @since 1.0.0
 <span class="lineno">  154 </span>    }
-<span class="lineno">  155 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  155 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">  156 </span>
 <span class="lineno">  157 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Icarus depth))</span></span></span></span>
 <span class="lineno">  158 </span>instance (NFData key) =&gt; NFData (Icarus depth key)
@@ -318,7 +318,7 @@ span.spaces    { background: white }
 <span class="lineno">  299 </span><span class="spaces">    </span><span class="istickedoff">let cc = hmacSha256 (BS.pack [1] &lt;&gt; seed)</span>
 <span class="lineno">  300 </span><span class="spaces">    </span><span class="istickedoff">let (iL, iR) = first pruneBuffer $ hashRepeatedly seed</span>
 <span class="lineno">  301 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  302 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe <span class="nottickedoff">(Left &quot;invalid xprv&quot;)</span> pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
+<span class="lineno">  302 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe (Left &quot;invalid xprv&quot;) pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
 <span class="lineno">  303 </span><span class="spaces">    </span><span class="istickedoff">pure $ Icarus prv</span>
 <span class="lineno">  304 </span><span class="spaces">  </span><span class="istickedoff">where</span>
 <span class="lineno">  305 </span><span class="spaces">    </span><span class="istickedoff">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span>
@@ -361,10 +361,10 @@ span.spaces    { background: white }
 <span class="lineno">  342 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer :: ByteString -&gt; ByteString</span>
 <span class="lineno">  343 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer bytes =</span>
 <span class="lineno">  344 </span><span class="spaces">        </span><span class="istickedoff">let</span>
-<span class="lineno">  345 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no first byte&quot;)</span> $</span>
+<span class="lineno">  345 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe (error &quot;pruneBuffer: no first byte&quot;) $</span>
 <span class="lineno">  346 </span><span class="spaces">                </span><span class="istickedoff">BS.uncons bytes</span>
 <span class="lineno">  347 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  348 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no last byte&quot;)</span> $</span>
+<span class="lineno">  348 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe (error &quot;pruneBuffer: no last byte&quot;) $</span>
 <span class="lineno">  349 </span><span class="spaces">                </span><span class="istickedoff">BS.unsnoc rest</span>
 <span class="lineno">  350 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  351 </span><span class="spaces">            </span><span class="istickedoff">firstPruned = firstByte</span>

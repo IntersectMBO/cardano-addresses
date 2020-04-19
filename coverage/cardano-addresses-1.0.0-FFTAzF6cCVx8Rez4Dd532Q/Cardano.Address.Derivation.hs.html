@@ -277,7 +277,7 @@ span.spaces    { background: white }
 <span class="lineno">  258 </span>    = UTxOExternal
 <span class="lineno">  259 </span>    | UTxOInternal
 <span class="lineno">  260 </span>    | MutableAccount
-<span class="lineno">  261 </span>    deriving (Generic, Typeable, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>)
+<span class="lineno">  261 </span>    deriving (Generic, Typeable, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>)
 <span class="lineno">  262 </span>
 <span class="lineno">  263 </span>instance NFData AccountingStyle
 <span class="lineno">  264 </span>
@@ -305,7 +305,7 @@ span.spaces    { background: white }
 <span class="lineno">  286 </span>-- @since 1.0.0
 <span class="lineno">  287 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
 <span class="lineno">  288 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">getIndex</span></span></span> :: Word32 }
-<span class="lineno">  289 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  289 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">  290 </span>
 <span class="lineno">  291 </span>instance NFData (Index derivationType depth)
 <span class="lineno">  292 </span>
