@@ -47,6 +47,8 @@ jobs:
         DESTDIR=dist/coverage make report  && DESTDIR=dist/coverage make badge
         PKG_NAME=$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
         mkdir -p dist/haddock  && mv $(stack path --local-install-root)/doc/$PKG_NAME-*/* dist/haddock
+        bash scripts/hlint.sh
+        bash scripts/stylish-haskell.sh
 
     - name: 📘 Publish Artifacts
       if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
