@@ -39,6 +39,11 @@ jobs:
       run: |
         stack --no-terminal test --bench --only-snapshot
 
+    - name: ✍  Check hlint and stylish
+      run: |
+        bash scripts/hlint.sh
+        bash scripts/stylish-haskell.sh
+
     - name: 🔨 Build & Test
       run: |
         stack --no-terminal test --bench --no-run-benchmarks --haddock --no-haddock-deps --coverage

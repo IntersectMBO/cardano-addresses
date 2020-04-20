@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
@@ -53,17 +54,20 @@ module Cardano.Address.Derivation
 
 import Prelude
 
-import Data.Either.Extra (eitherToMaybe)
-import GHC.Stack
-    (HasCallStack )
 import Cardano.Crypto.Wallet
     ( DerivationScheme (..) )
+import Cardano.Mnemonic
+    ( SomeMnemonic )
 import Control.DeepSeq
     ( NFData )
+import Crypto.Error
+    ( eitherCryptoError )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Either.Extra
+    ( eitherToMaybe )
 import Data.String
     ( fromString )
 import Data.Typeable
@@ -74,14 +78,12 @@ import Fmt
     ( Buildable (..) )
 import GHC.Generics
     ( Generic )
-import Crypto.Error
-    ( eitherCryptoError )
-import Cardano.Mnemonic
-    ( SomeMnemonic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Cardano.Crypto.Wallet as CC
-import qualified Data.ByteString as BS
 import qualified Crypto.ECC.Edwards25519 as Ed25519
+import qualified Data.ByteString as BS
 
 -- $overview
 --
