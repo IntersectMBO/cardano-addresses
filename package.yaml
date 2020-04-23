@@ -8,23 +8,28 @@ copyright:           2020 IOHK
 synopsis:            Library utilities for mnemonic generation and address derivation.
 category:            Cardano
 
-extra-source-files:
-- README.md
-- ChangeLog.md
-
 description: |
   Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 
 dependencies:
 - base >= 4.7 && < 5
 
+flags:
+  release:
+    description: Compile executables for a release.
+    default: False
+    manual: True
+
 library:
   source-dirs: src
   ghc-options:
-  - -Werror
   - -Wall
   - -Wcompat
   - -fwarn-redundant-constraints
+  when:
+  - condition: flag(release)
+    ghc-options:
+    - -Werror
   default-extensions:
   - NoImplicitPrelude
   dependencies:
@@ -51,13 +56,16 @@ tests:
     default-extensions:
     - NoImplicitPrelude
     ghc-options:
-    - -Werror
     - -Wall
     - -Wcompat
     - -fwarn-redundant-constraints
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    when:
+    - condition: flag(release)
+      ghc-options:
+      - -Werror
     dependencies:
     - bytestring
     - cardano-addresses
