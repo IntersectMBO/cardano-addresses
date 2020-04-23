@@ -37,6 +37,12 @@ jobs:
         path: ~/.stack
         key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
 
+    - name: 🏷️ Variables
+      id: variables
+      run: |
+        stack setup
+        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+
     - name: 📸 Build Snapshot
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
@@ -56,12 +62,14 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --no-run-benchmarks --haddock --no-haddock-deps --coverage
+        stack --no-terminal test --bench --no-run-benchmarks --haddock --no-haddock-deps --coverage --flag $PKG_NAME:release
         wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
         mkdir -p .coverage && touch .coverage/template.overlay
         DESTDIR=dist/coverage make report  && DESTDIR=dist/coverage make badge
-        PKG_NAME=$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
-        mkdir -p dist/haddock  && mv $(stack path --local-install-root)/doc/$PKG_NAME-*/* dist/haddock
+        mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
+        sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@' dist/haddock/index.html
+      env:
+        PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
 
     - name: 📘 Publish Documentation
       if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
