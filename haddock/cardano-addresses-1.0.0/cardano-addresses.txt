@@ -273,6 +273,45 @@ instance Formatting.Buildable.Buildable (Cardano.Address.Derivation.Index deriva
 instance Control.DeepSeq.NFData Cardano.Address.Derivation.AccountingStyle
 instance GHC.Enum.Enum Cardano.Address.Derivation.AccountingStyle
 
+
+module Cardano.Address.Style.Shelley
+
+-- | A cryptographic key for sequential-scheme address derivation, with
+--   phantom-types to disambiguate key types.
+--   
+--   <pre>
+--   let rootPrivateKey = Shelley 'RootK XPrv
+--   let accountPubKey  = Shelley 'AccountK XPub
+--   let addressPubKey  = Shelley 'AddressK XPub
+--   </pre>
+data Shelley (depth :: Depth) key
+
+-- | Extract the raw <a>XPrv</a> or <tt>XPub</tt> wrapped by this type.
+getKey :: Shelley depth key -> key
+
+-- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
+--   <a>XPrv</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPrv :: XPrv -> Shelley depth XPrv
+
+-- | The minimum seed length for <a>genMasterKeyFromMnemonic</a>.
+minSeedLengthBytes :: Int
+
+-- | Size, in bytes, of a public key (without chain code)
+publicKeySize :: Int
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
+instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
+instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
+
 module Cardano.Address
 
 -- | An <a>Address</a> type representing <tt>Cardano</tt> addresses.
