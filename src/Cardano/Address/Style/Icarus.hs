@@ -105,25 +105,23 @@ import qualified Data.Text.Encoding as T
 -- == Examples
 --
 -- === Generating a root key from 'SomeMnemonic'
---
--- > import Cardano.Mnemonic
--- >     ( mkSomeMnemonic )
--- > import Cardano.Address.Derivation
--- >     ( GenMasterKey(..) )
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address.Derivation ( GenMasterKey(..) )
 -- >
--- > let (Right mw) = mkSomeMnemonic @'[ 15 ] [ "test", "child", ... , "dog" ]
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- > let sndFactor = mempty -- Or alternatively, a second factor passphrase
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus RootK XPrv
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 --
 -- === Generating an 'Address' from a root key
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
 --
 --
--- > import Cardano.Address
--- >     ( PaymentAddress(..), base58, mainnetDiscriminant )
--- > import Cardano.Address.Derivation
--- >     ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- > import Cardano.Address ( PaymentAddress(..), base58, mainnetDiscriminant )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
@@ -132,7 +130,7 @@ import qualified Data.Text.Encoding as T
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 -- >
 -- > base58 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
--- > "Ae2tdPwUPEZ8rVsdBE6EMZpac32MLzciY75MrwrPs8ikjf6MWYFJUHkGaw5"
+-- > "Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
 
 {-------------------------------------------------------------------------------
                                    Key Types

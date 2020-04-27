@@ -90,6 +90,35 @@ import qualified Data.ByteString.Lazy as BL
 -- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
 --
+-- == Examples
+--
+-- === Generating a root key from 'SomeMnemonic'
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address.Derivation ( GenMasterKey(..) )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- > let sndFactor = Nothing -- Or alternatively, a second factor mnemonic
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+--
+-- === Generating an 'Address' from a root key
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
+--
+--
+-- > import Cardano.Address ( PaymentAddress(..), bech32, mainnetDiscriminant )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- >
+-- > bech32 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
+-- > "addr1vzu630t7mpaaqf7l8a0ave287f3wdvvduumt65jf4vnua2qcuevus"
 
 {-------------------------------------------------------------------------------
                                    Key Types
