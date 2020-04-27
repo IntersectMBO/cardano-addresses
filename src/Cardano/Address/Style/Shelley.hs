@@ -53,7 +53,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , xpubToBytes
+    , xpubToBytesWithoutChainCode
     )
 import Cardano.Mnemonic
     ( someMnemonicToBytes )
@@ -120,7 +120,7 @@ import qualified Data.ByteString.Lazy as BL
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 -- >
 -- > bech32 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
--- > "addr1vzu630t7mpaaqf7l8a0ave287f3wdvvduumt65jf4vnua2qcuevus"
+-- > "addr1vzpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxzgg5v"
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -234,7 +234,11 @@ instance PaymentAddress Shelley where
           firstByte = case discrimination of
               RequiresNoMagic  -> 0x60
               RequiresMagic (ProtocolMagic _pm) -> 0x61
-          hashedKey = BA.convert $ hash @_ @Blake2b_224 $ xpubToBytes $ getKey k
+          hashedKey =
+              BA.convert $
+              hash @_ @Blake2b_224 $
+              xpubToBytesWithoutChainCode $
+              getKey k
           expectedLength = 1 + publicKeyHashSize
           invariantSize :: HasCallStack => ByteString -> ByteString
           invariantSize bytes
