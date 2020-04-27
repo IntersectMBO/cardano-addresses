@@ -2,7 +2,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -13,6 +12,7 @@ module Cardano.Address
     ( -- * Address
       Address
     , PaymentAddress (..)
+    , DelegationAddress (..)
     , unsafeMkAddress
 
       -- * Conversion From / To Text
@@ -115,6 +115,25 @@ class PaymentAddress key where
     --
     -- @since 1.0.0
     paymentAddress :: NetworkDiscriminant -> key 'AddressK XPub -> Address
+
+-- | Encoding of delegation addresses for certain key types and backend targets.
+--
+-- @since 1.0.1
+class PaymentAddress key
+    => DelegationAddress key where
+    -- | Convert a public key and a staking key to a delegation 'Address' valid
+    -- for the given network discrimination. Funds sent to this address will be
+    -- delegated according to the delegation settings attached to the delegation
+    -- key.
+    --
+    -- @since 1.0.1
+    delegationAddress
+        :: NetworkDiscriminant
+        ->  key 'AddressK XPub
+            -- ^ Payment key
+        -> key 'AddressK XPub
+            -- ^ Staking key / Reward account
+        -> Address
 
 -- | Describe required network discrimination. See also the available
 -- smart-constructors if you are not sure about what to do with this:
