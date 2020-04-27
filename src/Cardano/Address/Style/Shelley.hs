@@ -56,7 +56,7 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Mnemonic
-    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
+    ( someMnemonicToBytes )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
@@ -67,6 +67,8 @@ import Crypto.Hash.Algorithms
     ( Blake2b_224 )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
+import Data.ByteArray
+    ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
 import Data.Maybe
@@ -100,7 +102,7 @@ import qualified Data.ByteString.Lazy as BL
 -- > import Cardano.Address.Derivation ( GenMasterKey(..) )
 -- >
 -- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = Nothing -- Or alternatively, a second factor mnemonic
+-- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
 --
 -- === Generating an 'Address' from a root key
@@ -156,14 +158,13 @@ liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
 
 instance GenMasterKey Shelley where
-    type SecondFactor Shelley = Maybe SomeMnemonic
+    type SecondFactor Shelley = ScrubbedBytes
 
     genMasterKeyFromXPrv = liftXPrv
     genMasterKeyFromMnemonic fstFactor sndFactor =
-        Shelley $ generateNew seedValidated (maybe mempty mnemonicToBytes sndFactor)
+        Shelley $ generateNew seedValidated sndFactor
         where
-            mnemonicToBytes (SomeMnemonic mw) = entropyToBytes $ mnemonicToEntropy mw
-            seed  = mnemonicToBytes fstFactor
+            seed  = someMnemonicToBytes fstFactor
             seedValidated = assert
                 (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
                 seed

@@ -25,6 +25,7 @@ module Cardano.Mnemonic
       SomeMnemonic(..)
     , mkSomeMnemonic
     , MkSomeMnemonicError(..)
+    , someMnemonicToBytes
 
       -- * @Mnemonic@
     , Mnemonic
@@ -294,6 +295,12 @@ mnemonicToText =
     . unListN
     . mnemonicSentenceToListN
     . mnemonicToSentence
+
+-- | Convert a 'SomeMnemonic' to bytes.
+--
+-- @since 1.0.1
+someMnemonicToBytes :: SomeMnemonic -> ScrubbedBytes
+someMnemonicToBytes (SomeMnemonic mw) = entropyToBytes $ mnemonicToEntropy mw
 
 -- | Ease the manipulation of 'Mnemonic' by encapsulating the type constraints inside a constructor.
 -- This is particularly useful for functions which do not require anything but a valid 'Mnemonic' without any

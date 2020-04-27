@@ -27,7 +27,9 @@ import Cardano.Address.Derivation
 import Cardano.Address.Style.Shelley
     ( Shelley (..) )
 import Cardano.Mnemonic
-    ( SomeMnemonic )
+    ( SomeMnemonic, someMnemonicToBytes )
+import Data.ByteArray
+    ( ScrubbedBytes )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -62,7 +64,8 @@ prop_publicChildKeyDerivation
 prop_publicChildKeyDerivation (mw, sndFactor) cc ix =
     addrXPub1 === addrXPub2
   where
-    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    rootXPrv =
+        genMasterKeyFromMnemonic mw (maybeMnemonicToBytes sndFactor) :: Shelley 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
     addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
@@ -74,8 +77,12 @@ prop_accountKeyDerivation
 prop_accountKeyDerivation (mw, sndFactor) ix =
     accXPrv `seq` property ()
   where
-    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    rootXPrv =
+        genMasterKeyFromMnemonic mw (maybeMnemonicToBytes sndFactor) :: Shelley 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
+
+maybeMnemonicToBytes :: Maybe SomeMnemonic -> ScrubbedBytes
+maybeMnemonicToBytes = maybe mempty someMnemonicToBytes
 
 prop_toEnumAccountingStyle :: Int -> Property
 prop_toEnumAccountingStyle n =
