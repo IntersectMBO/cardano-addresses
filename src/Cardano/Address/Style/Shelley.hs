@@ -35,7 +35,8 @@ module Cardano.Address.Style.Shelley
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
+    ( DelegationAddress (..)
+    , NetworkDiscriminant (..)
     , PaymentAddress (..)
     , ProtocolMagic (..)
     , unsafeMkAddress
@@ -50,6 +51,7 @@ import Cardano.Address.Derivation
     , Index
     , SoftDerivation (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
@@ -218,9 +220,9 @@ instance SoftDerivation Shelley where
 
 instance PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
-        invariantSize $ BL.toStrict $ runPut $ do
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
-            putByteString hashedKey
+            putByteString (keyToHash k)
       where
           -- we use here the fact that payment address stands for what is named
           -- as enterprise address, ie., address carrying no stake rights. For
@@ -234,20 +236,42 @@ instance PaymentAddress Shelley where
           firstByte = case discrimination of
               RequiresNoMagic  -> 0x60
               RequiresMagic (ProtocolMagic _pm) -> 0x61
-          hashedKey =
-              BA.convert $
-              hash @_ @Blake2b_224 $
-              xpubToBytesWithoutChainCode $
-              getKey k
           expectedLength = 1 + publicKeyHashSize
-          invariantSize :: HasCallStack => ByteString -> ByteString
-          invariantSize bytes
-              | BS.length bytes == expectedLength = bytes
-              | otherwise = error
-                $ "length was "
-                ++ show (BS.length bytes)
-                ++ ", but expected to be "
-                ++ (show expectedLength)
+
+instance DelegationAddress Shelley where
+    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            mapM_ (putByteString . keyToHash) [paymentKey, stakingKey]
+      where
+          -- we use here the fact that payment address stands for what is named
+          -- as base address - refer to delegation specification - Section 3.2.1.
+          -- What is important here is that the address is composed of discrimination
+          -- byte and two 28 bytes hashed public keys, one for payment key and the
+          -- other for staking/reword key.
+          -- Moreover, it was decided that first 4 bits for enterprise address
+          -- will be `0000`. The next for bits for network discriminator are to
+          -- be established soon. TO_DO : change `firstbyte` as network
+          -- discriminant in CDDL spec is known.
+          firstByte = case discrimination of
+              RequiresNoMagic  -> 0x00
+              RequiresMagic (ProtocolMagic _pm) -> 0x01
+          expectedLength = 1 + 2*publicKeyHashSize
+
+invariantSize :: HasCallStack => Int -> ByteString -> ByteString
+invariantSize expectedLength bytes
+    | BS.length bytes == expectedLength = bytes
+    | otherwise = error
+      $ "length was "
+      ++ show (BS.length bytes)
+      ++ ", but expected to be "
+      ++ (show expectedLength)
+
+keyToHash :: Shelley depth XPub -> ByteString
+keyToHash = BA.convert .
+    hash @_ @Blake2b_224 .
+    xpubToBytesWithoutChainCode .
+    getKey
 
 {-------------------------------------------------------------------------------
                                  Key generation
