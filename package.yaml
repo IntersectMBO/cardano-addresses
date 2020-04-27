@@ -37,6 +37,7 @@ library:
   - basement
   - bech32
   - bech32-th
+  - binary
   - bytestring
   - cardano-crypto
   - cborg

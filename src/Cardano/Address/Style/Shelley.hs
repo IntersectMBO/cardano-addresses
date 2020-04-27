@@ -29,13 +29,17 @@ module Cardano.Address.Style.Shelley
 
       -- Internals
     , minSeedLengthBytes
-    , publicKeySize
-    , addrSingleSize
-    , addrGroupedSize
+    , publicKeyHashSize
     ) where
 
 import Prelude
 
+import Cardano.Address
+    ( NetworkDiscriminant (..)
+    , PaymentAddress (..)
+    , ProtocolMagic (..)
+    , unsafeMkAddress
+    )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -49,6 +53,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , xpubToBytes
     )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
@@ -56,14 +61,26 @@ import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Crypto.Hash
+    ( hash )
+import Crypto.Hash.Algorithms
+    ( Blake2b_224 )
+import Data.Binary.Put
+    ( putByteString, putWord8, runPut )
+import Data.ByteString
+    ( ByteString )
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 
 -- $overview
 --
@@ -169,21 +186,42 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+instance PaymentAddress Shelley where
+    paymentAddress discrimination k = unsafeMkAddress $
+        invariantSize $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString hashedKey
+      where
+          -- we use here the fact that payment address stands for what is named
+          -- as enterprise address, ie., address carrying no stake rights. For
+          -- rationale why we may need such addresses refer to delegation
+          -- specification - Section 3.2.3. What is important here is that the
+          -- address is composed of discrimination byte and 28 bytes hashed public key.
+          -- Moreover, it was decided that first 4 bits for enterprise address
+          -- will be `0110`. The next for bits for network discriminator are to
+          -- be established soon. TO_DO : change `firstbyte` as network
+          -- discriminant in CDDL spec is known.
+          firstByte = case discrimination of
+              RequiresNoMagic  -> 0x60
+              RequiresMagic (ProtocolMagic _pm) -> 0x61
+          hashedKey = BA.convert $ hash @_ @Blake2b_224 $ xpubToBytes $ getKey k
+          expectedLength = 1 + publicKeyHashSize
+          invariantSize :: HasCallStack => ByteString -> ByteString
+          invariantSize bytes
+              | BS.length bytes == expectedLength = bytes
+              | otherwise = error
+                $ "length was "
+                ++ show (BS.length bytes)
+                ++ ", but expected to be "
+                ++ (show expectedLength)
+
 {-------------------------------------------------------------------------------
                                  Key generation
 -------------------------------------------------------------------------------}
 
--- | Size, in bytes, of a public key (without chain code)
-publicKeySize :: Int
-publicKeySize = 32
-
--- Serialized length in bytes of a Single Address
-addrSingleSize :: Int
-addrSingleSize = 1 + publicKeySize
-
--- Serialized length in bytes of a Grouped Address
-addrGroupedSize :: Int
-addrGroupedSize = addrSingleSize + publicKeySize
+-- | Size, in bytes, of a hash of public key (without chain code)
+publicKeyHashSize :: Int
+publicKeyHashSize = 28
 
 -- | Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
