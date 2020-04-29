@@ -23,9 +23,10 @@ module Cardano.Mnemonic
 
       -- * @SomeMnemonic@
       SomeMnemonic(..)
-    , mkSomeMnemonic
+    , MkSomeMnemonic (..)
     , MkSomeMnemonicError(..)
     , someMnemonicToBytes
+    , NatVals (..)
 
       -- * @Mnemonic@
     , Mnemonic
