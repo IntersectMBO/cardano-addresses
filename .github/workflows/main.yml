@@ -40,7 +40,6 @@ jobs:
     - name: 🏷️ Variables
       id: variables
       run: |
-        stack setup
         echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
 
     - name: 📸 Build Snapshot
@@ -62,12 +61,13 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --no-run-benchmarks --haddock --no-haddock-deps --coverage --flag $PKG_NAME:release
+        stack --no-terminal test --bench --no-run-benchmarks --coverage --flag $PKG_NAME:release
         wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
         mkdir -p .coverage && touch .coverage/template.overlay
         DESTDIR=dist/coverage make report  && DESTDIR=dist/coverage make badge
+        stack build --haddock --no-haddock-deps
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
-        sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@' dist/haddock/index.html
+        sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
       env:
         PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
 
