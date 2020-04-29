@@ -55,7 +55,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , xpubToBytesWithoutChainCode
+    , getPublicKey
     )
 import Cardano.Mnemonic
     ( someMnemonicToBytes )
@@ -66,7 +66,9 @@ import Control.Exception.Base
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
-    ( Blake2b_224 )
+    ( Blake2b_224 (..) )
+import Crypto.Hash.IO
+    ( HashAlgorithm (hashDigestSize) )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.ByteArray
@@ -222,7 +224,7 @@ instance PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
-            putByteString (keyToHash k)
+            putByteString (blake2b224 k)
       where
           -- we use here the fact that payment address stands for what is named
           -- as enterprise address, ie., address carrying no stake rights. For
@@ -242,7 +244,7 @@ instance DelegationAddress Shelley where
     delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
-            mapM_ (putByteString . keyToHash) [paymentKey, stakingKey]
+            mapM_ (putByteString . blake2b224) [paymentKey, stakingKey]
       where
           -- we use here the fact that payment address stands for what is named
           -- as base address - refer to delegation specification - Section 3.2.1.
@@ -267,19 +269,17 @@ invariantSize expectedLength bytes
       ++ ", but expected to be "
       ++ (show expectedLength)
 
-keyToHash :: Shelley depth XPub -> ByteString
-keyToHash = BA.convert .
-    hash @_ @Blake2b_224 .
-    xpubToBytesWithoutChainCode .
-    getKey
+blake2b224 :: Shelley depth XPub -> ByteString
+blake2b224 =
+    BA.convert . hash @_ @Blake2b_224 . getPublicKey . getKey
 
 {-------------------------------------------------------------------------------
                                  Key generation
 -------------------------------------------------------------------------------}
 
--- | Size, in bytes, of a hash of public key (without chain code)
+-- | Size, in bytes, of a hash of public key (without the corresponding chain code)
 publicKeyHashSize :: Int
-publicKeyHashSize = 28
+publicKeyHashSize = hashDigestSize Blake2b_224
 
 -- | Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:

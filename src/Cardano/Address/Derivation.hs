@@ -31,7 +31,8 @@ module Cardano.Address.Derivation
     , XPub
     , xpubFromBytes
     , xpubToBytes
-    , xpubToBytesWithoutChainCode
+    , getPublicKey
+    , getChainCode
 
     -- ** XPrv
     , XPrv
@@ -117,19 +118,26 @@ xpubFromBytes :: ByteString -> Maybe XPub
 xpubFromBytes =
     eitherToMaybe . CC.xpub
 
--- | Convert an 'XPub' to a raw 'ByteString' (public key plus chain code)
+-- | Convert an 'XPub' to a raw 'ByteString' (both public key and chain code)
 --
 -- @since 1.0.0
 xpubToBytes :: XPub -> ByteString
 xpubToBytes =
     CC.unXPub
 
--- | Convert an 'XPub' to a public key 'ByteString' without chain code included
+-- | Get a public key 'ByteString' from 'XPub'
 --
 -- @since 1.0.1
-xpubToBytesWithoutChainCode :: XPub -> ByteString
-xpubToBytesWithoutChainCode (CC.XPub pk _cc) =
+getPublicKey :: XPub -> ByteString
+getPublicKey (CC.XPub pk _cc) =
     pk
+
+-- | Get a chain code 'ByteString' from 'XPub'
+--
+-- @since 1.0.1
+getChainCode :: XPub -> ByteString
+getChainCode (CC.XPub _pk (CC.ChainCode cc)) =
+    cc
 
 -- | Construct an 'XPrv' from raw 'ByteString'.
 --
