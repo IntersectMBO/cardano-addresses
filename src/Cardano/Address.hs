@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -5,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -22,7 +24,8 @@ module Cardano.Address
     , fromBech32
 
       -- * Network Discrimination
-    , NetworkDiscriminant (..)
+    , HasNetworkDiscriminant (..)
+    , NetworkDiscriminantByron (..)
     , mainnetDiscriminant
     , stagingDiscriminant
     , testnetDiscriminant
@@ -109,12 +112,12 @@ fromBech32 =
 -- | Encoding of addresses for certain key types and backend targets.
 --
 -- @since 1.0.0
-class PaymentAddress key where
+class HasNetworkDiscriminant key => PaymentAddress key where
     -- | Convert a public key to a payment 'Address' valid for the given
     -- network discrimination.
     --
     -- @since 1.0.0
-    paymentAddress :: NetworkDiscriminant -> key 'AddressK XPub -> Address
+    paymentAddress :: NetworkDiscriminant key -> key 'AddressK XPub -> Address
 
 -- | Encoding of delegation addresses for certain key types and backend targets.
 --
@@ -128,14 +131,21 @@ class PaymentAddress key
     --
     -- @since 1.0.1
     delegationAddress
-        :: NetworkDiscriminant
+        :: NetworkDiscriminant key
         ->  key 'AddressK XPub
             -- ^ Payment key
-        -> key 'AddressK XPub
+        ->  key 'AddressK XPub
             -- ^ Staking key / Reward account
         -> Address
 
--- | Describe required network discrimination. See also the available
+class HasNetworkDiscriminant (key :: Depth -> * -> *) where
+    type NetworkDiscriminant key :: *
+    type NetworkNumber key :: *
+
+    requiredInAddress :: NetworkDiscriminant key -> Bool
+    networkNumber :: NetworkDiscriminant key -> NetworkNumber key
+
+-- | Describe required network discrimination for Byron era. See also the available
 -- smart-constructors if you are not sure about what to do with this:
 --
 -- - 'mainnetDiscriminant'
@@ -143,28 +153,28 @@ class PaymentAddress key
 -- - 'testnetDiscriminant'
 --
 -- @since 1.0.0
-data NetworkDiscriminant
+data NetworkDiscriminantByron
     = RequiresNoMagic
     | RequiresMagic ProtocolMagic
     deriving (Generic, Show, Eq)
-instance NFData NetworkDiscriminant
+instance NFData NetworkDiscriminantByron
 
 -- | Required network discrimination settings for mainnet
 --
 -- @since 1.0.0
-mainnetDiscriminant :: NetworkDiscriminant
+mainnetDiscriminant :: NetworkDiscriminantByron
 mainnetDiscriminant = RequiresNoMagic
 
 -- | Required network discrimination settings for staging
 --
 -- @since 1.0.0
-stagingDiscriminant :: NetworkDiscriminant
+stagingDiscriminant :: NetworkDiscriminantByron
 stagingDiscriminant = RequiresNoMagic
 
 -- | Required network discrimination settings for testnet
 --
 -- @since 1.0.0
-testnetDiscriminant :: NetworkDiscriminant
+testnetDiscriminant :: NetworkDiscriminantByron
 testnetDiscriminant = RequiresMagic testnetMagic
 
 -- | Magic constant associated with a given network. This is mainly used in two

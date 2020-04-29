@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 88d746e036df5f0ee8367e7254680ede427387e5484ca4e7d9986a62be4fe9dc
+-- hash: b1b3da03727c1f37ef083e2de115c54fb2b0d4ee71684b1454069b18fba3cc73
 
 name:           cardano-addresses
 version:        1.0.0
@@ -50,6 +50,7 @@ library
     , basement
     , bech32
     , bech32-th
+    , binary
     , bytestring
     , cardano-crypto
     , cborg

@@ -36,6 +36,7 @@ import Prelude
 
 import Cardano.Address
     ( NetworkDiscriminant (..)
+    , NetworkDiscriminantByron (..)
     , PaymentAddress (..)
     , ProtocolMagic (..)
     , unsafeMkAddress
@@ -226,16 +227,27 @@ instance SoftDerivation Icarus where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+instance HasNetworkDiscriminant Icarus where
+    type NetworkDiscriminant Icarus = NetworkDiscriminantByron
+    type NetworkNumber Icarus = Word32
+
+    requiredInAddress RequiresNoMagic = False
+    requiredInAddress (RequiresMagic _) = True
+
+    networkNumber (RequiresMagic (ProtocolMagic pm)) = pm
+    networkNumber RequiresNoMagic = error "no asking for magic tag here"
+
+
 instance PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        attrs = case discrimination of
-            RequiresNoMagic  -> []
-            RequiresMagic (ProtocolMagic pm) ->
-                [ CBOR.encodeProtocolMagicAttr pm
-                ]
+        attrs = if requiredInAddress @Icarus discrimination then
+            [ CBOR.encodeProtocolMagicAttr (networkNumber @Icarus discrimination)
+            ]
+            else
+            []
 
 {-------------------------------------------------------------------------------
                                  Key generation

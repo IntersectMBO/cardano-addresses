@@ -13,7 +13,8 @@ import Prelude
 
 import Cardano.Address
     ( Address
-    , NetworkDiscriminant (..)
+    , HasNetworkDiscriminant (..)
+    , NetworkDiscriminantByron (..)
     , PaymentAddress (..)
     , base58
     , bech32
@@ -65,7 +66,7 @@ prop_roundtripTextEncoding
         -- ^ decode from 'Text'
     -> k 'AddressK XPub
         -- ^ An arbitrary public key
-    -> NetworkDiscriminant
+    -> NetworkDiscriminant k
         -- ^ An arbitrary network discriminant
     -> Property
 prop_roundtripTextEncoding encode decode addXPub discrimination =

@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -38,7 +39,6 @@ import Cardano.Address
     ( DelegationAddress (..)
     , NetworkDiscriminant (..)
     , PaymentAddress (..)
-    , ProtocolMagic (..)
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -77,6 +77,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Maybe
     ( fromMaybe )
+import Data.Word
+    ( Word8 )
 import Data.Word
     ( Word32 )
 import GHC.Generics
@@ -220,6 +222,17 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+newtype NetworkId = NetworkId Word8
+    deriving (Generic, Show, Eq)
+instance NFData NetworkId
+
+instance HasNetworkDiscriminant Shelley where
+    type NetworkDiscriminant Shelley = NetworkId
+    type NetworkNumber Shelley = Word8
+
+    requiredInAddress _ = True
+    networkNumber (NetworkId num) = num
+
 instance PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
@@ -232,12 +245,10 @@ instance PaymentAddress Shelley where
           -- specification - Section 3.2.3. What is important here is that the
           -- address is composed of discrimination byte and 28 bytes hashed public key.
           -- Moreover, it was decided that first 4 bits for enterprise address
-          -- will be `0110`. The next for bits for network discriminator are to
-          -- be established soon. TO_DO : change `firstbyte` as network
-          -- discriminant in CDDL spec is known.
-          firstByte = case discrimination of
-              RequiresNoMagic  -> 0x60
-              RequiresMagic (ProtocolMagic _pm) -> 0x61
+          -- will be `0110`. The next for 4 bits are reserved for network discriminator.
+          -- `0110 0000` is 96 in decimal.
+          firstByte =
+              96 + invariantNetworkNumber (networkNumber @Shelley discrimination)
           expectedLength = 1 + publicKeyHashSize
 
 instance DelegationAddress Shelley where
@@ -252,13 +263,18 @@ instance DelegationAddress Shelley where
           -- byte and two 28 bytes hashed public keys, one for payment key and the
           -- other for staking/reword key.
           -- Moreover, it was decided that first 4 bits for enterprise address
-          -- will be `0000`. The next for bits for network discriminator are to
-          -- be established soon. TO_DO : change `firstbyte` as network
-          -- discriminant in CDDL spec is known.
-          firstByte = case discrimination of
-              RequiresNoMagic  -> 0x00
-              RequiresMagic (ProtocolMagic _pm) -> 0x01
+          -- will be `0000`. The next for bits are reserved for network discriminator.
+          firstByte =
+              invariantNetworkNumber (networkNumber @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
+
+invariantNetworkNumber :: HasCallStack => Word8 -> Word8
+invariantNetworkNumber num
+    | num < 16 = num
+    | otherwise = error
+      $ "network number was "
+      ++ show num
+      ++ ", but expected to be less than 16"
 
 invariantSize :: HasCallStack => Int -> ByteString -> ByteString
 invariantSize expectedLength bytes

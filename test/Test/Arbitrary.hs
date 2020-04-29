@@ -18,7 +18,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
+    ( NetworkDiscriminantByron (..)
     , ProtocolMagic (..)
     , mainnetDiscriminant
     , mainnetMagic
@@ -170,7 +170,7 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary NetworkDiscriminant where
+instance Arbitrary NetworkDiscriminantByron where
     arbitrary = oneof
         -- NOTE using explicit smart-constructor as a quick-win for the coverage :)
         [ pure RequiresNoMagic

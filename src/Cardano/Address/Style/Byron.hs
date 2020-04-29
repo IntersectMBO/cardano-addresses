@@ -38,7 +38,8 @@ module Cardano.Address.Style.Byron
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
+    ( HasNetworkDiscriminant (..)
+    , NetworkDiscriminantByron (..)
     , PaymentAddress (..)
     , ProtocolMagic (..)
     , unsafeMkAddress
@@ -211,6 +212,16 @@ instance HardDerivation Byron where
         , payloadPassphrase = payloadPassphrase accXPrv
         }
 
+instance HasNetworkDiscriminant Byron where
+    type NetworkDiscriminant Byron = NetworkDiscriminantByron
+    type NetworkNumber Byron = Word32
+
+    requiredInAddress RequiresNoMagic = False
+    requiredInAddress (RequiresMagic _) = True
+
+    networkNumber (RequiresMagic (ProtocolMagic pm)) = pm
+    networkNumber RequiresNoMagic = error "no asking for magic tag here"
+
 instance PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
@@ -218,14 +229,13 @@ instance PaymentAddress Byron where
       where
         (acctIx, addrIx) = bimap word32 word32 $ derivationPath k
         pwd = payloadPassphrase k
-        attrs = case discrimination of
-            RequiresNoMagic ->
-                [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
-                ]
-            RequiresMagic (ProtocolMagic pm) ->
-                [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
-                , CBOR.encodeProtocolMagicAttr pm
-                ]
+        attrs = if requiredInAddress @Byron discrimination then
+            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+            , CBOR.encodeProtocolMagicAttr (networkNumber @Byron discrimination)
+            ]
+            else
+            [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+            ]
 
 --
 -- Internal
