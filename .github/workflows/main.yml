@@ -61,13 +61,12 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --no-run-benchmarks --coverage --flag $PKG_NAME:release
-        wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
-        mkdir -p .coverage && touch .coverage/template.overlay
-        DESTDIR=dist/coverage make report  && DESTDIR=dist/coverage make badge
-        stack build --haddock --no-haddock-deps
+        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-tests --no-run-benchmarks --flag $PKG_NAME:release
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
         sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
+        wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
+        mkdir -p .coverage && touch .coverage/template.overlay
+        DESTDIR=dist/coverage make report && DESTDIR=dist/coverage make badge
       env:
         PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
 
