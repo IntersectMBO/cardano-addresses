@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -28,12 +29,25 @@ import Cardano.Address.Style.Shelley
     ( Shelley (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic )
+import Data.ByteArray
+    ( ByteArrayAccess, ScrubbedBytes )
 import Test.Arbitrary
     ()
 import Test.Hspec
     ( Spec, describe, it )
 import Test.QuickCheck
-    ( Property, expectFailure, property, (===), (==>) )
+    ( Arbitrary (..)
+    , Property
+    , choose
+    , expectFailure
+    , property
+    , vector
+    , (===)
+    , (==>)
+    )
+
+import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 
 spec :: Spec
 spec = do
@@ -55,11 +69,11 @@ spec = do
 -------------------------------------------------------------------------------}
 
 prop_publicChildKeyDerivation
-    :: (SomeMnemonic, Maybe SomeMnemonic)
+    :: (SomeMnemonic, SndFactor)
     -> AccountingStyle
     -> Index 'Soft 'AddressK
     -> Property
-prop_publicChildKeyDerivation (mw, sndFactor) cc ix =
+prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
     addrXPub1 === addrXPub2
   where
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
@@ -68,10 +82,10 @@ prop_publicChildKeyDerivation (mw, sndFactor) cc ix =
     addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
 
 prop_accountKeyDerivation
-    :: (SomeMnemonic, Maybe SomeMnemonic)
+    :: (SomeMnemonic, SndFactor)
     -> Index 'Hardened 'AccountK
     -> Property
-prop_accountKeyDerivation (mw, sndFactor) ix =
+prop_accountKeyDerivation (mw, (SndFactor sndFactor)) ix =
     accXPrv `seq` property ()
   where
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
@@ -85,3 +99,17 @@ prop_toEnumAccountingStyle n =
 prop_roundtripEnumAccountingStyle :: AccountingStyle -> Property
 prop_roundtripEnumAccountingStyle ix =
     (toEnum . fromEnum) ix === ix
+
+{-------------------------------------------------------------------------------
+                             Arbitrary Instances
+-------------------------------------------------------------------------------}
+
+newtype SndFactor = SndFactor ScrubbedBytes
+    deriving stock (Eq, Show)
+    deriving newtype (ByteArrayAccess)
+
+instance Arbitrary SndFactor  where
+    arbitrary = do
+        n <- choose (0, 64)
+        bytes <- BS.pack <$> vector n
+        return $ SndFactor $ BA.convert bytes

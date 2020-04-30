@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -13,7 +13,8 @@ import Prelude
 
 import Cardano.Address
     ( Address
-    , NetworkDiscriminant (..)
+    , DelegationAddress (..)
+    , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , base58
     , bech32
@@ -26,6 +27,8 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
+import Cardano.Address.Style.Shelley
+    ( Shelley )
 import Data.Function
     ( (&) )
 import Data.Text
@@ -55,17 +58,23 @@ spec = describe "Text Encoding Roundtrips" $ do
     prop "bech32 . fromBech32 - Icarus" $
         prop_roundtripTextEncoding @Icarus bech32 fromBech32
 
+    prop "bech32 . fromBech32 - Shelley - payment address" $
+        prop_roundtripTextEncoding @Shelley bech32 fromBech32
+
+    prop "bech32 . fromBech32 - Shelley - delegation address" $
+        prop_roundtripTextEncodingDelegation @Shelley bech32 fromBech32
+
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
 prop_roundtripTextEncoding
-    :: PaymentAddress k
+    :: forall k. (PaymentAddress k)
     => (Address -> Text)
         -- ^ encode to 'Text'
     -> (Text -> Maybe Address)
         -- ^ decode from 'Text'
     -> k 'AddressK XPub
         -- ^ An arbitrary public key
-    -> NetworkDiscriminant
+    -> NetworkDiscriminant k
         -- ^ An arbitrary network discriminant
     -> Property
 prop_roundtripTextEncoding encode decode addXPub discrimination =
@@ -74,10 +83,31 @@ prop_roundtripTextEncoding encode decode addXPub discrimination =
             [ "Address " <> T.unpack (encode address)
             , "↳       " <> maybe "ø" (T.unpack . encode) result
             ])
-        & label (constructor discrimination)
+        & label (show $ addressDiscrimination @k discrimination)
   where
     address = paymentAddress discrimination addXPub
     result  = decode (encode address)
-    constructor = \case
-        RequiresMagic{} -> "RequiresMagic"
-        RequiresNoMagic -> "RequiresNoMagic"
+
+prop_roundtripTextEncodingDelegation
+    :: forall k. (DelegationAddress k)
+    => (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> k 'AddressK XPub
+        -- ^ An arbitrary address public key
+    -> k 'StakingK XPub
+        -- ^ An arbitrary staking public key
+    -> NetworkDiscriminant k
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncodingDelegation encode decode addXPub stakingXPub discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode address)
+            , "↳       " <> maybe "ø" (T.unpack . encode) result
+            ])
+        & label (show $ addressDiscrimination @k discrimination)
+  where
+    address = delegationAddress discrimination addXPub stakingXPub
+    result  = decode (encode address)

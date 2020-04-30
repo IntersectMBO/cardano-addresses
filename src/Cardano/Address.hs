@@ -1,11 +1,12 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -13,6 +14,7 @@ module Cardano.Address
     ( -- * Address
       Address
     , PaymentAddress (..)
+    , DelegationAddress (..)
     , unsafeMkAddress
 
       -- * Conversion From / To Text
@@ -21,17 +23,10 @@ module Cardano.Address
     , bech32
     , fromBech32
 
-      -- * Network Discrimination
-    , NetworkDiscriminant (..)
-    , mainnetDiscriminant
-    , stagingDiscriminant
-    , testnetDiscriminant
-
-      -- * Protocol Magic
-    , ProtocolMagic (..)
-    , mainnetMagic
-    , stagingMagic
-    , testnetMagic
+      -- Internal / Network Discrimination
+    , HasNetworkDiscriminant (..)
+    , AddressDiscrimination (..)
+    , NetworkTag (..)
     ) where
 
 import Prelude
@@ -109,71 +104,51 @@ fromBech32 =
 -- | Encoding of addresses for certain key types and backend targets.
 --
 -- @since 1.0.0
-class PaymentAddress key where
+class HasNetworkDiscriminant key => PaymentAddress key where
     -- | Convert a public key to a payment 'Address' valid for the given
     -- network discrimination.
     --
     -- @since 1.0.0
-    paymentAddress :: NetworkDiscriminant -> key 'AddressK XPub -> Address
+    paymentAddress :: NetworkDiscriminant key -> key 'AddressK XPub -> Address
 
--- | Describe required network discrimination. See also the available
--- smart-constructors if you are not sure about what to do with this:
+-- | Encoding of delegation addresses for certain key types and backend targets.
 --
--- - 'mainnetDiscriminant'
--- - 'stagingDiscriminant'
--- - 'testnetDiscriminant'
---
--- @since 1.0.0
-data NetworkDiscriminant
-    = RequiresNoMagic
-    | RequiresMagic ProtocolMagic
-    deriving (Generic, Show, Eq)
-instance NFData NetworkDiscriminant
+-- @since 1.0.1
+class PaymentAddress key
+    => DelegationAddress key where
+    -- | Convert a public key and a staking key to a delegation 'Address' valid
+    -- for the given network discrimination. Funds sent to this address will be
+    -- delegated according to the delegation settings attached to the delegation
+    -- key.
+    --
+    -- @since 1.0.1
+    delegationAddress
+        :: NetworkDiscriminant key
+        ->  key 'AddressK XPub
+            -- ^ Payment key
+        ->  key 'StakingK XPub
+            -- ^ Staking key
+        -> Address
 
--- | Required network discrimination settings for mainnet
---
--- @since 1.0.0
-mainnetDiscriminant :: NetworkDiscriminant
-mainnetDiscriminant = RequiresNoMagic
+class HasNetworkDiscriminant (key :: Depth -> * -> *) where
+    type NetworkDiscriminant key :: *
 
--- | Required network discrimination settings for staging
---
--- @since 1.0.0
-stagingDiscriminant :: NetworkDiscriminant
-stagingDiscriminant = RequiresNoMagic
+    addressDiscrimination :: NetworkDiscriminant key -> AddressDiscrimination
+    networkTag :: NetworkDiscriminant key -> NetworkTag
 
--- | Required network discrimination settings for testnet
---
--- @since 1.0.0
-testnetDiscriminant :: NetworkDiscriminant
-testnetDiscriminant = RequiresMagic testnetMagic
-
--- | Magic constant associated with a given network. This is mainly used in two
+-- Magic constant associated with a given network. This is mainly used in two
 -- places:
 --
 -- (1) In 'Address' payloads, to discriminate addresses between networks.
 -- (2) At the network-level, when doing handshake with nodes.
---
--- @since 1.0.0
-newtype ProtocolMagic
-    = ProtocolMagic Word32
+newtype NetworkTag
+    = NetworkTag Word32
     deriving (Generic, Show, Eq)
-instance NFData ProtocolMagic
+instance NFData NetworkTag
 
--- | Hard-coded 'ProtocolMagic' for Cardano MainNet
---
--- @since 1.0.0
-mainnetMagic :: ProtocolMagic
-mainnetMagic =  ProtocolMagic 764824073
-
--- | Hard-coded 'ProtocolMagic' for Cardano Staging
---
--- @since 1.0.0
-stagingMagic :: ProtocolMagic
-stagingMagic = ProtocolMagic 633343913
-
--- | Hard-coded 'ProtocolMagic' for Cardano standard TestNet
---
--- @since 1.0.0
-testnetMagic :: ProtocolMagic
-testnetMagic = ProtocolMagic 1097911063
+-- Describe requirements for address discrimination on the Byron era.
+data AddressDiscrimination
+    = RequiresNetworkTag
+    | RequiresNoTag
+    deriving (Generic, Show, Eq)
+instance NFData AddressDiscrimination

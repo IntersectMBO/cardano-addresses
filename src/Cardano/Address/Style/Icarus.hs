@@ -24,6 +24,11 @@ module Cardano.Address.Style.Icarus
       -- * Accessors
     , getKey
 
+      -- * Discrimination
+    , icarusMainnet
+    , icarusStaging
+    , icarusTestnet
+
       -- * Unsafe
     , liftXPrv
 
@@ -35,9 +40,10 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
+    ( AddressDiscrimination (..)
+    , NetworkDiscriminant (..)
+    , NetworkTag (..)
     , PaymentAddress (..)
-    , ProtocolMagic (..)
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -55,6 +61,8 @@ import Cardano.Address.Derivation
     , generateNew
     , xprvFromBytes
     )
+import Cardano.Address.Style.Byron
+    ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Control.Arrow
@@ -105,25 +113,23 @@ import qualified Data.Text.Encoding as T
 -- == Examples
 --
 -- === Generating a root key from 'SomeMnemonic'
---
--- > import Cardano.Mnemonic
--- >     ( mkSomeMnemonic )
--- > import Cardano.Address.Derivation
--- >     ( GenMasterKey(..) )
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address.Derivation ( GenMasterKey(..) )
 -- >
--- > let (Right mw) = mkSomeMnemonic @'[ 15 ] [ "test", "child", ... , "dog" ]
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- > let sndFactor = mempty -- Or alternatively, a second factor passphrase
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus RootK XPrv
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 --
 -- === Generating an 'Address' from a root key
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
 --
 --
--- > import Cardano.Address
--- >     ( PaymentAddress(..), base58, mainnetDiscriminant )
--- > import Cardano.Address.Derivation
--- >     ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- > import Cardano.Address ( PaymentAddress(..), base58, mainnetDiscriminant )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
@@ -132,7 +138,7 @@ import qualified Data.Text.Encoding as T
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 -- >
 -- > base58 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
--- > "Ae2tdPwUPEZ8rVsdBE6EMZpac32MLzciY75MrwrPs8ikjf6MWYFJUHkGaw5"
+-- > "Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -157,6 +163,32 @@ newtype Icarus (depth :: Depth) key = Icarus
 
 deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
+
+--
+-- Network Discrimination
+--
+
+-- | 'NetworkDiscriminant' for Cardano MainNet & 'Icarus'
+--
+-- @since 2.0.0
+icarusMainnet :: NetworkDiscriminant Icarus
+icarusMainnet = byronMainnet
+
+-- | 'NetworkDiscriminant' for Cardano Staging & 'Icarus'
+--
+-- @since 2.0.0
+icarusStaging :: NetworkDiscriminant Icarus
+icarusStaging = byronStaging
+
+-- | 'NetworkDiscriminant' for Cardano TestNet & 'Icarus'
+--
+-- @since 2.0.0
+icarusTestnet :: NetworkDiscriminant Icarus
+icarusTestnet = byronTestnet
+
+--
+-- Unsafe
+--
 
 -- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
 -- unsafe because it lets the caller choose the actually derivation 'depth'.
@@ -228,16 +260,25 @@ instance SoftDerivation Icarus where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+instance HasNetworkDiscriminant Icarus where
+    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
+
+    addressDiscrimination = fst
+    networkTag = snd
+
+
 instance PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        attrs = case discrimination of
-            RequiresNoMagic  -> []
-            RequiresMagic (ProtocolMagic pm) ->
-                [ CBOR.encodeProtocolMagicAttr pm
+        NetworkTag magic = networkTag @Icarus discrimination
+        attrs = case addressDiscrimination @Icarus discrimination of
+            RequiresNetworkTag ->
+                [ CBOR.encodeProtocolMagicAttr magic
                 ]
+            RequiresNoTag ->
+                []
 
 {-------------------------------------------------------------------------------
                                  Key generation

@@ -16,7 +16,7 @@ module Cardano.Address.Style.IcarusSpec
 import Prelude
 
 import Cardano.Address
-    ( PaymentAddress (..), base58, mainnetDiscriminant )
+    ( PaymentAddress (..), base58 )
 import Cardano.Address.Derivation
     ( AccountingStyle (..)
     , Depth (..)
@@ -29,7 +29,7 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Style.Icarus
-    ( Icarus (..), unsafeGenerateKeyFromHardwareLedger )
+    ( Icarus (..), icarusMainnet, unsafeGenerateKeyFromHardwareLedger )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
@@ -210,7 +210,7 @@ goldenAddressGeneration test = it title $ do
     let rootXPrv = genMasterKeyFromMnemonic goldSeed mempty :: Icarus 'RootK XPrv
     let acctXPrv = deriveAccountPrivateKey rootXPrv goldAcctIx
     let addrXPrv = deriveAddressPrivateKey acctXPrv goldAcctStyle goldAddrIx
-    base58 (paymentAddress mainnetDiscriminant $ toXPub <$> addrXPrv)
+    base58 (paymentAddress icarusMainnet $ toXPub <$> addrXPrv)
         `shouldBe` goldAddr
   where
     GoldenAddressGeneration
@@ -256,7 +256,7 @@ goldenHardwareLedger sentence addrs =
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
             let addrXPrv = deriveAddr (toEnum ix)
-            base58 (paymentAddress mainnetDiscriminant $ toXPub <$> addrXPrv)
+            base58 (paymentAddress icarusMainnet $ toXPub <$> addrXPrv)
                 `shouldBe` addr
   where
     title = T.unpack

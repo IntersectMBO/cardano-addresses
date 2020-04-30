@@ -31,6 +31,8 @@ module Cardano.Address.Derivation
     , XPub
     , xpubFromBytes
     , xpubToBytes
+    , getPublicKey
+    , getChainCode
 
     -- ** XPrv
     , XPrv
@@ -116,12 +118,26 @@ xpubFromBytes :: ByteString -> Maybe XPub
 xpubFromBytes =
     eitherToMaybe . CC.xpub
 
--- | Convert an 'XPub' to a raw 'ByteString'
+-- | Convert an 'XPub' to a raw 'ByteString' (both public key and chain code)
 --
 -- @since 1.0.0
 xpubToBytes :: XPub -> ByteString
 xpubToBytes =
     CC.unXPub
+
+-- | Get a public key 'ByteString' from 'XPub'
+--
+-- @since 1.0.1
+getPublicKey :: XPub -> ByteString
+getPublicKey (CC.XPub pk _cc) =
+    pk
+
+-- | Get a chain code 'ByteString' from 'XPub'
+--
+-- @since 1.0.1
+getChainCode :: XPub -> ByteString
+getChainCode (CC.XPub _pk (CC.ChainCode cc)) =
+    cc
 
 -- | Construct an 'XPrv' from raw 'ByteString'.
 --
@@ -246,7 +262,7 @@ generateNew seed sndFactor =
 -- are no constructors for these.
 --
 -- @since 1.0.0
-data Depth = RootK | AccountK | AddressK
+data Depth = RootK | AccountK | AddressK | StakingK
 
 -- | Marker for addresses type engaged. We want to handle three cases here.
 -- The first two are pertinent to UTxO accounting
@@ -255,11 +271,9 @@ data Depth = RootK | AccountK | AddressK
 --     targets of a given transaction
 -- (b) internal change is for addresses used to handle the change of a
 --     the transaction within a given wallet
--- (c) the addresses for a reward (chimeric) account
 data AccountingStyle
     = UTxOExternal
     | UTxOInternal
-    | MutableAccount
     deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
 
 instance NFData AccountingStyle
@@ -271,12 +285,10 @@ instance Enum AccountingStyle where
     toEnum = \case
         0 -> UTxOExternal
         1 -> UTxOInternal
-        2 -> MutableAccount
         _ -> error "AccountingStyle.toEnum: bad argument"
     fromEnum = \case
         UTxOExternal -> 0
         UTxOInternal -> 1
-        MutableAccount -> 2
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --

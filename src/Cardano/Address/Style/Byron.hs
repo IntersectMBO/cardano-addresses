@@ -28,6 +28,11 @@ module Cardano.Address.Style.Byron
     , derivationPath
     , getKey
 
+      -- * Discrimination
+    , byronMainnet
+    , byronStaging
+    , byronTestnet
+
       -- * Unsafe
     , liftXPrv
 
@@ -38,9 +43,10 @@ module Cardano.Address.Style.Byron
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
+    ( AddressDiscrimination (..)
+    , HasNetworkDiscriminant (..)
+    , NetworkTag (..)
     , PaymentAddress (..)
-    , ProtocolMagic (..)
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -134,6 +140,32 @@ deriving instance (Show key, Show (DerivationPath depth)) => Show (Byron depth k
 deriving instance (Eq key, Eq (DerivationPath depth)) => Eq (Byron depth key)
 deriving instance (Functor (Byron depth))
 
+--
+-- Network Discrimination
+--
+
+-- | 'NetworkDiscriminant' for Cardano MainNet & Byron
+--
+-- @since 2.0.0
+byronMainnet :: NetworkDiscriminant Byron
+byronMainnet = (RequiresNoTag, NetworkTag 764824073)
+
+-- | 'NetworkDiscriminant' for Cardano Staging & Byron
+--
+-- @since 2.0.0
+byronStaging :: NetworkDiscriminant Byron
+byronStaging = (RequiresNetworkTag, NetworkTag 633343913)
+
+-- | 'NetworkDiscriminant' for Cardano TestNet & Byron
+--
+-- @since 2.0.0
+byronTestnet :: NetworkDiscriminant Byron
+byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
+
+--
+-- Unsafe
+--
+
 -- | Backdoor for generating a new key from a raw XPrv.
 --
 -- Note that the @depth@ is left open so that the caller gets to decide what type
@@ -211,6 +243,11 @@ instance HardDerivation Byron where
         , payloadPassphrase = payloadPassphrase accXPrv
         }
 
+instance HasNetworkDiscriminant Byron where
+    type NetworkDiscriminant Byron = (AddressDiscrimination, NetworkTag)
+    addressDiscrimination = fst
+    networkTag = snd
+
 instance PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
@@ -218,13 +255,14 @@ instance PaymentAddress Byron where
       where
         (acctIx, addrIx) = bimap word32 word32 $ derivationPath k
         pwd = payloadPassphrase k
-        attrs = case discrimination of
-            RequiresNoMagic ->
+        NetworkTag magic = networkTag @Byron discrimination
+        attrs = case addressDiscrimination @Byron discrimination of
+            RequiresNetworkTag ->
                 [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
+                , CBOR.encodeProtocolMagicAttr magic
                 ]
-            RequiresMagic (ProtocolMagic pm) ->
+            RequiresNoTag ->
                 [ CBOR.encodeDerivationPathAttr pwd acctIx addrIx
-                , CBOR.encodeProtocolMagicAttr pm
                 ]
 
 --

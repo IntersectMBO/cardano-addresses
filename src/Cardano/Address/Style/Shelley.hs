@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -21,6 +22,13 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
 
+      -- * Staking
+    , deriveStakingPrivateKey
+
+      -- * Discrimination
+    , MkNetworkDiscriminantError (..)
+    , mkNetworkDiscriminant
+
       -- * Accessors
     , getKey
 
@@ -29,13 +37,19 @@ module Cardano.Address.Style.Shelley
 
       -- Internals
     , minSeedLengthBytes
-    , publicKeySize
-    , addrSingleSize
-    , addrGroupedSize
+    , publicKeyHashSize
     ) where
 
 import Prelude
 
+import Cardano.Address
+    ( AddressDiscrimination (..)
+    , DelegationAddress (..)
+    , NetworkDiscriminant (..)
+    , NetworkTag (..)
+    , PaymentAddress (..)
+    , unsafeMkAddress
+    )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -46,24 +60,42 @@ import Cardano.Address.Derivation
     , Index
     , SoftDerivation (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , getPublicKey
     )
 import Cardano.Mnemonic
-    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
+    ( someMnemonicToBytes )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Crypto.Hash
+    ( hash )
+import Crypto.Hash.Algorithms
+    ( Blake2b_224 (..) )
+import Crypto.Hash.IO
+    ( HashAlgorithm (hashDigestSize) )
+import Data.Binary.Put
+    ( putByteString, putWord8, runPut )
+import Data.ByteArray
+    ( ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 
 -- $overview
 --
@@ -73,6 +105,35 @@ import qualified Data.ByteArray as BA
 -- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
 --
+-- == Examples
+--
+-- === Generating a root key from 'SomeMnemonic'
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address.Derivation ( GenMasterKey(..) )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+--
+-- === Generating an 'Address' from a root key
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
+--
+--
+-- > import Cardano.Address ( PaymentAddress(..), bech32, mainnetDiscriminant )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- >
+-- > bech32 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
+-- > "addr1vzpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxzgg5v"
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -110,14 +171,13 @@ liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
 
 instance GenMasterKey Shelley where
-    type SecondFactor Shelley = Maybe SomeMnemonic
+    type SecondFactor Shelley = ScrubbedBytes
 
     genMasterKeyFromXPrv = liftXPrv
     genMasterKeyFromMnemonic fstFactor sndFactor =
-        Shelley $ generateNew seedValidated (maybe mempty mnemonicToBytes sndFactor)
+        Shelley $ generateNew seedValidated sndFactor
         where
-            mnemonicToBytes (SomeMnemonic mw) = entropyToBytes $ mnemonicToEntropy mw
-            seed  = mnemonicToBytes fstFactor
+            seed  = someMnemonicToBytes fstFactor
             seedValidated = assert
                 (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
                 seed
@@ -153,6 +213,25 @@ instance HardDerivation Shelley where
         in
             Shelley addrXPrv
 
+-- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one staking key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving staking keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'StakingK XPrv
+deriveStakingPrivateKey (Shelley accXPrv) =
+    let
+        changeXPrv = -- lvl4 derivation; soft derivation of change chain
+            deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
+        stakeXPrv = -- lvl5 derivation; soft derivation of address index
+            deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
+    in
+        Shelley stakeXPrv
+
 instance SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
@@ -169,21 +248,90 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+instance HasNetworkDiscriminant Shelley where
+    type NetworkDiscriminant Shelley = NetworkTag
+    addressDiscrimination _ = RequiresNetworkTag
+    networkTag = id
+
+-- | Error reported from trying to create a network discriminant from number
+--
+-- @since 1.0.0
+newtype MkNetworkDiscriminantError
+    = ErrWrongNetworkTag Word8
+      -- ^ Wrong network tag.
+    deriving (Eq, Show)
+
+mkNetworkDiscriminant
+    :: Word8
+    -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+mkNetworkDiscriminant nTag
+    | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
+    | otherwise = Left $ ErrWrongNetworkTag nTag
+
+instance PaymentAddress Shelley where
+    paymentAddress discrimination k = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString (blake2b224 k)
+      where
+          -- we use here the fact that payment address stands for what is named
+          -- as enterprise address, ie., address carrying no stake rights. For
+          -- rationale why we may need such addresses refer to delegation
+          -- specification - Section 3.2.3. What is important here is that the
+          -- address is composed of discrimination byte and 28 bytes hashed public key.
+          -- Moreover, it was decided that first 4 bits for enterprise address
+          -- will be `0110`. The next for 4 bits are reserved for network discriminator.
+          -- `0110 0000` is 96 in decimal.
+          firstByte =
+              96 + invariantNetworkTag (networkTag @Shelley discrimination)
+          expectedLength = 1 + publicKeyHashSize
+
+instance DelegationAddress Shelley where
+    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString . blake2b224 $ paymentKey
+            putByteString . blake2b224 $ stakingKey
+      where
+          -- we use here the fact that payment address stands for what is named
+          -- as base address - refer to delegation specification - Section 3.2.1.
+          -- What is important here is that the address is composed of discrimination
+          -- byte and two 28 bytes hashed public keys, one for payment key and the
+          -- other for staking/reword key.
+          -- Moreover, it was decided that first 4 bits for enterprise address
+          -- will be `0000`. The next for bits are reserved for network discriminator.
+          firstByte =
+              invariantNetworkTag (networkTag @Shelley discrimination)
+          expectedLength = 1 + 2*publicKeyHashSize
+
+invariantNetworkTag :: HasCallStack => NetworkTag -> Word8
+invariantNetworkTag (NetworkTag num)
+    | num < 16 = fromIntegral num
+    | otherwise = error
+      $ "network tag was "
+      ++ show num
+      ++ ", but expected to be less than 16"
+
+invariantSize :: HasCallStack => Int -> ByteString -> ByteString
+invariantSize expectedLength bytes
+    | BS.length bytes == expectedLength = bytes
+    | otherwise = error
+      $ "length was "
+      ++ show (BS.length bytes)
+      ++ ", but expected to be "
+      ++ (show expectedLength)
+
+blake2b224 :: Shelley depth XPub -> ByteString
+blake2b224 =
+    BA.convert . hash @_ @Blake2b_224 . getPublicKey . getKey
+
 {-------------------------------------------------------------------------------
                                  Key generation
 -------------------------------------------------------------------------------}
 
--- | Size, in bytes, of a public key (without chain code)
-publicKeySize :: Int
-publicKeySize = 32
-
--- Serialized length in bytes of a Single Address
-addrSingleSize :: Int
-addrSingleSize = 1 + publicKeySize
-
--- Serialized length in bytes of a Grouped Address
-addrGroupedSize :: Int
-addrGroupedSize = addrSingleSize + publicKeySize
+-- | Size, in bytes, of a hash of public key (without the corresponding chain code)
+publicKeyHashSize :: Int
+publicKeyHashSize = hashDigestSize Blake2b_224
 
 -- | Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
