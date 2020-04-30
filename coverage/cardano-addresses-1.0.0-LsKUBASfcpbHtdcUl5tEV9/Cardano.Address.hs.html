@@ -1,0 +1,177 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE AllowAmbiguousTypes #-}
+<span class="lineno">    2 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    3 </span>{-# LANGUAGE DeriveGeneric #-}
+<span class="lineno">    4 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    5 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    6 </span>{-# LANGUAGE MultiParamTypeClasses #-}
+<span class="lineno">    7 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    8 </span>{-# LANGUAGE QuasiQuotes #-}
+<span class="lineno">    9 </span>{-# LANGUAGE TypeFamilies #-}
+<span class="lineno">   10 </span>
+<span class="lineno">   11 </span>{-# OPTIONS_HADDOCK prune #-}
+<span class="lineno">   12 </span>
+<span class="lineno">   13 </span>module Cardano.Address
+<span class="lineno">   14 </span>    ( -- * Address
+<span class="lineno">   15 </span>      Address
+<span class="lineno">   16 </span>    , PaymentAddress (..)
+<span class="lineno">   17 </span>    , DelegationAddress (..)
+<span class="lineno">   18 </span>    , unsafeMkAddress
+<span class="lineno">   19 </span>
+<span class="lineno">   20 </span>      -- * Conversion From / To Text
+<span class="lineno">   21 </span>    , base58
+<span class="lineno">   22 </span>    , fromBase58
+<span class="lineno">   23 </span>    , bech32
+<span class="lineno">   24 </span>    , fromBech32
+<span class="lineno">   25 </span>
+<span class="lineno">   26 </span>      -- Internal / Network Discrimination
+<span class="lineno">   27 </span>    , HasNetworkDiscriminant (..)
+<span class="lineno">   28 </span>    , AddressDiscrimination (..)
+<span class="lineno">   29 </span>    , NetworkTag (..)
+<span class="lineno">   30 </span>    ) where
+<span class="lineno">   31 </span>
+<span class="lineno">   32 </span>import Prelude
+<span class="lineno">   33 </span>
+<span class="lineno">   34 </span>import Cardano.Address.Derivation
+<span class="lineno">   35 </span>    ( Depth (..), XPub )
+<span class="lineno">   36 </span>import Cardano.Codec.Cbor
+<span class="lineno">   37 </span>    ( decodeAddress, deserialiseCbor )
+<span class="lineno">   38 </span>import Control.DeepSeq
+<span class="lineno">   39 </span>    ( NFData )
+<span class="lineno">   40 </span>import Control.Monad
+<span class="lineno">   41 </span>    ( (&lt;=&lt;) )
+<span class="lineno">   42 </span>import Data.ByteString
+<span class="lineno">   43 </span>    ( ByteString )
+<span class="lineno">   44 </span>import Data.ByteString.Base58
+<span class="lineno">   45 </span>    ( bitcoinAlphabet, decodeBase58, encodeBase58 )
+<span class="lineno">   46 </span>import Data.Text
+<span class="lineno">   47 </span>    ( Text )
+<span class="lineno">   48 </span>import Data.Word
+<span class="lineno">   49 </span>    ( Word32 )
+<span class="lineno">   50 </span>import GHC.Generics
+<span class="lineno">   51 </span>    ( Generic )
+<span class="lineno">   52 </span>
+<span class="lineno">   53 </span>import qualified Codec.Binary.Bech32 as Bech32
+<span class="lineno">   54 </span>import qualified Codec.Binary.Bech32.TH as Bech32
+<span class="lineno">   55 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   56 </span>
+<span class="lineno">   57 </span>-- | An 'Address' type representing 'Cardano' addresses. Internals are
+<span class="lineno">   58 </span>-- irrevelant to the user.
+<span class="lineno">   59 </span>--
+<span class="lineno">   60 </span>-- @since 1.0.0
+<span class="lineno">   61 </span>newtype Address = Address
+<span class="lineno">   62 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">unAddress</span></span></span> :: ByteString
+<span class="lineno">   63 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   64 </span>instance NFData Address
+<span class="lineno">   65 </span>
+<span class="lineno">   66 </span>-- Unsafe constructor for easily lifting bytes inside an 'Address'.
+<span class="lineno">   67 </span>--
+<span class="lineno">   68 </span>-- /!\ Use at your own risks.
+<span class="lineno">   69 </span>unsafeMkAddress :: ByteString -&gt; Address
+<span class="lineno">   70 </span><span class="decl"><span class="istickedoff">unsafeMkAddress = Address</span></span>
+<span class="lineno">   71 </span>
+<span class="lineno">   72 </span>-- | Encode an 'Address' to a base58 'Text'.
+<span class="lineno">   73 </span>--
+<span class="lineno">   74 </span>-- @since 1.0.0
+<span class="lineno">   75 </span>base58 :: Address -&gt; Text
+<span class="lineno">   76 </span><span class="decl"><span class="istickedoff">base58 = T.decodeUtf8 . encodeBase58 bitcoinAlphabet . unAddress</span></span>
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>-- | Decode a base58-encoded 'Text' into an 'Address'
+<span class="lineno">   79 </span>--
+<span class="lineno">   80 </span>-- @since 1.0.0
+<span class="lineno">   81 </span>fromBase58 :: Text -&gt; Maybe Address
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">fromBase58 =</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">deserialiseCbor (unsafeMkAddress &lt;$&gt; decodeAddress)</span>
+<span class="lineno">   84 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">decodeBase58 bitcoinAlphabet . T.encodeUtf8</span></span>
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>-- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
+<span class="lineno">   88 </span>--
+<span class="lineno">   89 </span>-- @since 1.0.0
+<span class="lineno">   90 </span>bech32 :: Address -&gt; Text
+<span class="lineno">   91 </span><span class="decl"><span class="istickedoff">bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress</span>
+<span class="lineno">   92 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">hrp = [Bech32.humanReadablePart|addr|]</span></span>
+<span class="lineno">   94 </span>
+<span class="lineno">   95 </span>-- | Decode a bech32-encoded  'Text' into an 'Address'
+<span class="lineno">   96 </span>--
+<span class="lineno">   97 </span>-- @since 1.0.0
+<span class="lineno">   98 </span>fromBech32 :: Text -&gt; Maybe Address
+<span class="lineno">   99 </span><span class="decl"><span class="istickedoff">fromBech32 =</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">fmap unsafeMkAddress . Bech32.dataPartToBytes</span>
+<span class="lineno">  101 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">either <span class="nottickedoff">(const Nothing)</span> (Just . snd) . Bech32.decodeLenient</span></span>
+<span class="lineno">  103 </span>
+<span class="lineno">  104 </span>-- | Encoding of addresses for certain key types and backend targets.
+<span class="lineno">  105 </span>--
+<span class="lineno">  106 </span>-- @since 1.0.0
+<span class="lineno">  107 </span>class HasNetworkDiscriminant key =&gt; PaymentAddress key where
+<span class="lineno">  108 </span>    -- | Convert a public key to a payment 'Address' valid for the given
+<span class="lineno">  109 </span>    -- network discrimination.
+<span class="lineno">  110 </span>    --
+<span class="lineno">  111 </span>    -- @since 1.0.0
+<span class="lineno">  112 </span>    paymentAddress :: NetworkDiscriminant key -&gt; key 'AddressK XPub -&gt; Address
+<span class="lineno">  113 </span>
+<span class="lineno">  114 </span>-- | Encoding of delegation addresses for certain key types and backend targets.
+<span class="lineno">  115 </span>--
+<span class="lineno">  116 </span>-- @since 1.0.1
+<span class="lineno">  117 </span>class PaymentAddress key
+<span class="lineno">  118 </span>    =&gt; DelegationAddress key where
+<span class="lineno">  119 </span>    -- | Convert a public key and a staking key to a delegation 'Address' valid
+<span class="lineno">  120 </span>    -- for the given network discrimination. Funds sent to this address will be
+<span class="lineno">  121 </span>    -- delegated according to the delegation settings attached to the delegation
+<span class="lineno">  122 </span>    -- key.
+<span class="lineno">  123 </span>    --
+<span class="lineno">  124 </span>    -- @since 1.0.1
+<span class="lineno">  125 </span>    delegationAddress
+<span class="lineno">  126 </span>        :: NetworkDiscriminant key
+<span class="lineno">  127 </span>        -&gt;  key 'AddressK XPub
+<span class="lineno">  128 </span>            -- ^ Payment key
+<span class="lineno">  129 </span>        -&gt;  key 'StakingK XPub
+<span class="lineno">  130 </span>            -- ^ Staking key
+<span class="lineno">  131 </span>        -&gt; Address
+<span class="lineno">  132 </span>
+<span class="lineno">  133 </span>class HasNetworkDiscriminant (key :: Depth -&gt; * -&gt; *) where
+<span class="lineno">  134 </span>    type NetworkDiscriminant key :: *
+<span class="lineno">  135 </span>
+<span class="lineno">  136 </span>    addressDiscrimination :: NetworkDiscriminant key -&gt; AddressDiscrimination
+<span class="lineno">  137 </span>    networkTag :: NetworkDiscriminant key -&gt; NetworkTag
+<span class="lineno">  138 </span>
+<span class="lineno">  139 </span>-- Magic constant associated with a given network. This is mainly used in two
+<span class="lineno">  140 </span>-- places:
+<span class="lineno">  141 </span>--
+<span class="lineno">  142 </span>-- (1) In 'Address' payloads, to discriminate addresses between networks.
+<span class="lineno">  143 </span>-- (2) At the network-level, when doing handshake with nodes.
+<span class="lineno">  144 </span>newtype NetworkTag
+<span class="lineno">  145 </span>    = NetworkTag Word32
+<span class="lineno">  146 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>)
+<span class="lineno">  147 </span>instance NFData NetworkTag
+<span class="lineno">  148 </span>
+<span class="lineno">  149 </span>-- Describe requirements for address discrimination on the Byron era.
+<span class="lineno">  150 </span>data AddressDiscrimination
+<span class="lineno">  151 </span>    = RequiresNetworkTag
+<span class="lineno">  152 </span>    | RequiresNoTag
+<span class="lineno">  153 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  154 </span>instance NFData AddressDiscrimination
+
+</pre>
+</body>
+</html>
