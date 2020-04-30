@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -14,7 +14,6 @@ import Prelude
 import Cardano.Address
     ( Address
     , HasNetworkDiscriminant (..)
-    , NetworkDiscriminantByron (..)
     , PaymentAddress (..)
     , base58
     , bech32
@@ -59,7 +58,7 @@ spec = describe "Text Encoding Roundtrips" $ do
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
 prop_roundtripTextEncoding
-    :: PaymentAddress k
+    :: forall k. (PaymentAddress k)
     => (Address -> Text)
         -- ^ encode to 'Text'
     -> (Text -> Maybe Address)
@@ -75,10 +74,7 @@ prop_roundtripTextEncoding encode decode addXPub discrimination =
             [ "Address " <> T.unpack (encode address)
             , "↳       " <> maybe "ø" (T.unpack . encode) result
             ])
-        & label (constructor discrimination)
+        & label (show $ addressDiscrimination @k discrimination)
   where
     address = paymentAddress discrimination addXPub
     result  = decode (encode address)
-    constructor = \case
-        RequiresMagic{} -> "RequiresMagic"
-        RequiresNoMagic -> "RequiresNoMagic"

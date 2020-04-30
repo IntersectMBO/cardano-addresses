@@ -24,6 +24,11 @@ module Cardano.Address.Style.Icarus
       -- * Accessors
     , getKey
 
+      -- * Discrimination
+    , icarusMainnet
+    , icarusStaging
+    , icarusTestnet
+
       -- * Unsafe
     , liftXPrv
 
@@ -35,10 +40,10 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminant (..)
-    , NetworkDiscriminantByron (..)
+    ( AddressDiscrimination (..)
+    , NetworkDiscriminant (..)
+    , NetworkTag (..)
     , PaymentAddress (..)
-    , ProtocolMagic (..)
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -56,6 +61,8 @@ import Cardano.Address.Derivation
     , generateNew
     , xprvFromBytes
     )
+import Cardano.Address.Style.Byron
+    ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Control.Arrow
@@ -157,6 +164,32 @@ newtype Icarus (depth :: Depth) key = Icarus
 deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
+--
+-- Network Discrimination
+--
+
+-- | 'NetworkDiscriminant' for Cardano MainNet & 'Icarus'
+--
+-- @since 2.0.0
+icarusMainnet :: NetworkDiscriminant Icarus
+icarusMainnet = byronMainnet
+
+-- | 'NetworkDiscriminant' for Cardano Staging & 'Icarus'
+--
+-- @since 2.0.0
+icarusStaging :: NetworkDiscriminant Icarus
+icarusStaging = byronStaging
+
+-- | 'NetworkDiscriminant' for Cardano TestNet & 'Icarus'
+--
+-- @since 2.0.0
+icarusTestnet :: NetworkDiscriminant Icarus
+icarusTestnet = byronTestnet
+
+--
+-- Unsafe
+--
+
 -- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
 -- unsafe because it lets the caller choose the actually derivation 'depth'.
 --
@@ -228,14 +261,10 @@ instance SoftDerivation Icarus where
             \number of addresses for a given wallet."
 
 instance HasNetworkDiscriminant Icarus where
-    type NetworkDiscriminant Icarus = NetworkDiscriminantByron
-    type NetworkNumber Icarus = Word32
+    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
 
-    requiredInAddress RequiresNoMagic = False
-    requiredInAddress (RequiresMagic _) = True
-
-    networkNumber (RequiresMagic (ProtocolMagic pm)) = pm
-    networkNumber RequiresNoMagic = error "no asking for magic tag here"
+    addressDiscrimination = fst
+    networkTag = snd
 
 
 instance PaymentAddress Icarus where
@@ -243,11 +272,13 @@ instance PaymentAddress Icarus where
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        attrs = if requiredInAddress @Icarus discrimination then
-            [ CBOR.encodeProtocolMagicAttr (networkNumber @Icarus discrimination)
-            ]
-            else
-            []
+        NetworkTag magic = networkTag @Icarus discrimination
+        attrs = case addressDiscrimination @Icarus discrimination of
+            RequiresNetworkTag ->
+                [ CBOR.encodeProtocolMagicAttr magic
+                ]
+            RequiresNoTag ->
+                []
 
 {-------------------------------------------------------------------------------
                                  Key generation

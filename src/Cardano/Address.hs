@@ -23,18 +23,10 @@ module Cardano.Address
     , bech32
     , fromBech32
 
-      -- * Network Discrimination
+      -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
-    , NetworkDiscriminantByron (..)
-    , mainnetDiscriminant
-    , stagingDiscriminant
-    , testnetDiscriminant
-
-      -- * Protocol Magic
-    , ProtocolMagic (..)
-    , mainnetMagic
-    , stagingMagic
-    , testnetMagic
+    , AddressDiscrimination (..)
+    , NetworkTag (..)
     ) where
 
 import Prelude
@@ -140,69 +132,23 @@ class PaymentAddress key
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
     type NetworkDiscriminant key :: *
-    type NetworkNumber key :: *
 
-    requiredInAddress :: NetworkDiscriminant key -> Bool
-    networkNumber :: NetworkDiscriminant key -> NetworkNumber key
+    addressDiscrimination :: NetworkDiscriminant key -> AddressDiscrimination
+    networkTag :: NetworkDiscriminant key -> NetworkTag
 
--- | Describe required network discrimination for Byron era. See also the available
--- smart-constructors if you are not sure about what to do with this:
---
--- - 'mainnetDiscriminant'
--- - 'stagingDiscriminant'
--- - 'testnetDiscriminant'
---
--- @since 1.0.0
-data NetworkDiscriminantByron
-    = RequiresNoMagic
-    | RequiresMagic ProtocolMagic
-    deriving (Generic, Show, Eq)
-instance NFData NetworkDiscriminantByron
-
--- | Required network discrimination settings for mainnet
---
--- @since 1.0.0
-mainnetDiscriminant :: NetworkDiscriminantByron
-mainnetDiscriminant = RequiresNoMagic
-
--- | Required network discrimination settings for staging
---
--- @since 1.0.0
-stagingDiscriminant :: NetworkDiscriminantByron
-stagingDiscriminant = RequiresNoMagic
-
--- | Required network discrimination settings for testnet
---
--- @since 1.0.0
-testnetDiscriminant :: NetworkDiscriminantByron
-testnetDiscriminant = RequiresMagic testnetMagic
-
--- | Magic constant associated with a given network. This is mainly used in two
+-- Magic constant associated with a given network. This is mainly used in two
 -- places:
 --
 -- (1) In 'Address' payloads, to discriminate addresses between networks.
 -- (2) At the network-level, when doing handshake with nodes.
---
--- @since 1.0.0
-newtype ProtocolMagic
-    = ProtocolMagic Word32
+newtype NetworkTag
+    = NetworkTag Word32
     deriving (Generic, Show, Eq)
-instance NFData ProtocolMagic
+instance NFData NetworkTag
 
--- | Hard-coded 'ProtocolMagic' for Cardano MainNet
---
--- @since 1.0.0
-mainnetMagic :: ProtocolMagic
-mainnetMagic =  ProtocolMagic 764824073
-
--- | Hard-coded 'ProtocolMagic' for Cardano Staging
---
--- @since 1.0.0
-stagingMagic :: ProtocolMagic
-stagingMagic = ProtocolMagic 633343913
-
--- | Hard-coded 'ProtocolMagic' for Cardano standard TestNet
---
--- @since 1.0.0
-testnetMagic :: ProtocolMagic
-testnetMagic = ProtocolMagic 1097911063
+-- Describe requirements for address discrimination on the Byron era.
+data AddressDiscrimination
+    = RequiresNetworkTag
+    | RequiresNoTag
+    deriving (Generic, Show, Eq)
+instance NFData AddressDiscrimination

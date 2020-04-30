@@ -36,8 +36,10 @@ module Cardano.Address.Style.Shelley
 import Prelude
 
 import Cardano.Address
-    ( DelegationAddress (..)
+    ( AddressDiscrimination (..)
+    , DelegationAddress (..)
     , NetworkDiscriminant (..)
+    , NetworkTag (..)
     , PaymentAddress (..)
     , unsafeMkAddress
     )
@@ -222,16 +224,10 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-newtype NetworkId = NetworkId Word8
-    deriving (Generic, Show, Eq)
-instance NFData NetworkId
-
 instance HasNetworkDiscriminant Shelley where
-    type NetworkDiscriminant Shelley = NetworkId
-    type NetworkNumber Shelley = Word8
-
-    requiredInAddress _ = True
-    networkNumber (NetworkId num) = num
+    type NetworkDiscriminant Shelley = NetworkTag
+    addressDiscrimination _ = RequiresNetworkTag
+    networkTag = id
 
 instance PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
@@ -248,7 +244,7 @@ instance PaymentAddress Shelley where
           -- will be `0110`. The next for 4 bits are reserved for network discriminator.
           -- `0110 0000` is 96 in decimal.
           firstByte =
-              96 + invariantNetworkNumber (networkNumber @Shelley discrimination)
+              96 + invariantNetworkTag (networkTag @Shelley discrimination)
           expectedLength = 1 + publicKeyHashSize
 
 instance DelegationAddress Shelley where
@@ -265,14 +261,14 @@ instance DelegationAddress Shelley where
           -- Moreover, it was decided that first 4 bits for enterprise address
           -- will be `0000`. The next for bits are reserved for network discriminator.
           firstByte =
-              invariantNetworkNumber (networkNumber @Shelley discrimination)
+              invariantNetworkTag (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
 
-invariantNetworkNumber :: HasCallStack => Word8 -> Word8
-invariantNetworkNumber num
-    | num < 16 = num
+invariantNetworkTag :: HasCallStack => NetworkTag -> Word8
+invariantNetworkTag (NetworkTag num)
+    | num < 16 = fromIntegral num
     | otherwise = error
-      $ "network number was "
+      $ "network tag was "
       ++ show num
       ++ ", but expected to be less than 16"
 

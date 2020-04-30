@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -18,15 +19,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.Address
-    ( NetworkDiscriminantByron (..)
-    , ProtocolMagic (..)
-    , mainnetDiscriminant
-    , mainnetMagic
-    , stagingDiscriminant
-    , stagingMagic
-    , testnetDiscriminant
-    , testnetMagic
-    )
+    ( AddressDiscrimination (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -42,9 +35,9 @@ import Cardano.Address.Derivation
     , xprvToBytes
     )
 import Cardano.Address.Style.Byron
-    ( Byron )
+    ( Byron, byronMainnet, byronStaging, byronTestnet )
 import Cardano.Address.Style.Icarus
-    ( Icarus )
+    ( Icarus, icarusMainnet, icarusStaging, icarusTestnet )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -170,25 +163,22 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary NetworkDiscriminantByron where
+instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
     arbitrary = oneof
         -- NOTE using explicit smart-constructor as a quick-win for the coverage :)
-        [ pure RequiresNoMagic
-        , RequiresMagic <$> arbitrary
-        , pure mainnetDiscriminant
-        , pure stagingDiscriminant
-        , pure testnetDiscriminant
+        [ (RequiresNoTag,) <$> arbitrary
+        , (RequiresNetworkTag,) <$> arbitrary
+        , pure byronMainnet
+        , pure byronStaging
+        , pure byronTestnet
+        , pure icarusMainnet
+        , pure icarusStaging
+        , pure icarusTestnet
         ]
 
-instance Arbitrary ProtocolMagic where
-    shrink (ProtocolMagic pm) = ProtocolMagic <$> shrink pm
-    arbitrary = oneof
-        -- NOTE using explicit smart-constructor as a quick-win for the coverage :)
-        [ ProtocolMagic <$> arbitrary
-        , pure mainnetMagic
-        , pure stagingMagic
-        , pure testnetMagic
-        ]
+instance Arbitrary NetworkTag where
+    shrink (NetworkTag tag) = NetworkTag <$> shrink tag
+    arbitrary = NetworkTag <$> choose (0, 15)
 
 --
 -- Extra Instances
