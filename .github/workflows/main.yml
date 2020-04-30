@@ -47,21 +47,9 @@ jobs:
       run: |
         stack --no-terminal test --bench --only-snapshot
 
-    - name: ✍  Check hlint and stylish
-      run: |
-        curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s .
-        curl -sSL https://raw.github.com/jaspervdj/stylish-haskell/master/scripts/latest.sh | sh -s $(find . -type f -name "*.hs" ! -path "*.stack-work*") -i
-        if [ -z "$(git status --porcelain)" ]; then
-            echo "No style errors detected."
-        else
-            echo "Style errors detected:"
-            git diff
-            exit 1
-        fi
-
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-tests --no-run-benchmarks --flag $PKG_NAME:release
+        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag $PKG_NAME:release
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
         sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
         wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
