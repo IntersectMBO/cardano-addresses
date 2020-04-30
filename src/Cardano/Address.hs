@@ -126,8 +126,8 @@ class PaymentAddress key
         :: NetworkDiscriminant key
         ->  key 'AddressK XPub
             -- ^ Payment key
-        ->  key 'AddressK XPub
-            -- ^ Staking key / Reward account
+        ->  key 'StakingK XPub
+            -- ^ Staking key
         -> Address
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
