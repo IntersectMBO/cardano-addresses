@@ -22,6 +22,9 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
 
+      -- * Staking
+    , deriveStakingPrivateKey
+
       -- * Accessors
     , getKey
 
@@ -206,6 +209,25 @@ instance HardDerivation Shelley where
         in
             Shelley addrXPrv
 
+-- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one staking key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving staking keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'StakingK XPrv
+deriveStakingPrivateKey (Shelley accXPrv) =
+    let
+        changeXPrv = -- lvl4 derivation; soft derivation of change chain
+            deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
+        stakeXPrv = -- lvl5 derivation; soft derivation of address index
+            deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
+    in
+        Shelley stakeXPrv
+
 instance SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
@@ -249,7 +271,8 @@ instance DelegationAddress Shelley where
     delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
-            mapM_ (putByteString . blake2b224) [paymentKey, stakingKey]
+            putByteString . blake2b224 $ paymentKey
+            putByteString . blake2b224 $ stakingKey
       where
           -- we use here the fact that payment address stands for what is named
           -- as base address - refer to delegation specification - Section 3.2.1.

@@ -262,7 +262,7 @@ generateNew seed sndFactor =
 -- are no constructors for these.
 --
 -- @since 1.0.0
-data Depth = RootK | AccountK | AddressK
+data Depth = RootK | AccountK | AddressK | StakingK
 
 -- | Marker for addresses type engaged. We want to handle three cases here.
 -- The first two are pertinent to UTxO accounting
@@ -271,11 +271,9 @@ data Depth = RootK | AccountK | AddressK
 --     targets of a given transaction
 -- (b) internal change is for addresses used to handle the change of a
 --     the transaction within a given wallet
--- (c) the addresses for a reward (chimeric) account
 data AccountingStyle
     = UTxOExternal
     | UTxOInternal
-    | MutableAccount
     deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
 
 instance NFData AccountingStyle
@@ -287,12 +285,10 @@ instance Enum AccountingStyle where
     toEnum = \case
         0 -> UTxOExternal
         1 -> UTxOInternal
-        2 -> MutableAccount
         _ -> error "AccountingStyle.toEnum: bad argument"
     fromEnum = \case
         UTxOExternal -> 0
         UTxOInternal -> 1
-        MutableAccount -> 2
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --
