@@ -13,6 +13,7 @@ import Prelude
 
 import Cardano.Address
     ( Address
+    , DelegationAddress (..)
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , base58
@@ -26,6 +27,8 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
+import Cardano.Address.Style.Shelley
+    ( Shelley )
 import Data.Function
     ( (&) )
 import Data.Text
@@ -55,6 +58,12 @@ spec = describe "Text Encoding Roundtrips" $ do
     prop "bech32 . fromBech32 - Icarus" $
         prop_roundtripTextEncoding @Icarus bech32 fromBech32
 
+    prop "bech32 . fromBech32 - Shelley - payment address" $
+        prop_roundtripTextEncoding @Shelley bech32 fromBech32
+
+    prop "bech32 . fromBech32 - Shelley - delegation address" $
+        prop_roundtripTextEncodingDelegation @Shelley bech32 fromBech32
+
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
 prop_roundtripTextEncoding
@@ -77,4 +86,28 @@ prop_roundtripTextEncoding encode decode addXPub discrimination =
         & label (show $ addressDiscrimination @k discrimination)
   where
     address = paymentAddress discrimination addXPub
+    result  = decode (encode address)
+
+prop_roundtripTextEncodingDelegation
+    :: forall k. (DelegationAddress k)
+    => (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> k 'AddressK XPub
+        -- ^ An arbitrary public key
+    -> k 'AddressK XPub
+        -- ^ An arbitrary public key
+    -> NetworkDiscriminant k
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncodingDelegation encode decode addXPub1 addXPub2 discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode address)
+            , "↳       " <> maybe "ø" (T.unpack . encode) result
+            ])
+        & label (show $ addressDiscrimination @k discrimination)
+  where
+    address = delegationAddress discrimination addXPub1 addXPub2
     result  = decode (encode address)

@@ -80,9 +80,7 @@ import Data.ByteString
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word8 )
-import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 import GHC.Stack
