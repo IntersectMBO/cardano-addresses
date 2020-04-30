@@ -39,7 +39,7 @@ import Cardano.Address.Style.Byron
 import Cardano.Address.Style.Icarus
     ( Icarus, icarusMainnet, icarusStaging, icarusTestnet )
 import Cardano.Address.Style.Shelley
-    ( Shelley )
+    ( Shelley, deriveStakingPrivateKey )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -173,6 +173,16 @@ instance Arbitrary (Shelley 'AddressK XPub) where
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
         addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
+
+instance Arbitrary (Shelley 'StakingK XPub) where
+    shrink _ = []
+    arbitrary = do
+        mw <- SomeMnemonic <$> genMnemonic @15
+        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
+        let rootK = genMasterKeyFromMnemonic mw bytes
+        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
+        let stakingK = deriveStakingPrivateKey acctK
+        pure $ toXPub <$> stakingK
 
 instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
     arbitrary = oneof
