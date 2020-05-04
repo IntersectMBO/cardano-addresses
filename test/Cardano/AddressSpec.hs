@@ -27,6 +27,8 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
+import Cardano.Address.Style.Jormungandr
+    ( Jormungandr )
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Data.Function
@@ -63,6 +65,9 @@ spec = describe "Text Encoding Roundtrips" $ do
 
     prop "bech32 . fromBech32 - Shelley - delegation address" $
         prop_roundtripTextEncodingDelegation @Shelley bech32 fromBech32
+
+    prop "bech32 . fromBech32 - Jormungandr - payment address" $
+        prop_roundtripTextEncoding @Jormungandr bech32 fromBech32
 
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
