@@ -4,7 +4,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -93,6 +92,7 @@ import qualified Data.ByteString.Lazy as BL
 -- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
 -- - 'PaymentAddress': for constructing payment addresses from a address public key
+-- - 'DelegationAddress': for constructing payment addresses from a address and stake public keys
 --
 -- == Examples
 --
@@ -112,7 +112,7 @@ import qualified Data.ByteString.Lazy as BL
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
 --
 --
--- > import Cardano.Address ( PaymentAddress(..), bech32 )
+-- > import Cardano.Address ( PaymentAddress(..), DelegationAddress(..), bech32 )
 -- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
@@ -123,6 +123,10 @@ import qualified Data.ByteString.Lazy as BL
 -- >
 -- > bech32 $ paymentAddress jormungandrTestnet (toXPub <$> addrK)
 -- > "addr1s0lgjsr0kjsprvkxmetgcjaxsq833rxg3g8rv528wa0l5c8wcnplq3x0w2h"
+-- >
+-- > let stakeK = deriveStakingPrivateKey acctK
+-- > bech32 $ delegationAddress jormungandrTestnet (toXPub <$> addrK) (toXPub <$> stakeK)
+-- > "addr1snlgjsr0kjsprvkxmetgcjaxsq833rxg3g8rv528wa0l5c8wcnplq9t56crgcdw8wmat0tqwj3zqeqekgs0v9hjuy85lr6pgfmy3hxh0nedreq"
 
 {-------------------------------------------------------------------------------
                                    Key Types
