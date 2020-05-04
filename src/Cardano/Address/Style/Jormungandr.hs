@@ -25,6 +25,9 @@ module Cardano.Address.Style.Jormungandr
       -- * Accessors
     , getKey
 
+      -- * Discrimination
+    , jormungandrTestnet
+
       -- * Unsafe
     , liftXPrv
 
@@ -38,6 +41,13 @@ module Cardano.Address.Style.Jormungandr
 
 import Prelude
 
+import Cardano.Address
+    ( AddressDiscrimination (..)
+    , HasNetworkDiscriminant (..)
+    , NetworkTag (..)
+    , PaymentAddress (..)
+    , unsafeMkAddress
+    )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -51,6 +61,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , getPublicKey
     )
 import Cardano.Mnemonic
     ( someMnemonicToBytes )
@@ -58,16 +69,24 @@ import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Data.Binary.Put
+    ( putByteString, putWord8, runPut )
 import Data.ByteArray
     ( ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 
 -- $overview
 --
@@ -76,6 +95,7 @@ import qualified Data.ByteArray as BA
 -- - 'GenMasterKey': for generating Jormungandr master keys from mnemonic sentences
 -- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'PaymentAddress': for constructing payment addresses from a address public key
 --
 -- == Examples
 --
@@ -89,6 +109,23 @@ import qualified Data.ByteArray as BA
 -- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
+--
+-- === Generating an 'Address' from a root key
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
+--
+--
+-- > import Cardano.Address ( PaymentAddress(..), bech32 )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- >
+-- > bech32 $ paymentAddress jormungandrTestnet (toXPub <$> addrK)
+-- > "addr1s0lgjsr0kjsprvkxmetgcjaxsq833rxg3g8rv528wa0l5c8wcnplq3x0w2h"
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -183,6 +220,36 @@ instance SoftDerivation Jormungandr where
             \index for soft path derivation ( " ++ show addrIx ++ "). This is \
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
+
+instance HasNetworkDiscriminant Jormungandr where
+    type NetworkDiscriminant Jormungandr = (AddressDiscrimination, NetworkTag)
+    addressDiscrimination = fst
+    networkTag = snd
+
+instance PaymentAddress Jormungandr where
+    paymentAddress discrimination k = unsafeMkAddress $
+        invariantSize $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString (getPublicKey $ getKey k)
+      where
+          firstByte = case addressDiscrimination @Jormungandr discrimination of
+              RequiresNetworkTag -> 0x83
+              RequiresNoTag -> 0x03
+          invariantSize :: HasCallStack => ByteString -> ByteString
+          invariantSize bytes
+              | BS.length bytes == expectedLength = bytes
+              | otherwise = error
+                $ "length was "
+                ++ show (BS.length bytes)
+                ++ ", but expected to be "
+                ++ (show expectedLength)
+          expectedLength = 1 + publicKeySize
+
+-- | 'NetworkDiscriminant' for Cardano TestNet & Jormungandr
+--
+-- @since 2.0.0
+jormungandrTestnet :: NetworkDiscriminant Jormungandr
+jormungandrTestnet = (RequiresNetworkTag, NetworkTag 0)
 
 {-------------------------------------------------------------------------------
                                  Key generation
