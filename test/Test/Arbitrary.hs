@@ -19,7 +19,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..), NetworkTag (..) )
+    ( AddressDiscrimination (..), DelegationAddress (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -41,7 +41,7 @@ import Cardano.Address.Style.Icarus
 import Cardano.Address.Style.Jormungandr
     ( Jormungandr, jormungandrTestnet )
 import Cardano.Address.Style.Shelley
-    ( Shelley, deriveStakingPrivateKey )
+    ( Shelley )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Entropy
@@ -187,6 +187,16 @@ instance Arbitrary (Jormungandr 'AddressK XPub) where
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'StakingK XPub) where
+    shrink _ = []
+    arbitrary = do
+        mw <- SomeMnemonic <$> genMnemonic @15
+        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
+        let rootK = genMasterKeyFromMnemonic mw bytes
+        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
+        let stakingK = deriveStakingPrivateKey acctK
+        pure $ toXPub <$> stakingK
+
+instance Arbitrary (Jormungandr 'StakingK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
