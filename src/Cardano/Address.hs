@@ -27,12 +27,13 @@ module Cardano.Address
     , HasNetworkDiscriminant (..)
     , AddressDiscrimination (..)
     , NetworkTag (..)
+    , invariantSize
     ) where
 
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), XPub )
+    ( Depth (..), XPrv, XPub )
 import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
 import Control.DeepSeq
@@ -49,9 +50,12 @@ import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
+import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
 -- | An 'Address' type representing 'Cardano' addresses. Internals are
@@ -121,7 +125,7 @@ class PaymentAddress key
     -- delegated according to the delegation settings attached to the delegation
     -- key.
     --
-    -- @since 1.0.1
+    -- @since 2.0.0
     delegationAddress
         :: NetworkDiscriminant key
         ->  key 'AddressK XPub
@@ -129,6 +133,19 @@ class PaymentAddress key
         ->  key 'StakingK XPub
             -- ^ Staking key
         -> Address
+
+    -- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+    -- software are by convention only using one staking key per account, and always
+    -- the first account (with index 0').
+    --
+    -- Deriving staking keys for something else than the initial account is not
+    -- recommended and can lead to incompatibility with existing wallet softwares
+    -- (Daedalus, Yoroi, Adalite...).
+    --
+    -- @since 2.0.0
+    deriveStakingPrivateKey
+        :: key 'AccountK XPrv
+        -> key 'StakingK XPrv
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
     type NetworkDiscriminant key :: *
@@ -152,3 +169,12 @@ data AddressDiscrimination
     | RequiresNoTag
     deriving (Generic, Show, Eq)
 instance NFData AddressDiscrimination
+
+invariantSize :: HasCallStack => Int -> ByteString -> ByteString
+invariantSize expectedLength bytes
+    | BS.length bytes == expectedLength = bytes
+    | otherwise = error
+      $ "length was "
+      ++ show (BS.length bytes)
+      ++ ", but expected to be "
+      ++ (show expectedLength)

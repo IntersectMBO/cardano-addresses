@@ -21,9 +21,6 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
 
-      -- * Staking
-    , deriveStakingPrivateKey
-
       -- * Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
@@ -47,6 +44,7 @@ import Cardano.Address
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , PaymentAddress (..)
+    , invariantSize
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -93,7 +91,6 @@ import GHC.Stack
     ( HasCallStack )
 
 import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
 -- $overview
@@ -219,25 +216,6 @@ instance HardDerivation Shelley where
         in
             Shelley addrXPrv
 
--- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
--- software are by convention only using one staking key per account, and always
--- the first account (with index 0').
---
--- Deriving staking keys for something else than the initial account is not
--- recommended and can lead to incompatibility with existing wallet softwares
--- (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey
-    :: Shelley 'AccountK XPrv
-    -> Shelley 'StakingK XPrv
-deriveStakingPrivateKey (Shelley accXPrv) =
-    let
-        changeXPrv = -- lvl4 derivation; soft derivation of change chain
-            deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
-        stakeXPrv = -- lvl5 derivation; soft derivation of address index
-            deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
-    in
-        Shelley stakeXPrv
-
 instance SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
@@ -315,6 +293,15 @@ instance DelegationAddress Shelley where
               invariantNetworkTag (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
 
+    deriveStakingPrivateKey (Shelley accXPrv) =
+        let
+            changeXPrv = -- lvl4 derivation; soft derivation of change chain
+                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
+            stakeXPrv = -- lvl5 derivation; soft derivation of address index
+                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
+        in
+            Shelley stakeXPrv
+
 invariantNetworkTag :: HasCallStack => NetworkTag -> Word8
 invariantNetworkTag (NetworkTag num)
     | num < 16 = fromIntegral num
@@ -322,15 +309,6 @@ invariantNetworkTag (NetworkTag num)
       $ "network tag was "
       ++ show num
       ++ ", but expected to be less than 16"
-
-invariantSize :: HasCallStack => Int -> ByteString -> ByteString
-invariantSize expectedLength bytes
-    | BS.length bytes == expectedLength = bytes
-    | otherwise = error
-      $ "length was "
-      ++ show (BS.length bytes)
-      ++ ", but expected to be "
-      ++ (show expectedLength)
 
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =

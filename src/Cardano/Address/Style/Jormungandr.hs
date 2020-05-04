@@ -43,9 +43,11 @@ import Prelude
 
 import Cardano.Address
     ( AddressDiscrimination (..)
+    , DelegationAddress (..)
     , HasNetworkDiscriminant (..)
     , NetworkTag (..)
     , PaymentAddress (..)
+    , invariantSize
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -73,19 +75,14 @@ import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.ByteArray
     ( ScrubbedBytes )
-import Data.ByteString
-    ( ByteString )
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
-import GHC.Stack
-    ( HasCallStack )
 
 import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
 -- $overview
@@ -228,22 +225,35 @@ instance HasNetworkDiscriminant Jormungandr where
 
 instance PaymentAddress Jormungandr where
     paymentAddress discrimination k = unsafeMkAddress $
-        invariantSize $ BL.toStrict $ runPut $ do
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
             putByteString (getPublicKey $ getKey k)
       where
           firstByte = case addressDiscrimination @Jormungandr discrimination of
               RequiresNetworkTag -> 0x83
               RequiresNoTag -> 0x03
-          invariantSize :: HasCallStack => ByteString -> ByteString
-          invariantSize bytes
-              | BS.length bytes == expectedLength = bytes
-              | otherwise = error
-                $ "length was "
-                ++ show (BS.length bytes)
-                ++ ", but expected to be "
-                ++ (show expectedLength)
           expectedLength = 1 + publicKeySize
+
+instance DelegationAddress Jormungandr where
+    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString . getPublicKey . getKey $ paymentKey
+            putByteString . getPublicKey . getKey $ stakingKey
+      where
+          firstByte = case addressDiscrimination @Jormungandr discrimination of
+              RequiresNetworkTag -> 0x84
+              RequiresNoTag -> 0x04
+          expectedLength = 1 + 2*publicKeySize
+
+    deriveStakingPrivateKey (Jormungandr accXPrv) =
+        let
+            changeXPrv = -- lvl4 derivation; soft derivation of change chain
+                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
+            stakeXPrv = -- lvl5 derivation; soft derivation of address index
+                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
+        in
+            Jormungandr stakeXPrv
 
 -- | 'NetworkDiscriminant' for Cardano TestNet & Jormungandr
 --
