@@ -4,7 +4,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -104,6 +103,8 @@ import qualified Data.ByteString.Lazy as BL
 -- - 'GenMasterKey': for generating Shelley master keys from mnemonic sentences
 -- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'PaymentAddress': for constructing payment addresses from a address public key
+-- - 'DelegationAddress': for constructing delegation addresses from address and staking public keys
 --
 -- == Examples
 --
@@ -118,12 +119,12 @@ import qualified Data.ByteString.Lazy as BL
 -- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
 --
--- === Generating an 'Address' from a root key
+-- === Generating an 'PaymentAddress' and 'DelegationAddress' from a root key
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
 --
 --
--- > import Cardano.Address ( PaymentAddress(..), bech32, mainnetDiscriminant )
+-- > import Cardano.Address ( PaymentAddress(..), DelegationAddress (..), bech32)
 -- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
@@ -132,8 +133,13 @@ import qualified Data.ByteString.Lazy as BL
 -- > let addIx = toEnum 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 -- >
--- > bech32 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
--- > "addr1vzpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxzgg5v"
+-- > let (Right netTag) = mkNetworkDiscriminant 1
+-- > bech32 $ paymentAddress netTag (toXPub <$> addrK)
+-- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+-- >
+-- > let stakeK = deriveStakingPrivateKey acctK
+-- > bech32 $ delegationAddress netTag (toXPub <$> addrK) (toXPub <$> stakeK)
+-- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -147,7 +153,7 @@ import qualified Data.ByteString.Lazy as BL
 -- let addressPubKey  = Shelley 'AddressK XPub
 -- @
 --
--- @since 1.0.0
+-- @since 2.0.0
 newtype Shelley (depth :: Depth) key = Shelley
     { getKey :: key
         -- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.
@@ -166,7 +172,7 @@ instance (NFData key) => NFData (Shelley depth key)
 -- speed up test code (and avoid having to do needless derivations from a master
 -- key down to an address key for instance).
 --
--- @since 1.0.0
+-- @since 2.0.0
 liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
 
@@ -255,12 +261,17 @@ instance HasNetworkDiscriminant Shelley where
 
 -- | Error reported from trying to create a network discriminant from number
 --
--- @since 1.0.0
+-- @since 2.0.0
 newtype MkNetworkDiscriminantError
     = ErrWrongNetworkTag Word8
       -- ^ Wrong network tag.
     deriving (Eq, Show)
 
+-- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
+-- If the number is invalid, ie., not between 0 and 15, then
+-- 'MkNetworkDiscriminantError' is thrown.
+--
+-- @since 2.0.0
 mkNetworkDiscriminant
     :: Word8
     -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
