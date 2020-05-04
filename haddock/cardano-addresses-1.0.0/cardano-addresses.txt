@@ -372,6 +372,11 @@ newtype MkNetworkDiscriminantError
 -- | Wrong network tag.
 ErrWrongNetworkTag :: Word8 -> MkNetworkDiscriminantError
 
+-- | Construct <a>NetworkDiscriminant</a> for Cardano <a>Shelley</a> from a
+--   number. If the number is invalid, ie., not between 0 and 15, then
+--   <a>MkNetworkDiscriminantError</a> is thrown.
+mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+
 -- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
 getKey :: Shelley depth key -> key
 
