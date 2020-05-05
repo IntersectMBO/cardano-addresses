@@ -22,6 +22,8 @@ module Cardano.Address
     , fromBase58
     , bech32
     , fromBech32
+    , hex
+    , fromHex
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -41,6 +43,10 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
+import Data.ByteArray
+    ( ByteArray, ByteArrayAccess )
+import Data.ByteArray.Encoding
+    ( Base (Base16), convertFromBase, convertToBase )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
@@ -105,6 +111,18 @@ fromBech32 =
     fmap unsafeMkAddress . Bech32.dataPartToBytes
    <=<
     either (const Nothing) (Just . snd) . Bech32.decodeLenient
+
+-- | Encode a 'ByteString' in base16
+--
+-- @since 2.0.0
+hex :: ByteArrayAccess bin => bin -> ByteString
+hex = convertToBase Base16
+
+-- | Decode a 'ByteString' from base16
+--
+-- @since 2.0.0
+fromHex :: ByteArray bout => ByteString -> Either String bout
+fromHex = convertFromBase Base16
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
