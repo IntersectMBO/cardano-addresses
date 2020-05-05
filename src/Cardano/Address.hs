@@ -21,6 +21,7 @@ module Cardano.Address
     , base58
     , fromBase58
     , bech32
+    , bech32WithHrp
     , fromBech32
     , hex
     , fromHex
@@ -102,6 +103,12 @@ bech32 :: Address -> Text
 bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
   where
     hrp = [Bech32.humanReadablePart|addr|]
+
+-- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
+--
+-- @since 2.0.0
+bech32WithHrp :: Bech32.HumanReadablePart -> Address -> Text
+bech32WithHrp hrp = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
 
 -- | Decode a bech32-encoded  'Text' into an 'Address'
 --

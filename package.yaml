@@ -69,6 +69,7 @@ tests:
       - -Werror
     dependencies:
     - bytestring
+    - bech32
     - cardano-addresses
     - cardano-crypto
     - hspec
