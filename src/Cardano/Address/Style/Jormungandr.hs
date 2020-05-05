@@ -45,6 +45,7 @@ import Cardano.Address
     , HasNetworkDiscriminant (..)
     , NetworkTag (..)
     , PaymentAddress (..)
+    , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
     )
@@ -247,16 +248,16 @@ instance HasNetworkDiscriminant Jormungandr where
 instance PaymentAddress Jormungandr where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 (fromIntegral firstByte)
+            putWord8 (invariantNetworkTag 255 firstByte)
             putByteString (getPublicKey $ getKey k)
       where
-          (NetworkTag firstByte) = networkTag @Jormungandr discrimination
+          firstByte = networkTag @Jormungandr discrimination
           expectedLength = 1 + publicKeySize
 
 instance DelegationAddress Jormungandr where
     delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 (fromIntegral $ firstByte + 1)
+            putWord8 (invariantNetworkTag 255 $ NetworkTag $ firstByte + 1)
             putByteString . getPublicKey . getKey $ paymentKey
             putByteString . getPublicKey . getKey $ stakingKey
       where

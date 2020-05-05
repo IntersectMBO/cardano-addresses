@@ -44,6 +44,7 @@ import Cardano.Address
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , PaymentAddress (..)
+    , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
     )
@@ -88,8 +89,6 @@ import Data.Word
     ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
-import GHC.Stack
-    ( HasCallStack )
 
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
@@ -283,7 +282,7 @@ instance PaymentAddress Shelley where
           -- will be `0110`. The next for 4 bits are reserved for network discriminator.
           -- `0110 0000` is 96 in decimal.
           firstByte =
-              96 + invariantNetworkTag (networkTag @Shelley discrimination)
+              96 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + publicKeyHashSize
 
 instance DelegationAddress Shelley where
@@ -301,16 +300,8 @@ instance DelegationAddress Shelley where
           -- Moreover, it was decided that first 4 bits for enterprise address
           -- will be `0000`. The next for bits are reserved for network discriminator.
           firstByte =
-              invariantNetworkTag (networkTag @Shelley discrimination)
+              invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
-
-invariantNetworkTag :: HasCallStack => NetworkTag -> Word8
-invariantNetworkTag (NetworkTag num)
-    | num < 16 = fromIntegral num
-    | otherwise = error
-      $ "network tag was "
-      ++ show num
-      ++ ", but expected to be less than 16"
 
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =

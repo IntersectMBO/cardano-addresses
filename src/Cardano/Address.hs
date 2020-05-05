@@ -28,6 +28,7 @@ module Cardano.Address
     , AddressDiscrimination (..)
     , NetworkTag (..)
     , invariantSize
+    , invariantNetworkTag
     ) where
 
 import Prelude
@@ -47,7 +48,7 @@ import Data.ByteString.Base58
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 import GHC.Stack
@@ -165,3 +166,12 @@ invariantSize expectedLength bytes
       ++ show (BS.length bytes)
       ++ ", but expected to be "
       ++ (show expectedLength)
+
+invariantNetworkTag :: HasCallStack => Word32 -> NetworkTag -> Word8
+invariantNetworkTag limit (NetworkTag num)
+    | num < limit = fromIntegral num
+    | otherwise = error
+      $ "network tag was "
+      ++ show num
+      ++ ", but expected to be less than "
+      ++ show limit
