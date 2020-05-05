@@ -20,13 +20,25 @@ module Cardano.Address.Style.Shelley
 
       -- * Shelley
       Shelley
+    , getKey
+
+      -- * Key Derivation
+      -- $keyDerivation
+    , genMasterKeyFromXPrv
+    , genMasterKeyFromMnemonic
+    , deriveAccountPrivateKey
+    , deriveAddressPrivateKey
+    , deriveStakingPrivateKey
+    , deriveAddressPublicKey
+
+      -- * Addresses
+      -- $addresses
+    , paymentAddress
+    , delegationAddress
 
       -- * Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
-
-      -- * Accessors
-    , getKey
 
       -- * Unsafe
     , liftXPrv
@@ -39,11 +51,10 @@ module Cardano.Address.Style.Shelley
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..)
-    , DelegationAddress (..)
+    ( Address
+    , AddressDiscrimination (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
-    , PaymentAddress (..)
     , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
@@ -53,11 +64,7 @@ import Cardano.Address.Derivation
     , Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
-    , GenMasterKey (..)
-    , HardDerivation (..)
     , Index
-    , SoftDerivation (..)
-    , StakingDerivation (..)
     , XPrv
     , XPub
     , deriveXPrv
@@ -66,7 +73,7 @@ import Cardano.Address.Derivation
     , getPublicKey
     )
 import Cardano.Mnemonic
-    ( someMnemonicToBytes )
+    ( SomeMnemonic, someMnemonicToBytes )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
@@ -90,6 +97,8 @@ import Data.Word
 import GHC.Generics
     ( Generic )
 
+import qualified Cardano.Address as Internal
+import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
 
@@ -97,46 +106,11 @@ import qualified Data.ByteString.Lazy as BL
 --
 -- This module provides an implementation of:
 --
--- - 'GenMasterKey': for generating Shelley master keys from mnemonic sentences
--- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
--- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
--- - 'PaymentAddress': for constructing payment addresses from a address public key
--- - 'DelegationAddress': for constructing delegation addresses from address and staking public keys
---
--- == Examples
---
--- === Generating a root key from 'SomeMnemonic'
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- > import Cardano.Address.Derivation ( GenMasterKey(..) )
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
---
--- === Generating an 'PaymentAddress' and 'DelegationAddress' from a root key
---
--- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
---
---
--- > import Cardano.Address ( PaymentAddress(..), DelegationAddress (..), bech32)
--- > import Cardano.Address.Derivation ( AccountingStyle(..), StakingDerivation (..), GenMasterKey(..), toXPub )
--- >
--- > let accIx = toEnum 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
--- >
--- > let addIx = toEnum 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
--- >
--- > let (Right netTag) = mkNetworkDiscriminant 1
--- > bech32 $ paymentAddress netTag (toXPub <$> addrK)
--- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
--- >
--- > let stakeK = deriveStakingPrivateKey acctK
--- > bech32 $ delegationAddress netTag (toXPub <$> addrK) (toXPub <$> stakeK)
--- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
+-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shelley master keys from mnemonic sentences
+-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
+-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'Cardano.Address.PaymentAddress': for constructing payment addresses from a address public key
+-- - 'Cardano.Address.DelegationAddress': for constructing delegation addresses from address and staking public keys
 
 {-------------------------------------------------------------------------------
                                    Key Types
@@ -173,7 +147,36 @@ instance (NFData key) => NFData (Shelley depth key)
 liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
 
-instance GenMasterKey Shelley where
+--
+-- Key Derivation
+--
+-- $keyDerivation
+--
+-- === Generating a root key from 'SomeMnemonic'
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+--
+-- === Deriving child keys
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
+--
+-- > import Cardano.Address.Derivation ( AccountingStyle(..) )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+--
+-- > let stakeK = deriveStakingPrivateKey acctK
+
+instance Internal.GenMasterKey Shelley where
     type SecondFactor Shelley = ScrubbedBytes
 
     genMasterKeyFromXPrv = liftXPrv
@@ -185,7 +188,7 @@ instance GenMasterKey Shelley where
                 (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
                 seed
 
-instance HardDerivation Shelley where
+instance Internal.HardDerivation Shelley where
     type AccountIndexDerivationType Shelley = 'Hardened
     type AddressIndexDerivationType Shelley = 'Soft
     type WithAccountStyle Shelley = AccountingStyle
@@ -216,7 +219,7 @@ instance HardDerivation Shelley where
         in
             Shelley addrXPrv
 
-instance SoftDerivation Shelley where
+instance Internal.SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
             let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
@@ -232,7 +235,7 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance StakingDerivation Shelley where
+instance Internal.StakingDerivation Shelley where
     deriveStakingPrivateKey (Shelley accXPrv) =
         let
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
@@ -241,6 +244,85 @@ instance StakingDerivation Shelley where
                 deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
         in
             Shelley stakeXPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+--
+-- @since 2.0.0
+genMasterKeyFromMnemonic
+    :: SomeMnemonic
+        -- ^ Some valid mnemonic sentence.
+    -> ScrubbedBytes
+        -- ^ An optional second-factor passphrase (or 'mempty')
+    -> Shelley 'RootK XPrv
+genMasterKeyFromMnemonic =
+    Internal.genMasterKeyFromMnemonic
+
+-- | Generate a root key from a corresponding root 'XPrv'
+--
+-- @since 2.0.0
+genMasterKeyFromXPrv
+    :: XPrv -> Shelley 'RootK XPrv
+genMasterKeyFromXPrv =
+    Internal.genMasterKeyFromXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an account private key from the given root private key.
+--
+-- @since 2.0.0
+deriveAccountPrivateKey
+    :: Shelley 'RootK XPrv
+    -> Index 'Hardened 'AccountK
+    -> Shelley 'AccountK XPrv
+deriveAccountPrivateKey =
+    Internal.deriveAccountPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an address private key from the given account private key.
+--
+-- @since 2.0.0
+deriveAddressPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Shelley 'AddressK XPrv
+deriveAddressPrivateKey =
+    Internal.deriveAddressPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derives an address public key from the given account public key.
+--
+-- @since 2.0.0
+deriveAddressPublicKey
+    :: Shelley 'AccountK XPub
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Shelley 'AddressK XPub
+deriveAddressPublicKey =
+    Internal.deriveAddressPublicKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one staking key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving staking keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+--
+-- @since 2.0.0
+deriveStakingPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'StakingK XPrv
+deriveStakingPrivateKey =
+    Internal.deriveStakingPrivateKey
+
+--
+-- Network Discriminant
+--
 
 instance HasNetworkDiscriminant Shelley where
     type NetworkDiscriminant Shelley = NetworkTag
@@ -267,7 +349,29 @@ mkNetworkDiscriminant nTag
     | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
 
-instance PaymentAddress Shelley where
+--
+-- Addresses
+--
+-- $addresses
+-- === Generating a 'PaymentAddress'
+--
+-- > import Cardano.Address ( bech32 )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- >
+-- > let (Right tag) = mkNetworkDiscriminant 1
+-- > bech32 $ paymentAddress tag (toXPub <$> addrK)
+-- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+--
+-- === Generating a 'DelegationAddress'
+--
+-- > import Cardano.Address ( DelegationAddress (..) )
+-- > import Cardano.Address.Derivation ( StakingDerivation (..) )
+-- >
+-- > let (Right tag) = mkNetworkDiscriminant 1
+-- > bech32 $ delegationAddress tag (toXPub <$> addrK) (toXPub <$> stakeK)
+-- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
+
+instance Internal.PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
@@ -285,7 +389,7 @@ instance PaymentAddress Shelley where
               96 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + publicKeyHashSize
 
-instance DelegationAddress Shelley where
+instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
@@ -303,19 +407,50 @@ instance DelegationAddress Shelley where
               invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
 
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key to a payment 'Address' valid for the given
+-- network discrimination.
+--
+-- @since 2.0.0
+paymentAddress
+    :: NetworkDiscriminant Shelley
+    -> Shelley 'AddressK XPub
+    -> Address
+paymentAddress =
+    Internal.paymentAddress
+
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key and a staking key to a delegation 'Address' valid
+-- for the given network discrimination. Funds sent to this address will be
+-- delegated according to the delegation settings attached to the delegation
+-- key.
+--
+-- @since 2.0.0
+delegationAddress
+    :: NetworkDiscriminant Shelley
+    -> Shelley 'AddressK XPub
+    -> Shelley 'StakingK XPub
+    -> Address
+delegationAddress =
+    Internal.delegationAddress
+
+--
+-- Internal
+--
+
+-- Hash a public key
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =
     BA.convert . hash @_ @Blake2b_224 . getPublicKey . getKey
 
-{-------------------------------------------------------------------------------
-                                 Key generation
--------------------------------------------------------------------------------}
 
--- | Size, in bytes, of a hash of public key (without the corresponding chain code)
+-- Size, in bytes, of a hash of public key (without the corresponding chain code)
 publicKeyHashSize :: Int
 publicKeyHashSize = hashDigestSize Blake2b_224
 
--- | Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
+-- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
 --
 -- https://github.com/input-output-hk/implementation-decisions/blob/e2d1bed5e617f0907bc5e12cf1c3f3302a4a7c42/text/1852-hd-chimeric.md
@@ -327,7 +462,7 @@ publicKeyHashSize = hashDigestSize Blake2b_224
 purposeIndex :: Word32
 purposeIndex = 0x8000073c
 
--- | One master node (seed) can be used for unlimited number of independent
+-- One master node (seed) can be used for unlimited number of independent
 -- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
 -- same space for various cryptocoins has some disadvantages.
 --
@@ -342,6 +477,6 @@ purposeIndex = 0x8000073c
 coinTypeIndex :: Word32
 coinTypeIndex = 0x80000717
 
--- | The minimum seed length for 'genMasterKeyFromMnemonic'.
+-- The minimum seed length for 'genMasterKeyFromMnemonic'.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16
