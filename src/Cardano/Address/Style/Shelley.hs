@@ -56,6 +56,7 @@ import Cardano.Address.Derivation
     , HardDerivation (..)
     , Index
     , SoftDerivation (..)
+    , StakingDerivation (..)
     , XPrv
     , XPub
     , deriveXPrv
@@ -122,7 +123,7 @@ import qualified Data.ByteString.Lazy as BL
 --
 --
 -- > import Cardano.Address ( PaymentAddress(..), DelegationAddress (..), bech32)
--- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), StakingDerivation (..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
@@ -232,6 +233,16 @@ instance SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
+instance StakingDerivation Shelley where
+    deriveStakingPrivateKey (Shelley accXPrv) =
+        let
+            changeXPrv = -- lvl4 derivation; soft derivation of change chain
+                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
+            stakeXPrv = -- lvl5 derivation; soft derivation of address index
+                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
+        in
+            Shelley stakeXPrv
+
 instance HasNetworkDiscriminant Shelley where
     type NetworkDiscriminant Shelley = NetworkTag
     addressDiscrimination _ = RequiresNetworkTag
@@ -292,15 +303,6 @@ instance DelegationAddress Shelley where
           firstByte =
               invariantNetworkTag (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
-
-    deriveStakingPrivateKey (Shelley accXPrv) =
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
-            stakeXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
-        in
-            Shelley stakeXPrv
 
 invariantNetworkTag :: HasCallStack => NetworkTag -> Word8
 invariantNetworkTag (NetworkTag num)

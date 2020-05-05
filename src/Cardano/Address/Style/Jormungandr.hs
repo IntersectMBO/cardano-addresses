@@ -25,13 +25,12 @@ module Cardano.Address.Style.Jormungandr
     , getKey
 
       -- * Discrimination
-    , jormungandrTestnet
+    , incentivizedTestnet
 
       -- * Unsafe
     , liftXPrv
 
       -- Internals
-    -- * Constants
     , minSeedLengthBytes
     , publicKeySize
     , addrSingleSize
@@ -58,6 +57,7 @@ import Cardano.Address.Derivation
     , HardDerivation (..)
     , Index
     , SoftDerivation (..)
+    , StakingDerivation (..)
     , XPrv
     , deriveXPrv
     , deriveXPub
@@ -81,6 +81,7 @@ import Data.Word
 import GHC.Generics
     ( Generic )
 
+import qualified Crypto.PubKey.Ed25519 as Ed25519
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
 
@@ -113,7 +114,7 @@ import qualified Data.ByteString.Lazy as BL
 --
 --
 -- > import Cardano.Address ( PaymentAddress(..), DelegationAddress(..), bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), StakingDerivation (..), GenMasterKey(..), toXPub )
 -- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
@@ -222,34 +223,7 @@ instance SoftDerivation Jormungandr where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance HasNetworkDiscriminant Jormungandr where
-    type NetworkDiscriminant Jormungandr = (AddressDiscrimination, NetworkTag)
-    addressDiscrimination = fst
-    networkTag = snd
-
-instance PaymentAddress Jormungandr where
-    paymentAddress discrimination k = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString (getPublicKey $ getKey k)
-      where
-          firstByte = case addressDiscrimination @Jormungandr discrimination of
-              RequiresNetworkTag -> 0x83
-              RequiresNoTag -> 0x03
-          expectedLength = 1 + publicKeySize
-
-instance DelegationAddress Jormungandr where
-    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString . getPublicKey . getKey $ paymentKey
-            putByteString . getPublicKey . getKey $ stakingKey
-      where
-          firstByte = case addressDiscrimination @Jormungandr discrimination of
-              RequiresNetworkTag -> 0x84
-              RequiresNoTag -> 0x04
-          expectedLength = 1 + 2*publicKeySize
-
+instance StakingDerivation Jormungandr where
     deriveStakingPrivateKey (Jormungandr accXPrv) =
         let
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
@@ -259,29 +233,53 @@ instance DelegationAddress Jormungandr where
         in
             Jormungandr stakeXPrv
 
--- | 'NetworkDiscriminant' for Cardano TestNet & Jormungandr
+-- | 'NetworkDiscriminant' for Cardano Incentivized Testnet testnet & Jormungandr
 --
 -- @since 2.0.0
-jormungandrTestnet :: NetworkDiscriminant Jormungandr
-jormungandrTestnet = (RequiresNetworkTag, NetworkTag 0)
+incentivizedTestnet :: NetworkDiscriminant Jormungandr
+incentivizedTestnet = NetworkTag 0x83
+
+instance HasNetworkDiscriminant Jormungandr where
+    type NetworkDiscriminant Jormungandr = NetworkTag
+    addressDiscrimination _ = RequiresNetworkTag
+    networkTag = id
+
+instance PaymentAddress Jormungandr where
+    paymentAddress discrimination k = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 (fromIntegral firstByte)
+            putByteString (getPublicKey $ getKey k)
+      where
+          (NetworkTag firstByte) = networkTag @Jormungandr discrimination
+          expectedLength = 1 + publicKeySize
+
+instance DelegationAddress Jormungandr where
+    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 (fromIntegral $ firstByte + 1)
+            putByteString . getPublicKey . getKey $ paymentKey
+            putByteString . getPublicKey . getKey $ stakingKey
+      where
+          (NetworkTag firstByte) = networkTag @Jormungandr discrimination
+          expectedLength = 1 + 2*publicKeySize
 
 {-------------------------------------------------------------------------------
-                                 Key generation
+                                Constants
 -------------------------------------------------------------------------------}
 
--- | Size, in bytes, of a public key (without chain code)
+-- Size, in bytes, of a public key (without chain code)
 publicKeySize :: Int
-publicKeySize = 32
+publicKeySize = Ed25519.publicKeySize
 
--- | Serialized length in bytes of a Single Address
+-- Serialized length in bytes of a Single Address
 addrSingleSize :: Int
 addrSingleSize = 1 + publicKeySize
 
--- | Serialized length in bytes of a Grouped Address
+-- Serialized length in bytes of a Grouped Address
 addrGroupedSize :: Int
 addrGroupedSize = addrSingleSize + publicKeySize
 
--- | Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
+-- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
 --
 -- https://github.com/input-output-hk/implementation-decisions/blob/e2d1bed5e617f0907bc5e12cf1c3f3302a4a7c42/text/1852-hd-chimeric.md
@@ -293,7 +291,7 @@ addrGroupedSize = addrSingleSize + publicKeySize
 purposeIndex :: Word32
 purposeIndex = 0x8000073c
 
--- | One master node (seed) can be used for unlimited number of independent
+-- One master node (seed) can be used for unlimited number of independent
 -- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
 -- same space for various cryptocoins has some disadvantages.
 --
@@ -308,7 +306,7 @@ purposeIndex = 0x8000073c
 coinTypeIndex :: Word32
 coinTypeIndex = 0x80000717
 
--- | The minimum seed length for 'generateKeyFromSeed' and
+-- The minimum seed length for 'generateKeyFromSeed' and
 -- 'unsafeGenerateKeyFromSeed'.
 minSeedLengthBytes :: Int
 minSeedLengthBytes = 16

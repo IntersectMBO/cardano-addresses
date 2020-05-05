@@ -19,7 +19,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..), DelegationAddress (..), NetworkTag (..) )
+    ( AddressDiscrimination (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -27,6 +27,7 @@ import Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index
+    , StakingDerivation (..)
     , XPrv
     , XPub
     , generate
@@ -39,7 +40,7 @@ import Cardano.Address.Style.Byron
 import Cardano.Address.Style.Icarus
     ( Icarus, icarusMainnet, icarusStaging, icarusTestnet )
 import Cardano.Address.Style.Jormungandr
-    ( Jormungandr, jormungandrTestnet )
+    ( Jormungandr, incentivizedTestnet )
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic
@@ -217,7 +218,7 @@ instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
         , pure icarusMainnet
         , pure icarusStaging
         , pure icarusTestnet
-        , pure jormungandrTestnet
+        , pure (RequiresNetworkTag, incentivizedTestnet)
         ]
 
 instance Arbitrary NetworkTag where

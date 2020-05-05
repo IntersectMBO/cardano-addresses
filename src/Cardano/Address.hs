@@ -33,7 +33,7 @@ module Cardano.Address
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), XPrv, XPub )
+    ( Depth (..), XPub )
 import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
 import Control.DeepSeq
@@ -117,7 +117,7 @@ class HasNetworkDiscriminant key => PaymentAddress key where
 
 -- | Encoding of delegation addresses for certain key types and backend targets.
 --
--- @since 1.0.1
+-- @since 2.0.0
 class PaymentAddress key
     => DelegationAddress key where
     -- | Convert a public key and a staking key to a delegation 'Address' valid
@@ -133,19 +133,6 @@ class PaymentAddress key
         ->  key 'StakingK XPub
             -- ^ Staking key
         -> Address
-
-    -- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
-    -- software are by convention only using one staking key per account, and always
-    -- the first account (with index 0').
-    --
-    -- Deriving staking keys for something else than the initial account is not
-    -- recommended and can lead to incompatibility with existing wallet softwares
-    -- (Daedalus, Yoroi, Adalite...).
-    --
-    -- @since 2.0.0
-    deriveStakingPrivateKey
-        :: key 'AccountK XPrv
-        -> key 'StakingK XPrv
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
     type NetworkDiscriminant key :: *
