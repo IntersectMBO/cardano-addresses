@@ -237,6 +237,19 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
 --   keys.
 deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> key  'AddressK XPub
 
+-- | An interface for doing staking derivations from the account private
+--   key.
+class StakingDerivation (key :: Depth -> * -> *)
+
+-- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one staking key per
+--   account, and always the first account (with index 0').
+--   
+--   Deriving staking keys for something else than the initial account is
+--   not recommended and can lead to incompatibility with existing wallet
+--   softwares (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey :: StakingDerivation key => key  'AccountK XPrv -> key  'StakingK XPrv
+
 -- | An opaque type representing an extended public key.
 type XPub = XPub
 
@@ -356,15 +369,6 @@ module Cardano.Address.Style.Shelley
 --   </pre>
 data Shelley (depth :: Depth) key
 
--- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one staking key per
---   account, and always the first account (with index 0').
---   
---   Deriving staking keys for something else than the initial account is
---   not recommended and can lead to incompatibility with existing wallet
---   softwares (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
-
 -- | Error reported from trying to create a network discriminant from
 --   number
 newtype MkNetworkDiscriminantError
@@ -405,9 +409,51 @@ instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.S
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
+
+
+module Cardano.Address.Style.Jormungandr
+
+-- | A cryptographic key for sequential-scheme address derivation, with
+--   phantom-types to disambiguate key types.
+--   
+--   <pre>
+--   let rootPrivateKey = Jormungandr 'RootK XPrv
+--   let accountPubKey  = Jormungandr 'AccountK XPub
+--   let addressPubKey  = Jormungandr 'AddressK XPub
+--   </pre>
+data Jormungandr (depth :: Depth) key
+
+-- | Extract the raw <a>XPrv</a> or <tt>XPub</tt> wrapped by this type.
+getKey :: Jormungandr depth key -> key
+
+-- | <a>NetworkDiscriminant</a> for Cardano Incentivized Testnet testnet
+--   &amp; Jormungandr
+incentivizedTestnet :: NetworkDiscriminant Jormungandr
+
+-- | Unsafe backdoor for constructing an <a>Jormungandr</a> key from a raw
+--   <a>XPrv</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPrv :: XPrv -> Jormungandr depth XPrv
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
+instance GHC.Generics.Generic (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
+instance GHC.Base.Functor (Cardano.Address.Style.Jormungandr.Jormungandr depth)
+instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
+instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.PaymentAddress Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.DelegationAddress Cardano.Address.Style.Jormungandr.Jormungandr
 
 
 module Cardano.Address.Style.Byron
