@@ -27,6 +27,8 @@ module Cardano.Address
     , HasNetworkDiscriminant (..)
     , AddressDiscrimination (..)
     , NetworkTag (..)
+    , invariantSize
+    , invariantNetworkTag
     ) where
 
 import Prelude
@@ -46,12 +48,15 @@ import Data.ByteString.Base58
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
+import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
 -- | An 'Address' type representing 'Cardano' addresses. Internals are
@@ -113,7 +118,7 @@ class HasNetworkDiscriminant key => PaymentAddress key where
 
 -- | Encoding of delegation addresses for certain key types and backend targets.
 --
--- @since 1.0.1
+-- @since 2.0.0
 class PaymentAddress key
     => DelegationAddress key where
     -- | Convert a public key and a staking key to a delegation 'Address' valid
@@ -121,7 +126,7 @@ class PaymentAddress key
     -- delegated according to the delegation settings attached to the delegation
     -- key.
     --
-    -- @since 1.0.1
+    -- @since 2.0.0
     delegationAddress
         :: NetworkDiscriminant key
         ->  key 'AddressK XPub
@@ -152,3 +157,21 @@ data AddressDiscrimination
     | RequiresNoTag
     deriving (Generic, Show, Eq)
 instance NFData AddressDiscrimination
+
+invariantSize :: HasCallStack => Int -> ByteString -> ByteString
+invariantSize expectedLength bytes
+    | BS.length bytes == expectedLength = bytes
+    | otherwise = error
+      $ "length was "
+      ++ show (BS.length bytes)
+      ++ ", but expected to be "
+      ++ (show expectedLength)
+
+invariantNetworkTag :: HasCallStack => Word32 -> NetworkTag -> Word8
+invariantNetworkTag limit (NetworkTag num)
+    | num < limit = fromIntegral num
+    | otherwise = error
+      $ "network tag was "
+      ++ show num
+      ++ ", but expected to be less than "
+      ++ show limit

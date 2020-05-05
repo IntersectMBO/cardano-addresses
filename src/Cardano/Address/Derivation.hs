@@ -25,6 +25,7 @@ module Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , SoftDerivation (..)
+    , StakingDerivation (..)
 
     -- * Low-Level Cryptography Primitives
     -- ** XPub
@@ -398,6 +399,23 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
         -> AccountingStyle
         -> Index 'Soft 'AddressK
         -> key 'AddressK XPub
+
+-- | An interface for doing staking derivations from the account private key.
+--
+-- @since 2.0.0
+class StakingDerivation (key :: Depth -> * -> *) where
+    -- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+    -- software are by convention only using one staking key per account, and always
+    -- the first account (with index 0').
+    --
+    -- Deriving staking keys for something else than the initial account is not
+    -- recommended and can lead to incompatibility with existing wallet softwares
+    -- (Daedalus, Yoroi, Adalite...).
+    --
+    -- @since 2.0.0
+    deriveStakingPrivateKey
+        :: key 'AccountK XPrv
+        -> key 'StakingK XPrv
 
 
 -- | Abstract interface for constructing a /Master Key/.
