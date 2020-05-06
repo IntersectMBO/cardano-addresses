@@ -158,6 +158,30 @@ spec = do
                     , "addr1qmfx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3ud20vj\
                       \rx7u3sk3qnfndth3c8eha7d8ar7xyf068xpyudqws8e9ufy"
                     ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevudycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803q70sx8s"
+                    , "addr1qvtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevudycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qyut0c7"
+                    , "addr1qctnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevudycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qrq05sv"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qzmetq35wm8yeqhjfx4umn75vs28ufpqq52a9f7ng0an2w5dycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qvs4mj8"
+                    , "addr1qwmetq35wm8yeqhjfx4umn75vs28ufpqq52a9f7ng0an2w5dycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qkrwjdf"
+                    , "addr1q6metq35wm8yeqhjfx4umn75vs28ufpqq52a9f7ng0an2w5dycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803q3l2f9m"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qrfx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3uvdycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qjrmpuj"
+                    , "addr1q0fx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3uvdycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803qgsqgru"
+                    , "addr1qmfx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3uvdycp\
+                      \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803q0vyntw"
+                    ]
             , mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
                          , "company", "walk", "dog" ]
             }
@@ -234,6 +258,30 @@ spec = do
                       \d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwql3uzlq"
                     , "addr1qmlrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpjcu5\
                       \d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwqcdcehj"
+                    ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsg8a6rm"
+                    , "addr1qw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsj5xnu4"
+                    , "addr1q62fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs4gzg58"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qz7svwszky8gcmhrfza7a89z9u0dfzd3l7h23sqlc5yml7en0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs6r4yq4"
+                    , "addr1qw7svwszky8gcmhrfza7a89z9u0dfzd3l7h23sqlc5yml7en0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsqswdlm"
+                    , "addr1q67svwszky8gcmhrfza7a89z9u0dfzd3l7h23sqlc5yml7en0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs8v2khf"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qrlrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpn0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs4p9yak"
+                    , "addr1q0lrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpn0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs0j7dzc"
+                    , "addr1qmlrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpn0d3\
+                      \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsgw6k22"
                     ]
             , mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
                            "entry", "language", "right", "filter", "choice" ]
@@ -312,6 +360,30 @@ spec = do
                     , "addr1q68jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlkvxwd\
                       \rt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwdpd2c"
                     ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5e0jz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqmquepq"
+                    , "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5e0jz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqpn8s7w"
+                    , "addr1qeu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5e0jz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqx0rtku"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qq0a2lgc2e0r597dr983jrf5ns4hxz027u8n7wlcsjcw4khjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqvkdd3e"
+                    , "addr1qv0a2lgc2e0r597dr983jrf5ns4hxz027u8n7wlcsjcw4khjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqk9kywh"
+                    , "addr1qc0a2lgc2e0r597dr983jrf5ns4hxz027u8n7wlcsjcw4khjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txq3ejlx9"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qz8jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlhjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqxe38kg"
+                    , "addr1qw8jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlhjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqu22wfx"
+                    , "addr1q68jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlhjz8v\
+                      \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqmkw4p5"
+                    ]
             , mnemonic = [ "art", "forum", "devote", "street", "sure", "rather",
                            "head", "chuckle", "guard", "poverty", "release",
                            "quote", "oak", "craft", "enemy"]
@@ -388,6 +460,30 @@ spec = do
                       \5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q8my3wt"
                     , "addr1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te\
                       \5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qq8q2xe"
+                    ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s02df6s"
+                    , "addr1qdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s4ekq97"
+                    , "addr1qetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sj9jmdv"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s8gv4jc"
+                    , "addr1q03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47samhudk"
+                    , "addr1qm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s68n89y"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47szpdkuz"
+                    , "addr1qddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47scjklrv"
+                    , "addr1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclv\
+                      \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47slwjyt7"
                     ]
             , mnemonic = [ "churn", "shaft", "spoon", "second", "erode", "useless",
                            "thrive", "burst", "group", "seed", "element", "sign",
@@ -467,6 +563,30 @@ spec = do
                     , "addr1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnkcd4a\
                       \zvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsydyn7l"
                     ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s8xdg00"
+                    , "addr1qw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sa4kpsp"
+                    , "addr1q683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s6fj6cn"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qzr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s4p97sn"
+                    , "addr1qwr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s0j7h0a"
+                    , "addr1q6r08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sgw6v80"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qz54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56smrfsp6"
+                    , "addr1qw54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56spsje75"
+                    , "addr1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552ju\
+                      \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sxvkzkx"
+                    ]
             , mnemonic = [ "draft", "ability", "female", "child", "jump", "maid",
                            "roof", "hurt", "below", "live", "topple", "paper",
                            "exclude", "ordinary", "coach", "churn", "sunset",
@@ -545,6 +665,30 @@ spec = do
                       \q8f3gag0h89aepvx3xf69g0l9pf80tqv7cve0l33s8xfkas"
                     , "addr1q63ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl08hk8tt\
                       \q8f3gag0h89aepvx3xf69g0l9pf80tqv7cve0l33sq6dd4z"
+                    ]
+            , delegationAddr0Stake1 =
+                    [ "addr1qqy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnpykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqlgmzqc"
+                    , "addr1qvy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnpykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxq9mqtlk"
+                    , "addr1qcy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnpykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqz8yshy"
+                    ]
+            , delegationAddr1Stake1 =
+                    [ "addr1qrhvwtn8sa3duzkm93v5kjjxlv5lvg67j530wyeumngu23eykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqyax93a"
+                    , "addr1q0hvwtn8sa3duzkm93v5kjjxlv5lvg67j530wyeumngu23eykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxq7wavwn"
+                    , "addr1qmhvwtn8sa3duzkm93v5kjjxlv5lvg67j530wyeumngu23eykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqejehxp"
+                    ]
+            , delegationAddr1442Stake1 =
+                    [ "addr1qz3ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl083ykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxq7c8mpk"
+                    , "addr1qw3ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl083ykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqytuj7c"
+                    , "addr1q63ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl083ykh4\
+                      \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqrhcfk2"
                     ]
             , mnemonic = [ "excess", "behave", "track", "soul", "table", "wear",
                            "ocean", "cash", "stay", "nature", "item", "turtle",
@@ -649,6 +793,18 @@ data TestVector = TestVector
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
      , delegationAddr1442Stake0 :: [Text]
 
+      -- | Delegation addresses for the 0th address key and the 1st account staking key,
+      -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
+     , delegationAddr0Stake1 :: [Text]
+
+      -- | Delegation addresses for the 1st address key and the 1st account staking key,
+      -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
+     , delegationAddr1Stake1 :: [Text]
+
+      -- | Delegation addresses for the 1442nd address key and the 1st account staking key,
+      -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
+     , delegationAddr1442Stake1 :: [Text]
+
       -- | Corresponding Mnemonic
     , mnemonic :: [Text]
     }
@@ -708,6 +864,13 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     delegationAddr1Stake0' `shouldBe` delegationAddr1Stake0
     let delegationAddr1442Stake0' = getDelegationAddr addrK1442prv stakeKPub0 <$> networkTags
     delegationAddr1442Stake0' `shouldBe` delegationAddr1442Stake0
+    let stakeKPub1 = toXPub <$> deriveStakingPrivateKey acctK1
+    let delegationAddr0Stake1' = getDelegationAddr addrK0prv stakeKPub1 <$> networkTags
+    delegationAddr0Stake1' `shouldBe` delegationAddr0Stake1
+    let delegationAddr1Stake1' = getDelegationAddr addrK1prv stakeKPub1 <$> networkTags
+    delegationAddr1Stake1' `shouldBe` delegationAddr1Stake1
+    let delegationAddr1442Stake1' = getDelegationAddr addrK1442prv stakeKPub1 <$> networkTags
+    delegationAddr1442Stake1' `shouldBe` delegationAddr1442Stake1
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
