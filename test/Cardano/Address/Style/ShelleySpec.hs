@@ -91,10 +91,14 @@ spec = do
                     \988ca665907c5400980a71f60e32c6efa5de59bbedd4add18f57955f7f\
                     \e0ca434f8b6ddb48ec72202545a3943a396ccdcb0fb98fffd989635fd9\
                     \3406b04f556ea54034012b72008"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv1xqwvl9u488wkkywa9pfr8vncxf6sk6reea878ytt8pgrses8\
                     \c4q9wl66mqw6gtcz7jrw2x5nh0c9vxl4u4yk35qmuqs62hwmfw8g59nqqz\
                     \sw5cdy26sfmu8y8q9g36w0ukrh62g5x9x2r3p7g6x8z064nulavjdy"
+            , accXPrv1 =
+                    "acct_xprv13pxyc73zy9eagvj84jdq5fmqcvsnpln64gmldtm69k4cses8\
+                    \c4qzzcx7qvdtjjl48r0xr95xrdffc9rn5ahus7sgl5f36hvd5ha9j0z8gx\
+                    \ffjqs8qsuayeaadwevup6jd8vfrn874c7je3400lwlhxy7nvv6dmmy"
             , addrXPrv0 =
                     "addr_xprv1dzrs9tvy632mtzvjgrvrkdr0j96j4dwaej06lytjahvzquq8\
                     \c4qzqws3zp2uc8rmrmhzrhukjml9vrfqxwhpjs78yfh6nyv9cpk9n87e4r\
@@ -163,10 +167,14 @@ spec = do
                     \71893225ee1a45e2331497029d885b5634405f350508cd95dce3991503\
                     \b10f128d04f34b7b625783a1e3bd5dcf11fd4f989ec2cdcdea3a54db89\
                     \97398174ecdcc87006c274176a0"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv12phl7y4uv58mne08me5szrwly2gn6jasqmkvcrndq762q68p\
                     \5302z24gdf365klhll2a5f357k7nc4kpaq7j6agr5m22jq4jwlfv6l505h\
                     \7dg64an4rdfk9f028nge0zcn508jw6m8lkdq36zc0v4h9xqs762yl0"
+            , accXPrv1 =
+                    "acct_xprv1ppjrs9d7yh6qzmzng34nyh5ysx4uzewz09ndyjudgep0x6lp\
+                    \530vzh0gmwrt53p3h55l8ect5cw95ejpgj667eawewrcmrf2ajda4mzxlz\
+                    \pf2w63cwazlp9226pr4m6s35lawkmrqv8gf8ycl0ernjf69vpufpq7"
             , addrXPrv0 =
                     "addr_xprv1hqf6v2lvhfn5mr3fe6g8ac6n8a3z6s0p24mg6kre8jadxulp\
                     \530y07wjp2ml0zcz8gk0xc7zy96qp2xxtr0arjq9038k9dhkw3k3cswawh\
@@ -236,10 +244,14 @@ spec = do
                     \445ec44f47ad95c10e3d72f26ed075422a36ed8585c745a0e1150bcceb\
                     \a2357d058636991f38a3791e248de509c070d812ab2fda57860ac876bc\
                     \489192c1ef4ce253c197ee219a4"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv1crpfhmtv5vdjx9rsqre7z025gartudsanenhart5nh3muqnm\
                     \m9wvu7jr0c2neykydr3r85rw6vht8sg0u4dffts2klnadgk9rt8zh23kfq\
                     \wxrlk3feq0dvvfvd8htlpnhmpu2fpklpl09th296pm7sdc6qafmpwv"
+            , accXPrv1 =
+                    "acct_xprv1jpfm7zhl6cwr4gkeuhtau603xv898ydam77d7c64xatjcptm\
+                    \m9wr5sn95u3a9vudl08q9lwzl4qltal70ddl9qvl3nhcmjkxlan652vgpp\
+                    \y8uf42h4y279nxfazumh0hd8hdhkdrlp06qcwe6t69qt236qkr8sxx"
             , addrXPrv0 =
                     "addr_xprv1fzgcl9km0mve2jwe8qxve364w6te9vpddhwpw5g8wnjlupmm\
                     \m9wxpdda6jaglx7smwl6qd5xuzjcweeq8ykp0wg9hng4pg6eumwx2t90sw\
@@ -310,10 +322,14 @@ spec = do
                     \7725ba29316875e972fd37e121a09dbbacbc7c8ad118d34c212ddaf564\
                     \e2d7198d6c3f9d6d4cb6ce0387dd6b5c0393c08c239cd9b1eaf3578d23\
                     \d0c32edb0bc4d41a57011c6d2d9"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv1vzjuw65sf27s478y8ndz2jpan4rev52h0fdh9z3tdwcplgqk\
                     \sa0wa9wntpw4d74rhj8rs2unf6rfujxu90mstt8ztnjrn80r8sz0edzf22\
                     \jznx2n63qdalqm2tphlfn7k6qxtm0pg85z4ptk639vyjjufccch84r"
+            , accXPrv1 =
+                    "acct_xprv1uq5jz089v7pjc76lqcac9lkl9d8fntc53h00ajlhr7msm8sk\
+                    \sa0xljllgc5c2n5ruklwnkauxvlxsmcwat223rakj5dmfz2j9xxzvmpcqc\
+                    \0z9ekuywfhkm8w4k507caj4rv4qjhmnhafs8tkmsx6vtstdujluhmn"
             , addrXPrv0 =
                     "addr_xprv17zj2lhjk379klp40xfzsad0yzygqe45uaggnkzf4ld3emgsk\
                     \sa00ftq88fnfjxg245kjjqcukyjfg4lwmf3r2qqymyyqennch3y8llyg0d\
@@ -383,10 +399,14 @@ spec = do
                     \740537f60d18b515628d17049769717bdad315c2312f9b1920bb053fa4\
                     \c97267807a26e4fb4389785f9411155f742692668d33f263a771089087\
                     \49911a3286941d5b3989a093666"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv13rkczfa4xzrax4x0unqnesaasr8s3qnyr2mmjcwga6lrue73\
                     \3dg6at2stlqft9jtz0kk50xsp4yrqnrf9gl78npu50r7e38kpu0f744af4\
                     \6s2r37d7m6sh0uyj9szp86s546k43t2thfw4nzd7zsxckx6ggwkjgx"
+            , accXPrv1 =
+                    "acct_xprv1rrd6a79s9gktygfmp4gxhme3jxvnxazk45u2twrwfnfg2c73\
+                    \3dg323eaegqrxe7lt0zepz3aq3ydgdse8vjs7qks4c4yh0q39pdf4fsv4q\
+                    \l5tv5tny3mxzn20r792nl9nk904y0ztqgclyxuxzl56p6fsyg34zms"
             , addrXPrv0 =
                     "addr_xprv1fz8tz0pdda8la0aqhadnzctw0p48zwygkgf4xyar2jjljm73\
                     \3dgkprs4sj8cxfwv9xtfddpdfvjlap0hhg9gd37pr0tp7ue48mh9cnfyy6\
@@ -458,10 +478,14 @@ spec = do
                     \98a259802118f451e846b73a627c54ab13d49f5995b8563b32ad860c01\
                     \9a28b0b953209cd11bc1843548a19d62a34d1714b1ac21903524efffab\
                     \a00c4f4fcb203649661b61e2ca6"
-            , accXPrv =
+            , accXPrv0 =
                     "acct_xprv1grmww8c9yftkd6nlmuh7wypx46duh8az7sxyg88fr4k3qpc3\
                     \3azk8gc5ntllturxzee5gj2zd5dy48f0ehp6lqudkwvacxjznz8j0mzd2a\
                     \d0t2fmmaystgms97k7maz3afvy0ywjxwk7jzt96cyt43tnqsxye0df"
+            , accXPrv1 =
+                    "acct_xprv13p9klhdduza8djyvfvwkvz92hnq4sa372kaz60j2a7fjgzg3\
+                    \3azlmcm0zv26uldtrl7war6l2cm5ynkplnfqtuylmp52kt9j5yy3ck5vxv\
+                    \hqkh9g2xmgnxqay9l58pe683ey4c4tpxq27j75t9wuar224u6fs3jq"
             , addrXPrv0 =
                     "addr_xprv1zq578drze4tp8fq43gur62v2j57vd5nvg862jc8hz5f959g3\
                     \3azuy3hl7ce8cjrxua5nyarqr9f4aatqecjsq9gturmqrcpkwuhu5rchas\
@@ -578,7 +602,10 @@ data TestVector = TestVector
       rootXPrv :: Text
 
       -- | The extended 0th account private key, bech32 encoded prefixed with 'acct_xprv'
-    , accXPrv :: Text
+    , accXPrv0 :: Text
+
+      -- | The extended 1st account private key, bech32 encoded prefixed with 'acct_xprv'
+    , accXPrv1 :: Text
 
       -- | The extended 0th address private key, bech32 encoded prefixed with 'addr_xprv'
     , addrXPrv0 :: Text
@@ -635,11 +662,15 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
             T.append "root_xprv" (T.decodeUtf8 $ hex $ xprvToBytes $ getKey rootK)
     rootXPrv' `shouldBe` rootXPrv
 
+    let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
     let accIx0 = toEnum 0x80000000
     let acctK0 = deriveAccountPrivateKey rootK accIx0
-    let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
     let accXPrv0' = bech32WithHrp hrp $ getExtendedKeyAddr acctK0
-    accXPrv0' `shouldBe` accXPrv
+    accXPrv0' `shouldBe` accXPrv0
+    let accIx1 = toEnum 0x80000001
+    let acctK1 = deriveAccountPrivateKey rootK accIx1
+    let accXPrv1' = bech32WithHrp hrp $ getExtendedKeyAddr acctK1
+    accXPrv1' `shouldBe` accXPrv1
 
     let (Right hrpPrv) = Bech32.humanReadablePartFromText "addr_xprv"
     let (Right hrpPub) = Bech32.humanReadablePartFromText "addr_xpub"
