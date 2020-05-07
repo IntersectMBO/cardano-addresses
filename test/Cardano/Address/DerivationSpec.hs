@@ -19,19 +19,29 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
     , Index
+    , XPrv
+    , sign
+    , toXPub
+    , verify
+    , xprvChainCode
     , xprvFromBytes
     , xprvToBytes
+    , xpubChainCode
     , xpubFromBytes
     , xpubToBytes
     )
+import Data.ByteArray
+    ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.String
+    ( IsString (..) )
 import Test.Hspec
     ( Spec, describe, it )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Property, expectFailure, property, (.&&.), (===) )
+    ( Arbitrary (..), Property, expectFailure, property, (.&&.), (===) )
 
 import Test.Arbitrary
     ()
@@ -57,10 +67,27 @@ spec = describe "Checking auxiliary address derivations types" $ do
             prop_roundtripBytes xpubToBytes xpubFromBytes
         prop "roundtripping: xprvToBytes . xprvFromBytes" $
             prop_roundtripBytes xprvToBytes xprvFromBytes
+        prop "forall xprv. xprvChainCode xprv == xpubChainCode (toXPub xprv)"
+            prop_chainCodeInvariance
+        prop "forall xprv msg. 'verify' ('toXPub' xprv) msg ('sign' xprv msg) == 'True'"
+            prop_publicKeySignature
 
 {-------------------------------------------------------------------------------
                                Properties
 -------------------------------------------------------------------------------}
+
+prop_publicKeySignature
+    :: XPrv
+    -> ScrubbedBytes
+    -> Property
+prop_publicKeySignature xprv msg =
+    verify (toXPub xprv) msg (sign xprv msg) === True
+
+prop_chainCodeInvariance
+    :: XPrv
+    -> Property
+prop_chainCodeInvariance xprv =
+    xprvChainCode xprv === xpubChainCode (toXPub xprv)
 
 prop_roundtripBytes
     :: (Eq a, Show a)
@@ -94,3 +121,10 @@ prop_roundtripEnumIndexHard ix =
 prop_roundtripEnumIndexSoft :: Index 'Soft 'AddressK -> Property
 prop_roundtripEnumIndexSoft ix =
     (toEnum . fromEnum) ix === ix .&&. (toEnum . fromEnum) ix === ix
+
+{-------------------------------------------------------------------------------
+                             Arbitrary Instances
+-------------------------------------------------------------------------------}
+
+instance Arbitrary ScrubbedBytes where
+    arbitrary = fromString <$> arbitrary
