@@ -2,29 +2,84 @@ module "Cardano.Address" {
   tick function "showsPrec" [Show instance];
   tick function "compare" [Ord instance];
   tick function "==" [Eq instance];
+  inside "invariantSize" {
+    tick "otherwise" [Invariant];
+  }
+  inside "invariantNetworkTag" {
+    tick "otherwise" [Invariant];
+  }
 }
 
 module "Cardano.Address.Derivation" {
   tick function "showsPrec" [Show instance];
   tick function "compare" [Ord instance];
   tick function "==" [Eq instance];
+  tick "getIndex" [Record Accessor];
 }
 
 module "Cardano.Address.Style.Byron" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
   tick "()" [Never evaluated];
+  inside "hdPassphrase" {
+    tick "SHA512" [Never evaluated];
+  }
+  tick function "paymentAddress" [Re-Export];
+  tick function "deriveAddressPrivateKey" [Re-export];
+  tick function "deriveAccountPrivateKey" [Re-export];
+  tick function "genMasterKeyFromXPrv" [Re-export];
+  tick function "genMasterKeyFromMnemonic" [Re-export];
 }
 
 module "Cardano.Address.Style.Icarus" {
   tick function "showsPrec" [Show instance];
   tick function "=="  [Eq instance];
 
+  tick function "paymentAddress" [Re-Export];
+  tick function "deriveAddressPrivateKey" [Re-export];
+  tick function "deriveAddressPublicKey" [Re-export];
+  tick function "deriveAccountPrivateKey" [Re-export];
+  tick function "genMasterKeyFromXPrv" [Re-export];
+  tick function "genMasterKeyFromMnemonic" [Re-export];
+
   inside "unsafeGenerateKeyFromHardwareLedger" {
     tick "(error \"pruneBuffer: no first byte\")" [Invariant];
     tick "(error \"pruneBuffer: no last byte\")" [Invariant];
     tick "(Left \"invalid xprv\")" [Invariant];
+    tick "SHA512" [Never evaluated];
   }
+}
+
+module "Cardano.Address.Style.Shelley" {
+  tick function "showsPrec" [Show instance];
+  tick function "=="  [Eq instance];
+
+  tick function "paymentAddress" [Re-Export];
+  tick function "delegationAddress" [Re-Export];
+  tick function "deriveStakingPrivateKey" [Re-export];
+  tick function "deriveAddressPrivateKey" [Re-export];
+  tick function "deriveAddressPublicKey" [Re-export];
+  tick function "deriveAccountPrivateKey" [Re-export];
+  tick function "genMasterKeyFromXPrv" [Re-export];
+  tick function "genMasterKeyFromMnemonic" [Re-export];
+
+  inside "publicKeyHashSize" {
+    tick "Blake2b_224" [Never evaluated];
+  }
+}
+
+module "Cardano.Address.Style.Jormungandr" {
+  tick function "showsPrec" [Show instance];
+  tick function "=="  [Eq instance];
+
+  tick function "paymentAddress" [Re-Export];
+  tick function "delegationAddress" [Re-Export];
+  tick function "deriveStakingPrivateKey" [Re-export];
+  tick function "deriveAddressPrivateKey" [Re-export];
+  tick function "deriveAddressPublicKey" [Re-export];
+  tick function "deriveAccountPrivateKey" [Re-export];
+  tick function "genMasterKeyFromXPrv" [Re-export];
+  tick function "genMasterKeyFromMnemonic" [Re-export];
 }
 
 module "Cardano.Mnemonic" {
