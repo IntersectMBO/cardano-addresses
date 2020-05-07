@@ -250,35 +250,72 @@ class StakingDerivation (key :: Depth -> * -> *)
 --   softwares (Daedalus, Yoroi, Adalite...).
 deriveStakingPrivateKey :: StakingDerivation key => key  'AccountK XPrv -> key  'StakingK XPrv
 
--- | An opaque type representing an extended public key.
-type XPub = XPub
-
--- | Construct an <a>XPub</a> from raw <a>ByteString</a>
-xpubFromBytes :: ByteString -> Maybe XPub
-
--- | Convert an <a>XPub</a> to a raw <a>ByteString</a> (both public key and
---   chain code)
-xpubToBytes :: XPub -> ByteString
-
--- | Get a public key <a>ByteString</a> from <a>XPub</a>
-getPublicKey :: XPub -> ByteString
-
--- | Get a chain code <a>ByteString</a> from <a>XPub</a>
-getChainCode :: XPub -> ByteString
-
 -- | An opaque type representing an extended private key.
+--   
+--   <b>Properties:</b>
+--   
+--   <h5>Roundtripping</h5>
+--   
+--   <pre>
+--   forall xprv. <a>xprvFromBytes</a> (<a>xprvToBytes</a> xprv) == <a>Just</a> xprv
+--   </pre>
+--   
+--   <h5>Chain Code Invariance</h5>
+--   
+--   <pre>
+--   forall xprv. <a>xprvChainCode</a> xprv == <a>xpubChainCode</a> (<a>toXPub</a> xprv)
+--   </pre>
+--   
+--   <h5>Public Key Signature</h5>
+--   
+--   <pre>
+--   forall xprv msg. <a>verify</a> (<a>toXPub</a> xprv) msg (<a>sign</a> xprv msg) == <a>True</a>
+--   </pre>
 type XPrv = XPrv
 
--- | Construct an <a>XPrv</a> from raw <a>ByteString</a>.
+-- | Construct an <a>XPrv</a> from raw <a>ByteString</a> (96 bytes).
 xprvFromBytes :: ByteString -> Maybe XPrv
 
--- | Convert an <a>XPrv</a> to a raw <a>ByteString</a>.
+-- | Convert an <a>XPrv</a> to a raw <a>ByteString</a> (96 bytes).
 xprvToBytes :: XPrv -> ByteString
 
--- | Derive the <a>XPub</a> from a corresponding <a>XPrv</a>.
+-- | Extract the private key from an <a>XPrv</a> as a raw <a>ByteString</a>
+--   (64 bytes).
+xprvPrivateKey :: XPrv -> ByteString
+
+-- | Extract the chain code from an <a>XPrv</a> as a raw <a>ByteString</a>
+--   (32 bytes).
+xprvChainCode :: XPrv -> ByteString
+
+-- | Derive the <a>XPub</a> associated with an <a>XPrv</a>.
 toXPub :: HasCallStack => XPrv -> XPub
 
--- | An opaque type representing a signature made from an <a>XPrv</a>
+-- | An opaque type representing an extended public key.
+--   
+--   <b>Properties:</b>
+--   
+--   <h5>Roundtripping</h5>
+--   
+--   <pre>
+--   forall xpub. <a>xpubFromBytes</a> (<a>xpubToBytes</a> xpub) == <a>Just</a> xpub
+--   </pre>
+type XPub = XPub
+
+-- | Construct an <a>XPub</a> from raw <a>ByteString</a> (64 bytes).
+xpubFromBytes :: ByteString -> Maybe XPub
+
+-- | Convert an <a>XPub</a> to a raw <a>ByteString</a> (64 bytes).
+xpubToBytes :: XPub -> ByteString
+
+-- | Extract the public key from an <a>XPub</a> as a raw <a>ByteString</a>
+--   (32 bytes).
+xpubPublicKey :: XPub -> ByteString
+
+-- | Extract the chain code from an <a>XPub</a> as a raw <a>ByteString</a>
+--   (32 bytes).
+xpubChainCode :: XPub -> ByteString
+
+-- | An opaque type representing a signature made from an <a>XPrv</a>.
 type XSignature = XSignature
 
 -- | Produce a signature of the given <tt>msg</tt> from an <a>XPrv</a>.
@@ -369,6 +406,43 @@ module Cardano.Address.Style.Shelley
 --   </pre>
 data Shelley (depth :: Depth) key
 
+-- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
+getKey :: Shelley depth key -> key
+
+-- | Generate a root key from a corresponding root <a>XPrv</a>
+genMasterKeyFromXPrv :: XPrv -> Shelley  'RootK XPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPrv
+
+-- | Derives an account private key from the given root private key.
+deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
+
+-- | Derives an address private key from the given account private key.
+deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
+
+-- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one staking key per
+--   account, and always the first account (with index 0').
+--   
+--   Deriving staking keys for something else than the initial account is
+--   not recommended and can lead to incompatibility with existing wallet
+--   softwares (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
+
+-- | Derives an address public key from the given account public key.
+deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
+
+-- | Convert a public key to a payment <a>Address</a> valid for the given
+--   network discrimination.
+paymentAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Address
+
+-- | Convert a public key and a staking key to a delegation <a>Address</a>
+--   valid for the given network discrimination. Funds sent to this address
+--   will be delegated according to the delegation settings attached to the
+--   delegation key.
+delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Shelley  'StakingK XPub -> Address
+
 -- | Error reported from trying to create a network discriminant from
 --   number
 newtype MkNetworkDiscriminantError
@@ -381,9 +455,6 @@ ErrWrongNetworkTag :: Word8 -> MkNetworkDiscriminantError
 --   <a>MkNetworkDiscriminantError</a> is thrown.
 mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 
--- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
-getKey :: Shelley depth key -> key
-
 -- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
 --   <a>XPrv</a>. this is unsafe because it lets the caller choose the
 --   actually derivation <tt>depth</tt>.
@@ -392,13 +463,6 @@ getKey :: Shelley depth key -> key
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPrv :: XPrv -> Shelley depth XPrv
-
--- | The minimum seed length for <a>genMasterKeyFromMnemonic</a>.
-minSeedLengthBytes :: Int
-
--- | Size, in bytes, of a hash of public key (without the corresponding
---   chain code)
-publicKeyHashSize :: Int
 instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
@@ -410,9 +474,9 @@ instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.S
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley
 
 
 module Cardano.Address.Style.Jormungandr
@@ -427,8 +491,42 @@ module Cardano.Address.Style.Jormungandr
 --   </pre>
 data Jormungandr (depth :: Depth) key
 
--- | Extract the raw <a>XPrv</a> or <tt>XPub</tt> wrapped by this type.
+-- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
 getKey :: Jormungandr depth key -> key
+
+-- | Generate a root key from a corresponding root <a>XPrv</a>
+genMasterKeyFromXPrv :: XPrv -> Jormungandr  'RootK XPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Jormungandr  'RootK XPrv
+
+-- | Derives an account private key from the given root private key.
+deriveAccountPrivateKey :: Jormungandr  'RootK XPrv -> Index  'Hardened  'AccountK -> Jormungandr  'AccountK XPrv
+
+-- | Derives an address private key from the given account private key.
+deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPrv
+
+-- | Derives an address public key from the given account public key.
+deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPub
+
+-- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one staking key per
+--   account, and always the first account (with index 0').
+--   
+--   Deriving staking keys for something else than the initial account is
+--   not recommended and can lead to incompatibility with existing wallet
+--   softwares (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'StakingK XPrv
+
+-- | Convert a public key to a payment <a>Address</a> valid for the given
+--   network discrimination.
+paymentAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'AddressK XPub -> Address
+
+-- | Convert a public key and a staking key to a delegation <a>Address</a>
+--   valid for the given network discrimination. Funds sent to this address
+--   will be delegated according to the delegation settings attached to the
+--   delegation key.
+delegationAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'AddressK XPub -> Jormungandr  'StakingK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano Incentivized Testnet testnet
 --   &amp; Jormungandr
@@ -451,9 +549,9 @@ instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Jormungan
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Jormungandr.Jormungandr
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Jormungandr.Jormungandr
 
 
 module Cardano.Address.Style.Byron
@@ -461,28 +559,52 @@ module Cardano.Address.Style.Byron
 -- | Material for deriving HD random scheme keys, which can be used for
 --   making addresses.
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 data Byron (depth :: Depth) key
 
 -- | The hierarchical derivation indices for a given level/depth.
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 type family DerivationPath (depth :: Depth) :: *
 
 -- | Used for encryption of the derivation path payload within an address.
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 payloadPassphrase :: Byron depth key -> ScrubbedBytes
 
 -- | The address derivation indices for the level of this key.
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 derivationPath :: Byron depth key -> DerivationPath depth
 
 -- | The raw private or public key.
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 getKey :: Byron depth key -> key
+
+-- | Generate a root key from a corresponding root <a>XPrv</a>
+
+-- | <i>Deprecated: see <a>Icarus</a></i>
+genMasterKeyFromXPrv :: XPrv -> Byron  'RootK XPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+
+-- | <i>Deprecated: see <a>Icarus</a></i>
+genMasterKeyFromMnemonic :: SomeMnemonic -> Byron  'RootK XPrv
+
+-- | Derives an account private key from the given root private key.
+
+-- | <i>Deprecated: see <a>Icarus</a></i>
+deriveAccountPrivateKey :: Byron  'RootK XPrv -> Index  'WholeDomain  'AccountK -> Byron  'AccountK XPrv
+
+-- | Derives an address private key from the given account private key.
+
+-- | <i>Deprecated: see <a>Icarus</a></i>
+deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'AddressK -> Byron  'AddressK XPrv
+
+-- | Convert a public key to a payment <a>Address</a> valid for the given
+--   network discrimination.
+paymentAddress :: NetworkDiscriminant Byron -> Byron  'AddressK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano MainNet &amp; Byron
 byronMainnet :: NetworkDiscriminant Byron
@@ -520,7 +642,7 @@ byronTestnet :: NetworkDiscriminant Byron
 --   _ :: Byron AddressK XPrv
 --   </pre>
 
--- | <i>Deprecated: see Cardano.Address.Style.Icarus</i>
+-- | <i>Deprecated: see <a>Icarus</a></i>
 liftXPrv :: DerivationPath depth -> XPrv -> Byron depth XPrv
 instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
@@ -529,8 +651,8 @@ instance GHC.Base.Functor (Cardano.Address.Style.Byron.Byron depth)
 instance (Control.DeepSeq.NFData key, Control.DeepSeq.NFData (Cardano.Address.Style.Byron.DerivationPath depth)) => Control.DeepSeq.NFData (Cardano.Address.Style.Byron.Byron depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Byron.Byron
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Byron.Byron
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Byron.Byron
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Byron.Byron
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Byron.Byron
 
 
 module Cardano.Address.Style.Icarus
@@ -545,8 +667,27 @@ module Cardano.Address.Style.Icarus
 --   </pre>
 data Icarus (depth :: Depth) key
 
--- | Extract the raw <a>XPrv</a> or <tt>XPub</tt> wrapped by this type.
+-- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
 getKey :: Icarus depth key -> key
+
+-- | Generate a root key from a corresponding root <a>XPrv</a>
+genMasterKeyFromXPrv :: XPrv -> Icarus  'RootK XPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
+
+-- | Derives an account private key from the given root private key.
+deriveAccountPrivateKey :: Icarus  'RootK XPrv -> Index  'Hardened  'AccountK -> Icarus  'AccountK XPrv
+
+-- | Derives an address private key from the given account private key.
+deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Icarus  'AddressK XPrv
+
+-- | Derives an address public key from the given account public key.
+deriveAddressPublicKey :: Icarus  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Icarus  'AddressK XPub
+
+-- | Convert a public key to a payment <a>Address</a> valid for the given
+--   network discrimination.
+paymentAddress :: NetworkDiscriminant Icarus -> Icarus  'AddressK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano MainNet &amp; <a>Icarus</a>
 icarusMainnet :: NetworkDiscriminant Icarus
@@ -573,5 +714,5 @@ instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.S
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Icarus.Icarus
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Icarus.Icarus
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Icarus.Icarus
