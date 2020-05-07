@@ -28,18 +28,20 @@ module Cardano.Address.Derivation
     , StakingDerivation (..)
 
     -- * Low-Level Cryptography Primitives
-    -- ** XPub
-    , XPub
-    , xpubFromBytes
-    , xpubToBytes
-    , getPublicKey
-    , getChainCode
-
     -- ** XPrv
     , XPrv
     , xprvFromBytes
     , xprvToBytes
+    , xprvPrivateKey
+    , xprvChainCode
     , toXPub
+
+    -- ** XPub
+    , XPub
+    , xpubFromBytes
+    , xpubToBytes
+    , xpubPublicKey
+    , xpubChainCode
 
     -- ** XSignature
     , XSignature
@@ -99,48 +101,64 @@ import qualified Data.ByteString as BS
 
 -- | An opaque type representing an extended private key.
 --
+-- __Properties:__
+--
+-- ===== Roundtripping
+--
+-- @forall xprv. 'xprvFromBytes' ('xprvToBytes' xprv) == 'Just' xprv@
+--
+-- ===== Chain Code Invariance
+--
+-- @forall xprv. 'xprvChainCode' xprv == 'xpubChainCode' ('toXPub' xprv)@
+--
+-- ===== Public Key Signature
+--
+-- @forall xprv msg. 'verify' ('toXPub' xprv) msg ('sign' xprv msg) == 'True'@
+--
 -- @since 1.0.0
 type XPrv = CC.XPrv
 
 -- | An opaque type representing an extended public key.
 --
+-- __Properties:__
+--
+-- ===== Roundtripping
+--
+-- @forall xpub. 'xpubFromBytes' ('xpubToBytes' xpub) == 'Just' xpub@
+--
 -- @since 1.0.0
 type XPub = CC.XPub
 
--- | An opaque type representing a signature made from an 'XPrv'
+-- | An opaque type representing a signature made from an 'XPrv'.
 --
 -- @since 1.0.0
 type XSignature = CC.XSignature
 
--- | Construct an 'XPub' from raw 'ByteString'
+-- | Construct an 'XPub' from raw 'ByteString' (64 bytes).
 --
 -- @since 1.0.0
 xpubFromBytes :: ByteString -> Maybe XPub
-xpubFromBytes =
-    eitherToMaybe . CC.xpub
+xpubFromBytes = eitherToMaybe . CC.xpub
 
--- | Convert an 'XPub' to a raw 'ByteString' (both public key and chain code)
+-- | Convert an 'XPub' to a raw 'ByteString' (64 bytes).
 --
 -- @since 1.0.0
 xpubToBytes :: XPub -> ByteString
-xpubToBytes =
-    CC.unXPub
+xpubToBytes xpub = xpubPublicKey xpub <> xpubChainCode xpub
 
--- | Get a public key 'ByteString' from 'XPub'
+-- | Extract the public key from an 'XPub' as a raw 'ByteString' (32 bytes).
 --
--- @since 1.0.1
-getPublicKey :: XPub -> ByteString
-getPublicKey (CC.XPub pk _cc) =
-    pk
+-- @since 2.0.0
+xpubPublicKey :: XPub -> ByteString
+xpubPublicKey (CC.XPub pub _cc) = pub
 
--- | Get a chain code 'ByteString' from 'XPub'
+-- | Extract the chain code from an 'XPub' as a raw 'ByteString' (32 bytes).
 --
--- @since 1.0.1
-getChainCode :: XPub -> ByteString
-getChainCode (CC.XPub _pk (CC.ChainCode cc)) =
-    cc
+-- @since 2.0.0
+xpubChainCode :: XPub -> ByteString
+xpubChainCode (CC.XPub _pub (CC.ChainCode cc)) = cc
 
--- | Construct an 'XPrv' from raw 'ByteString'.
+-- | Construct an 'XPrv' from raw 'ByteString' (96 bytes).
 --
 -- @since 1.0.0
 xprvFromBytes :: ByteString -> Maybe XPrv
@@ -156,22 +174,29 @@ xprvFromBytes bytes
         scalar <- eitherToMaybe $ eitherCryptoError $ Ed25519.scalarDecodeLong bs
         pure $ Ed25519.pointEncode $ Ed25519.toPoint scalar
 
--- | Convert an 'XPrv' to a raw 'ByteString'.
+-- From  < xprv | pub | cc >
+-- ↳ To  < xprv |     | cc >
+--
+-- | Convert an 'XPrv' to a raw 'ByteString' (96 bytes).
 --
 -- @since 1.0.0
 xprvToBytes :: XPrv -> ByteString
-xprvToBytes =
-    stripPub . CC.unXPrv
-  where
-    -- From  < xprv | pub | cc >
-    -- ↳ To  < xprv |     | cc >
-    stripPub :: ByteString -> ByteString
-    stripPub xprv' = prv <> chainCode
-      where
-        (prv, rest) = BS.splitAt 64 xprv'
-        (_pub, chainCode) = BS.splitAt 32 rest
+xprvToBytes xprv =
+    xprvPrivateKey xprv <> xprvChainCode xprv
 
--- | Derive the 'XPub' from a corresponding 'XPrv'.
+-- | Extract the private key from an 'XPrv' as a raw 'ByteString' (64 bytes).
+--
+-- @since 2.0.0
+xprvPrivateKey :: XPrv -> ByteString
+xprvPrivateKey = BS.take 64 . CC.unXPrv
+
+-- | Extract the chain code from an 'XPrv' as a raw 'ByteString' (32 bytes).
+--
+-- @since 2.0.0
+xprvChainCode :: XPrv -> ByteString
+xprvChainCode = BS.drop 96 . CC.unXPrv
+
+-- | Derive the 'XPub' associated with an 'XPrv'.
 --
 -- @since 1.0.0
 toXPub :: HasCallStack => XPrv -> XPub

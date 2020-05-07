@@ -19,11 +19,21 @@ module Cardano.Address.Style.Icarus
 
       -- * Icarus
       Icarus
-
-      -- * Accessors
     , getKey
 
-      -- * Discrimination
+      -- * Key Derivation
+      -- $keyDerivation
+    , genMasterKeyFromXPrv
+    , genMasterKeyFromMnemonic
+    , deriveAccountPrivateKey
+    , deriveAddressPrivateKey
+    , deriveAddressPublicKey
+
+      -- * Addresses
+      -- $addresses
+    , paymentAddress
+
+      -- * Network Discrimination
     , icarusMainnet
     , icarusStaging
     , icarusTestnet
@@ -39,10 +49,10 @@ module Cardano.Address.Style.Icarus
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..)
+    ( Address
+    , AddressDiscrimination (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
-    , PaymentAddress (..)
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -50,11 +60,9 @@ import Cardano.Address.Derivation
     , Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
-    , GenMasterKey (..)
-    , HardDerivation (..)
     , Index
-    , SoftDerivation (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
@@ -89,6 +97,8 @@ import Data.Word
 import GHC.Generics
     ( Generic )
 
+import qualified Cardano.Address as Internal
+import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
@@ -100,48 +110,15 @@ import qualified Data.Text.Encoding as T
 --
 -- This module provides an implementation of:
 --
--- - 'GenMasterKey': for generating Icarus master keys from mnemonic sentences
--- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
--- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
--- - 'PaymentAddress': for constructing addresses from a public key
+-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Icarus master keys from mnemonic sentences
+-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
+-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'Cardano.Address.PaymentAddress': for constructing addresses from a public key
 --
 -- We call 'Icarus' addresses the new format of Cardano addresses which came
--- after 'Byron'. This is the format used by /Yoroi/ and now also used by
--- /Daedalus/.
---
--- == Examples
---
--- === Generating a root key from 'SomeMnemonic'
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- > import Cardano.Address.Derivation ( GenMasterKey(..) )
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor passphrase
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
---
--- === Generating an 'Address' from a root key
---
--- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
---
---
--- > import Cardano.Address ( PaymentAddress(..), base58, mainnetDiscriminant )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), GenMasterKey(..), toXPub )
--- >
--- > let accIx = toEnum 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
--- >
--- > let addIx = toEnum 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
--- >
--- > base58 $ paymentAddress mainnetDiscriminant (toXPub <$> addrK)
--- > "Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
+-- after 'Cardano.Address.Style.Byron.Byron'. This is the format initially used in /Yoroi/
+-- and now also used by /Daedalus/.
 
-{-------------------------------------------------------------------------------
-                                   Key Types
--------------------------------------------------------------------------------}
 -- | A cryptographic key for sequential-scheme address derivation, with
 -- phantom-types to disambiguate key types.
 --
@@ -164,8 +141,196 @@ deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
 --
+-- Key Derivation
+--
+-- $keyDerivation
+--
+-- === Generating a root key from 'SomeMnemonic'
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
+--
+-- === Deriving child keys
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
+--
+-- > import Cardano.Address.Derivation ( AccountingStyle(..) )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+
+instance Internal.GenMasterKey Icarus where
+    type SecondFactor Icarus = ScrubbedBytes
+
+    genMasterKeyFromXPrv = liftXPrv
+    genMasterKeyFromMnemonic (SomeMnemonic mw) sndFactor =
+        let
+            seed  = entropyToBytes $ mnemonicToEntropy mw
+            seedValidated = assert
+                (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
+                seed
+        in Icarus $ generateNew seedValidated sndFactor
+
+instance Internal.HardDerivation Icarus where
+    type AccountIndexDerivationType Icarus = 'Hardened
+    type AddressIndexDerivationType Icarus = 'Soft
+    type WithAccountStyle Icarus = AccountingStyle
+
+    deriveAccountPrivateKey (Icarus rootXPrv) accIx =
+        let
+            purposeIx =
+                toEnum @(Index 'Hardened _) $ fromEnum purposeIndex
+            coinTypeIx =
+                toEnum @(Index 'Hardened _) $ fromEnum coinTypeIndex
+            purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
+                deriveXPrv DerivationScheme2 rootXPrv purposeIx
+            coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
+                deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
+            acctXPrv = -- lvl3 derivation; hardened derivation of account' index
+                deriveXPrv DerivationScheme2 coinTypeXPrv accIx
+        in
+            Icarus acctXPrv
+
+    deriveAddressPrivateKey (Icarus accXPrv) accountingStyle addrIx =
+        let
+            changeCode =
+                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            changeXPrv = -- lvl4 derivation; soft derivation of change chain
+                deriveXPrv DerivationScheme2 accXPrv changeCode
+            addrXPrv = -- lvl5 derivation; soft derivation of address index
+                deriveXPrv DerivationScheme2 changeXPrv addrIx
+        in
+            Icarus addrXPrv
+
+instance Internal.SoftDerivation Icarus where
+    deriveAddressPublicKey (Icarus accXPub) accountingStyle addrIx =
+        fromMaybe errWrongIndex $ do
+            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
+                deriveXPub DerivationScheme2 accXPub changeCode
+            addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
+                deriveXPub DerivationScheme2 changeXPub addrIx
+            return $ Icarus addrXPub
+      where
+        errWrongIndex = error $
+            "deriveAddressPublicKey failed: was given an hardened (or too big) \
+            \index for soft path derivation ( " ++ show addrIx ++ "). This is \
+            \either a programmer error, or, we may have reached the maximum \
+            \number of addresses for a given wallet."
+
+-- | Generate a root key from a corresponding mnemonic.
+--
+-- @since 1.0.0
+genMasterKeyFromMnemonic
+    :: SomeMnemonic
+        -- ^ Some valid mnemonic sentence.
+    -> ScrubbedBytes
+        -- ^ An optional second-factor passphrase (or 'mempty')
+    -> Icarus 'RootK XPrv
+genMasterKeyFromMnemonic =
+    Internal.genMasterKeyFromMnemonic
+
+-- | Generate a root key from a corresponding root 'XPrv'
+--
+-- @since 1.0.0
+genMasterKeyFromXPrv
+    :: XPrv
+    -> Icarus 'RootK XPrv
+genMasterKeyFromXPrv =
+    Internal.genMasterKeyFromXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an account private key from the given root private key.
+--
+-- @since 1.0.0
+deriveAccountPrivateKey
+    :: Icarus 'RootK XPrv
+    -> Index 'Hardened 'AccountK
+    -> Icarus 'AccountK XPrv
+deriveAccountPrivateKey =
+    Internal.deriveAccountPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an address private key from the given account private key.
+--
+-- @since 1.0.0
+deriveAddressPrivateKey
+    :: Icarus 'AccountK XPrv
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Icarus 'AddressK XPrv
+deriveAddressPrivateKey =
+    Internal.deriveAddressPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derives an address public key from the given account public key.
+--
+-- @since 1.0.0
+deriveAddressPublicKey
+    :: Icarus 'AccountK XPub
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Icarus 'AddressK XPub
+deriveAddressPublicKey =
+    Internal.deriveAddressPublicKey
+
+--
+-- Addresses
+--
+-- $addresses
+-- === Generating a 'PaymentAddress'
+--
+-- > import Cardano.Address ( bech32 )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- >
+-- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
+-- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+
+instance Internal.PaymentAddress Icarus where
+    paymentAddress discrimination k = unsafeMkAddress
+        $ CBOR.toStrictByteString
+        $ CBOR.encodeAddress (getKey k) attrs
+      where
+        NetworkTag magic = networkTag @Icarus discrimination
+        attrs = case addressDiscrimination @Icarus discrimination of
+            RequiresNetworkTag ->
+                [ CBOR.encodeProtocolMagicAttr magic
+                ]
+            RequiresNoTag ->
+                []
+
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key to a payment 'Address' valid for the given
+-- network discrimination.
+--
+-- @since 1.0.0
+paymentAddress
+    :: NetworkDiscriminant Icarus
+    -> Icarus 'AddressK XPub
+    -> Address
+paymentAddress =
+    Internal.paymentAddress
+
+--
 -- Network Discrimination
 --
+
+instance HasNetworkDiscriminant Icarus where
+    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
+    addressDiscrimination = fst
+    networkTag = snd
 
 -- | 'NetworkDiscriminant' for Cardano MainNet & 'Icarus'
 --
@@ -200,90 +365,11 @@ icarusTestnet = byronTestnet
 liftXPrv :: XPrv -> Icarus depth XPrv
 liftXPrv = Icarus
 
-instance GenMasterKey Icarus where
-    type SecondFactor Icarus = ScrubbedBytes
+--
+-- Internal
+--
 
-    genMasterKeyFromXPrv = liftXPrv
-    genMasterKeyFromMnemonic (SomeMnemonic mw) sndFactor =
-        let
-            seed  = entropyToBytes $ mnemonicToEntropy mw
-            seedValidated = assert
-                (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-                seed
-        in Icarus $ generateNew seedValidated sndFactor
-
-instance HardDerivation Icarus where
-    type AccountIndexDerivationType Icarus = 'Hardened
-    type AddressIndexDerivationType Icarus = 'Soft
-    type WithAccountStyle Icarus = AccountingStyle
-
-    deriveAccountPrivateKey (Icarus rootXPrv) accIx =
-        let
-            purposeIx =
-                toEnum @(Index 'Hardened _) $ fromEnum purposeIndex
-            coinTypeIx =
-                toEnum @(Index 'Hardened _) $ fromEnum coinTypeIndex
-            purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
-                deriveXPrv DerivationScheme2 rootXPrv purposeIx
-            coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
-                deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
-            acctXPrv = -- lvl3 derivation; hardened derivation of account' index
-                deriveXPrv DerivationScheme2 coinTypeXPrv accIx
-        in
-            Icarus acctXPrv
-
-    deriveAddressPrivateKey (Icarus accXPrv) accountingStyle addrIx =
-        let
-            changeCode =
-                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv changeCode
-            addrXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv addrIx
-        in
-            Icarus addrXPrv
-
-instance SoftDerivation Icarus where
-    deriveAddressPublicKey (Icarus accXPub) accountingStyle addrIx =
-        fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
-            changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub changeCode
-            addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
-                deriveXPub DerivationScheme2 changeXPub addrIx
-            return $ Icarus addrXPub
-      where
-        errWrongIndex = error $
-            "deriveAddressPublicKey failed: was given an hardened (or too big) \
-            \index for soft path derivation ( " ++ show addrIx ++ "). This is \
-            \either a programmer error, or, we may have reached the maximum \
-            \number of addresses for a given wallet."
-
-instance HasNetworkDiscriminant Icarus where
-    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
-
-    addressDiscrimination = fst
-    networkTag = snd
-
-
-instance PaymentAddress Icarus where
-    paymentAddress discrimination k = unsafeMkAddress
-        $ CBOR.toStrictByteString
-        $ CBOR.encodeAddress (getKey k) attrs
-      where
-        NetworkTag magic = networkTag @Icarus discrimination
-        attrs = case addressDiscrimination @Icarus discrimination of
-            RequiresNetworkTag ->
-                [ CBOR.encodeProtocolMagicAttr magic
-                ]
-            RequiresNoTag ->
-                []
-
-{-------------------------------------------------------------------------------
-                                 Key generation
--------------------------------------------------------------------------------}
-
--- | Purpose is a constant set to 44' (or 0x8000002C) following the original
+-- Purpose is a constant set to 44' (or 0x8000002C) following the original
 -- BIP-44 specification.
 --
 -- It indicates that the subtree of this node is used according to this
@@ -293,7 +379,7 @@ instance PaymentAddress Icarus where
 purposeIndex :: Word32
 purposeIndex = 0x8000002C
 
--- | One master node (seed) can be used for unlimited number of independent
+-- One master node (seed) can be used for unlimited number of independent
 -- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
 -- same space for various cryptocoins has some disadvantages.
 --

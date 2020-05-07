@@ -20,11 +20,23 @@ module Cardano.Address.Style.Jormungandr
 
       -- * Jormungandr
       Jormungandr
-
-      -- * Accessors
     , getKey
 
-      -- * Discrimination
+      -- * Key Derivation
+      -- $keyDerivation
+    , genMasterKeyFromXPrv
+    , genMasterKeyFromMnemonic
+    , deriveAccountPrivateKey
+    , deriveAddressPrivateKey
+    , deriveAddressPublicKey
+    , deriveStakingPrivateKey
+
+      -- * Addresses
+      -- $addresses
+    , paymentAddress
+    , delegationAddress
+
+      -- * Network Discrimination
     , incentivizedTestnet
 
       -- * Unsafe
@@ -40,11 +52,10 @@ module Cardano.Address.Style.Jormungandr
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..)
-    , DelegationAddress (..)
+    ( Address
+    , AddressDiscrimination (..)
     , HasNetworkDiscriminant (..)
     , NetworkTag (..)
-    , PaymentAddress (..)
     , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
@@ -54,19 +65,16 @@ import Cardano.Address.Derivation
     , Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
-    , GenMasterKey (..)
-    , HardDerivation (..)
     , Index
-    , SoftDerivation (..)
-    , StakingDerivation (..)
     , XPrv
+    , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , getPublicKey
+    , xpubPublicKey
     )
 import Cardano.Mnemonic
-    ( someMnemonicToBytes )
+    ( SomeMnemonic, someMnemonicToBytes )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
@@ -82,6 +90,8 @@ import Data.Word
 import GHC.Generics
     ( Generic )
 
+import qualified Cardano.Address as Internal
+import qualified Cardano.Address.Derivation as Internal
 import qualified Crypto.PubKey.Ed25519 as Ed25519
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
@@ -90,49 +100,20 @@ import qualified Data.ByteString.Lazy as BL
 --
 -- This module provides an implementation of:
 --
--- - 'GenMasterKey': for generating Jormungandr master keys from mnemonic sentences
--- - 'HardDerivation': for hierarchical hard derivation of parent to child keys
--- - 'SoftDerivation': for hierarchical soft derivation of parent to child keys
--- - 'PaymentAddress': for constructing payment addresses from a address public key
--- - 'DelegationAddress': for constructing payment addresses from a address and stake public keys
+-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Jormungandr master keys from mnemonic sentences
+-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
+-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
+-- - 'Cardano.Address.PaymentAddress': for constructing payment addresses from a address public key
+-- - 'Cardano.Address.DelegationAddress': for constructing payment addresses from a address and stake public keys
 --
--- == Examples
+-- == Disclaimer
 --
--- === Generating a root key from 'SomeMnemonic'
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- > import Cardano.Address.Derivation ( GenMasterKey(..) )
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
+-- Beware that this format of address have been specially crafted for the
+-- incentivized testnet (ITN). This will soon be __deprecated__ in favor of
+-- 'Cardano.Address.Style.Shelley.Shelley'.
 --
--- === Generating an 'Address' from a root key
---
--- Let's consider the following 3rd, 4th and 5th derivation paths @0'/0/14@
---
---
--- > import Cardano.Address ( PaymentAddress(..), DelegationAddress(..), bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), StakingDerivation (..), GenMasterKey(..), toXPub )
--- >
--- > let accIx = toEnum 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
--- >
--- > let addIx = toEnum 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
--- >
--- > bech32 $ paymentAddress jormungandrTestnet (toXPub <$> addrK)
--- > "addr1s0lgjsr0kjsprvkxmetgcjaxsq833rxg3g8rv528wa0l5c8wcnplq3x0w2h"
--- >
--- > let stakeK = deriveStakingPrivateKey acctK
--- > bech32 $ delegationAddress jormungandrTestnet (toXPub <$> addrK) (toXPub <$> stakeK)
--- > "addr1snlgjsr0kjsprvkxmetgcjaxsq833rxg3g8rv528wa0l5c8wcnplq9t56crgcdw8wmat0tqwj3zqeqekgs0v9hjuy85lr6pgfmy3hxh0nedreq"
+-- __New integrations should not use this address style__.
 
-{-------------------------------------------------------------------------------
-                                   Key Types
--------------------------------------------------------------------------------}
 -- | A cryptographic key for sequential-scheme address derivation, with
 -- phantom-types to disambiguate key types.
 --
@@ -154,18 +135,36 @@ newtype Jormungandr (depth :: Depth) key = Jormungandr
 deriving instance (Functor (Jormungandr depth))
 instance (NFData key) => NFData (Jormungandr depth key)
 
--- | Unsafe backdoor for constructing an 'Jormungandr' key from a raw 'XPrv'. this is
--- unsafe because it lets the caller choose the actually derivation 'depth'.
 --
--- This can be useful however when serializing / deserializing such a type, or to
--- speed up test code (and avoid having to do needless derivations from a master
--- key down to an address key for instance).
+-- Key Derivation
 --
--- @since 2.0.0
-liftXPrv :: XPrv -> Jormungandr depth XPrv
-liftXPrv = Jormungandr
+-- $keyDerivation
+--
+-- === Generating a root key from 'SomeMnemonic'
+-- > :set -XOverloadedStrings
+-- > :set -XTypeApplications
+-- > :set -XDataKinds
+-- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >
+-- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
+--
+-- === Deriving child keys
+--
+-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
+--
+-- > import Cardano.Address.Derivation ( AccountingStyle(..) )
+-- >
+-- > let accIx = toEnum 0x80000000
+-- > let acctK = deriveAccountPrivateKey rootK accIx
+-- >
+-- > let addIx = toEnum 0x00000014
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+--
+-- > let stakeK = deriveStakingPrivateKey acctK
 
-instance GenMasterKey Jormungandr where
+instance Internal.GenMasterKey Jormungandr where
     type SecondFactor Jormungandr = ScrubbedBytes
 
     genMasterKeyFromXPrv = liftXPrv
@@ -177,7 +176,7 @@ instance GenMasterKey Jormungandr where
                 (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
                 seed
 
-instance HardDerivation Jormungandr where
+instance Internal.HardDerivation Jormungandr where
     type AccountIndexDerivationType Jormungandr = 'Hardened
     type AddressIndexDerivationType Jormungandr = 'Soft
     type WithAccountStyle Jormungandr = AccountingStyle
@@ -208,7 +207,7 @@ instance HardDerivation Jormungandr where
         in
             Jormungandr addrXPrv
 
-instance SoftDerivation Jormungandr where
+instance Internal.SoftDerivation Jormungandr where
     deriveAddressPublicKey (Jormungandr accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
             let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
@@ -224,7 +223,7 @@ instance SoftDerivation Jormungandr where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance StakingDerivation Jormungandr where
+instance Internal.StakingDerivation Jormungandr where
     deriveStakingPrivateKey (Jormungandr accXPrv) =
         let
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
@@ -234,39 +233,182 @@ instance StakingDerivation Jormungandr where
         in
             Jormungandr stakeXPrv
 
--- | 'NetworkDiscriminant' for Cardano Incentivized Testnet testnet & Jormungandr
+-- | Generate a root key from a corresponding mnemonic.
 --
 -- @since 2.0.0
-incentivizedTestnet :: NetworkDiscriminant Jormungandr
-incentivizedTestnet = NetworkTag 0x83
+genMasterKeyFromMnemonic
+    :: SomeMnemonic
+        -- ^ Some valid mnemonic sentence.
+    -> ScrubbedBytes
+        -- ^ An optional second-factor passphrase (or 'mempty')
+    -> Jormungandr 'RootK XPrv
+genMasterKeyFromMnemonic =
+    Internal.genMasterKeyFromMnemonic
+
+-- | Generate a root key from a corresponding root 'XPrv'
+--
+-- @since 2.0.0
+genMasterKeyFromXPrv
+    :: XPrv -> Jormungandr 'RootK XPrv
+genMasterKeyFromXPrv =
+    Internal.genMasterKeyFromXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an account private key from the given root private key.
+--
+-- @since 2.0.0
+deriveAccountPrivateKey
+    :: Jormungandr 'RootK XPrv
+    -> Index 'Hardened 'AccountK
+    -> Jormungandr 'AccountK XPrv
+deriveAccountPrivateKey =
+    Internal.deriveAccountPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives an address private key from the given account private key.
+--
+-- @since 2.0.0
+deriveAddressPrivateKey
+    :: Jormungandr 'AccountK XPrv
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Jormungandr 'AddressK XPrv
+deriveAddressPrivateKey =
+    Internal.deriveAddressPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derives an address public key from the given account public key.
+--
+-- @since 2.0.0
+deriveAddressPublicKey
+    :: Jormungandr 'AccountK XPub
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> Jormungandr 'AddressK XPub
+deriveAddressPublicKey =
+    Internal.deriveAddressPublicKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one staking key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving staking keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+--
+-- @since 2.0.0
+deriveStakingPrivateKey
+    :: Jormungandr 'AccountK XPrv
+    -> Jormungandr 'StakingK XPrv
+deriveStakingPrivateKey =
+    Internal.deriveStakingPrivateKey
+
+--
+-- Addresses
+--
+-- $addresses
+-- === Generating a 'PaymentAddress'
+--
+-- > import Cardano.Address ( bech32 )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- >
+-- > bech32 $ paymentAddress incentivizedTestnet (toXPub <$> addrK)
+-- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+--
+-- === Generating a 'DelegationAddress'
+--
+-- > import Cardano.Address ( DelegationAddress (..) )
+-- > import Cardano.Address.Derivation ( StakingDerivation (..) )
+-- >
+-- > bech32 $ delegationAddress incentivizedTestnet (toXPub <$> addrK) (toXPub <$> stakeK)
+-- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
+
+instance Internal.PaymentAddress Jormungandr where
+    paymentAddress discrimination k = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 (invariantNetworkTag 255 firstByte)
+            putByteString (xpubPublicKey $ getKey k)
+      where
+          firstByte = networkTag @Jormungandr discrimination
+          expectedLength = 1 + publicKeySize
+
+instance Internal.DelegationAddress Jormungandr where
+    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 (invariantNetworkTag 255 $ NetworkTag $ firstByte + 1)
+            putByteString . xpubPublicKey . getKey $ paymentKey
+            putByteString . xpubPublicKey . getKey $ stakingKey
+      where
+          (NetworkTag firstByte) = networkTag @Jormungandr discrimination
+          expectedLength = 1 + 2*publicKeySize
+
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key to a payment 'Address' valid for the given
+-- network discrimination.
+--
+-- @since 2.0.0
+paymentAddress
+    :: NetworkDiscriminant Jormungandr
+    -> Jormungandr 'AddressK XPub
+    -> Address
+paymentAddress =
+    Internal.paymentAddress
+
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key and a staking key to a delegation 'Address' valid
+-- for the given network discrimination. Funds sent to this address will be
+-- delegated according to the delegation settings attached to the delegation
+-- key.
+--
+-- @since 2.0.0
+delegationAddress
+    :: NetworkDiscriminant Jormungandr
+    -> Jormungandr 'AddressK XPub
+    -> Jormungandr 'StakingK XPub
+    -> Address
+delegationAddress =
+    Internal.delegationAddress
+
+--
+-- Network Discrimination
+--
 
 instance HasNetworkDiscriminant Jormungandr where
     type NetworkDiscriminant Jormungandr = NetworkTag
     addressDiscrimination _ = RequiresNetworkTag
     networkTag = id
 
-instance PaymentAddress Jormungandr where
-    paymentAddress discrimination k = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 (invariantNetworkTag 255 firstByte)
-            putByteString (getPublicKey $ getKey k)
-      where
-          firstByte = networkTag @Jormungandr discrimination
-          expectedLength = 1 + publicKeySize
+-- | 'NetworkDiscriminant' for Cardano Incentivized Testnet testnet & Jormungandr
+--
+-- @since 2.0.0
+incentivizedTestnet :: NetworkDiscriminant Jormungandr
+incentivizedTestnet = NetworkTag 0x83
 
-instance DelegationAddress Jormungandr where
-    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 (invariantNetworkTag 255 $ NetworkTag $ firstByte + 1)
-            putByteString . getPublicKey . getKey $ paymentKey
-            putByteString . getPublicKey . getKey $ stakingKey
-      where
-          (NetworkTag firstByte) = networkTag @Jormungandr discrimination
-          expectedLength = 1 + 2*publicKeySize
+--
+-- Unsafe
+--
 
-{-------------------------------------------------------------------------------
-                                Constants
--------------------------------------------------------------------------------}
+-- | Unsafe backdoor for constructing an 'Jormungandr' key from a raw 'XPrv'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 2.0.0
+liftXPrv :: XPrv -> Jormungandr depth XPrv
+liftXPrv = Jormungandr
+
+--
+-- Internal
+--
 
 -- Size, in bytes, of a public key (without chain code)
 publicKeySize :: Int
