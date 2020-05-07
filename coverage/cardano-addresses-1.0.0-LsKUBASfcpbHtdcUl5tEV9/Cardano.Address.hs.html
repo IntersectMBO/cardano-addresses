@@ -180,7 +180,7 @@ span.spaces    { background: white }
 <span class="lineno">  161 </span>invariantSize :: HasCallStack =&gt; Int -&gt; ByteString -&gt; ByteString
 <span class="lineno">  162 </span><span class="decl"><span class="istickedoff">invariantSize expectedLength bytes</span>
 <span class="lineno">  163 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">BS.length bytes == expectedLength</span> = bytes</span>
-<span class="lineno">  164 </span><span class="spaces">    </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">error</span></span>
+<span class="lineno">  164 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
 <span class="lineno">  165 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;length was &quot;</span></span>
 <span class="lineno">  166 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show (BS.length bytes)</span></span>
 <span class="lineno">  167 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be &quot;</span></span>
@@ -189,7 +189,7 @@ span.spaces    { background: white }
 <span class="lineno">  170 </span>invariantNetworkTag :: HasCallStack =&gt; Word32 -&gt; NetworkTag -&gt; Word8
 <span class="lineno">  171 </span><span class="decl"><span class="istickedoff">invariantNetworkTag limit (NetworkTag num)</span>
 <span class="lineno">  172 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">num &lt; limit</span> = fromIntegral num</span>
-<span class="lineno">  173 </span><span class="spaces">    </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">error</span></span>
+<span class="lineno">  173 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
 <span class="lineno">  174 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;network tag was &quot;</span></span>
 <span class="lineno">  175 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show num</span></span>
 <span class="lineno">  176 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be less than &quot;</span></span>

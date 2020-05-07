@@ -212,7 +212,7 @@ span.spaces    { background: white }
 <span class="lineno">  193 </span><span class="spaces">        </span><span class="istickedoff">xprv = generate (hashSeed seedValidated)</span>
 <span class="lineno">  194 </span><span class="spaces">        </span><span class="istickedoff">seed  = entropyToBytes $ mnemonicToEntropy mw</span>
 <span class="lineno">  195 </span><span class="spaces">        </span><span class="istickedoff">seedValidated = assert</span>
-<span class="lineno">  196 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  196 </span><span class="spaces">            </span><span class="istickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span>
 <span class="lineno">  197 </span><span class="spaces">            </span><span class="istickedoff">seed</span></span>
 <span class="lineno">  198 </span>
 <span class="lineno">  199 </span>instance Internal.HardDerivation Byron where
@@ -239,8 +239,8 @@ span.spaces    { background: white }
 <span class="lineno">  220 </span>    :: SomeMnemonic
 <span class="lineno">  221 </span>        -- ^ Some valid mnemonic sentence.
 <span class="lineno">  222 </span>    -&gt; Byron 'RootK XPrv
-<span class="lineno">  223 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromMnemonic =</span>
-<span class="lineno">  224 </span><span class="spaces">    </span><span class="nottickedoff">flip Internal.genMasterKeyFromMnemonic <span class="istickedoff">()</span></span></span>
+<span class="lineno">  223 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic =</span>
+<span class="lineno">  224 </span><span class="spaces">    </span><span class="istickedoff">flip Internal.genMasterKeyFromMnemonic ()</span></span>
 <span class="lineno">  225 </span>{-# DEPRECATED genMasterKeyFromMnemonic &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  226 </span>
 <span class="lineno">  227 </span>-- | Generate a root key from a corresponding root 'XPrv'
@@ -249,8 +249,8 @@ span.spaces    { background: white }
 <span class="lineno">  230 </span>genMasterKeyFromXPrv
 <span class="lineno">  231 </span>    :: XPrv
 <span class="lineno">  232 </span>    -&gt; Byron 'RootK XPrv
-<span class="lineno">  233 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv =</span>
-<span class="lineno">  234 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  233 </span><span class="decl"><span class="istickedoff">genMasterKeyFromXPrv =</span>
+<span class="lineno">  234 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromXPrv</span></span>
 <span class="lineno">  235 </span>{-# DEPRECATED genMasterKeyFromXPrv &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  236 </span>
 <span class="lineno">  237 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
@@ -262,8 +262,8 @@ span.spaces    { background: white }
 <span class="lineno">  243 </span>    :: Byron 'RootK XPrv
 <span class="lineno">  244 </span>    -&gt; Index 'WholeDomain 'AccountK
 <span class="lineno">  245 </span>    -&gt; Byron 'AccountK XPrv
-<span class="lineno">  246 </span><span class="decl"><span class="nottickedoff">deriveAccountPrivateKey =</span>
-<span class="lineno">  247 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  246 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey =</span>
+<span class="lineno">  247 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAccountPrivateKey</span></span>
 <span class="lineno">  248 </span>{-# DEPRECATED deriveAccountPrivateKey &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  249 </span>
 <span class="lineno">  250 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
@@ -275,8 +275,8 @@ span.spaces    { background: white }
 <span class="lineno">  256 </span>    :: Byron 'AccountK XPrv
 <span class="lineno">  257 </span>    -&gt; Index 'WholeDomain 'AddressK
 <span class="lineno">  258 </span>    -&gt; Byron 'AddressK XPrv
-<span class="lineno">  259 </span><span class="decl"><span class="nottickedoff">deriveAddressPrivateKey acctK =</span>
-<span class="lineno">  260 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPrivateKey acctK <span class="istickedoff">()</span></span></span>
+<span class="lineno">  259 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey acctK =</span>
+<span class="lineno">  260 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey acctK ()</span></span>
 <span class="lineno">  261 </span>{-# DEPRECATED deriveAddressPrivateKey &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  262 </span>
 <span class="lineno">  263 </span>--
@@ -318,8 +318,8 @@ span.spaces    { background: white }
 <span class="lineno">  299 </span>    :: NetworkDiscriminant Byron
 <span class="lineno">  300 </span>    -&gt; Byron 'AddressK XPub
 <span class="lineno">  301 </span>    -&gt; Address
-<span class="lineno">  302 </span><span class="decl"><span class="nottickedoff">paymentAddress =</span>
-<span class="lineno">  303 </span><span class="spaces">    </span><span class="nottickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  302 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  303 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
 <span class="lineno">  304 </span>
 <span class="lineno">  305 </span>--
 <span class="lineno">  306 </span>-- Network Discrimination
@@ -422,7 +422,7 @@ span.spaces    { background: white }
 <span class="lineno">  403 </span>hdPassphrase :: XPub -&gt; ScrubbedBytes
 <span class="lineno">  404 </span><span class="decl"><span class="istickedoff">hdPassphrase masterKey =</span>
 <span class="lineno">  405 </span><span class="spaces">    </span><span class="istickedoff">PBKDF2.generate</span>
-<span class="lineno">  406 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC <span class="nottickedoff">SHA512</span>)</span>
+<span class="lineno">  406 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
 <span class="lineno">  407 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.Parameters 500 32)</span>
 <span class="lineno">  408 </span><span class="spaces">    </span><span class="istickedoff">(xpubToBytes masterKey)</span>
 <span class="lineno">  409 </span><span class="spaces">    </span><span class="istickedoff">(&quot;address-hashing&quot; :: ByteString)</span></span>

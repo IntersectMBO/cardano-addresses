@@ -149,7 +149,7 @@ span.spaces    { background: white }
 <span class="lineno">  130 </span>        --
 <span class="lineno">  131 </span>        -- @since 2.0.0
 <span class="lineno">  132 </span>    }
-<span class="lineno">  133 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  133 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">  134 </span>
 <span class="lineno">  135 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Jormungandr depth))</span></span></span></span>
 <span class="lineno">  136 </span>instance (NFData key) =&gt; NFData (Jormungandr depth key)
@@ -186,13 +186,13 @@ span.spaces    { background: white }
 <span class="lineno">  167 </span>instance Internal.GenMasterKey Jormungandr where
 <span class="lineno">  168 </span>    type SecondFactor Jormungandr = ScrubbedBytes
 <span class="lineno">  169 </span>
-<span class="lineno">  170 </span>    <span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
+<span class="lineno">  170 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
 <span class="lineno">  171 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic fstFactor sndFactor =</span>
 <span class="lineno">  172 </span><span class="spaces">        </span><span class="istickedoff">Jormungandr $ generateNew seedValidated sndFactor</span>
 <span class="lineno">  173 </span><span class="spaces">        </span><span class="istickedoff">where</span>
 <span class="lineno">  174 </span><span class="spaces">            </span><span class="istickedoff">seed  = someMnemonicToBytes fstFactor</span>
 <span class="lineno">  175 </span><span class="spaces">            </span><span class="istickedoff">seedValidated = assert</span>
-<span class="lineno">  176 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  176 </span><span class="spaces">                </span><span class="istickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span>
 <span class="lineno">  177 </span><span class="spaces">                </span><span class="istickedoff">seed</span></span>
 <span class="lineno">  178 </span>
 <span class="lineno">  179 </span>instance Internal.HardDerivation Jormungandr where
@@ -228,7 +228,7 @@ span.spaces    { background: white }
 <span class="lineno">  209 </span>
 <span class="lineno">  210 </span>instance Internal.SoftDerivation Jormungandr where
 <span class="lineno">  211 </span>    <span class="decl"><span class="istickedoff">deriveAddressPublicKey (Jormungandr accXPub) accountingStyle addrIx =</span>
-<span class="lineno">  212 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe <span class="nottickedoff">errWrongIndex</span> $ do</span>
+<span class="lineno">  212 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe errWrongIndex $ do</span>
 <span class="lineno">  213 </span><span class="spaces">            </span><span class="istickedoff">let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle</span>
 <span class="lineno">  214 </span><span class="spaces">            </span><span class="istickedoff">changeXPub &lt;- -- lvl4 derivation in bip44 is derivation of change chain</span>
 <span class="lineno">  215 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 accXPub changeCode</span>
@@ -236,11 +236,11 @@ span.spaces    { background: white }
 <span class="lineno">  217 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 changeXPub addrIx</span>
 <span class="lineno">  218 </span><span class="spaces">            </span><span class="istickedoff">return $ Jormungandr addrXPub</span>
 <span class="lineno">  219 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  220 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">errWrongIndex = error $</span></span>
-<span class="lineno">  221 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span></span>
-<span class="lineno">  222 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span></span>
-<span class="lineno">  223 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\either a programmer error, or, we may have reached the maximum \</span></span>
-<span class="lineno">  224 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\number of addresses for a given wallet.&quot;</span></span></span>
+<span class="lineno">  220 </span><span class="spaces">        </span><span class="istickedoff">errWrongIndex = error $</span>
+<span class="lineno">  221 </span><span class="spaces">            </span><span class="istickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span>
+<span class="lineno">  222 </span><span class="spaces">            </span><span class="istickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span>
+<span class="lineno">  223 </span><span class="spaces">            </span><span class="istickedoff">\either a programmer error, or, we may have reached the maximum \</span>
+<span class="lineno">  224 </span><span class="spaces">            </span><span class="istickedoff">\number of addresses for a given wallet.&quot;</span></span>
 <span class="lineno">  225 </span>
 <span class="lineno">  226 </span>instance Internal.StakingDerivation Jormungandr where
 <span class="lineno">  227 </span>    <span class="decl"><span class="istickedoff">deriveStakingPrivateKey (Jormungandr accXPrv) =</span>
@@ -261,16 +261,16 @@ span.spaces    { background: white }
 <span class="lineno">  242 </span>    -&gt; ScrubbedBytes
 <span class="lineno">  243 </span>        -- ^ An optional second-factor passphrase (or 'mempty')
 <span class="lineno">  244 </span>    -&gt; Jormungandr 'RootK XPrv
-<span class="lineno">  245 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromMnemonic =</span>
-<span class="lineno">  246 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromMnemonic</span></span>
+<span class="lineno">  245 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic =</span>
+<span class="lineno">  246 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromMnemonic</span></span>
 <span class="lineno">  247 </span>
 <span class="lineno">  248 </span>-- | Generate a root key from a corresponding root 'XPrv'
 <span class="lineno">  249 </span>--
 <span class="lineno">  250 </span>-- @since 2.0.0
 <span class="lineno">  251 </span>genMasterKeyFromXPrv
 <span class="lineno">  252 </span>    :: XPrv -&gt; Jormungandr 'RootK XPrv
-<span class="lineno">  253 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv =</span>
-<span class="lineno">  254 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  253 </span><span class="decl"><span class="istickedoff">genMasterKeyFromXPrv =</span>
+<span class="lineno">  254 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromXPrv</span></span>
 <span class="lineno">  255 </span>
 <span class="lineno">  256 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  257 </span>--
@@ -281,8 +281,8 @@ span.spaces    { background: white }
 <span class="lineno">  262 </span>    :: Jormungandr 'RootK XPrv
 <span class="lineno">  263 </span>    -&gt; Index 'Hardened 'AccountK
 <span class="lineno">  264 </span>    -&gt; Jormungandr 'AccountK XPrv
-<span class="lineno">  265 </span><span class="decl"><span class="nottickedoff">deriveAccountPrivateKey =</span>
-<span class="lineno">  266 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  265 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey =</span>
+<span class="lineno">  266 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAccountPrivateKey</span></span>
 <span class="lineno">  267 </span>
 <span class="lineno">  268 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  269 </span>--
@@ -294,8 +294,8 @@ span.spaces    { background: white }
 <span class="lineno">  275 </span>    -&gt; AccountingStyle
 <span class="lineno">  276 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  277 </span>    -&gt; Jormungandr 'AddressK XPrv
-<span class="lineno">  278 </span><span class="decl"><span class="nottickedoff">deriveAddressPrivateKey =</span>
-<span class="lineno">  279 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPrivateKey</span></span>
+<span class="lineno">  278 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey =</span>
+<span class="lineno">  279 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey</span></span>
 <span class="lineno">  280 </span>
 <span class="lineno">  281 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  282 </span>--
@@ -307,8 +307,8 @@ span.spaces    { background: white }
 <span class="lineno">  288 </span>    -&gt; AccountingStyle
 <span class="lineno">  289 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  290 </span>    -&gt; Jormungandr 'AddressK XPub
-<span class="lineno">  291 </span><span class="decl"><span class="nottickedoff">deriveAddressPublicKey =</span>
-<span class="lineno">  292 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPublicKey</span></span>
+<span class="lineno">  291 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey =</span>
+<span class="lineno">  292 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPublicKey</span></span>
 <span class="lineno">  293 </span>
 <span class="lineno">  294 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  295 </span>--
@@ -324,8 +324,8 @@ span.spaces    { background: white }
 <span class="lineno">  305 </span>deriveStakingPrivateKey
 <span class="lineno">  306 </span>    :: Jormungandr 'AccountK XPrv
 <span class="lineno">  307 </span>    -&gt; Jormungandr 'StakingK XPrv
-<span class="lineno">  308 </span><span class="decl"><span class="nottickedoff">deriveStakingPrivateKey =</span>
-<span class="lineno">  309 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveStakingPrivateKey</span></span>
+<span class="lineno">  308 </span><span class="decl"><span class="istickedoff">deriveStakingPrivateKey =</span>
+<span class="lineno">  309 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveStakingPrivateKey</span></span>
 <span class="lineno">  310 </span>
 <span class="lineno">  311 </span>--
 <span class="lineno">  312 </span>-- Addresses
@@ -376,8 +376,8 @@ span.spaces    { background: white }
 <span class="lineno">  357 </span>    :: NetworkDiscriminant Jormungandr
 <span class="lineno">  358 </span>    -&gt; Jormungandr 'AddressK XPub
 <span class="lineno">  359 </span>    -&gt; Address
-<span class="lineno">  360 </span><span class="decl"><span class="nottickedoff">paymentAddress =</span>
-<span class="lineno">  361 </span><span class="spaces">    </span><span class="nottickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  360 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  361 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
 <span class="lineno">  362 </span>
 <span class="lineno">  363 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 <span class="lineno">  364 </span>--
@@ -392,8 +392,8 @@ span.spaces    { background: white }
 <span class="lineno">  373 </span>    -&gt; Jormungandr 'AddressK XPub
 <span class="lineno">  374 </span>    -&gt; Jormungandr 'StakingK XPub
 <span class="lineno">  375 </span>    -&gt; Address
-<span class="lineno">  376 </span><span class="decl"><span class="nottickedoff">delegationAddress =</span>
-<span class="lineno">  377 </span><span class="spaces">    </span><span class="nottickedoff">Internal.delegationAddress</span></span>
+<span class="lineno">  376 </span><span class="decl"><span class="istickedoff">delegationAddress =</span>
+<span class="lineno">  377 </span><span class="spaces">    </span><span class="istickedoff">Internal.delegationAddress</span></span>
 <span class="lineno">  378 </span>
 <span class="lineno">  379 </span>--
 <span class="lineno">  380 </span>-- Network Discrimination

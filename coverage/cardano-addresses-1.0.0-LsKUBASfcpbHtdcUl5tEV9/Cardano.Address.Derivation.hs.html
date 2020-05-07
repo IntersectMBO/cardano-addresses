@@ -344,7 +344,7 @@ span.spaces    { background: white }
 <span class="lineno">  325 </span>--
 <span class="lineno">  326 </span>-- @since 1.0.0
 <span class="lineno">  327 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
-<span class="lineno">  328 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">getIndex</span></span></span> :: Word32 }
+<span class="lineno">  328 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">getIndex</span></span></span> :: Word32 }
 <span class="lineno">  329 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">  330 </span>
 <span class="lineno">  331 </span>instance NFData (Index derivationType depth)
