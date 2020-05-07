@@ -36,7 +36,7 @@ module Cardano.Address.Style.Shelley
     , paymentAddress
     , delegationAddress
 
-      -- * Discrimination
+      -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
 
@@ -112,9 +112,6 @@ import qualified Data.ByteString.Lazy as BL
 -- - 'Cardano.Address.PaymentAddress': for constructing payment addresses from a address public key
 -- - 'Cardano.Address.DelegationAddress': for constructing delegation addresses from address and staking public keys
 
-{-------------------------------------------------------------------------------
-                                   Key Types
--------------------------------------------------------------------------------}
 -- | A cryptographic key for sequential-scheme address derivation, with
 -- phantom-types to disambiguate key types.
 --
@@ -135,17 +132,6 @@ newtype Shelley (depth :: Depth) key = Shelley
 
 deriving instance (Functor (Shelley depth))
 instance (NFData key) => NFData (Shelley depth key)
-
--- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPrv'. this is
--- unsafe because it lets the caller choose the actually derivation 'depth'.
---
--- This can be useful however when serializing / deserializing such a type, or to
--- speed up test code (and avoid having to do needless derivations from a master
--- key down to an address key for instance).
---
--- @since 2.0.0
-liftXPrv :: XPrv -> Shelley depth XPrv
-liftXPrv = Shelley
 
 --
 -- Key Derivation
@@ -435,6 +421,21 @@ delegationAddress
     -> Address
 delegationAddress =
     Internal.delegationAddress
+
+--
+-- Unsafe
+--
+
+-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPrv'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 2.0.0
+liftXPrv :: XPrv -> Shelley depth XPrv
+liftXPrv = Shelley
 
 --
 -- Internal
