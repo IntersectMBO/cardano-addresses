@@ -99,7 +99,6 @@ import GHC.Generics
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
-
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA

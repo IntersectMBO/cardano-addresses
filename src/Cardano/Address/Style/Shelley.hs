@@ -307,35 +307,6 @@ deriveStakingPrivateKey =
     Internal.deriveStakingPrivateKey
 
 --
--- Network Discriminant
---
-
-instance HasNetworkDiscriminant Shelley where
-    type NetworkDiscriminant Shelley = NetworkTag
-    addressDiscrimination _ = RequiresNetworkTag
-    networkTag = id
-
--- | Error reported from trying to create a network discriminant from number
---
--- @since 2.0.0
-newtype MkNetworkDiscriminantError
-    = ErrWrongNetworkTag Word8
-      -- ^ Wrong network tag.
-    deriving (Eq, Show)
-
--- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
--- If the number is invalid, ie., not between 0 and 15, then
--- 'MkNetworkDiscriminantError' is thrown.
---
--- @since 2.0.0
-mkNetworkDiscriminant
-    :: Word8
-    -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
-mkNetworkDiscriminant nTag
-    | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
-    | otherwise = Left $ ErrWrongNetworkTag nTag
-
---
 -- Addresses
 --
 -- $addresses
@@ -421,6 +392,35 @@ delegationAddress
     -> Address
 delegationAddress =
     Internal.delegationAddress
+
+--
+-- Network Discriminant
+--
+
+instance HasNetworkDiscriminant Shelley where
+    type NetworkDiscriminant Shelley = NetworkTag
+    addressDiscrimination _ = RequiresNetworkTag
+    networkTag = id
+
+-- | Error reported from trying to create a network discriminant from number
+--
+-- @since 2.0.0
+newtype MkNetworkDiscriminantError
+    = ErrWrongNetworkTag Word8
+      -- ^ Wrong network tag.
+    deriving (Eq, Show)
+
+-- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
+-- If the number is invalid, ie., not between 0 and 15, then
+-- 'MkNetworkDiscriminantError' is thrown.
+--
+-- @since 2.0.0
+mkNetworkDiscriminant
+    :: Word8
+    -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+mkNetworkDiscriminant nTag
+    | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
+    | otherwise = Left $ ErrWrongNetworkTag nTag
 
 --
 -- Unsafe
