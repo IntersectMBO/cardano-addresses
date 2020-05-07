@@ -71,7 +71,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , getPublicKey
+    , xpubPublicKey
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
@@ -332,7 +332,7 @@ instance Internal.PaymentAddress Jormungandr where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 (invariantNetworkTag 255 firstByte)
-            putByteString (getPublicKey $ getKey k)
+            putByteString (xpubPublicKey $ getKey k)
       where
           firstByte = networkTag @Jormungandr discrimination
           expectedLength = 1 + publicKeySize
@@ -341,8 +341,8 @@ instance Internal.DelegationAddress Jormungandr where
     delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 (invariantNetworkTag 255 $ NetworkTag $ firstByte + 1)
-            putByteString . getPublicKey . getKey $ paymentKey
-            putByteString . getPublicKey . getKey $ stakingKey
+            putByteString . xpubPublicKey . getKey $ paymentKey
+            putByteString . xpubPublicKey . getKey $ stakingKey
       where
           (NetworkTag firstByte) = networkTag @Jormungandr discrimination
           expectedLength = 1 + 2*publicKeySize

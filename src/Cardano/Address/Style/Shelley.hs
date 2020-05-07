@@ -70,7 +70,7 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , getPublicKey
+    , xpubPublicKey
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
@@ -444,7 +444,7 @@ liftXPrv = Shelley
 -- Hash a public key
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =
-    BA.convert . hash @_ @Blake2b_224 . getPublicKey . getKey
+    BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey
 
 
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)

@@ -52,10 +52,10 @@ spec = describe "Checking auxiliary address derivations types" $ do
         it "Index @'Hardened _" (property prop_roundtripEnumIndexHard)
         it "Index @'Soft _" (property prop_roundtripEnumIndexSoft)
 
-    describe "bytes roundtrips" $ do
-        prop "xpubToBytes . xpubFromBytes" $
+    describe "XPub / XPrv properties" $ do
+        prop "roundtripping: xpubToBytes . xpubFromBytes" $
             prop_roundtripBytes xpubToBytes xpubFromBytes
-        prop "xprvToBytes . xprvFromBytes" $
+        prop "roundtripping: xprvToBytes . xprvFromBytes" $
             prop_roundtripBytes xprvToBytes xprvFromBytes
 
 {-------------------------------------------------------------------------------
