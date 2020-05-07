@@ -31,7 +31,7 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Data.ByteArray
-    ( ByteArrayAccess, ScrubbedBytes, convert )
+    ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
 import Data.String
