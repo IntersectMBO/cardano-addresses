@@ -21,7 +21,6 @@ import Cardano.Address
     , PaymentAddress (..)
     , bech32
     , bech32WithHrp
-    , hex
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -67,7 +66,7 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
+
 
 spec :: Spec
 spec = do
@@ -87,10 +86,9 @@ spec = do
     describe "Golden tests" $ do
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprv982a5cfec6be5656be247f0060d13d3bd52403bcca627f1d9\
-                    \988ca665907c5400980a71f60e32c6efa5de59bbedd4add18f57955f7f\
-                    \e0ca434f8b6ddb48ec72202545a3943a396ccdcb0fb98fffd989635fd9\
-                    \3406b04f556ea54034012b72008"
+                    "root_xprv1nq49elkxhet9d03y0uqxp5fa802jgqauef3878ve3r9xvkg8\
+                    \c4qqnq98raswxtrwlfw7txa7m49d6x84092l0lsv5s603dkakj8vwgsz23\
+                    \drjsarjmxdev8mnrllmxykxh7exsrtqn64d6j5qdqp9deqpqx70t25"
             , accXPrv0 =
                     "acct_xprv1xqwvl9u488wkkywa9pfr8vncxf6sk6reea878ytt8pgrses8\
                     \c4q9wl66mqw6gtcz7jrw2x5nh0c9vxl4u4yk35qmuqs62hwmfw8g59nqqz\
@@ -187,10 +185,9 @@ spec = do
             }
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprv608621fb4c0101feb31f6f2fd7018bee54101ff67d5550796\
-                    \71893225ee1a45e2331497029d885b5634405f350508cd95dce3991503\
-                    \b10f128d04f34b7b625783a1e3bd5dcf11fd4f989ec2cdcdea3a54db89\
-                    \97398174ecdcc87006c274176a0"
+                    "root_xprv1vzrzr76vqyqlavclduhawqvtae2pq8lk0424q7t8rzfjyhhp\
+                    \530zxv2fwq5a3pd4vdzqtu6s2zxdjhww8xg4qwcs7y5dqne5k7mz27p6rc\
+                    \aath83rl20nz0v9nwdaga9fkufjuucza8vmny8qpkzwstk5qwutx5p"
             , accXPrv0 =
                     "acct_xprv12phl7y4uv58mne08me5szrwly2gn6jasqmkvcrndq762q68p\
                     \5302z24gdf365klhll2a5f357k7nc4kpaq7j6agr5m22jq4jwlfv6l505h\
@@ -288,10 +285,9 @@ spec = do
             }
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprvb8f2bece9bdfe2b0282f5bad705562ac996efb6af96b648f4\
-                    \445ec44f47ad95c10e3d72f26ed075422a36ed8585c745a0e1150bcceb\
-                    \a2357d058636991f38a3791e248de509c070d812ab2fda57860ac876bc\
-                    \489192c1ef4ce253c197ee219a4"
+                    "root_xprv1hretan5mml3tq2p0twkhq4tz4jvka7m2l94kfr6yghkyfar6\
+                    \m9wppc7h9unw6p65y23kakzct3695rs32z7vaw3r2lg9scmfj8ec5du3uf\
+                    \ydu5yuquxcz24jlkjhsc9vsa4ufzge9s00fn398svhacse5sw90vp2"
             , accXPrv0 =
                     "acct_xprv1crpfhmtv5vdjx9rsqre7z025gartudsanenhart5nh3muqnm\
                     \m9wvu7jr0c2neykydr3r85rw6vht8sg0u4dffts2klnadgk9rt8zh23kfq\
@@ -390,10 +386,9 @@ spec = do
             }
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprve8aa0904f407272f5367b0dac6911b66b95c64123b26eea62\
-                    \7725ba29316875e972fd37e121a09dbbacbc7c8ad118d34c212ddaf564\
-                    \e2d7198d6c3f9d6d4cb6ce0387dd6b5c0393c08c239cd9b1eaf3578d23\
-                    \d0c32edb0bc4d41a57011c6d2d9"
+                    "root_xprv1az4qjp85qunj75m8krdvdygmv6u4ceqj8vnwaf38wfd69yck\
+                    \sa0fwt7n0cfp5zwmht9u0j9dzxxnfssjmkh4vn3dwxvddsle6m2vkm8q8p\
+                    \7addwq8y7q3s3eekd3ate40rfr6rpjakctcn2p54cpr3kjmyn4kcps"
             , accXPrv0 =
                     "acct_xprv1vzjuw65sf27s478y8ndz2jpan4rev52h0fdh9z3tdwcplgqk\
                     \sa0wa9wntpw4d74rhj8rs2unf6rfujxu90mstt8ztnjrn80r8sz0edzf22\
@@ -491,10 +486,9 @@ spec = do
             }
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprvf080e8d14493d50c91612f43c9e714a794ab16381ac3f01f1\
-                    \740537f60d18b515628d17049769717bdad315c2312f9b1920bb053fa4\
-                    \c97267807a26e4fb4389785f9411155f742692668d33f263a771089087\
-                    \49911a3286941d5b3989a093666"
+                    "root_xprv17zqw352yj02seytp9apunec55722k93crtplq8chgpfh7cx3\
+                    \3dg4v2x3wpyhd9chhkknzhprztumrystkpfl5nyhyeuq0gnwf76r39u9l9\
+                    \q3z40hgf5jv6xn8unr5acs3yy8fxg35v5xjsw4kwvf5zfkvc2k9gvr"
             , accXPrv0 =
                     "acct_xprv13rkczfa4xzrax4x0unqnesaasr8s3qnyr2mmjcwga6lrue73\
                     \3dg6at2stlqft9jtz0kk50xsp4yrqnrf9gl78npu50r7e38kpu0f744af4\
@@ -594,10 +588,9 @@ spec = do
             }
         goldenTest TestVector
             { rootXPrv =
-                    "root_xprv989c07d00e8d3d187c1855f25468e013fb1bcad93430fc5a2\
-                    \98a259802118f451e846b73a627c54ab13d49f5995b8563b32ad860c01\
-                    \9a28b0b953209cd11bc1843548a19d62a34d1714b1ac21903524efffab\
-                    \a00c4f4fcb203649661b61e2ca6"
+                    "root_xprv1nzwq05qw3573slqc2he9g68qz0a3hjkexsc0ck3f3gjesqs3\
+                    \3az3aprtwwnz0322ky75navetwzk8ve2mpsvqxdz3v9e2vsfe5gmcxzr2j\
+                    \9pn432xnghzjc6cgvsx5jwllat5qxy7n7tyqmyjesmv83v5c3ghtcc"
             , accXPrv0 =
                     "acct_xprv1grmww8c9yftkd6nlmuh7wypx46duh8az7sxyg88fr4k3qpc3\
                     \3azk8gc5ntllturxzee5gj2zd5dy48f0ehp6lqudkwvacxjznz8j0mzd2a\
@@ -742,7 +735,7 @@ data TestVector = TestVector
       -- Then, extended private key is understood as < xprv |     | cc >
       --       extended public key  is understood as <      | pub | cc >
 
-      -- | The extended root private key hex-encoded, prefixed with 'root_xprv'
+      -- | The extended root private key, bech32 encoded prefixed with 'root_xprv'
       rootXPrv :: Text
 
       -- | The extended 0th account private key, bech32 encoded prefixed with 'acct_xprv'
@@ -814,8 +807,8 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    let rootXPrv' =
-            T.append "root_xprv" (T.decodeUtf8 $ hex $ xprvToBytes $ getKey rootK)
+    let (Right hrpRoot) = Bech32.humanReadablePartFromText "root_xprv"
+    let rootXPrv' = bech32WithHrp hrpRoot $ getExtendedKeyAddr rootK
     rootXPrv' `shouldBe` rootXPrv
 
     let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
