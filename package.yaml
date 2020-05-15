@@ -49,6 +49,39 @@ library:
   - fmt
   - memory
   - text
+  - template-haskell
+
+executables:
+  cardano-address:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -Wall
+    - -Wcompat
+    - -fwarn-redundant-constraints
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - ansi-terminal
+    - bech32
+    - bech32-th
+    - base58-bytestring
+    - bytestring
+    - cardano-addresses
+    - cborg
+    - extra
+    - memory
+    - optparse-applicative
+    - text
+    when:
+    - condition: flag(release)
+      ghc-options:
+      - -Werror
+      - -static
+      - -O2
+      cc-options: -static
+      ld-options: -static -pthread
 
 tests:
   unit:
