@@ -437,9 +437,9 @@ span.spaces    { background: white }
 <span class="lineno">  418 </span>mkNetworkDiscriminant
 <span class="lineno">  419 </span>    :: Word8
 <span class="lineno">  420 </span>    -&gt; Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
-<span class="lineno">  421 </span><span class="decl"><span class="nottickedoff">mkNetworkDiscriminant nTag</span>
-<span class="lineno">  422 </span><span class="spaces">    </span><span class="nottickedoff">| nTag &lt; 16 =  Right $ NetworkTag $ fromIntegral nTag</span>
-<span class="lineno">  423 </span><span class="spaces">    </span><span class="nottickedoff">| otherwise = Left $ ErrWrongNetworkTag nTag</span></span>
+<span class="lineno">  421 </span><span class="decl"><span class="istickedoff">mkNetworkDiscriminant nTag</span>
+<span class="lineno">  422 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">nTag &lt; 16</span> =  Right $ NetworkTag $ fromIntegral nTag</span>
+<span class="lineno">  423 </span><span class="spaces">    </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">Left $ ErrWrongNetworkTag nTag</span></span></span>
 <span class="lineno">  424 </span>
 <span class="lineno">  425 </span>--
 <span class="lineno">  426 </span>-- Unsafe

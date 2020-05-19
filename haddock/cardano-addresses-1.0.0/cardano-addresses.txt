@@ -377,6 +377,10 @@ fromBase58 :: Text -> Maybe Address
 --   a human readable prefix.
 bech32 :: Address -> Text
 
+-- | Encode an <a>Address</a> to bech32 <a>Text</a>, using a specified
+--   human readable prefix.
+bech32With :: HumanReadablePart -> Address -> Text
+
 -- | Decode a bech32-encoded <a>Text</a> into an <a>Address</a>
 fromBech32 :: Text -> Maybe Address
 instance GHC.Classes.Eq Cardano.Address.AddressDiscrimination

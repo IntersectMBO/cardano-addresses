@@ -376,7 +376,7 @@ span.spaces    { background: white }
 <span class="lineno">  357 </span>  where
 <span class="lineno">  358 </span>    <span class="decl"><span class="istickedoff">mkSomeMnemonic parts = case parseMW of</span>
 <span class="lineno">  359 </span><span class="spaces">        </span><span class="istickedoff">Left err -&gt; left (promote err) parseRest</span>
-<span class="lineno">  360 </span><span class="spaces">        </span><span class="istickedoff">Right mw -&gt; Right <span class="nottickedoff">mw</span></span>
+<span class="lineno">  360 </span><span class="spaces">        </span><span class="istickedoff">Right mw -&gt; Right mw</span>
 <span class="lineno">  361 </span><span class="spaces">      </span><span class="istickedoff">where</span>
 <span class="lineno">  362 </span><span class="spaces">        </span><span class="istickedoff">parseMW = left (MkSomeMnemonicError . getMkSomeMnemonicError) $ -- coerce</span>
 <span class="lineno">  363 </span><span class="spaces">            </span><span class="istickedoff">mkSomeMnemonic @'[mw] parts</span>
