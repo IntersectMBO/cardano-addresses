@@ -20,7 +20,7 @@ import Cardano.Address
     ( DelegationAddress (..)
     , PaymentAddress (..)
     , bech32
-    , bech32WithHrp
+    , bech32With
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -808,38 +808,38 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     let (Right hrpRoot) = Bech32.humanReadablePartFromText "root_xprv"
-    let rootXPrv' = bech32WithHrp hrpRoot $ getExtendedKeyAddr rootK
+    let rootXPrv' = bech32With hrpRoot $ getExtendedKeyAddr rootK
     rootXPrv' `shouldBe` rootXPrv
 
     let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
     let accIx0 = toEnum 0x80000000
     let acctK0 = deriveAccountPrivateKey rootK accIx0
-    let accXPrv0' = bech32WithHrp hrp $ getExtendedKeyAddr acctK0
+    let accXPrv0' = bech32With hrp $ getExtendedKeyAddr acctK0
     accXPrv0' `shouldBe` accXPrv0
     let accIx1 = toEnum 0x80000001
     let acctK1 = deriveAccountPrivateKey rootK accIx1
-    let accXPrv1' = bech32WithHrp hrp $ getExtendedKeyAddr acctK1
+    let accXPrv1' = bech32With hrp $ getExtendedKeyAddr acctK1
     accXPrv1' `shouldBe` accXPrv1
 
     let (Right hrpPrv) = Bech32.humanReadablePartFromText "addr_xprv"
     let (Right hrpPub) = Bech32.humanReadablePartFromText "addr_xpub"
     let addIx0 = toEnum 0x00000000
     let addrK0prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx0
-    let addrXPrv0' = bech32WithHrp hrpPrv $ getExtendedKeyAddr addrK0prv
+    let addrXPrv0' = bech32With hrpPrv $ getExtendedKeyAddr addrK0prv
     addrXPrv0' `shouldBe` addrXPrv0
-    let addrXPub0' = bech32WithHrp hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
+    let addrXPub0' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
     addrXPub0' `shouldBe` addrXPub0
     let addIx1 = toEnum 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
-    let addrXPrv1' = bech32WithHrp hrpPrv $ getExtendedKeyAddr addrK1prv
+    let addrXPrv1' = bech32With hrpPrv $ getExtendedKeyAddr addrK1prv
     addrXPrv1' `shouldBe` addrXPrv1
-    let addrXPub1' = bech32WithHrp hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1prv
+    let addrXPub1' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1prv
     addrXPub1' `shouldBe` addrXPub1
     let addIx1442 = toEnum 0x000005a2
     let addrK1442prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1442
-    let addrXPrv1442' = bech32WithHrp hrpPrv $ getExtendedKeyAddr addrK1442prv
+    let addrXPrv1442' = bech32With hrpPrv $ getExtendedKeyAddr addrK1442prv
     addrXPrv1442' `shouldBe` addrXPrv1442
-    let addrXPub1442' = bech32WithHrp hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1442prv
+    let addrXPub1442' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1442prv
     addrXPub1442' `shouldBe` addrXPub1442
 
     let networkTags = rights $ mkNetworkDiscriminant <$> [0,3,6]
