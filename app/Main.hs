@@ -1,6 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -15,7 +18,19 @@ module Main where
 import Prelude
 
 import Cardano.Address.Derivation
-    ( XPrv, xprvToBytes )
+    ( Depth (..)
+    , DerivationScheme (..)
+    , DerivationType (..)
+    , Index
+    , XPrv
+    , XPub
+    , deriveXPrv
+    , deriveXPub
+    , xprvFromBytes
+    , xprvToBytes
+    , xpubFromBytes
+    , xpubToBytes
+    )
 import Cardano.Mnemonic
     ( MkSomeMnemonicError (..)
     , Mnemonic
@@ -35,7 +50,7 @@ import Control.Applicative
 import Control.Exception
     ( bracket )
 import Control.Monad
-    ( guard, void )
+    ( foldM, guard, void )
 import Data.ByteArray.Encoding
     ( Base (..), convertFromBase, convertToBase )
 import Data.ByteString
@@ -44,14 +59,20 @@ import Data.ByteString.Base58
     ( bitcoinAlphabet, decodeBase58, encodeBase58 )
 import Data.Char
     ( toLower )
+import Data.Either.Extra
+    ( eitherToMaybe )
+import Data.Functor.Identity
+    ( Identity (..) )
 import Data.List
-    ( intercalate )
+    ( intercalate, isSuffixOf )
 import Data.List.Extra
     ( enumerate )
 import Data.Maybe
     ( isNothing )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word32 )
 import GHC.Generics
     ( Generic )
 import Options.Applicative
@@ -86,6 +107,8 @@ import Options.Applicative
     )
 import Options.Applicative.Help.Pretty
     ( hardline, indent, string, vsep )
+import Safe
+    ( readEitherSafe )
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
@@ -114,7 +137,6 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.Text.IO as TIO
 
 main :: IO ()
 main = setup >> parseCmd >>= runCmd
@@ -203,6 +225,7 @@ runRecoveryPhraseGenerate CmdRecoveryPhraseGenerate{size} = do
 
 data CmdKey
     = CFromRecoveryPhrase CmdKeyFromRecoveryPhrase
+    | CChild CmdKeyChild
     deriving (Show)
 
 modKey :: Mod CommandFields Cmd
@@ -210,14 +233,8 @@ modKey = command "key" $
     info (helper <*> fmap CKey parser) $ mempty
         <> progDesc "About public/private keys."
         <> footerDoc (Just $ string $ mconcat
-            [ "Keys are read from standard input for convenient chaining of commands."
-            , "\n\n"
-            , "Multiple input and output encodings are supported. Input encodings "
-            , "are automatically recognized whereas output encodings can be "
-            , "tweaked via command-line options."
-            , "\n\n"
-            , "Example:\n\n"
-            , "  $ cardano-address recovery-phase generate \\\n"
+            [ "Example:\n\n"
+            , "  $ cardano-address recovery-phrase generate \\\n"
             , "  | cardano-address key from-recovery-phrase icarus \\\n"
             , "  | cardano-address key public\n"
             , "  xpub1k365denpkmqhj9zj6qpax..."
@@ -225,14 +242,16 @@ modKey = command "key" $
   where
     parser = subparser $ mconcat
         [ modKeyFromRecoveryPhrase
+        , modKeyChild
         ]
 
 runKey :: CmdKey -> IO ()
 runKey = \case
     CFromRecoveryPhrase sub -> runKeyFromRecoveryPhrase sub
+    CChild sub -> runKeyChild sub
 
 --
--- key from-mnemonic
+-- key from-recovery-phrase
 --
 
 data CmdKeyFromRecoveryPhrase = CmdKeyFromRecoveryPhrase
@@ -245,10 +264,10 @@ modKeyFromRecoveryPhrase = command "from-recovery-phrase" $
     info (helper <*> fmap CFromRecoveryPhrase parser) $ mempty
         <> progDesc "Generate a root extended private key from a recovery phrase."
         <> footerDoc (Just $ string $ mconcat
-            [ "A recovery phrase must be provided on stdin."
+            [ "The recovery phrase is read from stdin."
             , "\n\n"
             , "Example:\n\n"
-            , "  $ cardano-address recovery-phase generate \\\n"
+            , "  $ cardano-address recovery-phrase generate \\\n"
             , "  | cardano-address key from-recovery-phrase icarus \\\n"
             ])
   where
@@ -261,6 +280,47 @@ runKeyFromRecoveryPhrase CmdKeyFromRecoveryPhrase{encoding,style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
     hPutBytes stdout (xprvToBytes rootK) encoding
+
+--
+-- key child
+--
+
+data CmdKeyChild = CmdKeyChild
+    { encoding :: Encoding
+    , scheme :: DerivationScheme
+    , path :: DerivationPath
+    } deriving (Show)
+
+schemeOpt :: Parser DerivationScheme
+schemeOpt = flag DerivationScheme2 DerivationScheme1 (long "legacy")
+
+modKeyChild :: Mod CommandFields CmdKey
+modKeyChild = command "child" $
+    info (helper <*> fmap CChild parser) $ mempty
+        <> progDesc "Derive child keys."
+        <> footerDoc (Just $ string $ mconcat
+            [ "The parent key is read from stdin."
+            ])
+  where
+    parser = CmdKeyChild
+        <$> encodingOpt [humanReadablePart|xprv|]
+        <*> schemeOpt
+        <*> derivationPathArg
+
+runKeyChild :: CmdKeyChild -> IO ()
+runKeyChild CmdKeyChild{encoding,path,scheme} = do
+    xkey <- hGetXP__ stdin
+    child <- case xkey of
+        Left xpub -> do
+            let ixs = castDerivationPath path
+            let Just child = foldM (deriveXPub scheme) xpub ixs
+            pure (xpubToBytes child)
+
+        Right xprv -> do
+            let ixs = castDerivationPath path
+            let Identity child = foldM (\k -> pure . deriveXPrv scheme k) xprv ixs
+            pure (xprvToBytes child)
+    hPutBytes stdout child encoding
 
 --
 -- Style
@@ -356,10 +416,90 @@ mnemonicSizeFromString str =
     sizeStrs = mnemonicSizeToString <$> sizes
 
 --
+-- Derivation Path
+--
+
+newtype DerivationPath = DerivationPath [DerivationIndex]
+    deriving (Show, Eq)
+
+derivationPathArg :: Parser DerivationPath
+derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
+    <> metavar "DERIVATION-PATH"
+    <> help
+        "Slash-separated derivation path. Hardened indexes are marked with a \
+        \'H' (44H/1815H/0H/0)."
+
+castDerivationPath ::DerivationPath -> [Index 'WholeDomain depth]
+castDerivationPath (DerivationPath xs) = toEnum . fromEnum <$> xs
+
+derivationPathFromString :: String -> Either String DerivationPath
+derivationPathFromString str =
+    DerivationPath
+        <$> mapM (derivationIndexFromString . T.unpack) (T.splitOn "/" txt)
+  where
+    txt = T.pack str
+
+derivationPathToString :: DerivationPath -> String
+derivationPathToString (DerivationPath xs) =
+    intercalate "/" $ map derivationIndexToString xs
+
+--
+-- Derivation Index
+--
+
+newtype DerivationIndex = DerivationIndex Word32
+    deriving stock   (Show, Eq)
+    deriving newtype (Bounded, Enum, Ord)
+
+mkDerivationIndex :: Integer -> Either String DerivationIndex
+mkDerivationIndex ix
+    | ix > fromIntegral (maxBound @Word32) =
+        Left $ show ix <> " is too high to be a derivation index."
+    | otherwise =
+        pure $ DerivationIndex $ fromIntegral ix
+
+firstHardened :: Word32
+firstHardened = 0x80000000
+
+derivationIndexFromString :: String -> Either String DerivationIndex
+derivationIndexFromString "" = Left "An empty string is not a derivation index!"
+derivationIndexFromString str
+    | "H" `isSuffixOf` str = do
+        parseHardenedIndex (init str)
+    | otherwise = do
+        parseSoftIndex str
+  where
+    parseHardenedIndex txt = do
+        ix <- readEitherSafe txt
+        mkDerivationIndex $ ix + fromIntegral firstHardened
+
+    parseSoftIndex txt = do
+        ix <- readEitherSafe txt
+        guardSoftIndex ix
+        mkDerivationIndex ix
+      where
+        guardSoftIndex ix
+            | ix >= fromIntegral firstHardened =
+                Left $ mconcat
+                    [ show ix
+                    , " is too high to be a soft derivation index. "
+                    , "Did you mean \""
+                    , show (ix - fromIntegral firstHardened)
+                    , "H\"?"
+                    ]
+            | otherwise =
+                pure ()
+
+derivationIndexToString :: DerivationIndex -> String
+derivationIndexToString (DerivationIndex ix)
+    | ix >= firstHardened = show ix ++ "H"
+    | otherwise           = show ix
+
+--
 -- I/O Helpers
 --
 
--- Read some English mnemonic words from stdin, or fail.
+-- Read some English mnemonic words from the console, or fail.
 hGetSomeMnemonic :: Handle -> IO SomeMnemonic
 hGetSomeMnemonic h = do
     wrds <- T.words . trim '\n' . T.decodeUtf8 <$> BS.hGetContents h
@@ -368,6 +508,32 @@ hGetSomeMnemonic h = do
         Right mw -> pure mw
   where
     trim c = T.filter (/= c)
+
+-- Read an encoded private key from the console, or fail.
+hGetXPrv :: Handle -> IO XPrv
+hGetXPrv h = do
+    bytes <- hGetBytes h
+    case xprvFromBytes bytes of
+        Nothing  -> failWith "Couldn't convert bytes into extended private key."
+        Just key -> pure key
+
+-- Read an encoded public key from the console, or fail.
+hGetXPub :: Handle -> IO XPub
+hGetXPub h = do
+    bytes <- hGetBytes h
+    case xpubFromBytes bytes of
+        Nothing  -> failWith "Couldn't convert bytes into extended public key."
+        Just key -> pure key
+
+-- Read either an encoded public or private key from the console, or fail.
+hGetXP__ :: Handle -> IO (Either XPub XPrv)
+hGetXP__ h = do
+    bytes <- hGetBytes h
+    case (xpubFromBytes bytes, xprvFromBytes bytes) of
+        (Just xpub,         _) -> pure (Left  xpub)
+        (_        , Just xprv) -> pure (Right xprv)
+        _                      -> failWith
+            "Couldn't convert bytes into neither extended public or private keys."
 
 -- Print bytes to the console with the given encoding.
 hPutBytes :: Handle -> ByteString -> Encoding -> IO ()
@@ -378,6 +544,24 @@ hPutBytes h bytes = \case
         BS.hPutStr h $ encodeBase58 bitcoinAlphabet bytes
     EBech32 hrp ->
         BS.hPutStr h $ T.encodeUtf8 $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes bytes
+
+-- Read some bytes from the console, and decode them if the encoding is recognized.
+hGetBytes :: Handle -> IO ByteString
+hGetBytes h = do
+    raw <- BS.hGetContents h
+    case (tryBech32 raw <|> tryBase16 raw <|> tryBase58 raw) of
+        Nothing    -> pure raw
+        Just bytes -> pure bytes
+  where
+    tryBech32 raw = do
+        (_hrp, dp) <- eitherToMaybe $ Bech32.decodeLenient (T.decodeUtf8 raw)
+        Bech32.dataPartToBytes dp
+
+    tryBase16 raw = do
+        eitherToMaybe $ convertFromBase Base16 raw
+
+    tryBase58 raw = do
+        decodeBase58 bitcoinAlphabet raw
 
 -- | Fail with a colored red error message.
 failWith :: String -> IO a

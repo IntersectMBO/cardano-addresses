@@ -73,6 +73,7 @@ executables:
     - extra
     - memory
     - optparse-applicative
+    - safe
     - text
     when:
     - condition: flag(release)
