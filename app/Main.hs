@@ -135,58 +135,59 @@ main = setup >> parseCmd >>= runCmd
 
 data Cmd
     = CKey CmdKey
-    | CMnemonic CmdMnemonic
+    | CRecoveryPhrase CmdRecoveryPhrase
     deriving (Show)
 
 cmd :: ParserInfo Cmd
 cmd = info (helper <*> parser) $ progDesc "cardano-addresses"
   where
     parser = subparser $ mconcat
-        [ modMnemonic
+        [ modRecoveryPhrase
         , modKey
         ]
 
 runCmd :: Cmd -> IO ()
 runCmd = \case
-    CMnemonic sub -> runMnemonic sub
+    CRecoveryPhrase sub -> runRecoveryPhrase sub
     CKey sub -> runKey sub
 
 --
 -- mnemonic
 --
-newtype CmdMnemonic
-    = CGenerate CmdMnemonicGenerate
+newtype CmdRecoveryPhrase
+    = CGenerate CmdRecoveryPhraseGenerate
     deriving (Show)
 
-modMnemonic :: Mod CommandFields Cmd
-modMnemonic = command "mnemonic" $
-    info (helper <*> fmap CMnemonic parser) mempty
+modRecoveryPhrase :: Mod CommandFields Cmd
+modRecoveryPhrase = command "recovery-phrase" $
+    info (helper <*> fmap CRecoveryPhrase parser) $ mempty
+        <> progDesc "About recovery phrases."
   where
     parser = subparser $ mconcat
-        [ modMnemonicGenerate
+        [ modRecoveryPhraseGenerate
         ]
 
-runMnemonic :: CmdMnemonic -> IO ()
-runMnemonic = \case
-    CGenerate sub -> runMnemonicGenerate sub
+runRecoveryPhrase :: CmdRecoveryPhrase -> IO ()
+runRecoveryPhrase = \case
+    CGenerate sub -> runRecoveryPhraseGenerate sub
 
 --
 -- mnemonic generate
 --
 
-newtype CmdMnemonicGenerate = CmdMnemonicGenerate
+newtype CmdRecoveryPhraseGenerate = CmdRecoveryPhraseGenerate
     { size :: MnemonicSize
     } deriving (Show)
 
-modMnemonicGenerate :: Mod CommandFields CmdMnemonic
-modMnemonicGenerate = command "generate" $
+modRecoveryPhraseGenerate :: Mod CommandFields CmdRecoveryPhrase
+modRecoveryPhraseGenerate = command "generate" $
     info (helper <*> fmap CGenerate parser) mempty
   where
-    parser = CmdMnemonicGenerate
+    parser = CmdRecoveryPhraseGenerate
         <$> mnemonicSizeOpt
 
-runMnemonicGenerate :: CmdMnemonicGenerate -> IO ()
-runMnemonicGenerate CmdMnemonicGenerate{size} = do
+runRecoveryPhraseGenerate :: CmdRecoveryPhraseGenerate -> IO ()
+runRecoveryPhraseGenerate CmdRecoveryPhraseGenerate{size} = do
     m <- case size of
         MS_9  -> mnemonicToText @9  . entropyToMnemonic <$> genEntropy
         MS_12 -> mnemonicToText @12 . entropyToMnemonic <$> genEntropy
@@ -201,13 +202,13 @@ runMnemonicGenerate CmdMnemonicGenerate{size} = do
 --
 
 data CmdKey
-    = CFromMnemonic CmdKeyFromMnemonic
+    = CFromRecoveryPhrase CmdKeyFromRecoveryPhrase
     deriving (Show)
 
 modKey :: Mod CommandFields Cmd
 modKey = command "key" $
     info (helper <*> fmap CKey parser) $ mempty
-        <> progDesc "Derive and manipulate keys."
+        <> progDesc "About public/private keys."
         <> footerDoc (Just $ string $ mconcat
             [ "Keys are read from standard input for convenient chaining of commands."
             , "\n\n"
@@ -216,40 +217,47 @@ modKey = command "key" $
             , "tweaked via command-line options."
             , "\n\n"
             , "Example:\n\n"
-            , "  $ cardano-address mnemonic generate \\\n"
-            , "  | cardano-address key from-mnemonic icarus \\\n"
+            , "  $ cardano-address recovery-phase generate \\\n"
+            , "  | cardano-address key from-recovery-phrase icarus \\\n"
             , "  | cardano-address key public\n"
             , "  xpub1k365denpkmqhj9zj6qpax..."
             ])
   where
     parser = subparser $ mconcat
-        [ modKeyFromMnemonic
+        [ modKeyFromRecoveryPhrase
         ]
 
 runKey :: CmdKey -> IO ()
 runKey = \case
-    CFromMnemonic sub -> runKeyFromMnemonic sub
+    CFromRecoveryPhrase sub -> runKeyFromRecoveryPhrase sub
 
 --
 -- key from-mnemonic
 --
 
-data CmdKeyFromMnemonic = CmdKeyFromMnemonic
+data CmdKeyFromRecoveryPhrase = CmdKeyFromRecoveryPhrase
     { encoding :: Encoding
     , style :: Style
     } deriving (Show)
 
-modKeyFromMnemonic :: Mod CommandFields CmdKey
-modKeyFromMnemonic = command "from-mnemonic" $
-    info (helper <*> fmap CFromMnemonic parser) $ mempty
-        <> progDesc "Generate a root extended private key from a mnemonic sentence."
+modKeyFromRecoveryPhrase :: Mod CommandFields CmdKey
+modKeyFromRecoveryPhrase = command "from-recovery-phrase" $
+    info (helper <*> fmap CFromRecoveryPhrase parser) $ mempty
+        <> progDesc "Generate a root extended private key from a recovery phrase."
+        <> footerDoc (Just $ string $ mconcat
+            [ "A recovery phrase must be provided on stdin."
+            , "\n\n"
+            , "Example:\n\n"
+            , "  $ cardano-address recovery-phase generate \\\n"
+            , "  | cardano-address key from-recovery-phrase icarus \\\n"
+            ])
   where
-    parser = CmdKeyFromMnemonic
+    parser = CmdKeyFromRecoveryPhrase
         <$> encodingOpt [humanReadablePart|xprv|]
         <*> styleArg
 
-runKeyFromMnemonic :: CmdKeyFromMnemonic -> IO ()
-runKeyFromMnemonic CmdKeyFromMnemonic{encoding,style} = do
+runKeyFromRecoveryPhrase :: CmdKeyFromRecoveryPhrase -> IO ()
+runKeyFromRecoveryPhrase CmdKeyFromRecoveryPhrase{encoding,style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
     hPutBytes stdout (xprvToBytes rootK) encoding
@@ -311,9 +319,9 @@ data Encoding
 encodingOpt :: HumanReadablePart -> Parser Encoding
 encodingOpt hrp = base16Flag <|> base58Flag <|> bech32Flag
   where
-    base16Flag = flag'  EBase16      (long "base16")
-    base58Flag = flag'  EBase58      (long "base58")
-    bech32Flag = flag' (EBech32 hrp) (long "bech32")
+    base16Flag = flag'  EBase16 (long "base16")
+    base58Flag = flag'  EBase58 (long "base58")
+    bech32Flag = flag (EBech32 hrp) (EBech32 hrp) (long "bech32")
 
 --
 -- MnemonicSize
