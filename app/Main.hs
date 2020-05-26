@@ -26,9 +26,14 @@ import Cardano.Address.Derivation
     , XPub
     , deriveXPrv
     , deriveXPub
+    , toXPub
+    , xprvChainCode
     , xprvFromBytes
+    , xprvPrivateKey
     , xprvToBytes
+    , xpubChainCode
     , xpubFromBytes
+    , xpubPublicKey
     , xpubToBytes
     )
 import Cardano.Mnemonic
@@ -112,6 +117,7 @@ import Safe
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
+    , ConsoleIntensity (..)
     , ConsoleLayer (..)
     , SGR (..)
     , hSetSGR
@@ -226,6 +232,8 @@ runRecoveryPhraseGenerate CmdRecoveryPhraseGenerate{size} = do
 data CmdKey
     = CFromRecoveryPhrase CmdKeyFromRecoveryPhrase
     | CChild CmdKeyChild
+    | CPublic CmdKeyPublic
+    | CInspect CmdKeyInspect
     deriving (Show)
 
 modKey :: Mod CommandFields Cmd
@@ -233,7 +241,7 @@ modKey = command "key" $
     info (helper <*> fmap CKey parser) $ mempty
         <> progDesc "About public/private keys."
         <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n\n"
+            [ "Example:\n"
             , "  $ cardano-address recovery-phrase generate \\\n"
             , "  | cardano-address key from-recovery-phrase icarus \\\n"
             , "  | cardano-address key public\n"
@@ -243,12 +251,16 @@ modKey = command "key" $
     parser = subparser $ mconcat
         [ modKeyFromRecoveryPhrase
         , modKeyChild
+        , modKeyPublic
+        , modKeyInspect
         ]
 
 runKey :: CmdKey -> IO ()
 runKey = \case
     CFromRecoveryPhrase sub -> runKeyFromRecoveryPhrase sub
     CChild sub -> runKeyChild sub
+    CPublic sub -> runKeyPublic sub
+    CInspect sub -> runKeyInspect sub
 
 --
 -- key from-recovery-phrase
@@ -262,7 +274,7 @@ data CmdKeyFromRecoveryPhrase = CmdKeyFromRecoveryPhrase
 modKeyFromRecoveryPhrase :: Mod CommandFields CmdKey
 modKeyFromRecoveryPhrase = command "from-recovery-phrase" $
     info (helper <*> fmap CFromRecoveryPhrase parser) $ mempty
-        <> progDesc "Generate a root extended private key from a recovery phrase."
+        <> progDesc "Convert a recovery phrase to an extended private key."
         <> footerDoc (Just $ string $ mconcat
             [ "The recovery phrase is read from stdin."
             , "\n\n"
@@ -297,30 +309,110 @@ schemeOpt = flag DerivationScheme2 DerivationScheme1 (long "legacy")
 modKeyChild :: Mod CommandFields CmdKey
 modKeyChild = command "child" $
     info (helper <*> fmap CChild parser) $ mempty
-        <> progDesc "Derive child keys."
+        <> progDesc "Derive child keys from a parent public/private key."
         <> footerDoc (Just $ string $ mconcat
             [ "The parent key is read from stdin."
             ])
   where
     parser = CmdKeyChild
-        <$> encodingOpt [humanReadablePart|xprv|]
+        <$> encodingOpt [humanReadablePart|???|]
         <*> schemeOpt
         <*> derivationPathArg
 
 runKeyChild :: CmdKeyChild -> IO ()
 runKeyChild CmdKeyChild{encoding,path,scheme} = do
     xkey <- hGetXP__ stdin
-    child <- case xkey of
+
+    (child,encoding') <- case xkey of
         Left xpub -> do
             let ixs = castDerivationPath path
-            let Just child = foldM (deriveXPub scheme) xpub ixs
-            pure (xpubToBytes child)
+            case foldM (deriveXPub scheme) xpub ixs of
+                Nothing ->
+                    failWith
+                        "Couldn't derive child key. If you're trying to derive \
+                        \children on a PUBLIC key, you must use soft indexes only."
+                Just child ->
+                    pure
+                        ( xpubToBytes child
+                        , mapHRP (const [humanReadablePart|xpub|] ) encoding
+                        )
 
         Right xprv -> do
             let ixs = castDerivationPath path
             let Identity child = foldM (\k -> pure . deriveXPrv scheme k) xprv ixs
-            pure (xprvToBytes child)
-    hPutBytes stdout child encoding
+            pure
+                ( xprvToBytes child
+                , mapHRP (const [humanReadablePart|xprv|]) encoding
+                )
+
+    hPutBytes stdout child encoding'
+
+--
+-- key public
+--
+
+newtype CmdKeyPublic = CmdKeyPublic
+    { encoding :: Encoding
+    } deriving (Show)
+
+modKeyPublic :: Mod CommandFields CmdKey
+modKeyPublic = command "public" $
+    info (helper <*> fmap CPublic parser) $ mempty
+        <> progDesc "Get the public counterpart of a private key."
+        <> footerDoc (Just $ string $ mconcat
+            [ "The private key is read from stdin."
+            ])
+  where
+    parser = CmdKeyPublic
+        <$> encodingOpt [humanReadablePart|xpub|]
+
+runKeyPublic :: CmdKeyPublic -> IO ()
+runKeyPublic CmdKeyPublic{encoding} = do
+    xprv <- hGetXPrv stdin
+    let xpub = toXPub xprv
+    hPutBytes stdout (xpubToBytes xpub) encoding
+
+
+--
+-- key inspect
+--
+
+data CmdKeyInspect = CmdKeyInspect
+    deriving (Show)
+
+modKeyInspect :: Mod CommandFields CmdKey
+modKeyInspect = command "inspect" $
+    info (helper <*> fmap CInspect parser) $ mempty
+        <> progDesc "Show information about a key."
+        <> footerDoc (Just $ string $ mconcat
+            [ "The parent key is read from stdin."
+            ])
+  where
+    parser = pure CmdKeyInspect
+
+runKeyInspect :: CmdKeyInspect -> IO ()
+runKeyInspect CmdKeyInspect = do
+    either inspectXPub inspectXPrv =<< hGetXP__ stdin
+  where
+    newline = BS.hPutStrLn stdout ""
+
+    inspectXPub :: XPub -> IO ()
+    inspectXPub xpub = do
+        hPutBold stdout "key type:     " *> BS.hPutStr stdout "public"    *> newline
+        hPutBold stdout "extended key: " *> hPutBytes  stdout pub EBase16 *> newline
+        hPutBold stdout "chain code:   " *> hPutBytes  stdout cc  EBase16 *> newline
+      where
+        pub = xpubPublicKey xpub
+        cc  = xpubChainCode xpub
+
+    inspectXPrv :: XPrv -> IO ()
+    inspectXPrv xprv = do
+        hPutBold stdout "key type:     " *> BS.hPutStr stdout "private"   *> newline
+        hPutBold stdout "extended key: " *> hPutBytes  stdout prv EBase16 *> newline
+        hPutBold stdout "chain code:   " *> hPutBytes  stdout cc  EBase16 *> newline
+      where
+        prv = xprvPrivateKey xprv
+        cc  = xprvChainCode  xprv
 
 --
 -- Style
@@ -382,6 +474,12 @@ encodingOpt hrp = base16Flag <|> base58Flag <|> bech32Flag
     base16Flag = flag'  EBase16 (long "base16")
     base58Flag = flag'  EBase58 (long "base58")
     bech32Flag = flag (EBech32 hrp) (EBech32 hrp) (long "bech32")
+
+mapHRP :: (HumanReadablePart -> HumanReadablePart) -> Encoding -> Encoding
+mapHRP fn = \case
+    EBase16 -> EBase16
+    EBase58 -> EBase58
+    EBech32 hrp -> EBech32 (fn hrp)
 
 --
 -- MnemonicSize
@@ -544,6 +642,10 @@ hPutBytes h bytes = \case
         BS.hPutStr h $ encodeBase58 bitcoinAlphabet bytes
     EBech32 hrp ->
         BS.hPutStr h $ T.encodeUtf8 $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes bytes
+
+hPutBold :: Handle -> ByteString -> IO ()
+hPutBold h bytes =
+    withSGR h (SetConsoleIntensity BoldIntensity) $ BS.hPutStr h bytes
 
 -- Read some bytes from the console, and decode them if the encoding is recognized.
 hGetBytes :: Handle -> IO ByteString
