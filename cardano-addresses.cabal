@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 97121410dd51c560e5b7ce63bc56689d886960606e69ad9d9f8e73cdc1110781
+-- hash: f45ac9a9d2461ad676e372fa9fdb3a8159f79e6bd7b5aa3e1d647abab055c9dd
 
 name:           cardano-addresses
 version:        1.0.0
@@ -39,6 +39,19 @@ library
       Cardano.Address.Style.Shelley
       Cardano.Codec.Cbor
       Cardano.Mnemonic
+      Command
+      Command.Key
+      Command.Key.Child
+      Command.Key.FromRecoveryPhrase
+      Command.Key.Inspect
+      Command.Key.Public
+      Command.RecoveryPhrase
+      Command.RecoveryPhrase.Generate
+      Options.Applicative.Derivation
+      Options.Applicative.Encoding
+      Options.Applicative.MnemonicSize
+      Options.Applicative.Style
+      System.IO.Extra
   other-modules:
       Paths_cardano_addresses
   hs-source-dirs:
@@ -46,7 +59,8 @@ library
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
-      base >=4.7 && <5
+      ansi-terminal
+    , base >=4.7 && <5
     , base58-bytestring
     , basement
     , bech32
@@ -62,6 +76,8 @@ library
     , extra
     , fmt
     , memory
+    , optparse-applicative
+    , safe
     , template-haskell
     , text
   if flag(release)

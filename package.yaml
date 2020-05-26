@@ -33,6 +33,7 @@ library:
   default-extensions:
   - NoImplicitPrelude
   dependencies:
+  - ansi-terminal
   - base58-bytestring
   - basement
   - bech32
@@ -48,6 +49,8 @@ library:
   - extra
   - fmt
   - memory
+  - optparse-applicative
+  - safe
   - text
   - template-haskell
 
