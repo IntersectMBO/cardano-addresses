@@ -63,6 +63,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Function
     ( on )
+import Data.List
+    ( intercalate )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
@@ -72,7 +74,13 @@ import GHC.Stack
 import GHC.TypeLits
     ( natVal )
 import Options.Applicative.Derivation
-    ( DerivationIndex, indexToInteger, mkDerivationIndex )
+    ( DerivationIndex
+    , DerivationPath
+    , derivationIndexToString
+    , derivationPathFromString
+    , indexToInteger
+    , mkDerivationIndex
+    )
 import Test.QuickCheck
     ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
@@ -230,6 +238,13 @@ instance Arbitrary NetworkTag where
 instance Arbitrary DerivationIndex where
     arbitrary = unsafeFromRight . mkDerivationIndex
         <$> choose (indexToInteger minBound, indexToInteger maxBound)
+
+instance Arbitrary DerivationPath where
+    arbitrary = do
+        n <- choose (1, 10)
+        ixs <- vector @DerivationIndex n
+        pure $ unsafeFromRight $ derivationPathFromString $
+            intercalate "/" (derivationIndexToString <$> ixs)
 
 --
 -- Extra Instances

@@ -34,6 +34,8 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( DerivationScheme (..), DerivationType (..), Index )
+import Control.Arrow
+    ( left )
 import Data.List
     ( intercalate, isSuffixOf )
 import Data.Word
@@ -111,11 +113,20 @@ derivationIndexFromString str
         parseSoftIndex str
   where
     parseHardenedIndex txt = do
-        ix <- readEitherSafe txt
+        ix <- left (const msg) $ readEitherSafe txt
         mkDerivationIndex $ ix + indexToInteger firstHardened
+      where
+        msg = mconcat
+            [ "Unable to parse hardened index. Hardened indexes are integer "
+            , "values, between "
+            , show (indexToInteger (minBound @DerivationIndex))
+            , " and "
+            , show (indexToInteger firstHardened)
+            , " ending with a capital 'H'. For example: \"42H\","
+            ]
 
     parseSoftIndex txt = do
-        ix <- readEitherSafe txt
+        ix <- left (const msg) $ readEitherSafe txt
         guardSoftIndex ix
         mkDerivationIndex ix
       where
@@ -131,12 +142,22 @@ derivationIndexFromString str
             | otherwise =
                 pure ()
 
+        msg = mconcat
+            [ "Unable to parse soft index. Soft indexes are integer "
+            , "values, between "
+            , show (indexToInteger (minBound @DerivationIndex))
+            , " and "
+            , show (indexToInteger firstHardened)
+            , ". For example: \"14\"."
+            ]
+
 -- | Convert a 'DerivationIndex' back to string.
 derivationIndexToString :: DerivationIndex -> String
 derivationIndexToString ix_@(DerivationIndex ix)
-    | ix_ >= firstHardened = show ix ++ "H"
+    | ix_ >= firstHardened = show ix' ++ "H"
     | otherwise            = show ix
-
+  where
+    ix' = fromIntegral ix - indexToInteger firstHardened
 
 --
 -- DerivationScheme
