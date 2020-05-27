@@ -15,6 +15,8 @@ module Cardano.Address
       Address
     , PaymentAddress (..)
     , DelegationAddress (..)
+    , PointerAddress (..)
+    , StakingKeyPointer (..)
     , unsafeMkAddress
 
       -- * Conversion From / To Text
@@ -51,11 +53,13 @@ import Data.ByteString.Base58
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32, Word8 )
+    ( Word32, Word64, Word8 )
 import GHC.Generics
     ( Generic )
 import GHC.Stack
     ( HasCallStack )
+import Numeric.Natural
+    ( Natural )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
@@ -142,6 +146,44 @@ class PaymentAddress key
             -- ^ Payment key
         ->  key 'StakingK XPub
             -- ^ Staking key
+        -> Address
+
+-- | A 'StakingKeyPointer' type representing location of staking certificate
+-- in the blockchain. This can be achieved unambiguously by specifying
+-- slot number, transaction index and the index of certificate list.
+-- Alternatively, staking key can be used, like it is the case for
+-- 'DelegationAddress'.
+--
+-- @since 2.0.0
+data StakingKeyPointer = StakingKeyPointer
+    { slotNum :: Word64
+      -- ^ Pointer to the slot
+    , transactionIndex :: Natural
+      -- ^ transaction index
+    , certificateIndex :: Natural
+      -- ^ certificate list index
+    } deriving stock (Generic, Show, Eq, Ord)
+instance NFData StakingKeyPointer
+
+-- | Encoding of pointer addresses for payment key type, pointer to staking
+-- certificate in the blockchain and backend targets.
+--
+-- @since 2.0.0
+class PaymentAddress key
+    => PointerAddress key where
+    -- | Convert a payment public key and a pointer to staking key in the
+    -- blockchain to a delegation 'Address' valid for the given network
+    -- discrimination. Funds sent to this address will be delegated according to
+    -- the delegation settings attached to the delegation key located by
+    -- 'StakingKeyPointer'.
+    --
+    -- @since 2.0.0
+    pointerAddress
+        :: NetworkDiscriminant key
+        ->  key 'AddressK XPub
+            -- ^ Payment key
+        ->  StakingKeyPointer
+            -- ^ Pointer to locate staking key in blockchain
         -> Address
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
