@@ -5,12 +5,12 @@ module Command.Key.FromRecoveryPhraseSpec
 import Prelude
 
 import Test.Hspec
-    ( Spec, SpecWith, describe, it, shouldBe, shouldContain )
+    ( Spec, SpecWith, it, shouldBe, shouldContain )
 import Test.Utils
-    ( cli )
+    ( cli, describeCmd )
 
 spec :: Spec
-spec = describe "key from-recovery-phrase" $ do
+spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
     specGolden "byron" defaultPhrase "--base16"
         "609b6958eb363277b5dba70326b47d730bf3ec0a9119a000ca27c5c7939d3f51\
         \95169089ff22a393cea887f9c5a2d7f5d000882faf4cd5cf1925638bf0b41ccd\

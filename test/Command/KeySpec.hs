@@ -13,7 +13,7 @@ import Data.List
 import Options.Applicative.Derivation
     ( DerivationIndex, derivationIndexToString, firstHardened )
 import Test.Hspec
-    ( Spec, describe )
+    ( Spec )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
@@ -21,7 +21,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic
     ( assert, monadicIO, monitor, run )
 import Test.Utils
-    ( cli )
+    ( cli, describeCmd )
 
 import Test.Arbitrary
     ()
@@ -31,7 +31,7 @@ import qualified Data.Text.Encoding as T
 
 
 spec :: Spec
-spec = describe "key" $ do
+spec = describeCmd ["key"] $ do
     prop "public/child commute" prop_publicKeyDerivation
 
 -- | For soft indices, public key derivation should be "equivalent" to private

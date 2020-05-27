@@ -2,6 +2,7 @@
 
 module Test.Utils
     ( cli
+    , describeCmd
     ) where
 
 import Prelude
@@ -9,8 +10,12 @@ import Prelude
 import System.Process
     ( readProcess, readProcessWithExitCode )
 
-exe :: String
-exe = "cardano-address"
+import Test.Hspec
+    ( Spec, SpecWith, describe, runIO )
+
+--
+-- cli
+--
 
 class CommandLine output where
     cli :: [String]
@@ -28,3 +33,18 @@ instance CommandLine (String, String) where
         fmap dropFirst . readProcessWithExitCode exe args
       where
         dropFirst (_,b,c) = (b, c)
+
+exe :: String
+exe = "cardano-address"
+
+--
+-- describeCmd
+--
+
+-- | Wrap HSpec 'describe' into a friendly command description. So that, we get
+-- a very satisfying result visually from running the tests, and can inspect
+-- what each command help text looks like.
+describeCmd :: [String] -> SpecWith () -> Spec
+describeCmd cmd spec = do
+    title <- runIO $ cli (cmd ++ ["--help"]) ""
+    describe title spec
