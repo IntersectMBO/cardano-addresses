@@ -46,6 +46,7 @@ module "Cardano.Address.Style.Icarus" {
     tick "(error \"pruneBuffer: no first byte\")" [Invariant];
     tick "(error \"pruneBuffer: no last byte\")" [Invariant];
     tick "(Left \"invalid xprv\")" [Invariant];
+    tick "error" [Invariant];
     tick "SHA512" [Never evaluated];
   }
 }
@@ -94,4 +95,67 @@ module "Cardano.Mnemonic" {
   inside "genEntropy" {
     tick "(throwM . UnexpectedEntropyError)" on line 208 [Invariant];
   }
+}
+
+module "Command" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.RecoveryPhrase" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.RecoveryPhrase.Generate" {
+  tick function "showsPrec" [Show instance];
+  tick "size" [Record Accessor"];
+}
+
+module "Command.Key" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.Key.FromRecoveryPhrase" {
+  tick function "showsPrec" [Show instance];
+  tick "encoding" [Record Accessor"];
+  tick "style" [Record Accessor"];
+}
+
+module "Command.Key.Child" {
+  tick function "showsPrec" [Show instance];
+  tick "encoding" [Record Accessor"];
+  tick "scheme" [Record Accessor"];
+  tick "path" [Record Accessor"];
+}
+
+module "Command.Key.Public" {
+  tick function "showsPrec" [Show instance];
+  tick "encoding" [Record Accessor"];
+}
+
+module "Command.Key.Inspect" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Options.Applicative.Derivation" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+  tick function "succ" [Enum instance];
+  tick function "compare" [Ord instance];
+}
+
+module "Options.Applicative.Encoding" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+}
+
+module "Options.Applicative.MnemonicSize" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+  tick function "succ" [Enum instance];
+}
+
+module "Options.Applicative.Style" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+  tick function "succ" [Enum instance];
 }
