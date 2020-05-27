@@ -105,12 +105,17 @@ tests:
       ghc-options:
       - -Werror
     dependencies:
+    - base58-bytestring
+    - bech32
+    - bech32-th
     - bytestring
     - bech32
     - cardano-addresses
     - cardano-crypto
+    - containers
     - hspec
     - memory
     - process
     - QuickCheck
+    - temporary
     - text

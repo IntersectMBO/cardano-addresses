@@ -37,7 +37,7 @@ import Options.Applicative.Help.Pretty
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( failWith, hGetXP__, hPutBytes )
+    ( hGetXP__, hPutBytes )
 
 
 data Cmd = Child
@@ -68,7 +68,7 @@ run Child{encoding,path,scheme} = do
             let ixs = castDerivationPath path
             case foldM (deriveXPub scheme) xpub ixs of
                 Nothing ->
-                    failWith
+                    fail
                         "Couldn't derive child key. If you're trying to derive \
                         \children on a PUBLIC key, you must use soft indexes only."
                 Just child ->

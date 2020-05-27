@@ -13,6 +13,8 @@ module Command
 
 import Prelude
 
+import Control.Exception
+    ( handle )
 import Control.Monad
     ( void )
 import Options.Applicative
@@ -30,6 +32,8 @@ import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
     ( BufferMode (..), Handle, hSetBuffering, stderr, stdout )
+import System.IO.Extra
+    ( prettyIOException )
 
 import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
@@ -50,7 +54,7 @@ cli = info (helper <*> parser) $ progDesc "cardano-addresses"
 
 -- | Run a given command
 run :: CLI -> IO ()
-run = \case
+run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
 

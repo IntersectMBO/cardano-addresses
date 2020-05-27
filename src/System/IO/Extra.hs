@@ -19,8 +19,9 @@ module System.IO.Extra
     , hPutBytes
 
     -- * I/O Helpers
-    , failWith
+    , prettyIOException
     , withSGR
+    , markCharsRedAtIndices
     ) where
 
 import Prelude
@@ -31,16 +32,22 @@ import Cardano.Mnemonic
     ( MkSomeMnemonicError (..), SomeMnemonic, mkSomeMnemonic )
 import Control.Applicative
     ( (<|>) )
+import Control.Arrow
+    ( left )
 import Control.Exception
-    ( bracket )
+    ( IOException, bracket )
+import Control.Monad
+    ( guard )
 import Data.ByteArray.Encoding
     ( Base (..), convertFromBase, convertToBase )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
-    ( bitcoinAlphabet, decodeBase58, encodeBase58 )
-import Data.Either.Extra
-    ( eitherToMaybe )
+    ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
+import Data.Char
+    ( toLower )
+import Data.List
+    ( nub, sort )
 import Options.Applicative.Encoding
     ( AbstractEncoding (..), Encoding )
 import System.Console.ANSI
@@ -50,6 +57,7 @@ import System.Console.ANSI
     , ConsoleLayer (..)
     , SGR (..)
     , hSetSGR
+    , setSGRCode
     )
 import System.Exit
     ( exitFailure )
@@ -70,26 +78,73 @@ import qualified Data.Text.Encoding as T
 hGetBytes :: Handle -> IO ByteString
 hGetBytes h = do
     raw <- B8.hGetContents h
-    case (tryBech32 raw <|> tryBase16 raw <|> tryBase58 raw) of
-        Nothing    -> pure raw
-        Just bytes -> pure bytes
+    case detectEncoding (string raw) of
+        Just (EBech32{}) -> hGetBech32 raw
+        Just (EBase58  ) -> hGetBase58 raw
+        Just (EBase16  ) -> hGetBase16 raw
+        Nothing          -> fail
+            "Couldn't detect input encoding? Data on stdin must be encoded as \
+            \bech32, base58 or base16."
   where
-    tryBech32 raw = do
-        (_hrp, dp) <- eitherToMaybe $ Bech32.decodeLenient (T.decodeUtf8 raw)
-        Bech32.dataPartToBytes dp
+    detectEncoding :: String -> Maybe (AbstractEncoding ())
+    detectEncoding str = isBase16 <|> isBech32 <|> isBase58
+      where
+        isBase16 = do
+            guard (all (`elem` "0123456789abcdef") (toLower <$> str))
+            guard (length str `mod` 2 == 0)
+            pure EBase16
 
-    tryBase16 raw = do
-        eitherToMaybe $ convertFromBase Base16 raw
+        isBech32 = do
+            guard (all (`elem` Bech32.dataCharList) (stripPrefix str))
+            guard ('1' `elem` str)
+            pure (EBech32 ())
+          where
+            stripPrefix = reverse . takeWhile (/= '1') . reverse
 
-    tryBase58 raw = do
+        isBase58 = do
+            guard (all (`elem` string (unAlphabet bitcoinAlphabet)) str)
+            pure EBase58
+
+    string :: ByteString -> String
+    string = T.unpack . T.decodeUtf8
+
+    hGetBech32 :: ByteString -> IO ByteString
+    hGetBech32 raw = either (fail . errToString) pure $ do
+        (_hrp, dp) <- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw
+        maybe (Left Nothing) Right $ Bech32.dataPartToBytes dp
+      where
+        unCharPos (Bech32.CharPosition x) = x
+        invalidCharsMsg = "Invalid character(s) in string"
+        errToString = ("Bech32 error: " <>) . \case
+            Just Bech32.StringToDecodeTooLong ->
+                "string is too long"
+            Just Bech32.StringToDecodeTooShort ->
+                "string is too short"
+            Just Bech32.StringToDecodeHasMixedCase ->
+                "string has mixed case"
+            Just Bech32.StringToDecodeMissingSeparatorChar ->
+                "string has no separator char"
+            Just (Bech32.StringToDecodeContainsInvalidChars []) ->
+                invalidCharsMsg
+            Just (Bech32.StringToDecodeContainsInvalidChars ixs) ->
+                invalidCharsMsg <> ":\n" <> markCharsRedAtIndices (map unCharPos ixs) (string raw)
+            Nothing ->
+                "invalid data-part; these bytes ain't uint8."
+
+    hGetBase58 :: ByteString -> IO ByteString
+    hGetBase58 raw = maybe (fail "Invalid Base58-encoded string.") pure $ do
         decodeBase58 bitcoinAlphabet raw
+
+    hGetBase16 :: ByteString -> IO ByteString
+    hGetBase16 raw = either fail pure $ do
+        convertFromBase Base16 raw
 
 -- | Read some English mnemonic words from the console, or fail.
 hGetSomeMnemonic :: Handle -> IO SomeMnemonic
 hGetSomeMnemonic h = do
     wrds <- T.words . trim '\n' . T.decodeUtf8 <$> B8.hGetContents h
     case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
-        Left (MkSomeMnemonicError e) -> failWith e
+        Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
   where
     trim c = T.filter (/= c)
@@ -99,7 +154,7 @@ hGetXPrv :: Handle -> IO XPrv
 hGetXPrv h = do
     bytes <- hGetBytes h
     case xprvFromBytes bytes of
-        Nothing  -> failWith "Couldn't convert bytes into extended private key."
+        Nothing  -> fail "Couldn't convert bytes into extended private key."
         Just key -> pure key
 
 -- | Read an encoded public key from the console, or fail.
@@ -107,7 +162,7 @@ hGetXPub :: Handle -> IO XPub
 hGetXPub h = do
     bytes <- hGetBytes h
     case xpubFromBytes bytes of
-        Nothing  -> failWith "Couldn't convert bytes into extended public key."
+        Nothing  -> fail "Couldn't convert bytes into extended public key."
         Just key -> pure key
 
 -- | Read either an encoded public or private key from the console, or fail.
@@ -117,7 +172,7 @@ hGetXP__ h = do
     case (xpubFromBytes bytes, xprvFromBytes bytes) of
         (Just xpub,         _) -> pure (Left  xpub)
         (_        , Just xprv) -> pure (Right xprv)
-        _                      -> failWith
+        _                      -> fail
             "Couldn't convert bytes into neither extended public or private keys."
 
 
@@ -146,10 +201,9 @@ hPutBold h bytes =
 --
 
 -- | Fail with a colored red error message.
-failWith :: String -> IO a
-failWith msg = do
-    withSGR stderr (SetColor Foreground Vivid Red) $ do
-        B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack msg
+prettyIOException :: IOException -> IO a
+prettyIOException e = do
+    B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e
     exitFailure
 
 -- | Bracket-style constructor for applying ANSI Select Graphic Rendition to an
@@ -164,3 +218,17 @@ withSGR h sgr action = hIsTerminalDevice h >>= \case
     aFirst = ([] <$ hSetSGR h [sgr])
     aLast = hSetSGR h
     aBetween = const action
+
+-- | Mark all characters from a given string as red (in a console).
+markCharsRedAtIndices :: Integral i => [i] -> String -> String
+markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)
+  where
+    go _c [] [] = mempty
+    go c (i:is) (s:ss)
+        | c == i    = red ++ s:def ++ go (c + 1) is ss
+        | otherwise = s : go (c + 1) (i:is) ss
+    go _ [] ss = ss
+    go _ _ [] = [] -- NOTE: Really an error case.
+
+    red = setSGRCode [SetColor Foreground Vivid Red]
+    def = setSGRCode [Reset]

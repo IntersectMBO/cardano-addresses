@@ -72,7 +72,7 @@ prop_publicKeyDerivation ix xprv = do
         monitor (counterexample ("stdout: " <> out))
         monitor (counterexample ("stderr: " <> err))
         assert (out == "")
-        assert ("is too high to be a derivation index" `isInfixOf` err)
+        assert ("you must use soft indexes only" `isInfixOf` err)
   where
     bytes  = T.unpack $ T.decodeUtf8 $ convertToBase Base16 $ xprvToBytes xprv
     public = cli [ "key", "public" ]

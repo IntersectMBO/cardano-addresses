@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c172c0633bdcf0467bc4301f02424d847310bc2a0fcc18b9abc78e2e4b1f055
+-- hash: bfe7e4e2de1f874b71bf1be4f794c1e8231291887a6a61aa02ead75bd6c37ba9
 
 name:           cardano-addresses
 version:        1.0.0
@@ -132,6 +132,7 @@ test-suite unit
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
       Options.Applicative.DerivationSpec
+      System.IO.ExtraSpec
       Test.Arbitrary
       Test.Utils
       Paths_cardano_addresses
@@ -142,13 +143,17 @@ test-suite unit
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , base58-bytestring
     , bech32
+    , bech32-th
     , bytestring
     , cardano-addresses
     , cardano-crypto
+    , containers
     , hspec
     , memory
     , process
+    , temporary
     , text
   if flag(release)
     ghc-options: -Werror
