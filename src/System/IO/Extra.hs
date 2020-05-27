@@ -77,17 +77,17 @@ import qualified Data.Text.Encoding as T
 -- | Read some bytes from the console, and decode them if the encoding is recognized.
 hGetBytes :: Handle -> IO ByteString
 hGetBytes h = do
-    raw <- B8.hGetContents h
+    raw <- B8.filter (/= '\n') <$> B8.hGetContents h
     case detectEncoding (string raw) of
+        Just (EBase16  ) -> hGetBase16 raw
         Just (EBech32{}) -> hGetBech32 raw
         Just (EBase58  ) -> hGetBase58 raw
-        Just (EBase16  ) -> hGetBase16 raw
         Nothing          -> fail
             "Couldn't detect input encoding? Data on stdin must be encoded as \
-            \bech32, base58 or base16."
+            \bech16, bech32 or base58."
   where
     detectEncoding :: String -> Maybe (AbstractEncoding ())
-    detectEncoding str = isBase16 <|> isBech32 <|> isBase58
+    detectEncoding str = isBase16 <|> isBech32  <|> isBase58
       where
         isBase16 = do
             guard (all (`elem` "0123456789abcdef") (toLower <$> str))
@@ -97,6 +97,7 @@ hGetBytes h = do
         isBech32 = do
             guard (all (`elem` Bech32.dataCharList) (stripPrefix str))
             guard ('1' `elem` str)
+            guard (length (stripPrefix str) > 6)
             pure (EBech32 ())
           where
             stripPrefix = reverse . takeWhile (/= '1') . reverse

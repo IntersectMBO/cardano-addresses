@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module System.IO.ExtraSpec
     ( spec
@@ -8,22 +9,34 @@ module System.IO.ExtraSpec
 
 import Prelude
 
+import Cardano.Address.Derivation
+    ( XPrv, XPub, xprvToBytes, xpubToBytes )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Control.Exception
-    ( SomeException, try )
+    ( IOException, SomeException, try )
 import Data.ByteArray.Encoding
     ( Base (..), convertToBase )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
     ( bitcoinAlphabet, encodeBase58 )
+import Data.Function
+    ( (&) )
 import Data.List
     ( nub )
+import Options.Applicative.Encoding
+    ( AbstractEncoding (..), Encoding )
 import System.IO
     ( BufferMode (..), Handle, IOMode (..), hClose, hSetBuffering, withFile )
 import System.IO.Extra
-    ( hGetBytes, markCharsRedAtIndices )
+    ( hGetBytes
+    , hGetXP__
+    , hGetXPrv
+    , hGetXPub
+    , hPutBytes
+    , markCharsRedAtIndices
+    )
 import System.IO.Temp
     ( withSystemTempFile )
 import Test.Hspec
@@ -48,6 +61,11 @@ import Test.QuickCheck
     , (===)
     , (==>)
     )
+import Test.QuickCheck.Monadic
+    ( assert, monadicIO, monitor, run )
+
+import Test.Arbitrary
+    ()
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteString.Char8 as B8
@@ -62,14 +80,24 @@ spec = do
         specDecodeString "MyString" base16
         specDecodeString "MyString" base58
 
-        specInvalidEncodedString "xprv1hs"
-            (`shouldContain` "Bech32 error: string is too short")
         specInvalidEncodedString "bech321aaaaaaaaaaaaaaaa"
             (`shouldContain` "Bech32 error: Invalid character(s) in string")
         specInvalidEncodedString "bech321f4u4xarjd9hxwrhö"
             (`shouldContain` "Couldn't detect input encoding")
         specInvalidEncodedString "\NUL\NUL"
             (`shouldContain` "Couldn't detect input encoding")
+
+    describe "hGetXPrv" $ do
+        prop "roundtrip: hGetXPrv vs hPutBytes"
+            propGetPrvRoundtrip
+
+    describe "hGetXPub" $ do
+        prop "roundtrip: hGetXPub vs hPutBytes"
+            propGetPubRoundtrip
+
+    describe "hGetXP__" $ do
+        prop "roundtrip: hGetXP__ vs hPutBytes"
+            propGetAnyRoundtrip
 
     describe "markCharsRedAtIndices" $ do
         prop "generates strings of expected length"
@@ -91,11 +119,11 @@ specInvalidEncodedString
     :: String
     -> (String -> IO ())
     -> SpecWith ()
-specInvalidEncodedString str assert = it ("invalid encoding; " <> str) $ do
+specInvalidEncodedString str assertion = it ("invalid encoding; " <> str) $ do
     result <- try $ withHandle (\h -> B8.hPutStr h (bytes str)) hGetBytes
     case result of
         Left (e :: SomeException) ->
-            assert (show e)
+            assertion (show e)
         Right{} ->
             expectationFailure "expected hGetBytes to fail but didn't"
 
@@ -137,9 +165,80 @@ propRedCharsMatch ixs = do
         else property $
             Set.fromList ixs' `Set.isSubsetOf` Set.fromList ixs
 
+propGetPrvRoundtrip
+    :: XPrv
+    -> Encoding
+    -> Property
+propGetPrvRoundtrip xprv encoding = monadicIO $ do
+    xprv' <- run $ try $ withHandle
+        (\h -> hPutBytes h (xprvToBytes xprv) encoding)
+        hGetXPrv
+    monitor (encodingexample encoding (xprvToBytes xprv) (xprvToBytes <$> xprv'))
+    assert (xprv' == Right xprv)
+
+propGetPubRoundtrip
+    :: XPub
+    -> Encoding
+    -> Property
+propGetPubRoundtrip xpub encoding = monadicIO $ do
+    xpub' <- run $ try $ withHandle
+        (\h -> hPutBytes h (xpubToBytes xpub) encoding)
+        hGetXPub
+    monitor (encodingexample encoding (xpubToBytes xpub) (xpubToBytes <$> xpub'))
+    assert (xpub' == Right xpub)
+
+propGetAnyRoundtrip
+    :: Either XPub XPrv
+    -> Encoding
+    -> Property
+propGetAnyRoundtrip xany encoding = monadicIO $ do
+    xany' <- run $ try $ withHandle
+        (\h -> hPutBytes h (either xpubToBytes xprvToBytes xany) encoding)
+        hGetXP__
+    monitor (encodingexample encoding
+        (either xpubToBytes xprvToBytes xany)
+        (either xpubToBytes xprvToBytes <$> xany'))
+    assert (xany' == Right xany)
+
+
 --
 -- Helpers
 --
+
+encodingexample
+    :: Encoding
+    -> ByteString
+    -> Either IOException ByteString
+    -> Property
+    -> Property
+encodingexample encoding sent rcvd prop_ = case encoding of
+    EBase16 -> prop_
+        & counterexample (unlines
+            [ "rcvd:"
+            , show $ convertToBase @_ @ByteString Base16 <$> rcvd
+            ])
+        & counterexample (unlines
+            [ "sent:"
+            , show $ convertToBase @_ @ByteString Base16 sent
+            ])
+    EBase58 -> prop_
+        & counterexample (unlines
+            [ "rcvd:"
+            , show $ encodeBase58 bitcoinAlphabet <$> rcvd
+            ])
+        & counterexample (unlines
+            [ "sent:"
+            , show $ encodeBase58 bitcoinAlphabet sent
+            ])
+    EBech32 hrp -> prop_
+        & counterexample (unlines
+            [ "rcvd:"
+            , show $ Bech32.encodeLenient hrp . Bech32.dataPartFromBytes <$> rcvd
+            ])
+        & counterexample (unlines
+            [ "sent:"
+            , show $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes sent
+            ])
 
 withHandle
     :: (Handle -> IO ())

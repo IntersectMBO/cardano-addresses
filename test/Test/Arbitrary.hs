@@ -1,6 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
@@ -55,6 +57,10 @@ import Cardano.Mnemonic
     , mkEntropy
     , mkMnemonic
     )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
 import Crypto.Encoding.BIP39
     ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
 import Data.ByteArray.Encoding
@@ -81,8 +87,17 @@ import Options.Applicative.Derivation
     , indexToInteger
     , mkDerivationIndex
     )
+import Options.Applicative.Encoding
+    ( AbstractEncoding (..) )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
+    ( Arbitrary (..)
+    , Gen
+    , arbitraryBoundedEnum
+    , choose
+    , elements
+    , oneof
+    , vector
+    )
 
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -245,6 +260,13 @@ instance Arbitrary DerivationPath where
         ixs <- vector @DerivationIndex n
         pure $ unsafeFromRight $ derivationPathFromString $
             intercalate "/" (derivationIndexToString <$> ixs)
+
+instance Arbitrary (AbstractEncoding HumanReadablePart) where
+    arbitrary = elements
+        [ EBase16
+        , EBase58
+        , EBech32 [humanReadablePart|bech32|]
+        ]
 
 --
 -- Extra Instances
