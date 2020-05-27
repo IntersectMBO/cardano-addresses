@@ -111,5 +111,6 @@ tests:
     - cardano-crypto
     - hspec
     - memory
+    - process
     - QuickCheck
     - text
