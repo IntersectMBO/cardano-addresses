@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -21,8 +22,10 @@ import Cardano.Mnemonic
     ( SomeMnemonic )
 import Data.Char
     ( toLower )
+import Data.List
+    ( intercalate )
 import Options.Applicative
-    ( Parser, argument, help, maybeReader, metavar )
+    ( Parser, argument, eitherReader, help, metavar )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
@@ -39,7 +42,7 @@ data Style
     | Icarus
     | Jormungandr
     | Shelley
-    deriving (Eq, Show)
+    deriving (Eq, Show, Enum, Bounded)
 
 -- TODO
 -- Allow passphrase here.
@@ -70,14 +73,17 @@ generateRootKey mw = \case
 
 -- | Parse a 'Style' from the command-line, as an argument.
 styleArg :: Parser Style
-styleArg = argument (maybeReader reader) $ mempty
+styleArg = argument (eitherReader reader) $ mempty
     <> metavar "STYLE"
-    <> help "Byron | Icarus | Jormungandr | Shelley"
+    <> help styles
   where
-    reader :: String -> Maybe Style
+    styles :: String
+    styles = intercalate " | " $ show @Style <$> [minBound .. maxBound]
+
+    reader :: String -> Either String Style
     reader str = case toLower <$> str of
-        "byron"       -> Just Byron
-        "icarus"      -> Just Icarus
-        "jormungandr" -> Just Jormungandr
-        "shelley"     -> Just Shelley
-        _             -> Nothing
+        "byron"       -> Right Byron
+        "icarus"      -> Right Icarus
+        "jormungandr" -> Right Jormungandr
+        "shelley"     -> Right Shelley
+        _             -> Left $ "Unknown style; expecting one of " <> styles
