@@ -71,6 +71,8 @@ import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
+import Options.Applicative.Derivation
+    ( DerivationIndex, indexToInteger, mkDerivationIndex )
 import Test.QuickCheck
     ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
@@ -225,6 +227,10 @@ instance Arbitrary NetworkTag where
     shrink (NetworkTag tag) = NetworkTag <$> shrink tag
     arbitrary = NetworkTag <$> choose (0, 15)
 
+instance Arbitrary DerivationIndex where
+    arbitrary = unsafeFromRight . mkDerivationIndex
+        <$> choose (indexToInteger minBound, indexToInteger maxBound)
+
 --
 -- Extra Instances
 --
@@ -298,3 +304,7 @@ unsafeMkSomeMnemonicFromEntropy _ = SomeMnemonic
 unsafeFromHex :: HasCallStack => ByteString -> ByteString
 unsafeFromHex =
     either (error . show) id . convertFromBase @ByteString @ByteString Base16
+
+-- | Use the 'Right' of an Either
+unsafeFromRight :: (HasCallStack, Show left) => Either left right -> right
+unsafeFromRight = either (error . show) id
