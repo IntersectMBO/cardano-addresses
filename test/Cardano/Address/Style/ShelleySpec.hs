@@ -241,6 +241,16 @@ spec = do
                     , "addr1qmfx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3uvdycp\
                       \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803q0vyntw"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpsz4dfdc"
+                    , "addr1gvtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpsgl562s"
+                    , "addr1gctnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpskpkxrg"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u"
+                    , "addr1gvtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2p4222m"
+                    , "addr1gctnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf243c7pj"
+                    ]
             , mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
                          , "company", "walk", "dog" ]
             }
@@ -340,6 +350,16 @@ spec = do
                       \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs0j7dzc"
                     , "addr1qmlrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpn0d3\
                       \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsgw6k22"
+                    ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgpslhplej"
+                    , "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgps4acv76"
+                    , "addr1g62fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgpstr6shz"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf22wzcev"
+                    , "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
+                    , "addr1g62fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2j37qvz"
                     ]
             , mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
                            "entry", "language", "right", "filter", "choice" ]
@@ -441,6 +461,16 @@ spec = do
                     , "addr1q68jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlhjz8v\
                       \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqmkw4p5"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpsjej5ck"
+                    , "addr1gdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpscnt8l7"
+                    , "addr1geu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpsxdfmkx"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf2jyfghp"
+                    , "addr1gdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf27l8yfx"
+                    , "addr1geu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf22m4sz0"
+                    ]
             , mnemonic = [ "art", "forum", "devote", "street", "sure", "rather",
                            "head", "chuckle", "guard", "poverty", "release",
                            "quote", "oak", "craft", "enemy"]
@@ -540,6 +570,16 @@ spec = do
                       \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47scjklrv"
                     , "addr1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclv\
                       \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47slwjyt7"
+                    ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsktxqge"
+                    , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsupln03"
+                    , "addr1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpszla0xf"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2sw479c"
+                    , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2u4mjml"
+                    , "addr1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2g3fxsk"
                     ]
             , mnemonic = [ "churn", "shaft", "spoon", "second", "erode", "useless",
                            "thrive", "burst", "group", "seed", "element", "sign",
@@ -642,6 +682,16 @@ spec = do
                     , "addr1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552ju\
                       \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sxvkzkx"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsvlysw2"
+                    , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsx4arfz"
+                    , "addr1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsctllq6"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2cjrgkd"
+                    , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf25fdyg2"
+                    , "addr1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2qdlsrr"
+                    ]
             , mnemonic = [ "draft", "ability", "female", "child", "jump", "maid",
                            "roof", "hurt", "below", "live", "topple", "paper",
                            "exclude", "ordinary", "coach", "churn", "sunset",
@@ -743,6 +793,16 @@ spec = do
                       \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqytuj7c"
                     , "addr1q63ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl083ykh4\
                       \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqrhcfk2"
+                    ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gqy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpst4xf0c"
+                    , "addr1gvy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpspll6gs"
+                    , "addr1gcy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpslpaxpg"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gqy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf2ff5mz3"
+                    , "addr1gvy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf29j6huk"
+                    , "addr1gcy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf23kgrhl"
                     ]
             , mnemonic = [ "excess", "behave", "track", "soul", "table", "wear",
                            "ocean", "cash", "stay", "nature", "item", "turtle",
@@ -962,6 +1022,16 @@ data TestVector = TestVector
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
      , delegationAddr1442Stake1 :: [Text]
 
+      -- | Pointer addresses for the 0th address key and the staking certificate located in slot 1,
+      -- transaction index 2, certificte list index 3, with a networking tag 0, 3 and 6, respectively.
+      -- Each bech32 encoded prefixed with 'addr'
+     , pointerAddr0Slot1 :: [Text]
+
+      -- | Pointer addresses for the 0th address key and the staking certificate located in slot 24157,
+      -- transaction index 177, certificte list index 42, with a networking tag 0, 3 and 6, respectively.
+      -- Each bech32 encoded prefixed with 'addr'
+     , pointerAddr0Slot2 :: [Text]
+
       -- | Corresponding Mnemonic
     , mnemonic :: [Text]
     }
@@ -993,6 +1063,7 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     addrXPrv0' `shouldBe` addrXPrv0
     let addrXPub0' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
     addrXPub0' `shouldBe` addrXPub0
+
     let addIx1 = toEnum 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
     let addrXPrv1' = bech32With hrpPrv $ getExtendedKeyAddr addrK1prv
@@ -1014,6 +1085,13 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let paymentAddr1442' = getPaymentAddr addrK1442prv <$> networkTags
     paymentAddr1442' `shouldBe` paymentAddr1442
 
+    let slot1 = StakingKeyPointer 1 2 3
+    let pointerAddr0Slot1' = getPointerAddr addrK0prv slot1 <$> networkTags
+    pointerAddr0Slot1' `shouldBe` pointerAddr0Slot1
+    let slot2 = StakingKeyPointer 24157 177 42
+    let pointerAddr0Slot2' = getPointerAddr addrK0prv slot2 <$> networkTags
+    pointerAddr0Slot2' `shouldBe` pointerAddr0Slot2
+
     let stakeKPub0 = toXPub <$> deriveStakingPrivateKey acctK0
     let delegationAddr0Stake0' = getDelegationAddr addrK0prv stakeKPub0 <$> networkTags
     delegationAddr0Stake0' `shouldBe` delegationAddr0Stake0
@@ -1032,6 +1110,7 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (toXPub <$> addrKPrv)
+    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (toXPub <$> addrKPrv) ptr
     getDelegationAddr addrKPrv stakeKPub net =
         bech32 $ delegationAddress net (toXPub <$> addrKPrv) stakeKPub
 
