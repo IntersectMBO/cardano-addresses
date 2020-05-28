@@ -36,6 +36,7 @@ import System.IO
 import System.IO.Extra
     ( prettyIOException )
 
+import qualified Command.Address as Address
 import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
 
@@ -43,6 +44,7 @@ import qualified Command.RecoveryPhrase as RecoveryPhrase
 data CLI
     = RecoveryPhrase RecoveryPhrase.Cmd
     | Key Key.Cmd
+    | Address Address.Cmd
     deriving (Show)
 
 cli :: ParserInfo CLI
@@ -51,6 +53,7 @@ cli = info (helper <*> parser) $ progDesc "cardano-addresses"
     parser = subparser $ mconcat
         [ RecoveryPhrase.mod RecoveryPhrase
         , Key.mod Key
+        , Address.mod Address
         ]
 
 -- | Run a given command
@@ -58,6 +61,7 @@ run :: CLI -> IO ()
 run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
+    Address sub -> Address.run sub
 
 -- | Parse command line options and arguments
 parse :: IO CLI

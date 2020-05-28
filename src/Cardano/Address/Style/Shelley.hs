@@ -40,6 +40,8 @@ module Cardano.Address.Style.Shelley
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
+    , shelleyMainnet
+    , shelleyTestnet
 
       -- * Unsafe
     , liftXPrv
@@ -491,6 +493,18 @@ mkNetworkDiscriminant
 mkNetworkDiscriminant nTag
     | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
+
+-- | 'NetworkDicriminant' for Cardano MainNet & Shelley
+--
+-- @since 2.0.0
+shelleyMainnet :: NetworkDiscriminant Shelley
+shelleyMainnet = NetworkTag 1
+
+-- | 'NetworkDicriminant' for Cardano Testnet & Shelley
+--
+-- @since 2.0.0
+shelleyTestnet :: NetworkDiscriminant Shelley
+shelleyTestnet = NetworkTag 0
 
 --
 -- Unsafe

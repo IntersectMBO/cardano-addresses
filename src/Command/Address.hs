@@ -14,7 +14,7 @@ import Options.Applicative
 import Prelude hiding
     ( mod )
 
-import qualified Command.RecoveryPhrase as Create
+import qualified Command.Address.Init as Init
 --
 -- address
 --
@@ -24,7 +24,7 @@ import qualified Command.RecoveryPhrase as Create
 --  | cardano-address address add-pointer 1 2 3
 
 newtype Cmd
-    = Create Create.Cmd
+    = Init Init.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -33,9 +33,9 @@ mod liftCmd = command "address" $
         <> progDesc "About addresses."
   where
     parser = subparser $ mconcat
-        [ Create.mod Create
+        [ Init.mod Init
         ]
 
 run :: Cmd -> IO ()
 run = \case
-    Create sub -> Create.run sub
+    Init sub -> Init.run sub

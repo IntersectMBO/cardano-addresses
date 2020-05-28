@@ -42,6 +42,7 @@ library
       Codec.Binary.Encoding
       Command
       Command.Address
+      Command.Address.Init
       Command.Key
       Command.Key.Child
       Command.Key.FromRecoveryPhrase
@@ -51,6 +52,7 @@ library
       Command.RecoveryPhrase.Generate
       Data.Word7
       Options.Applicative.Derivation
+      Options.Applicative.Discrimination
       Options.Applicative.Encoding
       Options.Applicative.MnemonicSize
       Options.Applicative.Style
