@@ -413,7 +413,12 @@ instance Internal.PointerAddress Shelley where
               | inp <= fromIntegral (limit 14) = 2
               | inp <= fromIntegral (limit 21) = 3
               | inp <= fromIntegral (limit 28) = 4
-              | otherwise = 5
+              | inp <= fromIntegral (limit 35) = 5
+              | inp <= fromIntegral (limit 42) = 6
+              | inp <= fromIntegral (limit 49) = 7
+              | inp <= fromIntegral (limit 56) = 8
+              | inp <= fromIntegral (limit 63) = 9
+              | otherwise = 10
 
 
           putPointer (StakingKeyPointer slotN ix1' ix2') = do

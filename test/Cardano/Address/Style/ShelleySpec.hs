@@ -18,7 +18,10 @@ import Prelude
 
 import Cardano.Address
     ( DelegationAddress (..)
+    , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
+    , PointerAddress (..)
+    , StakingKeyPointer
     , bech32
     , bech32With
     , unsafeMkAddress
@@ -82,6 +85,10 @@ spec = do
 
     describe "Enum Roundtrip" $ do
         it "AccountingStyle" (property prop_roundtripEnumAccountingStyle)
+
+    describe "Proper pointer addresses construction" $ do
+        it "Using different numbers in StakingPointerAddress does not fail"
+            (property prop_pointerAddressConstruction)
 
     describe "Golden tests" $ do
         goldenTest TestVector
@@ -724,6 +731,22 @@ prop_toEnumAccountingStyle n =
 prop_roundtripEnumAccountingStyle :: AccountingStyle -> Property
 prop_roundtripEnumAccountingStyle ix =
     (toEnum . fromEnum) ix === ix
+
+prop_pointerAddressConstruction
+    :: (SomeMnemonic, SndFactor)
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> NetworkDiscriminant Shelley
+    -> StakingKeyPointer
+    -> Property
+prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
+    pointerAddr `seq` property ()
+  where
+    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
+    addrXPub = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
+    pointerAddr = pointerAddress net addrXPub ptr
+
 
 {-------------------------------------------------------------------------------
                              Golden tests
