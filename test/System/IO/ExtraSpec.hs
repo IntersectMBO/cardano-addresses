@@ -147,7 +147,7 @@ propMarkedStringsExpectedLength ixs = do
     let genStr = choose (maxIx, maxIx + 5) >>= vector
     forAllShrink genStr shrink $ \s -> do
         let rendered = markCharsRedAtIndices ixs s
-        all (< length s) (map fromIntegral ixs) ==>
+        all ((< length s) . fromIntegral) ixs ==>
             counterexample rendered $
                 length rendered === length s + ((length (nub ixs)) * 9)
 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bfe7e4e2de1f874b71bf1be4f794c1e8231291887a6a61aa02ead75bd6c37ba9
+-- hash: 82494fae13be9f02a591d9d75af958979cce18ca5034b5d2fb895330ab07fad5
 
 name:           cardano-addresses
 version:        1.0.0
@@ -79,7 +79,6 @@ library
     , memory
     , optparse-applicative
     , safe
-    , template-haskell
     , text
   if flag(release)
     ghc-options: -Werror
@@ -93,19 +92,8 @@ executable cardano-address
       app
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      ansi-terminal
-    , base >=4.7 && <5
-    , base58-bytestring
-    , bech32
-    , bech32-th
-    , bytestring
+      base >=4.7 && <5
     , cardano-addresses
-    , cborg
-    , extra
-    , memory
-    , optparse-applicative
-    , safe
-    , text
   if flag(release)
     ghc-options: -Werror -static -O2
     cc-options: -static
