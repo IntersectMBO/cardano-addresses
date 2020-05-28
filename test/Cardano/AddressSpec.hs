@@ -16,6 +16,8 @@ import Cardano.Address
     , DelegationAddress (..)
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
+    , PointerAddress (..)
+    , StakingKeyPointer
     , base58
     , bech32
     , fromBase58
@@ -65,6 +67,9 @@ spec = describe "Text Encoding Roundtrips" $ do
 
     prop "bech32 . fromBech32 - Shelley - delegation address" $
         prop_roundtripTextEncodingDelegation @Shelley bech32 fromBech32
+
+    prop "bech32 . fromBech32 - Shelley - pointer address" $
+        prop_roundtripTextEncodingPointer @Shelley bech32 fromBech32
 
     prop "bech32 . fromBech32 - Jormungandr - payment address" $
         prop_roundtripTextEncoding @Jormungandr bech32 fromBech32
@@ -118,4 +123,28 @@ prop_roundtripTextEncodingDelegation encode decode addXPub stakingXPub discrimin
         & label (show $ addressDiscrimination @k discrimination)
   where
     address = delegationAddress discrimination addXPub stakingXPub
+    result  = decode (encode address)
+
+prop_roundtripTextEncodingPointer
+    :: forall k. (PointerAddress k)
+    => (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> k 'AddressK XPub
+        -- ^ An arbitrary address public key
+    -> StakingKeyPointer
+        -- ^ An arbitrary staking key locator
+    -> NetworkDiscriminant k
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncodingPointer encode decode addXPub ptr discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode address)
+            , "↳       " <> maybe "ø" (T.unpack . encode) result
+            ])
+        & label (show $ addressDiscrimination @k discrimination)
+  where
+    address = pointerAddress discrimination addXPub ptr
     result  = decode (encode address)
