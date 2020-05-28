@@ -452,7 +452,7 @@ span.spaces    { background: white }
 <span class="lineno">  433 </span><span class="spaces">    </span><span class="istickedoff">-- programmer errors (out-of-range byte buffer access or, invalid length for</span>
 <span class="lineno">  434 </span><span class="spaces">    </span><span class="istickedoff">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span>
 <span class="lineno">  435 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight :: Either String a -&gt; a</span>
-<span class="lineno">  436 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either <span class="nottickedoff">error</span> id</span>
+<span class="lineno">  436 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either error id</span>
 <span class="lineno">  437 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  438 </span><span class="spaces">    </span><span class="istickedoff">-- This is the algorithm described in SLIP 0010 for master key generation</span>
 <span class="lineno">  439 </span><span class="spaces">    </span><span class="istickedoff">-- with an extra step to discard _some_ of the potential private keys. Why</span>
