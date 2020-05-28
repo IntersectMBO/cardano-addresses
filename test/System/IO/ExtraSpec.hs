@@ -13,30 +13,18 @@ import Cardano.Address.Derivation
     ( XPrv, XPub, xprvToBytes, xpubToBytes )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), Encoding, encode )
 import Control.Exception
     ( IOException, SomeException, try )
-import Data.ByteArray.Encoding
-    ( Base (..), convertToBase )
 import Data.ByteString
     ( ByteString )
-import Data.ByteString.Base58
-    ( bitcoinAlphabet, encodeBase58 )
 import Data.Function
     ( (&) )
-import Data.List
-    ( nub )
-import Options.Applicative.Encoding
-    ( AbstractEncoding (..), Encoding )
 import System.IO
     ( BufferMode (..), Handle, IOMode (..), hClose, hSetBuffering, withFile )
 import System.IO.Extra
-    ( hGetBytes
-    , hGetXP__
-    , hGetXPrv
-    , hGetXPub
-    , hPutBytes
-    , markCharsRedAtIndices
-    )
+    ( hGetBytes, hGetXP__, hGetXPrv, hGetXPub, hPutBytes )
 import System.IO.Temp
     ( withSystemTempFile )
 import Test.Hspec
@@ -51,26 +39,14 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Arbitrary (..)
-    , Property
-    , choose
-    , counterexample
-    , forAllShrink
-    , property
-    , vector
-    , withMaxSuccess
-    , (===)
-    , (==>)
-    )
+    ( Property, counterexample, withMaxSuccess )
 import Test.QuickCheck.Monadic
     ( assert, monadicIO, monitor, run )
 
 import Test.Arbitrary
     ()
 
-import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteString.Char8 as B8
-import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
@@ -100,17 +76,11 @@ spec = do
         prop "roundtrip: hGetXP__ vs hPutBytes" $
             withMaxSuccess 1000 propGetAnyRoundtrip
 
-    describe "markCharsRedAtIndices" $ do
-        prop "generates strings of expected length"
-            propMarkedStringsExpectedLength
-        prop "all red chars correspond to indices"
-            propRedCharsMatch
-
 specDecodeString
     :: String
     -> (String -> ByteString)
     -> SpecWith ()
-specDecodeString str encode = it (str <> " => " <> unbytes (encode str)) $ do
+specDecodeString str encoder = it (str <> " => " <> unbytes (encoder str)) $ do
     str' <- withHandle
         (\h -> B8.hPutStr h (bech32 str))
         (fmap unbytes . hGetBytes)
@@ -128,43 +98,16 @@ specInvalidEncodedString str assertion = it ("invalid encoding; " <> str) $ do
         Right{} ->
             expectationFailure "expected hGetBytes to fail but didn't"
 
+base16 :: String -> ByteString
+base16 = encode EBase16 . bytes
+
 bech32 :: String -> ByteString
-bech32 =
-    T.encodeUtf8 . Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . bytes
+bech32 = encode (EBech32 hrp) . bytes
   where
     hrp = [humanReadablePart|bech32|]
 
-base16 :: String -> ByteString
-base16 = convertToBase Base16 . bytes
-
 base58 :: String -> ByteString
-base58  = encodeBase58 bitcoinAlphabet . bytes
-
-propMarkedStringsExpectedLength
-    :: [Word]
-    -> Property
-propMarkedStringsExpectedLength ixs = do
-    let maxIx = fromIntegral $ foldl max 0 ixs
-    let genStr = choose (maxIx, maxIx + 5) >>= vector
-    forAllShrink genStr shrink $ \s -> do
-        let rendered = markCharsRedAtIndices ixs s
-        all ((< length s) . fromIntegral) ixs ==>
-            counterexample rendered $
-                length rendered === length s + ((length (nub ixs)) * 9)
-
-propRedCharsMatch
-    :: [Word]
-    -> Property
-propRedCharsMatch ixs = do
-    let maxIx = fromIntegral $ foldl max 0 ixs
-    let genStr = choose (maxIx, maxIx + 5) >>= vector
-    forAllShrink genStr shrink $ \(s::String) -> do
-        let rendered = markCharsRedAtIndices ixs s
-        let ixs' = indicesOfRedCharacters rendered
-        if length s > maxIx
-        then Set.fromList ixs' === Set.fromList ixs
-        else property $
-            Set.fromList ixs' `Set.isSubsetOf` Set.fromList ixs
+base58  = encode EBase58 . bytes
 
 propGetPrvRoundtrip
     :: XPrv
@@ -212,34 +155,15 @@ encodingexample
     -> Either IOException ByteString
     -> Property
     -> Property
-encodingexample encoding sent rcvd prop_ = case encoding of
-    EBase16 -> prop_
-        & counterexample (unlines
-            [ "rcvd:"
-            , show $ convertToBase @_ @ByteString Base16 <$> rcvd
-            ])
-        & counterexample (unlines
-            [ "sent:"
-            , show $ convertToBase @_ @ByteString Base16 sent
-            ])
-    EBase58 -> prop_
-        & counterexample (unlines
-            [ "rcvd:"
-            , show $ encodeBase58 bitcoinAlphabet <$> rcvd
-            ])
-        & counterexample (unlines
-            [ "sent:"
-            , show $ encodeBase58 bitcoinAlphabet sent
-            ])
-    EBech32 hrp -> prop_
-        & counterexample (unlines
-            [ "rcvd:"
-            , show $ Bech32.encodeLenient hrp . Bech32.dataPartFromBytes <$> rcvd
-            ])
-        & counterexample (unlines
-            [ "sent:"
-            , show $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes sent
-            ])
+encodingexample encoding sent rcvd prop_ = prop_
+    & counterexample (unlines
+        [ "rcvd:"
+        , show $ encode encoding <$> rcvd
+        ])
+    & counterexample (unlines
+        [ "sent:"
+        , show $ encode encoding sent
+        ])
 
 withHandle
     :: (Handle -> IO ())
@@ -257,17 +181,3 @@ bytes = T.encodeUtf8 . T.pack
 
 unbytes :: ByteString -> String
 unbytes = T.unpack . T.decodeUtf8
-
--- Returns a list of indices of charcters marked red with ANSI.
---
--- NOTE: Very primitive parser that only works with the current
--- @markCharsRedAtIndices@ which surrounds /every/ red character with ANSI, even
--- for neighboring characters.
-indicesOfRedCharacters :: Integral i => String -> [i]
-indicesOfRedCharacters s = go s 0
-  where
-    go ('\ESC':'[':'9':'1':'m':_x:'\ESC':'[':'0':'m':xs) n =
-        n : (go xs (n + 1))
-    go (_x:xs) n =
-        go xs (n + 1)
-    go [] _ = []

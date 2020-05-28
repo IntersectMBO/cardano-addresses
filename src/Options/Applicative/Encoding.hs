@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
-
 {-# OPTIONS_HADDOCK hide #-}
 
 module Options.Applicative.Encoding
@@ -12,38 +10,14 @@ module Options.Applicative.Encoding
     , encodingOpt
     ) where
 
-import Prelude
-
 import Codec.Binary.Bech32
     ( HumanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), Encoding )
 import Control.Applicative
     ( (<|>) )
 import Options.Applicative
     ( Parser, flag, flag', long )
-
-
---
--- Types
---
-
--- | A concrete 'Encoding' algebraic data-type.
-type Encoding = AbstractEncoding HumanReadablePart
-
--- | An abstract 'Encoding' to make it easy to map over the bech32 component.
--- Typically used as 'AbstractEncoding HumanReadablePart'.
---
--- > λ> let xpubHRP = [humanReadablePart|xpub|]
--- > λ> let xprvHRP = [humanReadablePart|xprv|]
--- >
--- > λ> fmap (const xpubHRP) (EBech32 xprvHRP)
--- > EBech32 (HumanReadablePart "xpub")
---
-data AbstractEncoding a
-    = EBase16
-    | EBase58
-    | EBech32 a
-    deriving (Eq, Show, Functor)
-
 
 --
 -- Applicative Parser
