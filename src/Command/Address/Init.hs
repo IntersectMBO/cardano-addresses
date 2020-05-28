@@ -13,31 +13,25 @@ module Command.Address.Init
 import Prelude hiding
     ( mod )
 
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
-import Control.Monad
-    ( foldM )
-import Data.Functor.Identity
-    ( Identity (..) )
+import Data.Binary.Put
+    ( putWord32be )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
 import Options.Applicative.Encoding
-    ( Encoding, encodingOpt )
+    ( AbstractEncoding (..) )
 import Options.Applicative.Help.Pretty
     ( string )
 import Options.Applicative.Style
-    ( Style, styleArg )
+    ( Style (..), encodeWithStyle, styleArg )
 import System.IO
-    ( stdin, stdout )
+    ( stdout )
 import System.IO.Extra
-    ( hGetXP__, hPutBytes )
-
+    ( hPutBytes )
 
 data Cmd = Cmd
-    { encoding :: Encoding
-    , networkTag :: NetworkTag
+    { networkTag :: NetworkTag
     , style :: Style
     } deriving (Show)
 
@@ -51,10 +45,11 @@ mod liftCmd = command "init" $
             ])
   where
     parser = Cmd
-        <$> encodingOpt [humanReadablePart|addr|]
-        <*> networkTagOpt
+        <$> networkTagOpt
         <*> styleArg
 
 run :: Cmd -> IO ()
-run Cmd{encoding,networkTag,style} = do
-    fail "TODO"
+run Cmd{networkTag,style} =
+    hPutBytes stdout (encodeWithStyle style putNetworkTag) EBase16
+  where
+    putNetworkTag = putWord32be . unNetworkTag $ networkTag
