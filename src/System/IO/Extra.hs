@@ -45,7 +45,7 @@ import Data.ByteString
 import Data.ByteString.Base58
     ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
 import Data.Char
-    ( toLower )
+    ( isDigit, isLower, toLower )
 import Data.List
     ( nub, sort )
 import Options.Applicative.Encoding
@@ -96,6 +96,7 @@ hGetBytes h = do
 
         isBech32 = do
             guard (all (`elem` Bech32.dataCharList) (stripPrefix str))
+            guard (all (\c -> isLower c || isDigit c) str)
             guard ('1' `elem` str)
             guard (length (stripPrefix str) > 6)
             pure (EBech32 ())

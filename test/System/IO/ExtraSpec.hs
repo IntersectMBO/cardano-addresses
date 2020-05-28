@@ -58,6 +58,7 @@ import Test.QuickCheck
     , forAllShrink
     , property
     , vector
+    , withMaxSuccess
     , (===)
     , (==>)
     )
@@ -88,16 +89,16 @@ spec = do
             (`shouldContain` "Couldn't detect input encoding")
 
     describe "hGetXPrv" $ do
-        prop "roundtrip: hGetXPrv vs hPutBytes"
-            propGetPrvRoundtrip
+        prop "roundtrip: hGetXPrv vs hPutBytes" $
+            withMaxSuccess 1000 propGetPrvRoundtrip
 
     describe "hGetXPub" $ do
-        prop "roundtrip: hGetXPub vs hPutBytes"
-            propGetPubRoundtrip
+        prop "roundtrip: hGetXPub vs hPutBytes" $
+            withMaxSuccess 1000 propGetPubRoundtrip
 
     describe "hGetXP__" $ do
-        prop "roundtrip: hGetXP__ vs hPutBytes"
-            propGetAnyRoundtrip
+        prop "roundtrip: hGetXP__ vs hPutBytes" $
+            withMaxSuccess 1000 propGetAnyRoundtrip
 
     describe "markCharsRedAtIndices" $ do
         prop "generates strings of expected length"
