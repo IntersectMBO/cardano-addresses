@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eb4e718e1bd46a0c9b3d4cd012fddf146c0265ea52a128c4965191ebebe8d8a7
+-- hash: 82494fae13be9f02a591d9d75af958979cce18ca5034b5d2fb895330ab07fad5
 
 name:           cardano-addresses
 version:        1.0.0
@@ -39,6 +39,20 @@ library
       Cardano.Address.Style.Shelley
       Cardano.Codec.Cbor
       Cardano.Mnemonic
+      Command
+      Command.Address
+      Command.Key
+      Command.Key.Child
+      Command.Key.FromRecoveryPhrase
+      Command.Key.Inspect
+      Command.Key.Public
+      Command.RecoveryPhrase
+      Command.RecoveryPhrase.Generate
+      Options.Applicative.Derivation
+      Options.Applicative.Encoding
+      Options.Applicative.MnemonicSize
+      Options.Applicative.Style
+      System.IO.Extra
   other-modules:
       Paths_cardano_addresses
   hs-source-dirs:
@@ -46,7 +60,8 @@ library
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
-      base >=4.7 && <5
+      ansi-terminal
+    , base >=4.7 && <5
     , base58-bytestring
     , basement
     , bech32
@@ -62,9 +77,27 @@ library
     , extra
     , fmt
     , memory
+    , optparse-applicative
+    , safe
     , text
   if flag(release)
     ghc-options: -Werror
+  default-language: Haskell2010
+
+executable cardano-address
+  main-is: Main.hs
+  other-modules:
+      Paths_cardano_addresses
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cardano-addresses
+  if flag(release)
+    ghc-options: -Werror -static -O2
+    cc-options: -static
+    ld-options: -static -pthread
   default-language: Haskell2010
 
 test-suite unit
@@ -79,7 +112,17 @@ test-suite unit
       Cardano.AddressSpec
       Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
+      Command.Key.ChildSpec
+      Command.Key.FromRecoveryPhraseSpec
+      Command.Key.InspectSpec
+      Command.Key.PublicSpec
+      Command.KeySpec
+      Command.RecoveryPhrase.GenerateSpec
+      Command.RecoveryPhraseSpec
+      Options.Applicative.DerivationSpec
+      System.IO.ExtraSpec
       Test.Arbitrary
+      Test.Utils
       Paths_cardano_addresses
   hs-source-dirs:
       test
@@ -88,12 +131,17 @@ test-suite unit
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , base58-bytestring
     , bech32
+    , bech32-th
     , bytestring
     , cardano-addresses
     , cardano-crypto
+    , containers
     , hspec
     , memory
+    , process
+    , temporary
     , text
   if flag(release)
     ghc-options: -Werror

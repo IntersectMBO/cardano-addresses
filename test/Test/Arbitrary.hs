@@ -1,6 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
@@ -55,6 +57,10 @@ import Cardano.Mnemonic
     , mkEntropy
     , mkMnemonic
     )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
 import Crypto.Encoding.BIP39
     ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
 import Data.ByteArray.Encoding
@@ -63,6 +69,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Function
     ( on )
+import Data.List
+    ( intercalate )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
@@ -71,8 +79,25 @@ import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
+import Options.Applicative.Derivation
+    ( DerivationIndex
+    , DerivationPath
+    , derivationIndexToString
+    , derivationPathFromString
+    , indexToInteger
+    , mkDerivationIndex
+    )
+import Options.Applicative.Encoding
+    ( AbstractEncoding (..) )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
+    ( Arbitrary (..)
+    , Gen
+    , arbitraryBoundedEnum
+    , choose
+    , elements
+    , oneof
+    , vector
+    )
 
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -225,6 +250,24 @@ instance Arbitrary NetworkTag where
     shrink (NetworkTag tag) = NetworkTag <$> shrink tag
     arbitrary = NetworkTag <$> choose (0, 15)
 
+instance Arbitrary DerivationIndex where
+    arbitrary = unsafeFromRight . mkDerivationIndex
+        <$> choose (indexToInteger minBound, indexToInteger maxBound)
+
+instance Arbitrary DerivationPath where
+    arbitrary = do
+        n <- choose (1, 10)
+        ixs <- vector @DerivationIndex n
+        pure $ unsafeFromRight $ derivationPathFromString $
+            intercalate "/" (derivationIndexToString <$> ixs)
+
+instance Arbitrary (AbstractEncoding HumanReadablePart) where
+    arbitrary = elements
+        [ EBase16
+        , EBase58
+        , EBech32 [humanReadablePart|bech32|]
+        ]
+
 --
 -- Extra Instances
 --
@@ -298,3 +341,7 @@ unsafeMkSomeMnemonicFromEntropy _ = SomeMnemonic
 unsafeFromHex :: HasCallStack => ByteString -> ByteString
 unsafeFromHex =
     either (error . show) id . convertFromBase @ByteString @ByteString Base16
+
+-- | Use the 'Right' of an Either
+unsafeFromRight :: (HasCallStack, Show left) => Either left right -> right
+unsafeFromRight = either (error . show) id
