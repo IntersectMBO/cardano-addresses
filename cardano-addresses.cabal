@@ -132,6 +132,7 @@ test-suite unit
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , base16-bytestring
     , base >=4.7 && <5
     , base58-bytestring
     , bech32

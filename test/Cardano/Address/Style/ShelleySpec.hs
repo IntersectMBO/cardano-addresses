@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -21,9 +22,10 @@ import Cardano.Address
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , PointerAddress (..)
-    , StakingKeyPointer
+    , StakingKeyPointer (..)
     , bech32
     , bech32With
+    , fromHex
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -36,20 +38,26 @@ import Cardano.Address.Derivation
     , SoftDerivation (..)
     , StakingDerivation (..)
     , XPrv
+    , XPub
     , toXPub
     , xprvToBytes
+    , xpubFromBytes
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Shelley (..), mkNetworkDiscriminant )
+    ( Shelley (..), mkNetworkDiscriminant, unsafeMkShelleyKey )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Either
     ( rights )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word8 )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -68,8 +76,8 @@ import Test.QuickCheck
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Base16 as B16
 import qualified Data.Text as T
-
 
 spec :: Spec
 spec = do
@@ -91,7 +99,53 @@ spec = do
             (property prop_pointerAddressConstruction)
 
     describe "Golden tests" $ do
-        goldenTest TestVector
+        goldenTestPointerAddress GoldenTestPointerAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  stakePtr = StakingKeyPointer 128 2 3
+            ,  networkId = 0
+            ,  expectedAddr =
+                    "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \81000203"
+            }
+        goldenTestPointerAddress GoldenTestPointerAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  stakePtr = StakingKeyPointer 128 2 3
+            ,  networkId = 1
+            ,  expectedAddr =
+                    "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \81000203"
+            }
+        goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  networkId = 0
+            ,  expectedAddr =
+                    "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  networkId = 1
+            ,  expectedAddr =
+                    "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestBaseAddress GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  networkId = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddress GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  networkId = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+
+    describe "Test vectors" $ do
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1nq49elkxhet9d03y0uqxp5fa802jgqauef3878ve3r9xvkg8\
                     \c4qqnq98raswxtrwlfw7txa7m49d6x84092l0lsv5s603dkakj8vwgsz23\
@@ -190,7 +244,7 @@ spec = do
             , mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
                          , "company", "walk", "dog" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1vzrzr76vqyqlavclduhawqvtae2pq8lk0424q7t8rzfjyhhp\
                     \530zxv2fwq5a3pd4vdzqtu6s2zxdjhww8xg4qwcs7y5dqne5k7mz27p6rc\
@@ -290,7 +344,7 @@ spec = do
             , mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
                            "entry", "language", "right", "filter", "choice" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1hretan5mml3tq2p0twkhq4tz4jvka7m2l94kfr6yghkyfar6\
                     \m9wppc7h9unw6p65y23kakzct3695rs32z7vaw3r2lg9scmfj8ec5du3uf\
@@ -391,7 +445,7 @@ spec = do
                            "head", "chuckle", "guard", "poverty", "release",
                            "quote", "oak", "craft", "enemy"]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1az4qjp85qunj75m8krdvdygmv6u4ceqj8vnwaf38wfd69yck\
                     \sa0fwt7n0cfp5zwmht9u0j9dzxxnfssjmkh4vn3dwxvddsle6m2vkm8q8p\
@@ -491,7 +545,7 @@ spec = do
                            "thrive", "burst", "group", "seed", "element", "sign",
                            "scrub", "buffalo", "jelly", "grace", "neck", "useless" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv17zqw352yj02seytp9apunec55722k93crtplq8chgpfh7cx3\
                     \3dg4v2x3wpyhd9chhkknzhprztumrystkpfl5nyhyeuq0gnwf76r39u9l9\
@@ -593,7 +647,7 @@ spec = do
                            "exclude", "ordinary", "coach", "churn", "sunset",
                            "emerge", "blame", "ketchup", "much" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1nzwq05qw3573slqc2he9g68qz0a3hjkexsc0ck3f3gjesqs3\
                     \3az3aprtwwnz0322ky75navetwzk8ve2mpsvqxdz3v9e2vsfe5gmcxzr2j\
@@ -751,13 +805,100 @@ prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
 {-------------------------------------------------------------------------------
                              Golden tests
 -------------------------------------------------------------------------------}
+-- | Definitions: Let's assume we have private key         < xprv | pub | cc >
+-- Then, extended private key should be understood as      < xprv |     | cc >
+--       extended public key  should be understood as      <      | pub | cc >
+--       verification public key should be understood as   <      | pub |    >
+
+data GoldenTestPointerAddress = GoldenTestPointerAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKey :: ByteString
+
+      -- | Location of stake cerificate in the blockchain
+    ,  stakePtr :: StakingKeyPointer
+
+      -- | Network id
+    ,  networkId :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: ByteString
+    }
+
+goldenTestPointerAddress :: GoldenTestPointerAddress -> SpecWith ()
+goldenTestPointerAddress GoldenTestPointerAddress{..} =
+    it ("pointer address for networkId " <> show networkId) $ do
+
+    let (Just xPub) = xpubFromBytes $ B16.encode $ BS.append verKey verKey
+    let addrXPub = unsafeMkShelleyKey xPub :: Shelley 'AddressK XPub
+    let (Right tag) = mkNetworkDiscriminant networkId
+    let ptrAddr = pointerAddress tag addrXPub stakePtr
+    let (Right expectedAddr') = fromHex expectedAddr
+
+    ptrAddr `shouldBe` unsafeMkAddress expectedAddr'
+
+data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKey :: ByteString
+
+      -- | Network id
+    ,  networkId :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: ByteString
+    }
+
+goldenTestEnterpriseAddress :: GoldenTestEnterpriseAddress -> SpecWith ()
+goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
+    it ("enterprise address for networkId " <> show networkId) $ do
+
+    let (Just xPub) = xpubFromBytes $ B16.encode $ BS.append verKey verKey
+    let addrXPub = unsafeMkShelleyKey xPub :: Shelley 'AddressK XPub
+    let (Right tag) = mkNetworkDiscriminant networkId
+    let enterpriseAddr = paymentAddress tag addrXPub
+    let (Right expectedAddr') = fromHex expectedAddr
+
+    enterpriseAddr `shouldBe` unsafeMkAddress expectedAddr'
+
+data GoldenTestBaseAddress = GoldenTestBaseAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKeyPayment :: ByteString
+
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+    ,  verKeyStake :: ByteString
+
+      -- | Network id
+    ,  networkId :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: ByteString
+    }
+
+goldenTestBaseAddress :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddress GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show networkId) $ do
+
+    let (Just xPub1) =
+            xpubFromBytes $ B16.encode $ BS.append verKeyPayment verKeyPayment
+    let addrXPub = unsafeMkShelleyKey xPub1 :: Shelley 'AddressK XPub
+    let (Just xPub2) =
+            xpubFromBytes $ B16.encode $ BS.append verKeyStake verKeyStake
+    let stakeXPub = unsafeMkShelleyKey xPub2 :: Shelley 'StakingK XPub
+    let (Right tag) = mkNetworkDiscriminant networkId
+    let baseAddr = delegationAddress tag addrXPub stakeXPub
+    let (Right expectedAddr') = fromHex expectedAddr
+
+    baseAddr `shouldBe` unsafeMkAddress expectedAddr'
+
 
 data TestVector = TestVector
     {
-      -- | Definitions: Let's assume we have private key  < xprv | pub | cc >
-      -- Then, extended private key is understood as < xprv |     | cc >
-      --       extended public key  is understood as <      | pub | cc >
-
       -- | The extended root private key, bech32 encoded prefixed with 'root_xprv'
       rootXPrv :: Text
 
@@ -825,8 +966,8 @@ data TestVector = TestVector
     , mnemonic :: [Text]
     }
 
-goldenTest :: TestVector -> SpecWith ()
-goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
+testVectors :: TestVector -> SpecWith ()
+testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv

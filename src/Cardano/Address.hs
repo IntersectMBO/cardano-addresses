@@ -25,6 +25,8 @@ module Cardano.Address
     , bech32
     , bech32With
     , fromBech32
+    , hex
+    , fromHex
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -46,6 +48,8 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
+import Data.ByteArray.Encoding
+    ( Base (..), convertFromBase, convertToBase )
 import Data.ByteString
     ( ByteString )
 import Data.ByteString.Base58
@@ -226,3 +230,11 @@ invariantNetworkTag limit (NetworkTag num)
       ++ show num
       ++ ", but expected to be less than "
       ++ show limit
+
+-- | Encode a 'ByteString' in base16
+hex :: ByteString -> ByteString
+hex = convertToBase Base16
+
+-- | Decode a 'ByteString' from base16
+fromHex :: ByteString -> Either String ByteString
+fromHex = convertFromBase Base16

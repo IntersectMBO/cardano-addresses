@@ -21,6 +21,7 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
     , getKey
+    , unsafeMkShelleyKey
 
       -- * Key Derivation
       -- $keyDerivation
@@ -138,6 +139,12 @@ newtype Shelley (depth :: Depth) key = Shelley
 
 deriving instance (Functor (Shelley depth))
 instance (NFData key) => NFData (Shelley depth key)
+
+-- Unsafe constructor for easily lifting bytes inside an 'Shelley'.
+--
+-- /!\ Use at your own risks.
+unsafeMkShelleyKey :: key -> Shelley (depth :: Depth) key
+unsafeMkShelleyKey = Shelley
 
 --
 -- Key Derivation
