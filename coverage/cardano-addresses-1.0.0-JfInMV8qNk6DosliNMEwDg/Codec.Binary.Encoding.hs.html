@@ -18,183 +18,184 @@ span.spaces    { background: white }
 </pre>
 <pre>
 <span class="lineno">    1 </span>{-# LANGUAGE DeriveFunctor #-}
-<span class="lineno">    2 </span>{-# LANGUAGE LambdaCase #-}
-<span class="lineno">    3 </span>
-<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
-<span class="lineno">    5 </span>
-<span class="lineno">    6 </span>module Codec.Binary.Encoding
-<span class="lineno">    7 </span>    ( -- * Types
-<span class="lineno">    8 </span>      AbstractEncoding (..)
-<span class="lineno">    9 </span>    , Encoding
-<span class="lineno">   10 </span>
-<span class="lineno">   11 </span>      -- * Encode
-<span class="lineno">   12 </span>    , encode
-<span class="lineno">   13 </span>
-<span class="lineno">   14 </span>      -- * Decode
-<span class="lineno">   15 </span>    , detectEncoding
-<span class="lineno">   16 </span>    , fromBase16
-<span class="lineno">   17 </span>    , fromBase58
-<span class="lineno">   18 </span>    , fromBech32
-<span class="lineno">   19 </span>
-<span class="lineno">   20 </span>      -- * Internal
-<span class="lineno">   21 </span>    , markCharsRedAtIndices
-<span class="lineno">   22 </span>    ) where
-<span class="lineno">   23 </span>
-<span class="lineno">   24 </span>import Prelude
-<span class="lineno">   25 </span>
-<span class="lineno">   26 </span>import Codec.Binary.Bech32
-<span class="lineno">   27 </span>    ( HumanReadablePart )
-<span class="lineno">   28 </span>import Control.Applicative
-<span class="lineno">   29 </span>    ( (&lt;|&gt;) )
-<span class="lineno">   30 </span>import Control.Arrow
-<span class="lineno">   31 </span>    ( left )
-<span class="lineno">   32 </span>import Control.Monad
-<span class="lineno">   33 </span>    ( guard )
-<span class="lineno">   34 </span>import Data.ByteArray.Encoding
-<span class="lineno">   35 </span>    ( Base (..), convertFromBase, convertToBase )
-<span class="lineno">   36 </span>import Data.ByteString
-<span class="lineno">   37 </span>    ( ByteString )
-<span class="lineno">   38 </span>import Data.ByteString.Base58
-<span class="lineno">   39 </span>    ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
-<span class="lineno">   40 </span>import Data.Char
-<span class="lineno">   41 </span>    ( isDigit, isLower, toLower )
-<span class="lineno">   42 </span>import Data.List
-<span class="lineno">   43 </span>    ( nub, sort )
-<span class="lineno">   44 </span>import System.Console.ANSI
-<span class="lineno">   45 </span>    ( Color (..)
-<span class="lineno">   46 </span>    , ColorIntensity (..)
-<span class="lineno">   47 </span>    , ConsoleLayer (..)
-<span class="lineno">   48 </span>    , SGR (..)
-<span class="lineno">   49 </span>    , setSGRCode
-<span class="lineno">   50 </span>    )
-<span class="lineno">   51 </span>
-<span class="lineno">   52 </span>import qualified Codec.Binary.Bech32 as Bech32
-<span class="lineno">   53 </span>import qualified Data.Text as T
-<span class="lineno">   54 </span>import qualified Data.Text.Encoding as T
-<span class="lineno">   55 </span>
+<span class="lineno">    2 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    3 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Codec.Binary.Encoding
+<span class="lineno">    8 </span>    ( -- * Types
+<span class="lineno">    9 </span>      AbstractEncoding (..)
+<span class="lineno">   10 </span>    , Encoding
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>      -- * Encode
+<span class="lineno">   13 </span>    , encode
+<span class="lineno">   14 </span>
+<span class="lineno">   15 </span>      -- * Decode
+<span class="lineno">   16 </span>    , detectEncoding
+<span class="lineno">   17 </span>    , fromBase16
+<span class="lineno">   18 </span>    , fromBase58
+<span class="lineno">   19 </span>    , fromBech32
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>      -- * Internal
+<span class="lineno">   22 </span>    , markCharsRedAtIndices
+<span class="lineno">   23 </span>    ) where
+<span class="lineno">   24 </span>
+<span class="lineno">   25 </span>import Prelude
+<span class="lineno">   26 </span>
+<span class="lineno">   27 </span>import Codec.Binary.Bech32
+<span class="lineno">   28 </span>    ( HumanReadablePart )
+<span class="lineno">   29 </span>import Control.Applicative
+<span class="lineno">   30 </span>    ( (&lt;|&gt;) )
+<span class="lineno">   31 </span>import Control.Arrow
+<span class="lineno">   32 </span>    ( left )
+<span class="lineno">   33 </span>import Control.Monad
+<span class="lineno">   34 </span>    ( guard )
+<span class="lineno">   35 </span>import Data.ByteArray.Encoding
+<span class="lineno">   36 </span>    ( Base (..), convertFromBase, convertToBase )
+<span class="lineno">   37 </span>import Data.ByteString
+<span class="lineno">   38 </span>    ( ByteString )
+<span class="lineno">   39 </span>import Data.ByteString.Base58
+<span class="lineno">   40 </span>    ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
+<span class="lineno">   41 </span>import Data.Char
+<span class="lineno">   42 </span>    ( isDigit, isLower, toLower )
+<span class="lineno">   43 </span>import Data.List
+<span class="lineno">   44 </span>    ( nub, sort )
+<span class="lineno">   45 </span>import System.Console.ANSI
+<span class="lineno">   46 </span>    ( Color (..)
+<span class="lineno">   47 </span>    , ColorIntensity (..)
+<span class="lineno">   48 </span>    , ConsoleLayer (..)
+<span class="lineno">   49 </span>    , SGR (..)
+<span class="lineno">   50 </span>    , setSGRCode
+<span class="lineno">   51 </span>    )
+<span class="lineno">   52 </span>
+<span class="lineno">   53 </span>import qualified Codec.Binary.Bech32 as Bech32
+<span class="lineno">   54 </span>import qualified Data.Text as T
+<span class="lineno">   55 </span>import qualified Data.Text.Encoding as T
 <span class="lineno">   56 </span>
-<span class="lineno">   57 </span>--
-<span class="lineno">   58 </span>-- Encoding
-<span class="lineno">   59 </span>--
-<span class="lineno">   60 </span>
-<span class="lineno">   61 </span>-- | A concrete 'Encoding' algebraic data-type.
-<span class="lineno">   62 </span>type Encoding = AbstractEncoding HumanReadablePart
-<span class="lineno">   63 </span>
-<span class="lineno">   64 </span>-- | An abstract 'Encoding' to make it easy to map over the bech32 component.
-<span class="lineno">   65 </span>-- Typically used as 'AbstractEncoding HumanReadablePart'.
-<span class="lineno">   66 </span>--
-<span class="lineno">   67 </span>-- &gt; λ&gt; let xpubHRP = [humanReadablePart|xpub|]
-<span class="lineno">   68 </span>-- &gt; λ&gt; let xprvHRP = [humanReadablePart|xprv|]
-<span class="lineno">   69 </span>-- &gt;
-<span class="lineno">   70 </span>-- &gt; λ&gt; fmap (const xpubHRP) (EBech32 xprvHRP)
-<span class="lineno">   71 </span>-- &gt; EBech32 (HumanReadablePart &quot;xpub&quot;)
-<span class="lineno">   72 </span>--
-<span class="lineno">   73 </span>data AbstractEncoding a
-<span class="lineno">   74 </span>    = EBase16
-<span class="lineno">   75 </span>    | EBase58
-<span class="lineno">   76 </span>    | EBech32 a
-<span class="lineno">   77 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Functor</span></span></span></span>)
-<span class="lineno">   78 </span>
-<span class="lineno">   79 </span>--
-<span class="lineno">   80 </span>-- Encode
-<span class="lineno">   81 </span>--
-<span class="lineno">   82 </span>
+<span class="lineno">   57 </span>
+<span class="lineno">   58 </span>--
+<span class="lineno">   59 </span>-- Encoding
+<span class="lineno">   60 </span>--
+<span class="lineno">   61 </span>
+<span class="lineno">   62 </span>-- | A concrete 'Encoding' algebraic data-type.
+<span class="lineno">   63 </span>type Encoding = AbstractEncoding HumanReadablePart
+<span class="lineno">   64 </span>
+<span class="lineno">   65 </span>-- | An abstract 'Encoding' to make it easy to map over the bech32 component.
+<span class="lineno">   66 </span>-- Typically used as 'AbstractEncoding HumanReadablePart'.
+<span class="lineno">   67 </span>--
+<span class="lineno">   68 </span>-- &gt; λ&gt; let xpubHRP = [humanReadablePart|xpub|]
+<span class="lineno">   69 </span>-- &gt; λ&gt; let xprvHRP = [humanReadablePart|xprv|]
+<span class="lineno">   70 </span>-- &gt;
+<span class="lineno">   71 </span>-- &gt; λ&gt; fmap (const xpubHRP) (EBech32 xprvHRP)
+<span class="lineno">   72 </span>-- &gt; EBech32 (HumanReadablePart &quot;xpub&quot;)
+<span class="lineno">   73 </span>--
+<span class="lineno">   74 </span>data AbstractEncoding a
+<span class="lineno">   75 </span>    = EBase16
+<span class="lineno">   76 </span>    | EBase58
+<span class="lineno">   77 </span>    | EBech32 a
+<span class="lineno">   78 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Functor</span></span></span></span>)
+<span class="lineno">   79 </span>
+<span class="lineno">   80 </span>--
+<span class="lineno">   81 </span>-- Encode
+<span class="lineno">   82 </span>--
 <span class="lineno">   83 </span>
-<span class="lineno">   84 </span>-- | Encode a 'ByteString' with the given encoding.
-<span class="lineno">   85 </span>--
-<span class="lineno">   86 </span>-- @since 2.0.0
-<span class="lineno">   87 </span>encode :: Encoding -&gt; ByteString -&gt; ByteString
-<span class="lineno">   88 </span><span class="decl"><span class="istickedoff">encode encoding bytes = case encoding of</span>
-<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">EBase16 -&gt;</span>
-<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">convertToBase Base16 bytes</span>
-<span class="lineno">   91 </span><span class="spaces">    </span><span class="istickedoff">EBase58 -&gt;</span>
-<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">encodeBase58 bitcoinAlphabet bytes</span>
-<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">EBech32 hrp -&gt;</span>
-<span class="lineno">   94 </span><span class="spaces">        </span><span class="istickedoff">T.encodeUtf8 $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes bytes</span></span>
-<span class="lineno">   95 </span>
-<span class="lineno">   96 </span>--
-<span class="lineno">   97 </span>-- Decode
-<span class="lineno">   98 </span>--
-<span class="lineno">   99 </span>
-<span class="lineno">  100 </span>-- | Try detecting the encoding of a given 'String'
-<span class="lineno">  101 </span>--
-<span class="lineno">  102 </span>-- @since 2.0.0
-<span class="lineno">  103 </span>detectEncoding :: String -&gt; Maybe (AbstractEncoding ())
-<span class="lineno">  104 </span><span class="decl"><span class="istickedoff">detectEncoding str = isBase16 &lt;|&gt; isBech32  &lt;|&gt; isBase58</span>
-<span class="lineno">  105 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  106 </span><span class="spaces">    </span><span class="istickedoff">isBase16 = do</span>
-<span class="lineno">  107 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` &quot;0123456789abcdef&quot;) (toLower &lt;$&gt; str))</span>
-<span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">guard (length str `mod` 2 == 0)</span>
-<span class="lineno">  109 </span><span class="spaces">        </span><span class="istickedoff">pure EBase16</span>
-<span class="lineno">  110 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  111 </span><span class="spaces">    </span><span class="istickedoff">isBech32 = do</span>
-<span class="lineno">  112 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` Bech32.dataCharList) (stripPrefix str))</span>
-<span class="lineno">  113 </span><span class="spaces">        </span><span class="istickedoff">guard (all (\c -&gt; isLower c || isDigit c) str)</span>
-<span class="lineno">  114 </span><span class="spaces">        </span><span class="istickedoff">guard ('1' `elem` str)</span>
-<span class="lineno">  115 </span><span class="spaces">        </span><span class="istickedoff">guard (length (stripPrefix str) &gt; 6)</span>
-<span class="lineno">  116 </span><span class="spaces">        </span><span class="istickedoff">pure (EBech32 <span class="nottickedoff">()</span>)</span>
-<span class="lineno">  117 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  118 </span><span class="spaces">        </span><span class="istickedoff">stripPrefix = reverse . takeWhile (/= '1') . reverse</span>
-<span class="lineno">  119 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  120 </span><span class="spaces">    </span><span class="istickedoff">isBase58 = do</span>
-<span class="lineno">  121 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` T.unpack (T.decodeUtf8 $ unAlphabet bitcoinAlphabet)) str)</span>
-<span class="lineno">  122 </span><span class="spaces">        </span><span class="istickedoff">pure EBase58</span></span>
-<span class="lineno">  123 </span>
-<span class="lineno">  124 </span>-- | Try decoding a base16-encoded 'ByteString'
-<span class="lineno">  125 </span>--
-<span class="lineno">  126 </span>-- @since 2.0.0
-<span class="lineno">  127 </span>fromBase16 :: ByteString -&gt; Either String ByteString
-<span class="lineno">  128 </span><span class="decl"><span class="istickedoff">fromBase16 = convertFromBase Base16</span></span>
-<span class="lineno">  129 </span>
-<span class="lineno">  130 </span>-- | Try decoding a bech32-encoded 'ByteString'
-<span class="lineno">  131 </span>--
-<span class="lineno">  132 </span>-- @since 2.0.0
-<span class="lineno">  133 </span>fromBech32 :: ByteString -&gt; Either String ByteString
-<span class="lineno">  134 </span><span class="decl"><span class="istickedoff">fromBech32 raw = left errToString $ do</span>
-<span class="lineno">  135 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, dp) &lt;- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw</span>
-<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">maybe <span class="nottickedoff">(Left Nothing)</span> Right $ Bech32.dataPartToBytes dp</span>
-<span class="lineno">  137 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  138 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">unCharPos (Bech32.CharPosition x) = x</span></span>
-<span class="lineno">  139 </span><span class="spaces">    </span><span class="istickedoff">invalidCharsMsg = &quot;Invalid character(s) in string&quot;</span>
-<span class="lineno">  140 </span><span class="spaces">    </span><span class="istickedoff">errToString = (&quot;Bech32 error: &quot; &lt;&gt;) . \case</span>
-<span class="lineno">  141 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeTooLong -&gt;</span>
-<span class="lineno">  142 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string is too long&quot;</span></span>
-<span class="lineno">  143 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeTooShort -&gt;</span>
-<span class="lineno">  144 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string is too short&quot;</span></span>
-<span class="lineno">  145 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeHasMixedCase -&gt;</span>
-<span class="lineno">  146 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string has mixed case&quot;</span></span>
-<span class="lineno">  147 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeMissingSeparatorChar -&gt;</span>
-<span class="lineno">  148 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string has no separator char&quot;</span></span>
-<span class="lineno">  149 </span><span class="spaces">        </span><span class="istickedoff">Just (Bech32.StringToDecodeContainsInvalidChars []) -&gt;</span>
-<span class="lineno">  150 </span><span class="spaces">            </span><span class="istickedoff">invalidCharsMsg</span>
-<span class="lineno">  151 </span><span class="spaces">        </span><span class="istickedoff">Just (Bech32.StringToDecodeContainsInvalidChars ixs) -&gt;</span>
-<span class="lineno">  152 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">invalidCharsMsg &lt;&gt; &quot;:\n&quot; &lt;&gt; markCharsRedAtIndices</span></span>
-<span class="lineno">  153 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(map unCharPos ixs)</span></span>
-<span class="lineno">  154 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(T.unpack . T.decodeUtf8 $ raw)</span></span>
-<span class="lineno">  155 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt;</span>
-<span class="lineno">  156 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;invalid data-part; these bytes ain't uint8.&quot;</span></span></span>
-<span class="lineno">  157 </span>
-<span class="lineno">  158 </span>fromBase58 :: ByteString -&gt; Either String ByteString
-<span class="lineno">  159 </span><span class="decl"><span class="istickedoff">fromBase58 raw = maybe <span class="nottickedoff">(Left &quot;Invalid Base58-encoded string.&quot;)</span> Right $ do</span>
-<span class="lineno">  160 </span><span class="spaces">    </span><span class="istickedoff">decodeBase58 bitcoinAlphabet raw</span></span>
-<span class="lineno">  161 </span>
-<span class="lineno">  162 </span>--
-<span class="lineno">  163 </span>-- Helpers
-<span class="lineno">  164 </span>--
-<span class="lineno">  165 </span>
-<span class="lineno">  166 </span>-- | Mark all characters from a given string as red (in a console).
-<span class="lineno">  167 </span>markCharsRedAtIndices :: Integral i =&gt; [i] -&gt; String -&gt; String
-<span class="lineno">  168 </span><span class="decl"><span class="istickedoff">markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)</span>
-<span class="lineno">  169 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  170 </span><span class="spaces">    </span><span class="istickedoff">go _c [] [] = mempty</span>
-<span class="lineno">  171 </span><span class="spaces">    </span><span class="istickedoff">go c (i:is) (s:ss)</span>
-<span class="lineno">  172 </span><span class="spaces">        </span><span class="istickedoff">| c == i    = red ++ <span class="nottickedoff">s</span>:def ++ go (c + 1) is ss</span>
-<span class="lineno">  173 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = s : go (c + 1) (i:is) ss</span>
-<span class="lineno">  174 </span><span class="spaces">    </span><span class="istickedoff">go _ [] ss = ss</span>
-<span class="lineno">  175 </span><span class="spaces">    </span><span class="istickedoff">go _ _ [] = [] -- NOTE: Really an error case.</span>
-<span class="lineno">  176 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  177 </span><span class="spaces">    </span><span class="istickedoff">red = setSGRCode [SetColor Foreground Vivid Red]</span>
-<span class="lineno">  178 </span><span class="spaces">    </span><span class="istickedoff">def = setSGRCode [Reset]</span></span>
+<span class="lineno">   84 </span>
+<span class="lineno">   85 </span>-- | Encode a 'ByteString' with the given encoding.
+<span class="lineno">   86 </span>--
+<span class="lineno">   87 </span>-- @since 2.0.0
+<span class="lineno">   88 </span>encode :: Encoding -&gt; ByteString -&gt; ByteString
+<span class="lineno">   89 </span><span class="decl"><span class="istickedoff">encode encoding bytes = case encoding of</span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">EBase16 -&gt;</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">convertToBase Base16 bytes</span>
+<span class="lineno">   92 </span><span class="spaces">    </span><span class="istickedoff">EBase58 -&gt;</span>
+<span class="lineno">   93 </span><span class="spaces">        </span><span class="istickedoff">encodeBase58 bitcoinAlphabet bytes</span>
+<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">EBech32 hrp -&gt;</span>
+<span class="lineno">   95 </span><span class="spaces">        </span><span class="istickedoff">T.encodeUtf8 $ Bech32.encodeLenient hrp $ Bech32.dataPartFromBytes bytes</span></span>
+<span class="lineno">   96 </span>
+<span class="lineno">   97 </span>--
+<span class="lineno">   98 </span>-- Decode
+<span class="lineno">   99 </span>--
+<span class="lineno">  100 </span>
+<span class="lineno">  101 </span>-- | Try detecting the encoding of a given 'String'
+<span class="lineno">  102 </span>--
+<span class="lineno">  103 </span>-- @since 2.0.0
+<span class="lineno">  104 </span>detectEncoding :: String -&gt; Maybe (AbstractEncoding ())
+<span class="lineno">  105 </span><span class="decl"><span class="istickedoff">detectEncoding str = isBase16 &lt;|&gt; isBech32  &lt;|&gt; isBase58</span>
+<span class="lineno">  106 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  107 </span><span class="spaces">    </span><span class="istickedoff">isBase16 = do</span>
+<span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` &quot;0123456789abcdef&quot;) (toLower &lt;$&gt; str))</span>
+<span class="lineno">  109 </span><span class="spaces">        </span><span class="istickedoff">guard (length str `mod` 2 == 0)</span>
+<span class="lineno">  110 </span><span class="spaces">        </span><span class="istickedoff">pure EBase16</span>
+<span class="lineno">  111 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  112 </span><span class="spaces">    </span><span class="istickedoff">isBech32 = do</span>
+<span class="lineno">  113 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` Bech32.dataCharList) (stripPrefix str))</span>
+<span class="lineno">  114 </span><span class="spaces">        </span><span class="istickedoff">guard (all (\c -&gt; isLower c || isDigit c) str)</span>
+<span class="lineno">  115 </span><span class="spaces">        </span><span class="istickedoff">guard ('1' `elem` str)</span>
+<span class="lineno">  116 </span><span class="spaces">        </span><span class="istickedoff">guard (length (stripPrefix str) &gt; 6)</span>
+<span class="lineno">  117 </span><span class="spaces">        </span><span class="istickedoff">pure (EBech32 <span class="nottickedoff">()</span>)</span>
+<span class="lineno">  118 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  119 </span><span class="spaces">        </span><span class="istickedoff">stripPrefix = reverse . takeWhile (/= '1') . reverse</span>
+<span class="lineno">  120 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  121 </span><span class="spaces">    </span><span class="istickedoff">isBase58 = do</span>
+<span class="lineno">  122 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` T.unpack (T.decodeUtf8 $ unAlphabet bitcoinAlphabet)) str)</span>
+<span class="lineno">  123 </span><span class="spaces">        </span><span class="istickedoff">pure EBase58</span></span>
+<span class="lineno">  124 </span>
+<span class="lineno">  125 </span>-- | Try decoding a base16-encoded 'ByteString'
+<span class="lineno">  126 </span>--
+<span class="lineno">  127 </span>-- @since 2.0.0
+<span class="lineno">  128 </span>fromBase16 :: ByteString -&gt; Either String ByteString
+<span class="lineno">  129 </span><span class="decl"><span class="istickedoff">fromBase16 = convertFromBase Base16</span></span>
+<span class="lineno">  130 </span>
+<span class="lineno">  131 </span>-- | Try decoding a bech32-encoded 'ByteString'
+<span class="lineno">  132 </span>--
+<span class="lineno">  133 </span>-- @since 2.0.0
+<span class="lineno">  134 </span>fromBech32 :: ByteString -&gt; Either String ByteString
+<span class="lineno">  135 </span><span class="decl"><span class="istickedoff">fromBech32 raw = left errToString $ do</span>
+<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, dp) &lt;- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw</span>
+<span class="lineno">  137 </span><span class="spaces">    </span><span class="istickedoff">maybe <span class="nottickedoff">(Left Nothing)</span> Right $ Bech32.dataPartToBytes dp</span>
+<span class="lineno">  138 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  139 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">unCharPos (Bech32.CharPosition x) = x</span></span>
+<span class="lineno">  140 </span><span class="spaces">    </span><span class="istickedoff">invalidCharsMsg = &quot;Invalid character(s) in string&quot;</span>
+<span class="lineno">  141 </span><span class="spaces">    </span><span class="istickedoff">errToString = (&quot;Bech32 error: &quot; &lt;&gt;) . \case</span>
+<span class="lineno">  142 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeTooLong -&gt;</span>
+<span class="lineno">  143 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string is too long&quot;</span></span>
+<span class="lineno">  144 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeTooShort -&gt;</span>
+<span class="lineno">  145 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string is too short&quot;</span></span>
+<span class="lineno">  146 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeHasMixedCase -&gt;</span>
+<span class="lineno">  147 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string has mixed case&quot;</span></span>
+<span class="lineno">  148 </span><span class="spaces">        </span><span class="istickedoff">Just Bech32.StringToDecodeMissingSeparatorChar -&gt;</span>
+<span class="lineno">  149 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;string has no separator char&quot;</span></span>
+<span class="lineno">  150 </span><span class="spaces">        </span><span class="istickedoff">Just (Bech32.StringToDecodeContainsInvalidChars []) -&gt;</span>
+<span class="lineno">  151 </span><span class="spaces">            </span><span class="istickedoff">invalidCharsMsg</span>
+<span class="lineno">  152 </span><span class="spaces">        </span><span class="istickedoff">Just (Bech32.StringToDecodeContainsInvalidChars ixs) -&gt;</span>
+<span class="lineno">  153 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">invalidCharsMsg &lt;&gt; &quot;:\n&quot; &lt;&gt; markCharsRedAtIndices</span></span>
+<span class="lineno">  154 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(map unCharPos ixs)</span></span>
+<span class="lineno">  155 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(T.unpack . T.decodeUtf8 $ raw)</span></span>
+<span class="lineno">  156 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt;</span>
+<span class="lineno">  157 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;invalid data-part; these bytes ain't uint8.&quot;</span></span></span>
+<span class="lineno">  158 </span>
+<span class="lineno">  159 </span>fromBase58 :: ByteString -&gt; Either String ByteString
+<span class="lineno">  160 </span><span class="decl"><span class="istickedoff">fromBase58 raw = maybe <span class="nottickedoff">(Left &quot;Invalid Base58-encoded string.&quot;)</span> Right $ do</span>
+<span class="lineno">  161 </span><span class="spaces">    </span><span class="istickedoff">decodeBase58 bitcoinAlphabet raw</span></span>
+<span class="lineno">  162 </span>
+<span class="lineno">  163 </span>--
+<span class="lineno">  164 </span>-- Helpers
+<span class="lineno">  165 </span>--
+<span class="lineno">  166 </span>
+<span class="lineno">  167 </span>-- | Mark all characters from a given string as red (in a console).
+<span class="lineno">  168 </span>markCharsRedAtIndices :: Integral i =&gt; [i] -&gt; String -&gt; String
+<span class="lineno">  169 </span><span class="decl"><span class="istickedoff">markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)</span>
+<span class="lineno">  170 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  171 </span><span class="spaces">    </span><span class="istickedoff">go _c [] [] = mempty</span>
+<span class="lineno">  172 </span><span class="spaces">    </span><span class="istickedoff">go c (i:is) (s:ss)</span>
+<span class="lineno">  173 </span><span class="spaces">        </span><span class="istickedoff">| c == i    = red ++ <span class="nottickedoff">s</span>:def ++ go (c + 1) is ss</span>
+<span class="lineno">  174 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = s : go (c + 1) (i:is) ss</span>
+<span class="lineno">  175 </span><span class="spaces">    </span><span class="istickedoff">go _ [] ss = ss</span>
+<span class="lineno">  176 </span><span class="spaces">    </span><span class="istickedoff">go _ _ [] = [] -- NOTE: Really an error case.</span>
+<span class="lineno">  177 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  178 </span><span class="spaces">    </span><span class="istickedoff">red = setSGRCode [SetColor Foreground Vivid Red]</span>
+<span class="lineno">  179 </span><span class="spaces">    </span><span class="istickedoff">def = setSGRCode [Reset]</span></span>
 
 </pre>
 </body>

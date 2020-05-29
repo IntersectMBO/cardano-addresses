@@ -367,6 +367,35 @@ class PaymentAddress key => DelegationAddress key
 --   delegation key.
 delegationAddress :: DelegationAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> key  'StakingK XPub -> Address
 
+-- | Encoding of pointer addresses for payment key type, pointer to staking
+--   certificate in the blockchain and backend targets.
+class PaymentAddress key => PointerAddress key
+
+-- | Convert a payment public key and a pointer to staking key in the
+--   blockchain to a delegation <a>Address</a> valid for the given network
+--   discrimination. Funds sent to this address will be delegated according
+--   to the delegation settings attached to the delegation key located by
+--   <a>ChainPointer</a>.
+pointerAddress :: PointerAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> ChainPointer -> Address
+
+-- | A <a>ChainPointer</a> type representing location of some object in the
+--   blockchain (eg., staking certificate). This can be achieved
+--   unambiguously by specifying slot number, transaction index and the
+--   index in the object list (eg., certification list). For staking
+--   certificates, alternatively, the staking key can be used and then
+--   <a>DelegationAddress</a> can be used.
+data ChainPointer
+ChainPointer :: Natural -> Natural -> Natural -> ChainPointer
+
+-- | Pointer to the slot
+[slotNum] :: ChainPointer -> Natural
+
+-- | transaction index
+[transactionIndex] :: ChainPointer -> Natural
+
+-- | output list index
+[outputIndex] :: ChainPointer -> Natural
+
 -- | Encode an <a>Address</a> to a base58 <a>Text</a>.
 base58 :: Address -> Text
 
@@ -389,12 +418,17 @@ instance GHC.Generics.Generic Cardano.Address.AddressDiscrimination
 instance GHC.Classes.Eq Cardano.Address.NetworkTag
 instance GHC.Show.Show Cardano.Address.NetworkTag
 instance GHC.Generics.Generic Cardano.Address.NetworkTag
+instance GHC.Classes.Ord Cardano.Address.ChainPointer
+instance GHC.Classes.Eq Cardano.Address.ChainPointer
+instance GHC.Show.Show Cardano.Address.ChainPointer
+instance GHC.Generics.Generic Cardano.Address.ChainPointer
 instance GHC.Classes.Ord Cardano.Address.Address
 instance GHC.Classes.Eq Cardano.Address.Address
 instance GHC.Show.Show Cardano.Address.Address
 instance GHC.Generics.Generic Cardano.Address.Address
 instance Control.DeepSeq.NFData Cardano.Address.AddressDiscrimination
 instance Control.DeepSeq.NFData Cardano.Address.NetworkTag
+instance Control.DeepSeq.NFData Cardano.Address.ChainPointer
 instance Control.DeepSeq.NFData Cardano.Address.Address
 
 
@@ -447,6 +481,11 @@ paymentAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Addr
 --   delegation key.
 delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Shelley  'StakingK XPub -> Address
 
+-- | Convert a public key and pointer to staking certificate in blockchain
+--   to a pointer <a>Address</a> valid for the given network
+--   discrimination.
+pointerAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> ChainPointer -> Address
+
 -- | Error reported from trying to create a network discriminant from
 --   number
 newtype MkNetworkDiscriminantError
@@ -467,12 +506,24 @@ mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDisc
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPrv :: XPrv -> Shelley depth XPrv
+
+-- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
+--   <a>XPub</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPub :: XPub -> Shelley depth XPub
 instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Show.Show Cardano.Address.Style.Shelley.Word7
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.Word7
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
+instance Cardano.Address.PointerAddress Cardano.Address.Style.Shelley.Shelley
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
