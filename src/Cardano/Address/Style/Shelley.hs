@@ -35,6 +35,7 @@ module Cardano.Address.Style.Shelley
       -- $addresses
     , paymentAddress
     , delegationAddress
+    , pointerAddress
 
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
@@ -42,6 +43,7 @@ module Cardano.Address.Style.Shelley
 
       -- * Unsafe
     , liftXPrv
+    , liftXPub
 
       -- Internals
     , minSeedLengthBytes
@@ -53,6 +55,7 @@ import Prelude
 import Cardano.Address
     ( Address
     , AddressDiscrimination (..)
+    , ChainPointer (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , invariantNetworkTag
@@ -85,7 +88,9 @@ import Crypto.Hash.Algorithms
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Binary.Put
-    ( putByteString, putWord8, runPut )
+    ( Put, putByteString, putWord8, runPut )
+import Data.Bits
+    ( shiftR, (.&.), (.|.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -93,9 +98,11 @@ import Data.ByteString
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32, Word8 )
+    ( Word32, Word64, Word8 )
 import GHC.Generics
     ( Generic )
+import Numeric.Natural
+    ( Natural )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
@@ -313,7 +320,7 @@ deriveStakingPrivateKey =
 -- === Generating a 'PaymentAddress'
 --
 -- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > bech32 $ paymentAddress tag (toXPub <$> addrK)
@@ -327,6 +334,15 @@ deriveStakingPrivateKey =
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > bech32 $ delegationAddress tag (toXPub <$> addrK) (toXPub <$> stakeK)
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
+--
+-- === Generating a 'PointerAddress'
+--
+-- > import Cardano.Address ( PointerAddress (..), ChainPointer (..) )
+-- >
+-- > let (Right tag) = mkNetworkDiscriminant 1
+-- > let ptr = ChainPointer 123 1 2
+-- > bech32 $ pointerAddress tag (toXPub <$> addrK) ptr
+-- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
 instance Internal.PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
@@ -353,7 +369,7 @@ instance Internal.DelegationAddress Shelley where
             putByteString . blake2b224 $ paymentKey
             putByteString . blake2b224 $ stakingKey
       where
-          -- we use here the fact that payment address stands for what is named
+          -- we use here the fact that delegation address stands for what is named
           -- as base address - refer to delegation specification - Section 3.2.1.
           -- What is important here is that the address is composed of discrimination
           -- byte and two 28 bytes hashed public keys, one for payment key and the
@@ -363,6 +379,71 @@ instance Internal.DelegationAddress Shelley where
           firstByte =
               invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
+
+newtype Word7 = Word7 Word8
+  deriving (Eq, Show)
+
+instance Internal.PointerAddress Shelley where
+    pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
+        unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString (blake2b224 key)
+            putPointer ptr
+      where
+          -- we use here the fact that pointer address stands for what is named
+          -- the same in delegation specification - Section 3.2.4. What is
+          -- important here is that the address is composed of discrimination
+          -- byte, 28 bytes hashed public key and three numbers depicting slot
+          -- and indices. Moreover, it was decided that first 4 bits for pointer
+          -- address will be `0100`. The next for 4 bits are reserved for network
+          -- discriminator. `0100 0000` is 64 in decimal.
+          firstByte =
+              64 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
+          expectedLength = 1 + publicKeyHashSize + pointerLength
+
+          pointerLength =
+                    sum $ calculateLength <$>
+                    [sl, fromIntegral ix1, fromIntegral ix2]
+
+          limit :: Int -> Word64
+          limit pow = 2 ^ pow - 1
+
+          calculateLength inp
+              | inp <= fromIntegral (limit 7) = 1
+              | inp <= fromIntegral (limit 14) = 2
+              | inp <= fromIntegral (limit 21) = 3
+              | inp <= fromIntegral (limit 28) = 4
+              | inp <= fromIntegral (limit 35) = 5
+              | inp <= fromIntegral (limit 42) = 6
+              | inp <= fromIntegral (limit 49) = 7
+              | inp <= fromIntegral (limit 56) = 8
+              | inp <= fromIntegral (limit 63) = 9
+              | otherwise = 10
+
+
+          putPointer (ChainPointer slotN ix1' ix2') = do
+              putVariableLengthNat (fromIntegral slotN)
+              putVariableLengthNat ix1'
+              putVariableLengthNat ix2'
+
+          putVariableLengthNat :: Natural -> Put
+          putVariableLengthNat = putWord7s . natToWord7s
+
+          toWord7 :: Word8 -> Word7
+          toWord7 x = Word7 (x .&. 0x7F)
+
+          natToWord7s :: Natural -> [Word7]
+          natToWord7s = reverse . go
+              where
+                  go n
+                      | n <= 0x7F = [Word7 . fromIntegral $ n]
+                      | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
+
+          putWord7s :: [Word7] -> Put
+          putWord7s [] = pure ()
+          putWord7s [Word7 x] = putWord8 x
+          putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) >> putWord7s xs
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -392,6 +473,21 @@ delegationAddress
     -> Address
 delegationAddress =
     Internal.delegationAddress
+
+
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a public key and pointer to staking certificate in blockchain to a
+-- pointer 'Address' valid for the given network discrimination.
+--
+-- @since 2.0.0
+pointerAddress
+    :: NetworkDiscriminant Shelley
+    -> Shelley 'AddressK XPub
+    -> ChainPointer
+    -> Address
+pointerAddress =
+    Internal.pointerAddress
 
 --
 -- Network Discriminant
@@ -436,6 +532,17 @@ mkNetworkDiscriminant nTag
 -- @since 2.0.0
 liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
+
+-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPub'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 2.0.0
+liftXPub :: XPub -> Shelley depth XPub
+liftXPub = Shelley
 
 --
 -- Internal

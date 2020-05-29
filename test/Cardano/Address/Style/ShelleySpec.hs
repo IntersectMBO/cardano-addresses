@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -17,8 +18,11 @@ module Cardano.Address.Style.ShelleySpec
 import Prelude
 
 import Cardano.Address
-    ( DelegationAddress (..)
+    ( ChainPointer (..)
+    , DelegationAddress (..)
+    , HasNetworkDiscriminant (NetworkDiscriminant)
     , PaymentAddress (..)
+    , PointerAddress (..)
     , bech32
     , bech32With
     , unsafeMkAddress
@@ -33,20 +37,28 @@ import Cardano.Address.Derivation
     , SoftDerivation (..)
     , StakingDerivation (..)
     , XPrv
+    , XPub
     , toXPub
     , xprvToBytes
+    , xpubFromBytes
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Shelley (..), mkNetworkDiscriminant )
+    ( Shelley (..), liftXPub, mkNetworkDiscriminant )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode, fromBase16 )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Either
     ( rights )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word8 )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -66,7 +78,7 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
-
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
@@ -83,8 +95,58 @@ spec = do
     describe "Enum Roundtrip" $ do
         it "AccountingStyle" (property prop_roundtripEnumAccountingStyle)
 
+    describe "Proper pointer addresses construction" $ do
+        it "Using different numbers in StakingPointerAddress does not fail"
+            (property prop_pointerAddressConstruction)
+
     describe "Golden tests" $ do
-        goldenTest TestVector
+        goldenTestPointerAddress GoldenTestPointerAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  stakePtr = ChainPointer 128 2 3
+            ,  networkTag = 0
+            ,  expectedAddr =
+                    "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \81000203"
+            }
+        goldenTestPointerAddress GoldenTestPointerAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  stakePtr = ChainPointer 128 2 3
+            ,  networkTag = 1
+            ,  expectedAddr =
+                    "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \81000203"
+            }
+        goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  networkTag = 0
+            ,  expectedAddr =
+                    "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  networkTag = 1
+            ,  expectedAddr =
+                    "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestBaseAddress GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  networkTag = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddress GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  networkTag = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
+                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+
+    describe "Test vectors" $ do
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1nq49elkxhet9d03y0uqxp5fa802jgqauef3878ve3r9xvkg8\
                     \c4qqnq98raswxtrwlfw7txa7m49d6x84092l0lsv5s603dkakj8vwgsz23\
@@ -180,10 +242,20 @@ spec = do
                     , "addr1qmfx5w509r5mmqle3kxhue2zep2vknjvwkrwsr80asqq3uvdycp\
                       \flwuhen8hqvhm59wg8dakkdzg40ua0ukpmlqu803q0vyntw"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpsz4dfdc"
+                    , "addr1gvtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpsgl562s"
+                    , "addr1gctnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevcpqgpskpkxrg"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u"
+                    , "addr1gvtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2p4222m"
+                    , "addr1gctnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf243c7pj"
+                    ]
             , mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
                          , "company", "walk", "dog" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1vzrzr76vqyqlavclduhawqvtae2pq8lk0424q7t8rzfjyhhp\
                     \530zxv2fwq5a3pd4vdzqtu6s2zxdjhww8xg4qwcs7y5dqne5k7mz27p6rc\
@@ -280,10 +352,20 @@ spec = do
                     , "addr1qmlrt7d6ssjdr6kjykk5xtvcwdhysw3455ukq58mlakmwtpn0d3\
                       \vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgsgw6k22"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgpslhplej"
+                    , "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgps4acv76"
+                    , "addr1g62fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzerspqgpstr6shz"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf22wzcev"
+                    , "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
+                    , "addr1g62fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2j37qvz"
+                    ]
             , mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
                            "entry", "language", "right", "filter", "choice" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1hretan5mml3tq2p0twkhq4tz4jvka7m2l94kfr6yghkyfar6\
                     \m9wppc7h9unw6p65y23kakzct3695rs32z7vaw3r2lg9scmfj8ec5du3uf\
@@ -380,11 +462,21 @@ spec = do
                     , "addr1q68jwared5z7jpcx3znrm70cc7lmhm05g09d94pvvr4mhlhjz8v\
                       \pqd7krjr3gwsq5rh9rhxjwhdd5qgacdm6ky6p2txqmkw4p5"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpsjej5ck"
+                    , "addr1gdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpscnt8l7"
+                    , "addr1geu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpsxdfmkx"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf2jyfghp"
+                    , "addr1gdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf27l8yfx"
+                    , "addr1geu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf22m4sz0"
+                    ]
             , mnemonic = [ "art", "forum", "devote", "street", "sure", "rather",
                            "head", "chuckle", "guard", "poverty", "release",
                            "quote", "oak", "craft", "enemy"]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1az4qjp85qunj75m8krdvdygmv6u4ceqj8vnwaf38wfd69yck\
                     \sa0fwt7n0cfp5zwmht9u0j9dzxxnfssjmkh4vn3dwxvddsle6m2vkm8q8p\
@@ -480,11 +572,21 @@ spec = do
                     , "addr1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclv\
                       \arqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47slwjyt7"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsktxqge"
+                    , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsupln03"
+                    , "addr1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpszla0xf"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2sw479c"
+                    , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2u4mjml"
+                    , "addr1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2g3fxsk"
+                    ]
             , mnemonic = [ "churn", "shaft", "spoon", "second", "erode", "useless",
                            "thrive", "burst", "group", "seed", "element", "sign",
                            "scrub", "buffalo", "jelly", "grace", "neck", "useless" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv17zqw352yj02seytp9apunec55722k93crtplq8chgpfh7cx3\
                     \3dg4v2x3wpyhd9chhkknzhprztumrystkpfl5nyhyeuq0gnwf76r39u9l9\
@@ -581,12 +683,22 @@ spec = do
                     , "addr1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552ju\
                       \en6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sxvkzkx"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsvlysw2"
+                    , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsx4arfz"
+                    , "addr1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsctllq6"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2cjrgkd"
+                    , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf25fdyg2"
+                    , "addr1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2qdlsrr"
+                    ]
             , mnemonic = [ "draft", "ability", "female", "child", "jump", "maid",
                            "roof", "hurt", "below", "live", "topple", "paper",
                            "exclude", "ordinary", "coach", "churn", "sunset",
                            "emerge", "blame", "ketchup", "much" ]
             }
-        goldenTest TestVector
+        testVectors TestVector
             { rootXPrv =
                     "root_xprv1nzwq05qw3573slqc2he9g68qz0a3hjkexsc0ck3f3gjesqs3\
                     \3az3aprtwwnz0322ky75navetwzk8ve2mpsvqxdz3v9e2vsfe5gmcxzr2j\
@@ -683,6 +795,16 @@ spec = do
                     , "addr1q63ca0p33mpqf7gtguf50u34tyu6e60yqvs9hzlv8ehl083ykh4\
                       \m0f4eyu39ptmnfvzv6c8dnznkfncrravswlzf9gxqrhcfk2"
                     ]
+            , pointerAddr0Slot1 =
+                    [ "addr1gqy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpst4xf0c"
+                    , "addr1gvy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpspll6gs"
+                    , "addr1gcy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqpqgpslpaxpg"
+                    ]
+            , pointerAddr0Slot2 =
+                    [ "addr1gqy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf2ff5mz3"
+                    , "addr1gvy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf29j6huk"
+                    , "addr1gcy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnyph3wczvf23kgrhl"
+                    ]
             , mnemonic = [ "excess", "behave", "track", "soul", "table", "wear",
                            "ocean", "cash", "stay", "nature", "item", "turtle",
                            "palm", "soccer", "lunch", "horror", "start", "stumble",
@@ -725,16 +847,112 @@ prop_roundtripEnumAccountingStyle :: AccountingStyle -> Property
 prop_roundtripEnumAccountingStyle ix =
     (toEnum . fromEnum) ix === ix
 
+prop_pointerAddressConstruction
+    :: (SomeMnemonic, SndFactor)
+    -> AccountingStyle
+    -> Index 'Soft 'AddressK
+    -> NetworkDiscriminant Shelley
+    -> ChainPointer
+    -> Property
+prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
+    pointerAddr `seq` property ()
+  where
+    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
+    addrXPub = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
+    pointerAddr = pointerAddress net addrXPub ptr
+
+
 {-------------------------------------------------------------------------------
                              Golden tests
 -------------------------------------------------------------------------------}
+-- | Definitions: Let's assume we have private key         < xprv | pub | cc >
+-- Then, extended private key should be understood as      < xprv |     | cc >
+--       extended public key  should be understood as      <      | pub | cc >
+--       verification public key should be understood as   <      | pub |    >
+
+data GoldenTestPointerAddress = GoldenTestPointerAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKey :: Text
+
+      -- | Location of stake cerificate in the blockchain
+    ,  stakePtr :: ChainPointer
+
+      -- | Network tag
+    ,  networkTag :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: Text
+    }
+
+goldenTestPointerAddress :: GoldenTestPointerAddress -> SpecWith ()
+goldenTestPointerAddress GoldenTestPointerAddress{..} =
+    it ("pointer address for networkId " <> show networkTag) $ do
+        let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
+        let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
+        let (Right tag) = mkNetworkDiscriminant networkTag
+        let ptrAddr = pointerAddress tag addrXPub stakePtr
+        let (Right bytes) = b16decode expectedAddr
+        ptrAddr `shouldBe` unsafeMkAddress bytes
+
+data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKey :: Text
+
+      -- | Network tag
+    ,  networkTag :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: Text
+    }
+
+goldenTestEnterpriseAddress :: GoldenTestEnterpriseAddress -> SpecWith ()
+goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
+    it ("enterprise address for networkId " <> show networkTag) $ do
+        let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
+        let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
+        let (Right tag) = mkNetworkDiscriminant networkTag
+        let enterpriseAddr = paymentAddress tag addrXPub
+        let (Right bytes) = b16decode expectedAddr
+        enterpriseAddr `shouldBe` unsafeMkAddress bytes
+
+data GoldenTestBaseAddress = GoldenTestBaseAddress
+    {
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+       verKeyPayment :: Text
+
+      -- | The verification public key as string to be encoded into base16 form
+      -- After that it should have 32-byte length
+    ,  verKeyStake :: Text
+
+      -- | Network tag
+    ,  networkTag :: Word8
+
+      -- | Expected address as encoded into base16 form
+    ,  expectedAddr :: Text
+    }
+
+goldenTestBaseAddress :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddress GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show networkTag) $ do
+        let (Just xPub1) =
+                xpubFromBytes $ b16encode $ T.append verKeyPayment verKeyPayment
+        let addrXPub = liftXPub xPub1 :: Shelley 'AddressK XPub
+        let (Just xPub2) =
+                xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
+        let stakeXPub = liftXPub xPub2 :: Shelley 'StakingK XPub
+        let (Right tag) = mkNetworkDiscriminant networkTag
+        let baseAddr = delegationAddress tag addrXPub stakeXPub
+        let (Right bytes) = b16decode expectedAddr
+        baseAddr `shouldBe` unsafeMkAddress bytes
 
 data TestVector = TestVector
     {
-      -- | Definitions: Let's assume we have private key  < xprv | pub | cc >
-      -- Then, extended private key is understood as < xprv |     | cc >
-      --       extended public key  is understood as <      | pub | cc >
-
       -- | The extended root private key, bech32 encoded prefixed with 'root_xprv'
       rootXPrv :: Text
 
@@ -798,12 +1016,22 @@ data TestVector = TestVector
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
      , delegationAddr1442Stake1 :: [Text]
 
+      -- | Pointer addresses for the 0th address key and the staking certificate located in slot 1,
+      -- transaction index 2, certificte list index 3, with a networking tag 0, 3 and 6, respectively.
+      -- Each bech32 encoded prefixed with 'addr'
+     , pointerAddr0Slot1 :: [Text]
+
+      -- | Pointer addresses for the 0th address key and the staking certificate located in slot 24157,
+      -- transaction index 177, certificte list index 42, with a networking tag 0, 3 and 6, respectively.
+      -- Each bech32 encoded prefixed with 'addr'
+     , pointerAddr0Slot2 :: [Text]
+
       -- | Corresponding Mnemonic
     , mnemonic :: [Text]
     }
 
-goldenTest :: TestVector -> SpecWith ()
-goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
+testVectors :: TestVector -> SpecWith ()
+testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
@@ -829,6 +1057,7 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     addrXPrv0' `shouldBe` addrXPrv0
     let addrXPub0' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
     addrXPub0' `shouldBe` addrXPub0
+
     let addIx1 = toEnum 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
     let addrXPrv1' = bech32With hrpPrv $ getExtendedKeyAddr addrK1prv
@@ -850,6 +1079,13 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let paymentAddr1442' = getPaymentAddr addrK1442prv <$> networkTags
     paymentAddr1442' `shouldBe` paymentAddr1442
 
+    let slot1 = ChainPointer 1 2 3
+    let pointerAddr0Slot1' = getPointerAddr addrK0prv slot1 <$> networkTags
+    pointerAddr0Slot1' `shouldBe` pointerAddr0Slot1
+    let slot2 = ChainPointer 24157 177 42
+    let pointerAddr0Slot2' = getPointerAddr addrK0prv slot2 <$> networkTags
+    pointerAddr0Slot2' `shouldBe` pointerAddr0Slot2
+
     let stakeKPub0 = toXPub <$> deriveStakingPrivateKey acctK0
     let delegationAddr0Stake0' = getDelegationAddr addrK0prv stakeKPub0 <$> networkTags
     delegationAddr0Stake0' `shouldBe` delegationAddr0Stake0
@@ -868,6 +1104,7 @@ goldenTest TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (toXPub <$> addrKPrv)
+    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (toXPub <$> addrKPrv) ptr
     getDelegationAddr addrKPrv stakeKPub net =
         bech32 $ delegationAddress net (toXPub <$> addrKPrv) stakeKPub
 
@@ -884,3 +1121,9 @@ instance Arbitrary SndFactor where
         n <- choose (0, 64)
         bytes <- BS.pack <$> vector n
         return $ SndFactor $ BA.convert bytes
+
+b16encode :: Text -> ByteString
+b16encode = encode EBase16 . T.encodeUtf8
+
+b16decode :: Text -> Either String ByteString
+b16decode = fromBase16 . T.encodeUtf8

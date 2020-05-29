@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 {-# OPTIONS_HADDOCK hide #-}
 
 module Options.Applicative.Encoding

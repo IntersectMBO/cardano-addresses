@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Command.RecoveryPhrase.GenerateSpec
     ( spec
     ) where

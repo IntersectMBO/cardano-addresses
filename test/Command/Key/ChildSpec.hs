@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Command.Key.ChildSpec
     ( spec
     ) where
