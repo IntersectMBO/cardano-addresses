@@ -25,8 +25,6 @@ module Cardano.Address
     , bech32
     , bech32With
     , fromBech32
-    , hex
-    , fromHex
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -44,16 +42,16 @@ import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
-import Data.ByteArray.Encoding
-    ( Base (..), convertFromBase, convertToBase )
 import Data.ByteString
     ( ByteString )
-import Data.ByteString.Base58
-    ( bitcoinAlphabet, decodeBase58, encodeBase58 )
+import Data.Either.Extra
+    ( eitherToMaybe )
 import Data.Text
     ( Text )
 import Data.Word
@@ -65,8 +63,8 @@ import GHC.Stack
 import Numeric.Natural
     ( Natural )
 
-import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
+import qualified Codec.Binary.Encoding as E
 import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
@@ -89,7 +87,7 @@ unsafeMkAddress = Address
 --
 -- @since 1.0.0
 base58 :: Address -> Text
-base58 = T.decodeUtf8 . encodeBase58 bitcoinAlphabet . unAddress
+base58 = T.decodeUtf8 . encode EBase58 . unAddress
 
 -- | Decode a base58-encoded 'Text' into an 'Address'
 --
@@ -98,13 +96,13 @@ fromBase58 :: Text -> Maybe Address
 fromBase58 =
     deserialiseCbor (unsafeMkAddress <$> decodeAddress)
    <=<
-    decodeBase58 bitcoinAlphabet . T.encodeUtf8
+    eitherToMaybe . E.fromBase58 . T.encodeUtf8
 
 -- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
 --
 -- @since 1.0.0
 bech32 :: Address -> Text
-bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
+bech32 = bech32With hrp
   where
     hrp = [Bech32.humanReadablePart|addr|]
 
@@ -112,16 +110,13 @@ bech32 = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
 --
 -- @since 2.0.0
 bech32With :: HumanReadablePart -> Address -> Text
-bech32With hrp = Bech32.encodeLenient hrp . Bech32.dataPartFromBytes . unAddress
+bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp) . unAddress
 
 -- | Decode a bech32-encoded  'Text' into an 'Address'
 --
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
-fromBech32 =
-    fmap unsafeMkAddress . Bech32.dataPartToBytes
-   <=<
-    either (const Nothing) (Just . snd) . Bech32.decodeLenient
+fromBech32 = eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 . T.encodeUtf8
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
@@ -231,11 +226,3 @@ invariantNetworkTag limit (NetworkTag num)
       ++ show num
       ++ ", but expected to be less than "
       ++ show limit
-
--- | Encode a 'ByteString' in base16
-hex :: ByteString -> ByteString
-hex = convertToBase Base16
-
--- | Decode a 'ByteString' from base16
-fromHex :: ByteString -> Either String ByteString
-fromHex = convertFromBase Base16
