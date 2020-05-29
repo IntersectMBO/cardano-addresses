@@ -21,7 +21,7 @@ module Test.Arbitrary
 import Prelude
 
 import Cardano.Address
-    ( AddressDiscrimination (..), NetworkTag (..), StakingKeyPointer (..) )
+    ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( AccountingStyle
     , Depth (..)
@@ -270,12 +270,12 @@ instance Arbitrary (AbstractEncoding HumanReadablePart) where
         , EBech32 [humanReadablePart|bech32|]
         ]
 
-instance Arbitrary StakingKeyPointer where
+instance Arbitrary ChainPointer where
     arbitrary = do
-        slot <- arbitrary
+        slot <- fromIntegral <$> choose (1 :: Word64, 100000000)
         ix1 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         ix2 <- fromIntegral <$> choose (1 :: Word64, 1000000)
-        pure $ StakingKeyPointer slot ix1 ix2
+        pure $ ChainPointer slot ix1 ix2
 
 --
 -- Extra Instances

@@ -21,7 +21,6 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
     , getKey
-    , unsafeMkShelleyKey
 
       -- * Key Derivation
       -- $keyDerivation
@@ -44,6 +43,7 @@ module Cardano.Address.Style.Shelley
 
       -- * Unsafe
     , liftXPrv
+    , liftXPub
 
       -- Internals
     , minSeedLengthBytes
@@ -55,9 +55,9 @@ import Prelude
 import Cardano.Address
     ( Address
     , AddressDiscrimination (..)
+    , ChainPointer (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
-    , StakingKeyPointer (..)
     , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
@@ -139,12 +139,6 @@ newtype Shelley (depth :: Depth) key = Shelley
 
 deriving instance (Functor (Shelley depth))
 instance (NFData key) => NFData (Shelley depth key)
-
--- Unsafe constructor for easily lifting bytes inside an 'Shelley'.
---
--- /!\ Use at your own risks.
-unsafeMkShelleyKey :: key -> Shelley (depth :: Depth) key
-unsafeMkShelleyKey = Shelley
 
 --
 -- Key Derivation
@@ -343,10 +337,10 @@ deriveStakingPrivateKey =
 --
 -- === Generating a 'PointerAddress'
 --
--- > import Cardano.Address ( PointerAddress (..), StakingKeyPointer (..) )
+-- > import Cardano.Address ( PointerAddress (..), ChainPointer (..) )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let ptr = StakingKeyPointer 123 1 2
+-- > let ptr = ChainPointer 123 1 2
 -- > bech32 $ pointerAddress tag (toXPub <$> addrK) ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
@@ -390,7 +384,7 @@ newtype Word7 = Word7 Word8
   deriving (Eq, Show)
 
 instance Internal.PointerAddress Shelley where
-    pointerAddress discrimination key ptr@(StakingKeyPointer sl ix1 ix2) =
+    pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
         unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 firstByte
@@ -428,7 +422,7 @@ instance Internal.PointerAddress Shelley where
               | otherwise = 10
 
 
-          putPointer (StakingKeyPointer slotN ix1' ix2') = do
+          putPointer (ChainPointer slotN ix1' ix2') = do
               putVariableLengthNat (fromIntegral slotN)
               putVariableLengthNat ix1'
               putVariableLengthNat ix2'
@@ -490,7 +484,7 @@ delegationAddress =
 pointerAddress
     :: NetworkDiscriminant Shelley
     -> Shelley 'AddressK XPub
-    -> StakingKeyPointer
+    -> ChainPointer
     -> Address
 pointerAddress =
     Internal.pointerAddress
@@ -538,6 +532,17 @@ mkNetworkDiscriminant nTag
 -- @since 2.0.0
 liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPrv = Shelley
+
+-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPub'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 2.0.0
+liftXPub :: XPub -> Shelley depth XPub
+liftXPub = Shelley
 
 --
 -- Internal

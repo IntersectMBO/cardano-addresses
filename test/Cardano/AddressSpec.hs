@@ -13,11 +13,11 @@ import Prelude
 
 import Cardano.Address
     ( Address
+    , ChainPointer
     , DelegationAddress (..)
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , PointerAddress (..)
-    , StakingKeyPointer
     , base58
     , bech32
     , fromBase58
@@ -133,7 +133,7 @@ prop_roundtripTextEncodingPointer
         -- ^ decode from 'Text'
     -> k 'AddressK XPub
         -- ^ An arbitrary address public key
-    -> StakingKeyPointer
+    -> ChainPointer
         -- ^ An arbitrary staking key locator
     -> NetworkDiscriminant k
         -- ^ An arbitrary network discriminant

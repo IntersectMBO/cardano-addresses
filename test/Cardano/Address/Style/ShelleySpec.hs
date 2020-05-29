@@ -18,14 +18,13 @@ module Cardano.Address.Style.ShelleySpec
 import Prelude
 
 import Cardano.Address
-    ( DelegationAddress (..)
+    ( ChainPointer (..)
+    , DelegationAddress (..)
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , PointerAddress (..)
-    , StakingKeyPointer (..)
     , bech32
     , bech32With
-    , fromHex
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -45,9 +44,11 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Shelley (..), mkNetworkDiscriminant, unsafeMkShelleyKey )
+    ( Shelley (..), liftXPub, mkNetworkDiscriminant )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode, fromBase16 )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
@@ -76,8 +77,8 @@ import Test.QuickCheck
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Base16 as B16
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
@@ -101,7 +102,7 @@ spec = do
     describe "Golden tests" $ do
         goldenTestPointerAddress GoldenTestPointerAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
-            ,  stakePtr = StakingKeyPointer 128 2 3
+            ,  stakePtr = ChainPointer 128 2 3
             ,  networkId = 0
             ,  expectedAddr =
                     "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
@@ -109,7 +110,7 @@ spec = do
             }
         goldenTestPointerAddress GoldenTestPointerAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
-            ,  stakePtr = StakingKeyPointer 128 2 3
+            ,  stakePtr = ChainPointer 128 2 3
             ,  networkId = 1
             ,  expectedAddr =
                     "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
@@ -851,7 +852,7 @@ prop_pointerAddressConstruction
     -> AccountingStyle
     -> Index 'Soft 'AddressK
     -> NetworkDiscriminant Shelley
-    -> StakingKeyPointer
+    -> ChainPointer
     -> Property
 prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
     pointerAddr `seq` property ()
@@ -874,10 +875,10 @@ data GoldenTestPointerAddress = GoldenTestPointerAddress
     {
       -- | The verification public key as string to be encoded into base16 form
       -- After that it should have 32-byte length
-       verKey :: ByteString
+       verKey :: Text
 
       -- | Location of stake cerificate in the blockchain
-    ,  stakePtr :: StakingKeyPointer
+    ,  stakePtr :: ChainPointer
 
       -- | Network id
     ,  networkId :: Word8
@@ -890,11 +891,11 @@ goldenTestPointerAddress :: GoldenTestPointerAddress -> SpecWith ()
 goldenTestPointerAddress GoldenTestPointerAddress{..} =
     it ("pointer address for networkId " <> show networkId) $ do
 
-    let (Just xPub) = xpubFromBytes $ B16.encode $ BS.append verKey verKey
-    let addrXPub = unsafeMkShelleyKey xPub :: Shelley 'AddressK XPub
+    let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
+    let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
     let (Right tag) = mkNetworkDiscriminant networkId
     let ptrAddr = pointerAddress tag addrXPub stakePtr
-    let (Right expectedAddr') = fromHex expectedAddr
+    let (Right expectedAddr') = fromBase16 expectedAddr
 
     ptrAddr `shouldBe` unsafeMkAddress expectedAddr'
 
@@ -902,7 +903,7 @@ data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
     {
       -- | The verification public key as string to be encoded into base16 form
       -- After that it should have 32-byte length
-       verKey :: ByteString
+       verKey :: Text
 
       -- | Network id
     ,  networkId :: Word8
@@ -915,11 +916,11 @@ goldenTestEnterpriseAddress :: GoldenTestEnterpriseAddress -> SpecWith ()
 goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
     it ("enterprise address for networkId " <> show networkId) $ do
 
-    let (Just xPub) = xpubFromBytes $ B16.encode $ BS.append verKey verKey
-    let addrXPub = unsafeMkShelleyKey xPub :: Shelley 'AddressK XPub
+    let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
+    let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
     let (Right tag) = mkNetworkDiscriminant networkId
     let enterpriseAddr = paymentAddress tag addrXPub
-    let (Right expectedAddr') = fromHex expectedAddr
+    let (Right expectedAddr') = fromBase16 expectedAddr
 
     enterpriseAddr `shouldBe` unsafeMkAddress expectedAddr'
 
@@ -927,11 +928,11 @@ data GoldenTestBaseAddress = GoldenTestBaseAddress
     {
       -- | The verification public key as string to be encoded into base16 form
       -- After that it should have 32-byte length
-       verKeyPayment :: ByteString
+       verKeyPayment :: Text
 
       -- | The verification public key as string to be encoded into base16 form
       -- After that it should have 32-byte length
-    ,  verKeyStake :: ByteString
+    ,  verKeyStake :: Text
 
       -- | Network id
     ,  networkId :: Word8
@@ -945,14 +946,14 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
     it ("base address for networkId " <> show networkId) $ do
 
     let (Just xPub1) =
-            xpubFromBytes $ B16.encode $ BS.append verKeyPayment verKeyPayment
-    let addrXPub = unsafeMkShelleyKey xPub1 :: Shelley 'AddressK XPub
+            xpubFromBytes $ b16encode $ T.append verKeyPayment verKeyPayment
+    let addrXPub = liftXPub xPub1 :: Shelley 'AddressK XPub
     let (Just xPub2) =
-            xpubFromBytes $ B16.encode $ BS.append verKeyStake verKeyStake
-    let stakeXPub = unsafeMkShelleyKey xPub2 :: Shelley 'StakingK XPub
+            xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
+    let stakeXPub = liftXPub xPub2 :: Shelley 'StakingK XPub
     let (Right tag) = mkNetworkDiscriminant networkId
     let baseAddr = delegationAddress tag addrXPub stakeXPub
-    let (Right expectedAddr') = fromHex expectedAddr
+    let (Right expectedAddr') = fromBase16 expectedAddr
 
     baseAddr `shouldBe` unsafeMkAddress expectedAddr'
 
@@ -1085,10 +1086,10 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     let paymentAddr1442' = getPaymentAddr addrK1442prv <$> networkTags
     paymentAddr1442' `shouldBe` paymentAddr1442
 
-    let slot1 = StakingKeyPointer 1 2 3
+    let slot1 = ChainPointer 1 2 3
     let pointerAddr0Slot1' = getPointerAddr addrK0prv slot1 <$> networkTags
     pointerAddr0Slot1' `shouldBe` pointerAddr0Slot1
-    let slot2 = StakingKeyPointer 24157 177 42
+    let slot2 = ChainPointer 24157 177 42
     let pointerAddr0Slot2' = getPointerAddr addrK0prv slot2 <$> networkTags
     pointerAddr0Slot2' `shouldBe` pointerAddr0Slot2
 
@@ -1127,3 +1128,6 @@ instance Arbitrary SndFactor where
         n <- choose (0, 64)
         bytes <- BS.pack <$> vector n
         return $ SndFactor $ BA.convert bytes
+
+b16encode :: Text -> ByteString
+b16encode = encode EBase16 . T.encodeUtf8

@@ -16,7 +16,7 @@ module Cardano.Address
     , PaymentAddress (..)
     , DelegationAddress (..)
     , PointerAddress (..)
-    , StakingKeyPointer (..)
+    , ChainPointer (..)
     , unsafeMkAddress
 
       -- * Conversion From / To Text
@@ -57,7 +57,7 @@ import Data.ByteString.Base58
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32, Word64, Word8 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 import GHC.Stack
@@ -152,22 +152,23 @@ class PaymentAddress key
             -- ^ Staking key
         -> Address
 
--- | A 'StakingKeyPointer' type representing location of staking certificate
--- in the blockchain. This can be achieved unambiguously by specifying
--- slot number, transaction index and the index of certificate list.
--- Alternatively, staking key can be used, like it is the case for
--- 'DelegationAddress'.
+-- | A 'ChainPointer' type representing location of some object
+-- in the blockchain (eg., staking certificate). This can be achieved
+-- unambiguously by specifying slot number, transaction index and the index
+-- in the object list (eg., certification list).
+-- For staking certificates, alternatively,  the staking key can be used and
+-- then 'DelegationAddress' can be used.
 --
 -- @since 2.0.0
-data StakingKeyPointer = StakingKeyPointer
-    { slotNum :: Word64
+data ChainPointer = ChainPointer
+    { slotNum :: Natural
       -- ^ Pointer to the slot
     , transactionIndex :: Natural
       -- ^ transaction index
-    , certificateIndex :: Natural
-      -- ^ certificate list index
+    , outputIndex :: Natural
+      -- ^ output list index
     } deriving stock (Generic, Show, Eq, Ord)
-instance NFData StakingKeyPointer
+instance NFData ChainPointer
 
 -- | Encoding of pointer addresses for payment key type, pointer to staking
 -- certificate in the blockchain and backend targets.
@@ -179,14 +180,14 @@ class PaymentAddress key
     -- blockchain to a delegation 'Address' valid for the given network
     -- discrimination. Funds sent to this address will be delegated according to
     -- the delegation settings attached to the delegation key located by
-    -- 'StakingKeyPointer'.
+    -- 'ChainPointer'.
     --
     -- @since 2.0.0
     pointerAddress
         :: NetworkDiscriminant key
         ->  key 'AddressK XPub
             -- ^ Payment key
-        ->  StakingKeyPointer
+        ->  ChainPointer
             -- ^ Pointer to locate staking key in blockchain
         -> Address
 
