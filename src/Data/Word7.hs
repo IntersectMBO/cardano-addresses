@@ -18,6 +18,8 @@ module Data.Word7
       -- * Encode
     , putVariableLengthNat
 
+      -- * Helpers
+    , limit
     ) where
 
 import Prelude

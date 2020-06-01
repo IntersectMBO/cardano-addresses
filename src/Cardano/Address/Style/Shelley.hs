@@ -88,9 +88,7 @@ import Crypto.Hash.Algorithms
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Binary.Put
-    ( Put, putByteString, putWord8, runPut )
-import Data.Bits
-    ( shiftR, (.&.), (.|.) )
+    ( putByteString, putWord8, runPut )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -98,11 +96,11 @@ import Data.ByteString
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32, Word64, Word8 )
+    ( Word32, Word8 )
+import Data.Word7
+    ( limit, putVariableLengthNat )
 import GHC.Generics
     ( Generic )
-import Numeric.Natural
-    ( Natural )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
@@ -380,9 +378,6 @@ instance Internal.DelegationAddress Shelley where
               invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
 
-newtype Word7 = Word7 Word8
-  deriving (Eq, Show)
-
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
         unsafeMkAddress $
@@ -406,9 +401,6 @@ instance Internal.PointerAddress Shelley where
                     sum $ calculateLength <$>
                     [sl, fromIntegral ix1, fromIntegral ix2]
 
-          limit :: Int -> Word64
-          limit pow = 2 ^ pow - 1
-
           calculateLength inp
               | inp <= fromIntegral (limit 7) = 1
               | inp <= fromIntegral (limit 14) = 2
@@ -426,24 +418,6 @@ instance Internal.PointerAddress Shelley where
               putVariableLengthNat (fromIntegral slotN)
               putVariableLengthNat ix1'
               putVariableLengthNat ix2'
-
-          putVariableLengthNat :: Natural -> Put
-          putVariableLengthNat = putWord7s . natToWord7s
-
-          toWord7 :: Word8 -> Word7
-          toWord7 x = Word7 (x .&. 0x7F)
-
-          natToWord7s :: Natural -> [Word7]
-          natToWord7s = reverse . go
-              where
-                  go n
-                      | n <= 0x7F = [Word7 . fromIntegral $ n]
-                      | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
-
-          putWord7s :: [Word7] -> Put
-          putWord7s [] = pure ()
-          putWord7s [Word7 x] = putWord8 x
-          putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) >> putWord7s xs
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
