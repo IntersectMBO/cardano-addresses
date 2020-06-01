@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ae115c1a5d4e81b733d274c5f7edab1c5d4e54ae75b98e6c74d0b329bb7fd412
+-- hash: 96c0a1c54bb0588a22bc2bee17bf5d8102e08c40846d5a9e01c1bc28cad4adc2
 
 name:           cardano-addresses
 version:        1.0.0
@@ -49,6 +49,7 @@ library
       Command.Key.Public
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
+      Data.Word7
       Options.Applicative.Derivation
       Options.Applicative.Encoding
       Options.Applicative.MnemonicSize
