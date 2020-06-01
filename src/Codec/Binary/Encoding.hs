@@ -106,7 +106,7 @@ detectEncoding str = isBase16 <|> isBech32  <|> isBase58
   where
     isBase16 = do
         guard (all (`elem` "0123456789abcdef") (toLower <$> str))
-        guard (length str `mod` 2 == 0)
+        guard (even (length str))
         pure EBase16
 
     isBech32 = do
