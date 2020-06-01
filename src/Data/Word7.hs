@@ -43,12 +43,24 @@ newtype Word7 = Word7 Word8
 --
 -- Conversions
 --
+-- > toWord7 1
+-- > Word7 1
+-- > toWord7 127
+-- > Word7 127
+-- > toWord7 128
+-- > Word7 0
 toWord7 :: Word8 -> Word7
 toWord7 x = Word7 (x .&. 0x7F)
 
 toWord8 :: Word7 -> Word8
 toWord8 (Word7 x) = x
 
+-- > toWord7s 1
+-- > [Word7 1]
+-- > toWord7s 128
+-- > [Word7 1,Word7 0]
+-- > toWord7s 19099
+-- > [Word7 1,Word7 21,Word7 27]
 toWord7s :: Natural -> [Word7]
 toWord7s = reverse . go
     where
@@ -59,7 +71,9 @@ toWord7s = reverse . go
 toNatural :: [Word7] -> Natural
 toNatural =
     fst .
-    foldr (\(Word7 x) (res, index) -> (res + limit index + fromIntegral x, index +1))
+    foldr (\(Word7 x) (res, pow) ->
+               (res + (fromIntegral x)*(limit pow + 1), pow + 7)
+          )
     (0,0)
 
 limit :: Int -> Natural

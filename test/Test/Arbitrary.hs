@@ -81,6 +81,8 @@ import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
+import Numeric.Natural
+    ( Natural )
 import Options.Applicative.Derivation
     ( DerivationIndex
     , DerivationPath
@@ -270,9 +272,13 @@ instance Arbitrary (AbstractEncoding HumanReadablePart) where
         , EBech32 [humanReadablePart|bech32|]
         ]
 
+instance Arbitrary Natural where
+    arbitrary =
+        fromIntegral <$> choose (1 :: Word64, 10000000000)
+
 instance Arbitrary ChainPointer where
     arbitrary = do
-        slot <- fromIntegral <$> choose (1 :: Word64, 100000000)
+        slot <- arbitrary
         ix1 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         ix2 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         pure $ ChainPointer slot ix1 ix2
