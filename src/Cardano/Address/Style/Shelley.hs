@@ -88,9 +88,7 @@ import Crypto.Hash.Algorithms
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Binary.Put
-    ( Put, putByteString, putWord8, runPut )
-import Data.Bits
-    ( shiftR, (.&.), (.|.) )
+    ( putByteString, putWord8, runPut )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -98,17 +96,17 @@ import Data.ByteString
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32, Word64, Word8 )
+    ( Word32, Word8 )
+import Data.Word7
+    ( putVariableLengthNat )
 import GHC.Generics
     ( Generic )
-import Numeric.Natural
-    ( Natural )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
-
+import qualified Data.Word7 as Word7
 -- $overview
 --
 -- This module provides an implementation of:
@@ -380,9 +378,6 @@ instance Internal.DelegationAddress Shelley where
               invariantNetworkTag 16 (networkTag @Shelley discrimination)
           expectedLength = 1 + 2*publicKeyHashSize
 
-newtype Word7 = Word7 Word8
-  deriving (Eq, Show)
-
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
         unsafeMkAddress $
@@ -406,19 +401,16 @@ instance Internal.PointerAddress Shelley where
                     sum $ calculateLength <$>
                     [sl, fromIntegral ix1, fromIntegral ix2]
 
-          limit :: Int -> Word64
-          limit pow = 2 ^ pow - 1
-
           calculateLength inp
-              | inp <= fromIntegral (limit 7) = 1
-              | inp <= fromIntegral (limit 14) = 2
-              | inp <= fromIntegral (limit 21) = 3
-              | inp <= fromIntegral (limit 28) = 4
-              | inp <= fromIntegral (limit 35) = 5
-              | inp <= fromIntegral (limit 42) = 6
-              | inp <= fromIntegral (limit 49) = 7
-              | inp <= fromIntegral (limit 56) = 8
-              | inp <= fromIntegral (limit 63) = 9
+              | inp <= fromIntegral (Word7.limit 7) = 1
+              | inp <= fromIntegral (Word7.limit 14) = 2
+              | inp <= fromIntegral (Word7.limit 21) = 3
+              | inp <= fromIntegral (Word7.limit 28) = 4
+              | inp <= fromIntegral (Word7.limit 35) = 5
+              | inp <= fromIntegral (Word7.limit 42) = 6
+              | inp <= fromIntegral (Word7.limit 49) = 7
+              | inp <= fromIntegral (Word7.limit 56) = 8
+              | inp <= fromIntegral (Word7.limit 63) = 9
               | otherwise = 10
 
 
@@ -426,24 +418,6 @@ instance Internal.PointerAddress Shelley where
               putVariableLengthNat (fromIntegral slotN)
               putVariableLengthNat ix1'
               putVariableLengthNat ix2'
-
-          putVariableLengthNat :: Natural -> Put
-          putVariableLengthNat = putWord7s . natToWord7s
-
-          toWord7 :: Word8 -> Word7
-          toWord7 x = Word7 (x .&. 0x7F)
-
-          natToWord7s :: Natural -> [Word7]
-          natToWord7s = reverse . go
-              where
-                  go n
-                      | n <= 0x7F = [Word7 . fromIntegral $ n]
-                      | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
-
-          putWord7s :: [Word7] -> Put
-          putWord7s [] = pure ()
-          putWord7s [Word7 x] = putWord8 x
-          putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) >> putWord7s xs
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
