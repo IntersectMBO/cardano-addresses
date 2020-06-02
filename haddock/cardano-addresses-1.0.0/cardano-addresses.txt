@@ -432,108 +432,6 @@ instance Control.DeepSeq.NFData Cardano.Address.ChainPointer
 instance Control.DeepSeq.NFData Cardano.Address.Address
 
 
-module Cardano.Address.Style.Shelley
-
--- | A cryptographic key for sequential-scheme address derivation, with
---   phantom-types to disambiguate key types.
---   
---   <pre>
---   let rootPrivateKey = Shelley 'RootK XPrv
---   let accountPubKey  = Shelley 'AccountK XPub
---   let addressPubKey  = Shelley 'AddressK XPub
---   </pre>
-data Shelley (depth :: Depth) key
-
--- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
-getKey :: Shelley depth key -> key
-
--- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: XPrv -> Shelley  'RootK XPrv
-
--- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPrv
-
--- | Derives an account private key from the given root private key.
-deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
-
--- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
-
--- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one staking key per
---   account, and always the first account (with index 0').
---   
---   Deriving staking keys for something else than the initial account is
---   not recommended and can lead to incompatibility with existing wallet
---   softwares (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
-
--- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
-
--- | Convert a public key to a payment <a>Address</a> valid for the given
---   network discrimination.
-paymentAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Address
-
--- | Convert a public key and a staking key to a delegation <a>Address</a>
---   valid for the given network discrimination. Funds sent to this address
---   will be delegated according to the delegation settings attached to the
---   delegation key.
-delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Shelley  'StakingK XPub -> Address
-
--- | Convert a public key and pointer to staking certificate in blockchain
---   to a pointer <a>Address</a> valid for the given network
---   discrimination.
-pointerAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> ChainPointer -> Address
-
--- | Error reported from trying to create a network discriminant from
---   number
-newtype MkNetworkDiscriminantError
-
--- | Wrong network tag.
-ErrWrongNetworkTag :: Word8 -> MkNetworkDiscriminantError
-
--- | Construct <a>NetworkDiscriminant</a> for Cardano <a>Shelley</a> from a
---   number. If the number is invalid, ie., not between 0 and 15, then
---   <a>MkNetworkDiscriminantError</a> is thrown.
-mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
-
--- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
---   <a>XPrv</a>. this is unsafe because it lets the caller choose the
---   actually derivation <tt>depth</tt>.
---   
---   This can be useful however when serializing / deserializing such a
---   type, or to speed up test code (and avoid having to do needless
---   derivations from a master key down to an address key for instance).
-liftXPrv :: XPrv -> Shelley depth XPrv
-
--- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
---   <a>XPub</a>. this is unsafe because it lets the caller choose the
---   actually derivation <tt>depth</tt>.
---   
---   This can be useful however when serializing / deserializing such a
---   type, or to speed up test code (and avoid having to do needless
---   derivations from a master key down to an address key for instance).
-liftXPub :: XPub -> Shelley depth XPub
-instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
-instance GHC.Show.Show Cardano.Address.Style.Shelley.Word7
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.Word7
-instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
-instance Cardano.Address.PointerAddress Cardano.Address.Style.Shelley.Shelley
-instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
-instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley
-
-
 module Cardano.Address.Style.Jormungandr
 
 -- | A cryptographic key for sequential-scheme address derivation, with
@@ -771,3 +669,117 @@ instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Icarus.Icarus
+
+
+module Data.Word7
+
+-- | A <a>Word7</a> algebraic data-type. @since 2.0.0
+data Word7
+toWord7 :: Word8 -> Word7
+toWord8 :: Word7 -> Word8
+toWord7s :: Natural -> [Word7]
+toNatural :: [Word7] -> Natural
+putVariableLengthNat :: Natural -> Put
+limit :: Int -> Natural
+instance GHC.Show.Show Data.Word7.Word7
+instance GHC.Classes.Eq Data.Word7.Word7
+
+
+module Cardano.Address.Style.Shelley
+
+-- | A cryptographic key for sequential-scheme address derivation, with
+--   phantom-types to disambiguate key types.
+--   
+--   <pre>
+--   let rootPrivateKey = Shelley 'RootK XPrv
+--   let accountPubKey  = Shelley 'AccountK XPub
+--   let addressPubKey  = Shelley 'AddressK XPub
+--   </pre>
+data Shelley (depth :: Depth) key
+
+-- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
+getKey :: Shelley depth key -> key
+
+-- | Generate a root key from a corresponding root <a>XPrv</a>
+genMasterKeyFromXPrv :: XPrv -> Shelley  'RootK XPrv
+
+-- | Generate a root key from a corresponding mnemonic.
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPrv
+
+-- | Derives an account private key from the given root private key.
+deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
+
+-- | Derives an address private key from the given account private key.
+deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
+
+-- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one staking key per
+--   account, and always the first account (with index 0').
+--   
+--   Deriving staking keys for something else than the initial account is
+--   not recommended and can lead to incompatibility with existing wallet
+--   softwares (Daedalus, Yoroi, Adalite...).
+deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
+
+-- | Derives an address public key from the given account public key.
+deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
+
+-- | Convert a public key to a payment <a>Address</a> valid for the given
+--   network discrimination.
+paymentAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Address
+
+-- | Convert a public key and a staking key to a delegation <a>Address</a>
+--   valid for the given network discrimination. Funds sent to this address
+--   will be delegated according to the delegation settings attached to the
+--   delegation key.
+delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Shelley  'StakingK XPub -> Address
+
+-- | Convert a public key and pointer to staking certificate in blockchain
+--   to a pointer <a>Address</a> valid for the given network
+--   discrimination.
+pointerAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> ChainPointer -> Address
+
+-- | Error reported from trying to create a network discriminant from
+--   number
+newtype MkNetworkDiscriminantError
+
+-- | Wrong network tag.
+ErrWrongNetworkTag :: Word8 -> MkNetworkDiscriminantError
+
+-- | Construct <a>NetworkDiscriminant</a> for Cardano <a>Shelley</a> from a
+--   number. If the number is invalid, ie., not between 0 and 15, then
+--   <a>MkNetworkDiscriminantError</a> is thrown.
+mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+
+-- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
+--   <a>XPrv</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPrv :: XPrv -> Shelley depth XPrv
+
+-- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
+--   <a>XPub</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPub :: XPub -> Shelley depth XPub
+instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
+instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
+instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.PointerAddress Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley

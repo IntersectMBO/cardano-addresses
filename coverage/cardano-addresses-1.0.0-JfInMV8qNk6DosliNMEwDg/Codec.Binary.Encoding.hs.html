@@ -125,7 +125,7 @@ span.spaces    { background: white }
 <span class="lineno">  106 </span><span class="spaces">  </span><span class="istickedoff">where</span>
 <span class="lineno">  107 </span><span class="spaces">    </span><span class="istickedoff">isBase16 = do</span>
 <span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` &quot;0123456789abcdef&quot;) (toLower &lt;$&gt; str))</span>
-<span class="lineno">  109 </span><span class="spaces">        </span><span class="istickedoff">guard (length str `mod` 2 == 0)</span>
+<span class="lineno">  109 </span><span class="spaces">        </span><span class="istickedoff">guard (even (length str))</span>
 <span class="lineno">  110 </span><span class="spaces">        </span><span class="istickedoff">pure EBase16</span>
 <span class="lineno">  111 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  112 </span><span class="spaces">    </span><span class="istickedoff">isBech32 = do</span>
