@@ -98,7 +98,7 @@ import Data.Maybe
 import Data.Word
     ( Word32, Word8 )
 import Data.Word7
-    ( limit, putVariableLengthNat )
+    ( putVariableLengthNat )
 import GHC.Generics
     ( Generic )
 
@@ -106,7 +106,7 @@ import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString.Lazy as BL
-
+import qualified Data.Word7 as Word7
 -- $overview
 --
 -- This module provides an implementation of:
@@ -402,15 +402,15 @@ instance Internal.PointerAddress Shelley where
                     [sl, fromIntegral ix1, fromIntegral ix2]
 
           calculateLength inp
-              | inp <= fromIntegral (limit 7) = 1
-              | inp <= fromIntegral (limit 14) = 2
-              | inp <= fromIntegral (limit 21) = 3
-              | inp <= fromIntegral (limit 28) = 4
-              | inp <= fromIntegral (limit 35) = 5
-              | inp <= fromIntegral (limit 42) = 6
-              | inp <= fromIntegral (limit 49) = 7
-              | inp <= fromIntegral (limit 56) = 8
-              | inp <= fromIntegral (limit 63) = 9
+              | inp <= fromIntegral (Word7.limit 7) = 1
+              | inp <= fromIntegral (Word7.limit 14) = 2
+              | inp <= fromIntegral (Word7.limit 21) = 3
+              | inp <= fromIntegral (Word7.limit 28) = 4
+              | inp <= fromIntegral (Word7.limit 35) = 5
+              | inp <= fromIntegral (Word7.limit 42) = 6
+              | inp <= fromIntegral (Word7.limit 49) = 7
+              | inp <= fromIntegral (Word7.limit 56) = 8
+              | inp <= fromIntegral (Word7.limit 63) = 9
               | otherwise = 10
 
 
