@@ -55,7 +55,7 @@ data Cmd = Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "bootstrap" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Create a bootstrap (i.e. legacy) address."
+        <> progDesc "Create a bootstrap (i.e. legacy) address"
         <> footerDoc (Just $ string $ mconcat
             [ "Example:\n\n"
             , "  $ cardano-address recovery-phrase generate \\\n"

@@ -15,13 +15,15 @@ import Prelude hiding
     ( mod )
 
 import qualified Command.Address.Bootstrap as Bootstrap
+import qualified Command.Address.Payment as Payment
 
 --
 -- address
 --
 
-newtype Cmd
+data Cmd
     = Bootstrap Bootstrap.Cmd
+    | Payment Payment.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -31,8 +33,10 @@ mod liftCmd = command "address" $
   where
     parser = subparser $ mconcat
         [ Bootstrap.mod Bootstrap
+        , Payment.mod Payment
         ]
 
 run :: Cmd -> IO ()
 run = \case
     Bootstrap sub -> Bootstrap.run sub
+    Payment sub -> Payment.run sub

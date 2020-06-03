@@ -98,7 +98,7 @@ import Data.ByteString
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32, Word8 )
+    ( Word32 )
 import Data.Word7
     ( putVariableLengthNat )
 import GHC.Generics
@@ -478,7 +478,7 @@ instance HasNetworkDiscriminant Shelley where
 --
 -- @since 2.0.0
 newtype MkNetworkDiscriminantError
-    = ErrWrongNetworkTag Word8
+    = ErrWrongNetworkTag Integer
       -- ^ Wrong network tag.
     deriving (Eq, Show)
 
@@ -488,7 +488,7 @@ newtype MkNetworkDiscriminantError
 --
 -- @since 2.0.0
 mkNetworkDiscriminant
-    :: Word8
+    :: Integer
     -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 mkNetworkDiscriminant nTag
     | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
