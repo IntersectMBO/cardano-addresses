@@ -35,6 +35,9 @@ module Cardano.Codec.Cbor
     , deserialiseCbor
     , unsafeDeserialiseCbor
 
+      -- * Extra helper
+    , hasDerivationPath
+
      -- * Reexports from CBOR
     , CBOR.encodeBytes
     , CBOR.toStrictByteString
@@ -274,6 +277,13 @@ decodeAddressPayload = do
     bytes <- CBOR.decodeBytes
     _ <- CBOR.decodeWord32 -- CRC
     return bytes
+
+hasDerivationPath :: CBOR.Decoder s Bool
+hasDerivationPath = do
+    _ <- CBOR.decodeListLenCanonicalOf 3
+    _ <- CBOR.decodeBytes
+    attrs <- decodeAllAttributes
+    pure (1 `elem` (fst <$> attrs))
 
 decodeAddressDerivationPath
     :: ScrubbedBytes

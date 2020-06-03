@@ -31,6 +31,7 @@ module Cardano.Address.Style.Icarus
 
       -- * Addresses
       -- $addresses
+    , isIcarusAddress
     , paymentAddress
 
       -- * Network Discrimination
@@ -296,6 +297,17 @@ deriveAddressPublicKey =
 -- >
 -- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+--
+-- | Introspect an 'Address' to know whether it's an Icarus address or not.
+--
+-- @since 2.0.0
+isIcarusAddress :: ByteString -> Bool
+isIcarusAddress bytes =
+    case CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes of
+        Nothing ->
+            False
+        Just payload ->
+            CBOR.deserialiseCbor CBOR.hasDerivationPath payload  == Just False
 
 instance Internal.PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress
