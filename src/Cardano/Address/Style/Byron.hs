@@ -45,6 +45,7 @@ module Cardano.Address.Style.Byron
 
       -- * Unsafe
     , liftXPrv
+    , liftXPub
 
       -- Internals
     , minSeedLengthBytes
@@ -345,7 +346,7 @@ byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 -- Unsafe
 --
 
--- | Backdoor for generating a new key from a raw XPrv.
+-- | Backdoor for generating a new key from a raw 'XPrv'.
 --
 -- Note that the @depth@ is left open so that the caller gets to decide what type
 -- of key this is. This is mostly for testing, in practice, seeds are used to
@@ -376,6 +377,26 @@ liftXPrv derivationPath getKey = Byron
     , payloadPassphrase = hdPassphrase (toXPub getKey)
     }
 {-# DEPRECATED liftXPrv "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
+
+-- | Backdoor for generating a new key from a raw 'XPub'.
+--
+-- Note that the @depth@ is left open so that the caller gets to decide what type
+-- of key this is. This is mostly for testing, in practice, seeds are used to
+-- represent root keys, and one should 'genMasterKeyFromXPrv'
+--
+-- see also 'liftXPrv'
+--
+-- @since 2.0.0
+liftXPub
+    :: DerivationPath depth
+    -> XPub
+    -> Byron depth XPub
+liftXPub derivationPath getKey = Byron
+    { getKey
+    , derivationPath
+    , payloadPassphrase = hdPassphrase getKey
+    }
+{-# DEPRECATED liftXPub "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
 
 --
 -- Internal

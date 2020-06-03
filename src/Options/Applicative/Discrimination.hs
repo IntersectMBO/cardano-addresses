@@ -30,7 +30,7 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 -- | Parse a 'NetworkTag' from the command-line, as an option
 networkTagOpt :: Parser NetworkTag
 networkTagOpt = option (NetworkTag <$> auto) $ mempty
-    <> metavar "NETWORK_TAG"
+    <> metavar "NETWORK-TAG"
     <> long "network-tag"
     <> helpDoc  (Just (vsep (string <$> doc)))
   where

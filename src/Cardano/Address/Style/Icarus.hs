@@ -41,6 +41,7 @@ module Cardano.Address.Style.Icarus
 
       -- * Unsafe
     , liftXPrv
+    , liftXPub
 
       -- Internals
     , unsafeGenerateKeyFromHardwareLedger
@@ -376,6 +377,17 @@ icarusTestnet = byronTestnet
 -- @since 1.0.0
 liftXPrv :: XPrv -> Icarus depth XPrv
 liftXPrv = Icarus
+
+-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPub'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 2.0.0
+liftXPub :: XPub -> Icarus depth XPub
+liftXPub = Icarus
 
 --
 -- Internal

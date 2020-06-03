@@ -14,17 +14,14 @@ import Options.Applicative
 import Prelude hiding
     ( mod )
 
-import qualified Command.Address.Init as Init
+import qualified Command.Address.Bootstrap as Bootstrap
+
 --
 -- address
 --
 
--- cardano-address address init --network-tag 0 \
---  | cardano-address address add-key <<< "public key"
---  | cardano-address address add-pointer 1 2 3
-
 newtype Cmd
-    = Init Init.Cmd
+    = Bootstrap Bootstrap.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -33,9 +30,9 @@ mod liftCmd = command "address" $
         <> progDesc "About addresses."
   where
     parser = subparser $ mconcat
-        [ Init.mod Init
+        [ Bootstrap.mod Bootstrap
         ]
 
 run :: Cmd -> IO ()
 run = \case
-    Init sub -> Init.run sub
+    Bootstrap sub -> Bootstrap.run sub

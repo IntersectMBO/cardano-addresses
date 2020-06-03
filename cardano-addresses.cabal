@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 68840a024cd8619d51630967c8485a512537ed8b5e84f8fdca409e3a7a4d00e7
+-- hash: 4b4fef7fd38311fbc5dbf20f2e64be2418b443e0f042bad67775d4dabd7800bc
 
 name:           cardano-addresses
 version:        1.0.0
@@ -42,7 +42,7 @@ library
       Codec.Binary.Encoding
       Command
       Command.Address
-      Command.Address.Init
+      Command.Address.Bootstrap
       Command.Key
       Command.Key.Child
       Command.Key.FromRecoveryPhrase

@@ -17,6 +17,7 @@ module Options.Applicative.Derivation
     , derivationPathFromString
     -- ** Applicative Parser
     , derivationPathArg
+    , derivationPathOpt
 
     -- * Derivation Index
     , DerivationIndex
@@ -52,7 +53,7 @@ import Data.List
 import Data.Word
     ( Word32 )
 import Options.Applicative
-    ( Parser, argument, eitherReader, flag, help, long, metavar )
+    ( Parser, argument, eitherReader, flag, help, long, metavar, option )
 import Safe
     ( readEitherSafe )
 
@@ -85,6 +86,14 @@ castDerivationPath (DerivationPath xs) = toEnum . fromEnum <$> xs
 derivationPathArg :: Parser DerivationPath
 derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
     <> metavar "DERIVATION-PATH"
+    <> help
+        "Slash-separated derivation path. Hardened indexes are marked with a \
+        \'H' (44H/1815H/0H/0)."
+
+derivationPathOpt :: Parser DerivationPath
+derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
+    <> metavar "DERIVATION-PATH"
+    <> long "path"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
         \'H' (44H/1815H/0H/0)."
