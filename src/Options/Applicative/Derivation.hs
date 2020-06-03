@@ -29,12 +29,22 @@ module Options.Applicative.Derivation
     -- * Derivation Scheme
     , DerivationScheme
     , derivationSchemeOpt
+
+    -- * XPub
+    , xpubArg
     ) where
 
 import Prelude
 
 import Cardano.Address.Derivation
-    ( DerivationScheme (..), DerivationType (..), Index )
+    ( DerivationScheme (..), DerivationType (..), Index, XPub, xpubFromBytes )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..)
+    , detectEncoding
+    , fromBase16
+    , fromBase58
+    , fromBech32
+    )
 import Control.Arrow
     ( left )
 import Data.List
@@ -47,6 +57,7 @@ import Safe
     ( readEitherSafe )
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 
 --
@@ -168,3 +179,26 @@ derivationIndexToString ix_@(DerivationIndex ix)
 derivationSchemeOpt :: Parser DerivationScheme
 derivationSchemeOpt =
     flag DerivationScheme2 DerivationScheme1 (long "legacy")
+
+--
+-- XPub
+--
+xpubArg :: Parser XPub
+xpubArg =
+    argument (eitherReader reader) $ mempty
+        <> metavar "XPUB"
+        <> help "An extended public key"
+  where
+    toBytes = T.encodeUtf8 . T.pack
+    reader str = do
+        bytes <- case detectEncoding str of
+            Just EBase16   -> fromBase16 (toBytes str)
+            Just EBech32{} -> fromBech32 (toBytes str)
+            Just EBase58   -> fromBase58 (toBytes str)
+            Nothing        -> Left
+                "Couldn't detect input encoding? The key must be encoded as \
+                \bech16, bech32 or base58."
+        case xpubFromBytes bytes of
+            Just xpub -> pure xpub
+            Nothing   -> Left
+                "Failed to convert bytes into a valid extended public key."

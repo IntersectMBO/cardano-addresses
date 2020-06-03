@@ -15,7 +15,7 @@ import Prelude
 import Cardano.Address
     ( NetworkTag (..) )
 import Options.Applicative
-    ( Parser, auto, help, helpDoc, long, metavar, option )
+    ( Parser, auto, helpDoc, long, metavar, option )
 import Options.Applicative.Help.Pretty
     ( string, vsep )
 
