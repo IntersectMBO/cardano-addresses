@@ -21,14 +21,16 @@ import Control.Monad
 import Options.Applicative
     ( ParserInfo
     , customExecParser
+    , footerDoc
     , helper
     , info
     , prefs
     , progDesc
-    , progDesc
     , showHelpOnEmpty
     , subparser
     )
+import Options.Applicative.Help.Pretty
+    ( string )
 import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
@@ -48,7 +50,16 @@ data CLI
     deriving (Show)
 
 cli :: ParserInfo CLI
-cli = info (helper <*> parser) $ progDesc "cardano-addresses"
+cli = info (helper <*> parser) $ mempty
+    <> progDesc "cardano-addresses"
+    <> footerDoc (Just $ string $ mconcat
+        [ "💡 Need auto-completion?\n\n"
+        , "  ↳ source <(cardano-address --bash-completion-script `which cardano-address`)\n"
+        , "\n"
+        , "Or alternatively --fish-completion-script / --zsh-completion-script.\n"
+        , "For a long-term solution, you may want to put this script in the relevant place. e.g.:\n\n"
+        , "  ↳ /etc/bash_completion.d"
+        ])
   where
     parser = subparser $ mconcat
         [ RecoveryPhrase.mod RecoveryPhrase
