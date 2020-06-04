@@ -10,7 +10,17 @@ module Command.Address
     ) where
 
 import Options.Applicative
-    ( CommandFields, Mod, command, helper, info, progDesc, subparser )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , progDesc
+    , subparser
+    )
+import Options.Applicative.Help.Pretty
+    ( string )
 import Prelude hiding
     ( mod )
 
@@ -29,6 +39,12 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "address" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "About addresses."
+        <> footerDoc (Just $ string $ mconcat
+            [ "\n"
+            , "Integrating with Byron?\n  ↳ Look at 'bootstrap'."
+            , "\n\n"
+            , "Integrating with Shelley?\n  ↳ Look at 'payment' & 'delegation'."
+            ])
   where
     parser = subparser $ mconcat
         [ Bootstrap.mod Bootstrap

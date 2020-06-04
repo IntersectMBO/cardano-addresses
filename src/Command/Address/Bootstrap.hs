@@ -22,6 +22,7 @@ import Options.Applicative
     , Mod
     , command
     , footerDoc
+    , header
     , helper
     , info
     , optional
@@ -33,6 +34,8 @@ import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
 import Options.Applicative.Help.Pretty
     ( string )
+import Options.Applicative.Style
+    ( Style (..) )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -45,26 +48,31 @@ import qualified Data.Text.Encoding as T
 
 
 data Cmd = Cmd
-    { networkTag :: NetworkTag
-    , derivationPath :: Maybe DerivationPath
+    { derivationPath :: Maybe DerivationPath
+    , networkTag :: NetworkTag
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "bootstrap" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Create a bootstrap (i.e. legacy) address"
+        <> progDesc "Create a bootstrap address"
+        <> header "Those addresses, now deprecated, were used during the Byron era."
         <> footerDoc (Just $ string $ mconcat
             [ "Example:\n\n"
-            , "  $ cardano-address recovery-phrase generate \\\n"
-            , "  | cardano-address key from-recovery-phrase Byron \\\n"
+            , "  $ cardano-address recovery-phrase generate --size 12 \\\n"
+            , "  | cardano-address key from-recovery-phrase Byron > root.prv\n"
+            , "\n"
+            , "  $ cat root.prv \\\n"
+            , "  | cardano-address key child 14H/42H > addr.prv\n"
             , "  | cardano-address key public \\\n"
-            , "  | cardano-address address bootstrap --network-tag 764824073 --path 0H/0H\n"
+            , "  | cardano-address address bootstrap --network-tag 764824073 --path 14H/42H\n"
+            , "\n"
             , "  DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM..."
             ])
   where
     parser = Cmd
-        <$> networkTagOpt
-        <*> optional derivationPathOpt
+        <$> optional derivationPathOpt
+        <*> networkTagOpt Byron
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,derivationPath} = do

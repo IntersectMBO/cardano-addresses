@@ -18,6 +18,8 @@ import Options.Applicative
     ( Parser, auto, helpDoc, long, metavar, option )
 import Options.Applicative.Help.Pretty
     ( string, vsep )
+import Options.Applicative.Style
+    ( Style (..) )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Jormungandr as Jormungandr
@@ -28,25 +30,30 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 --
 
 -- | Parse a 'NetworkTag' from the command-line, as an option
-networkTagOpt :: Parser NetworkTag
-networkTagOpt = option (NetworkTag <$> auto) $ mempty
+networkTagOpt :: Style -> Parser NetworkTag
+networkTagOpt style = option (NetworkTag <$> auto) $ mempty
     <> metavar "NETWORK-TAG"
     <> long "network-tag"
-    <> helpDoc  (Just (vsep (string <$> doc)))
+    <> helpDoc  (Just (vsep (string <$> doc style)))
   where
-    doc =
+    doc style' =
         [ "A tag which identifies a Cardano network."
         , ""
-        , "┌ Byron / Icarus ──────────"
-        , "│ mainnet: " <> show (unNetworkTag (snd Byron.byronMainnet))
-        , "│ staging: " <> show (unNetworkTag (snd Byron.byronStaging))
-        , "│ testnet: " <> show (unNetworkTag (snd Byron.byronTestnet))
-        , ""
-        , "┌ Jormungandr ─────────────"
-        , "│ testnet: " <> show (unNetworkTag Jormungandr.incentivizedTestnet)
-        , ""
-        , "┌ Shelley ─────────────────"
-        , "│ mainnet: " <> show (unNetworkTag Shelley.shelleyMainnet)
-        , "│ testnet: " <> show (unNetworkTag Shelley.shelleyTestnet)
-        , ""
-        ]
+        ] ++ case style' of
+        Byron ->
+            [ "┌ Byron / Icarus ──────────"
+            , "│ mainnet: " <> show (unNetworkTag (snd Byron.byronMainnet))
+            , "│ staging: " <> show (unNetworkTag (snd Byron.byronStaging))
+            , "│ testnet: " <> show (unNetworkTag (snd Byron.byronTestnet))
+            ]
+        Icarus ->
+            doc Byron
+        Jormungandr ->
+            [ "┌ Jormungandr ─────────────"
+            , "│ testnet: " <> show (unNetworkTag Jormungandr.incentivizedTestnet)
+            ]
+        Shelley ->
+            [ "┌ Shelley ─────────────────"
+            , "│ mainnet: " <> show (unNetworkTag Shelley.shelleyMainnet)
+            , "│ testnet: " <> show (unNetworkTag Shelley.shelleyTestnet)
+            ]
