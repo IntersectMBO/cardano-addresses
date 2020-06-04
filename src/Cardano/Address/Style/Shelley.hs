@@ -34,7 +34,7 @@ module Cardano.Address.Style.Shelley
 
       -- * Addresses
       -- $addresses
-    , isShelleyAddress
+    , inspectShelleyAddress
     , paymentAddress
     , delegationAddress
     , pointerAddress
@@ -83,11 +83,15 @@ import Cardano.Address.Derivation
     , xpubPublicKey
     )
 import Cardano.Address.Style.Byron
-    ( isByronAddress )
+    ( inspectByronAddress )
 import Cardano.Address.Style.Icarus
-    ( isIcarusAddress )
+    ( inspectIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
+import Control.Applicative
+    ( (<|>) )
 import Control.Arrow
     ( first )
 import Control.DeepSeq
@@ -95,7 +99,7 @@ import Control.DeepSeq
 import Control.Exception.Base
     ( assert )
 import Control.Monad
-    ( unless, when )
+    ( when )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
@@ -111,7 +115,7 @@ import Data.ByteArray
 import Data.ByteString
     ( ByteString )
 import Data.Maybe
-    ( fromMaybe )
+    ( fromMaybe, isNothing )
 import Data.Word
     ( Word32 )
 import Data.Word7
@@ -124,7 +128,10 @@ import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Data.Word7 as Word7
+
 -- $overview
 --
 -- This module provides an implementation of:
@@ -429,41 +436,103 @@ instance Internal.PointerAddress Shelley where
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
 --
+-- Returns 'Nothing' if it's not a valid Shelley address, or a ready-to-print
+-- string giving details about the 'Address'.
+--
 -- @since 2.0.0
-isShelleyAddress :: Address -> Bool
-isShelleyAddress addr
-    | BS.length bytes < 1 + publicKeyHashSize = False
+inspectShelleyAddress :: Address -> Maybe String
+inspectShelleyAddress addr
+    | BS.length bytes < 1 + publicKeyHashSize = Nothing
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
             addrType = fstByte .&. 0b11110000
+            network  = fstByte .&. 0b00001111
+            size = publicKeyHashSize
         in
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
-                0b00000000 -> BS.length rest == 2 * publicKeyHashSize
+                0b00000000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "base"
+                    , "spending key hash:  " <> base16 (BS.take size rest)
+                    , "stake key hash:     " <> base16 (BS.drop size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 0001: base address: scripthash28,keyhash28
-                0b00010000 -> BS.length rest == 2 * publicKeyHashSize
+                0b00010000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "script"
+                    , "script hash:        " <> base16 (BS.take size rest)
+                    , "stake key hash:     " <> base16 (BS.drop size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 0010: base address: keyhash28,scripthash28
-                0b00100000 -> BS.length rest == 2 * publicKeyHashSize
+                0b00100000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "base"
+                    , "spending key hash:  " <> base16 (BS.take size rest)
+                    , "stake script hash:  " <> base16 (BS.drop size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 0011: base address: scripthash28,scripthash28
-                0b00110000 -> BS.length rest == 2 * publicKeyHashSize
+                0b00110000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "script"
+                    , "script hash:        " <> base16 (BS.take size rest)
+                    , "stake script hash:  " <> base16 (BS.drop size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 0100: pointer address: keyhash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01000000 -> BS.length rest > publicKeyHashSize
+                0b01000000 | BS.length rest > size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "pointer"
+                    , "spending key hash:  " <> base16 (BS.take size rest)
+                    , "pointer:            " <> "TODO"
+                    , "network tag:        " <> show network
+                    ]
                -- 0101: pointer address: scripthash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01010000 -> BS.length rest > publicKeyHashSize
+                0b01010000 | BS.length rest > size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "pointer"
+                    , "script hash:        " <> base16 (BS.take size rest)
+                    , "pointer:            " <> "TODO"
+                    , "network tag:        " <> show network
+                    ]
                -- 0110: enterprise address: keyhash28
-                0b01100000 -> BS.length rest == publicKeyHashSize
+                0b01100000 | BS.length rest == size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "enterprise"
+                    , "spending key hash:  " <> base16 (BS.take size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 0111: enterprise address: scripthash28
-                0b01110000 -> BS.length rest == publicKeyHashSize
+                0b01110000 | BS.length rest == size ->
+                    Just $ unlines
+                    [ "address style:      " <> "Shelley"
+                    , "address type:       " <> "enterprise"
+                    , "script hash:        " <> base16 (BS.take size rest)
+                    , "network tag:        " <> show network
+                    ]
                -- 1000: byron address
-                0b10000000 -> isByronAddress bytes || isIcarusAddress bytes
-                _ -> False
+                0b10000000 ->
+                    inspectByronAddress addr <|> inspectIcarusAddress addr
+                _ ->
+                    Nothing
   where
-    bytes = unAddress addr
+    bytes  = unAddress addr
+    base16 = T.unpack . T.decodeUtf8 . encode EBase16
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -486,7 +555,7 @@ extendAddress
     -> Shelley 'StakingK XPub
     -> Either ErrExtendAddress Address
 extendAddress addr stakingKey = do
-    unless (isShelleyAddress addr) $
+    when (isNothing (inspectShelleyAddress addr)) $
         Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
 
     let bytes = unAddress addr

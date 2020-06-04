@@ -5,7 +5,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -35,7 +37,7 @@ module Cardano.Address.Style.Byron
 
       -- * Addresses
       -- $addresses
-    , isByronAddress
+    , inspectByronAddress
     , paymentAddress
 
       -- * Network Discrimination
@@ -58,6 +60,7 @@ import Cardano.Address
     , AddressDiscrimination (..)
     , HasNetworkDiscriminant (..)
     , NetworkTag (..)
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -74,6 +77,8 @@ import Cardano.Address.Derivation
     )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
@@ -88,16 +93,21 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.List
+    ( find )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 -- $overview
 --
@@ -276,15 +286,32 @@ deriveAddressPrivateKey acctK =
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 -- | Analyze an 'Address' to know whether it's a Byron address or not.
+-- Returns 'Nothing' if the address isn't a byron address, or return a string
+-- ready-to-print that gives information about an address.
 --
 -- @since 2.0.0
-isByronAddress :: ByteString -> Bool
-isByronAddress bytes =
-    case CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes of
-        Nothing ->
-            False
-        Just payload ->
-            CBOR.deserialiseCbor CBOR.hasDerivationPath payload  == Just True
+inspectByronAddress :: Address -> Maybe String
+inspectByronAddress addr = do
+    payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+    (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
+    path  <- find ((== 1) . fst) attrs
+    ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    pure $ unlines
+        [ "address style:    " <> "Byron"
+        , "address type:     " <> "bootstrap"
+        , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "derivation path:  " <> T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
+        , "network tag:      " <> maybe "ø" show ntwrk
+        ]
+  where
+    bytes :: ByteString
+    bytes = unAddress addr
+
+    decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])
+    decodePayload = do
+        _ <- CBOR.decodeListLenCanonicalOf 3
+        root <- CBOR.decodeBytes
+        (root,) <$> CBOR.decodeAllAttributes
 
 instance Internal.PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress

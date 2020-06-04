@@ -4,7 +4,9 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -31,7 +33,7 @@ module Cardano.Address.Style.Icarus
 
       -- * Addresses
       -- $addresses
-    , isIcarusAddress
+    , inspectIcarusAddress
     , paymentAddress
 
       -- * Network Discrimination
@@ -55,6 +57,7 @@ import Cardano.Address
     , AddressDiscrimination (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -74,12 +77,16 @@ import Cardano.Address.Style.Byron
     ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.Arrow
     ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Control.Monad
+    ( guard )
 import Crypto.Hash.Algorithms
     ( SHA256 (..), SHA512 (..) )
 import Crypto.MAC.HMAC
@@ -95,13 +102,14 @@ import Data.Function
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -299,16 +307,32 @@ deriveAddressPublicKey =
 -- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
--- | Introspect an 'Address' to know whether it's an Icarus address or not.
+-- | Analyze an 'Address' to know whether it's an Icarus address or not.
+-- Returns 'Nothing' if the address isn't a byron address, or return a string
+-- ready-to-print that gives information about an address.
 --
 -- @since 2.0.0
-isIcarusAddress :: ByteString -> Bool
-isIcarusAddress bytes =
-    case CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes of
-        Nothing ->
-            False
-        Just payload ->
-            CBOR.deserialiseCbor CBOR.hasDerivationPath payload  == Just False
+inspectIcarusAddress :: Address -> Maybe String
+inspectIcarusAddress addr = do
+    payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+    (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
+    guard $ 1 `notElem` (fst <$> attrs)
+    ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    pure $ unlines
+        [ "address style:  " <> "Icarus"
+        , "address type:   " <> "bootstrap"
+        , "address root:   " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "network tag:    " <> maybe "ø" show ntwrk
+        ]
+  where
+    bytes :: ByteString
+    bytes = unAddress addr
+
+    decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])
+    decodePayload = do
+        _ <- CBOR.decodeListLenCanonicalOf 3
+        root <- CBOR.decodeBytes
+        (root,) <$> CBOR.decodeAllAttributes
 
 instance Internal.PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress
