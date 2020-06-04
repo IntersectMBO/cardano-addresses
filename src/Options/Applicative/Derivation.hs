@@ -31,7 +31,7 @@ module Options.Applicative.Derivation
     , DerivationScheme
     , derivationSchemeOpt
 
-    -- * XPub
+    -- * XPub / XPrv
     , xpubArg
     ) where
 
@@ -189,14 +189,11 @@ derivationSchemeOpt :: Parser DerivationScheme
 derivationSchemeOpt =
     flag DerivationScheme2 DerivationScheme1 (long "legacy")
 
---
--- XPub
---
-xpubArg :: Parser XPub
-xpubArg =
+xpubArg :: String -> Parser XPub
+xpubArg helpDoc =
     argument (eitherReader reader) $ mempty
         <> metavar "XPUB"
-        <> help "An extended public key"
+        <> help helpDoc
   where
     toBytes = T.encodeUtf8 . T.pack
     reader str = do

@@ -64,7 +64,7 @@ mod liftCmd = command "delegation" $
             ])
   where
     parser = Cmd
-        <$> xpubArg
+        <$> xpubArg "An extended stake public key."
 
 run :: Cmd -> IO ()
 run Cmd{xpub} = do
