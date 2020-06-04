@@ -25,7 +25,7 @@ newtype Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About recovery phrases."
+        <> progDesc "About recovery phrases"
   where
     parser = subparser $ mconcat
         [ Generate.mod Generate

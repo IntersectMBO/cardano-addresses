@@ -562,7 +562,7 @@ extendAddress addr stakingKey = do
     let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
 
     when ((fstByte .&. 0b11110000) /= 0b01100000) $ do
-        Left $ ErrInvalidAddressType "Only payment addresses can be extended."
+        Left $ ErrInvalidAddressType "Only payment addresses can be extended"
 
     pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
         putWord8 $ fstByte .&. 0b00001111

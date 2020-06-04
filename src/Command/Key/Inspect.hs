@@ -34,7 +34,7 @@ data Cmd = Inspect
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "inspect" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Show information about a key."
+        <> progDesc "Show information about a key"
         <> footerDoc (Just $ string $ mconcat
             [ "The parent key is read from stdin."
             ])

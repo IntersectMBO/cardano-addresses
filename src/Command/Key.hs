@@ -40,7 +40,7 @@ data Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "key" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About public/private keys."
+        <> progDesc "About public/private keys"
         <> footerDoc (Just $ string $ mconcat
             [ "Example:\n\n"
             , "  $ cardano-address recovery-phrase generate --size 15 \\\n"

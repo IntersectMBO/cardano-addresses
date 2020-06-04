@@ -45,7 +45,7 @@ mod liftCmd = command "payment" $
         <> progDesc "Create a payment address"
         <> header "Payment addresses carry no delegation rights whatsoever."
         <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n\n"
+            [ "Example:\n"
             , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
             , "  | cardano-address key from-recovery-phrase Shelley > root.prv\n"
             , "\n"

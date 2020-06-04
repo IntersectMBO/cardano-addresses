@@ -37,7 +37,7 @@ newtype Cmd = Public
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "public" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Get the public counterpart of a private key."
+        <> progDesc "Get the public counterpart of a private key"
         <> footerDoc (Just $ string $ mconcat
             [ "The private key is read from stdin."
             ])

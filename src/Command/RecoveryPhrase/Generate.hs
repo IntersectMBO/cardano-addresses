@@ -17,7 +17,7 @@ import Prelude hiding
 import Cardano.Mnemonic
     ( entropyToMnemonic, genEntropy, mnemonicToText )
 import Options.Applicative
-    ( CommandFields, Mod, command, helper, info )
+    ( CommandFields, Mod, command, helper, info, progDesc )
 import Options.Applicative.MnemonicSize
     ( MnemonicSize (..), mnemonicSizeOpt )
 
@@ -32,7 +32,8 @@ newtype Cmd = Generate
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "generate" $
-    info (helper <*> fmap liftCmd parser) mempty
+    info (helper <*> fmap liftCmd parser) $ mempty
+        <> progDesc "Generate an English recovery phrase."
   where
     parser = Generate
         <$> mnemonicSizeOpt

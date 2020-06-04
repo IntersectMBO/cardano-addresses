@@ -40,7 +40,7 @@ data Cmd = FromRecoveryPhrase
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "from-recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Convert a recovery phrase to an extended private key."
+        <> progDesc "Convert a recovery phrase to an extended private key"
         <> footerDoc (Just $ string $ mconcat
             [ "The recovery phrase is read from stdin."
             , "\n\n"

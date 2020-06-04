@@ -40,7 +40,7 @@ data Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "address" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About addresses."
+        <> progDesc "About addresses"
         <> footerDoc (Just $ string $ mconcat
             [ "Integrating with Byron?\n  ↳ Look at 'bootstrap'."
             , "\n\n"

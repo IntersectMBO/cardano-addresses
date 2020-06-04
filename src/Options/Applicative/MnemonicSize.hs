@@ -66,6 +66,6 @@ mnemonicSizeOpt :: Parser MnemonicSize
 mnemonicSizeOpt = option (eitherReader mnemonicSizeFromString) $ mempty
     <> long "size"
     <> metavar "INT"
-    <> help "number of mnemonic words to generate."
+    <> help "Number of mnemonic words to generate. Must be a multiple of 3."
     <> value MS_15
     <> showDefaultWith mnemonicSizeToString

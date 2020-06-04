@@ -20,7 +20,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Style.Shelley
     ( ErrExtendAddress (..) )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Derivation
     ( xpubArg )
 import Options.Applicative.Help.Pretty
@@ -43,9 +43,10 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "delegation" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Create a delegation address"
-        <> header "A payment address must be provided on stdin."
         <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n\n"
+            [ "The payment address is read from stdin.\n"
+            , "\n"
+            , "Example:\n"
             , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
             , "  | cardano-address key from-recovery-phrase Shelley > root.prv\n"
             , "\n"

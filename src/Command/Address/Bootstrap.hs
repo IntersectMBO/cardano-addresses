@@ -61,7 +61,7 @@ mod liftCmd = command "bootstrap" $
         <> progDesc "Create a bootstrap address"
         <> header "Those addresses, now deprecated, were used during the Byron era."
         <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n\n"
+            [ "Example:\n"
             , "  $ cardano-address recovery-phrase generate --size 12 \\\n"
             , "  | cardano-address key from-recovery-phrase Byron > root.prv\n"
             , "\n"
@@ -87,7 +87,7 @@ run Cmd{networkTag,rootXPub,derivationPath} = do
             pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)
         Just untypedPath -> do
             root <- maybe
-                (fail "A root public key must be provided when --path is provided.") pure rootXPub
+                (fail "A root public key must be provided when --path is provided") pure rootXPub
             case castDerivationPath untypedPath of
                 [acctIx, addrIx] -> do
                     let path = (acctIx, toEnum (fromEnum addrIx))

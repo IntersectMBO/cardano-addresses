@@ -46,7 +46,7 @@ data Cmd = Inspect
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "inspect" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Show information about an address."
+        <> progDesc "Show information about an address"
         <> footerDoc (Just $ string $ mconcat
             [ "The address is read from stdin.\n"
             , "\n"
@@ -71,7 +71,7 @@ run :: Cmd -> IO ()
 run Inspect = do
     bytes <- hGetBytes stdin
     case inspect (unsafeMkAddress bytes) of
-        Nothing -> fail "Unrecognized address on standard input."
+        Nothing -> fail "Unrecognized address on standard input"
         Just str -> forM_ (T.pack <$> lines str) $ \line -> do
             let (label, value) = T.breakOn ":" line
             hPutBold     stdout (T.encodeUtf8 label)
