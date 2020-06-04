@@ -188,9 +188,10 @@ type family DerivationPath (depth :: Depth) :: * where
 instance Internal.GenMasterKey Byron where
     type SecondFactor Byron = ()
 
-    genMasterKeyFromXPrv = liftXPrv ()
+    genMasterKeyFromXPrv xprv =
+        liftXPrv (toXPub xprv) () xprv
     genMasterKeyFromMnemonic (SomeMnemonic mw) () =
-        liftXPrv () xprv
+        liftXPrv (toXPub xprv) () xprv
       where
         xprv = generate (hashSeed seedValidated)
         seed  = entropyToBytes $ mnemonicToEntropy mw
@@ -357,24 +358,25 @@ byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 --
 -- __examples:__
 --
--- >>> liftXPrv () prv
+-- >>> liftXPrv rootPrv () prv
 -- _ :: Byron RootK XPrv
 --
--- >>> liftXPrv minBound prv
+-- >>> liftXPrv rootPrv minBound prv
 -- _ :: Byron AccountK XPrv
 --
--- >>> liftXPrv (minBound, minBound) prv
+-- >>> liftXPrv rootPrv (minBound, minBound) prv
 -- _ :: Byron AddressK XPrv
 --
--- @since 1.0.0
+-- @since 2.0.0
 liftXPrv
-    :: DerivationPath depth
+    :: XPub -- ^ A root public key
+    -> DerivationPath depth
     -> XPrv
     -> Byron depth XPrv
-liftXPrv derivationPath getKey = Byron
+liftXPrv rootPub derivationPath getKey = Byron
     { getKey
     , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub getKey)
+    , payloadPassphrase = hdPassphrase rootPub
     }
 {-# DEPRECATED liftXPrv "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
 
@@ -388,13 +390,14 @@ liftXPrv derivationPath getKey = Byron
 --
 -- @since 2.0.0
 liftXPub
-    :: DerivationPath depth
+    :: XPub -- ^ A root public key
+    -> DerivationPath depth
     -> XPub
     -> Byron depth XPub
-liftXPub derivationPath getKey = Byron
+liftXPub rootPub derivationPath getKey = Byron
     { getKey
     , derivationPath
-    , payloadPassphrase = hdPassphrase getKey
+    , payloadPassphrase = hdPassphrase rootPub
     }
 {-# DEPRECATED liftXPub "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
 
