@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -33,9 +34,12 @@ module Cardano.Address.Style.Shelley
 
       -- * Addresses
       -- $addresses
+    , isShelleyAddress
     , paymentAddress
     , delegationAddress
     , pointerAddress
+    , extendAddress
+    , ErrExtendAddress (..)
 
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
@@ -62,6 +66,7 @@ import Cardano.Address
     , NetworkTag (..)
     , invariantNetworkTag
     , invariantSize
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -77,12 +82,20 @@ import Cardano.Address.Derivation
     , generateNew
     , xpubPublicKey
     )
+import Cardano.Address.Style.Byron
+    ( isByronAddress )
+import Cardano.Address.Style.Icarus
+    ( isIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Control.Arrow
+    ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Control.Monad
+    ( unless, when )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
@@ -91,6 +104,8 @@ import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
+import Data.Bits
+    ( (.&.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -107,6 +122,7 @@ import GHC.Generics
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Word7 as Word7
 -- $overview
@@ -363,22 +379,12 @@ instance Internal.PaymentAddress Shelley where
           expectedLength = 1 + publicKeyHashSize
 
 instance Internal.DelegationAddress Shelley where
-    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString . blake2b224 $ paymentKey
-            putByteString . blake2b224 $ stakingKey
+    delegationAddress discrimination paymentKey =
+        unsafeFromRight . extendAddress (paymentAddress discrimination paymentKey)
       where
-          -- we use here the fact that delegation address stands for what is named
-          -- as base address - refer to delegation specification - Section 3.2.1.
-          -- What is important here is that the address is composed of discrimination
-          -- byte and two 28 bytes hashed public keys, one for payment key and the
-          -- other for staking/reword key.
-          -- Moreover, it was decided that first 4 bits for enterprise address
-          -- will be `0000`. The next for bits are reserved for network discriminator.
-          firstByte =
-              invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + 2*publicKeyHashSize
+        unsafeFromRight = either
+            (error "impossible: interally generated invalid address")
+            id
 
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
@@ -421,6 +427,44 @@ instance Internal.PointerAddress Shelley where
               putVariableLengthNat ix1'
               putVariableLengthNat ix2'
 
+-- | Analyze an 'Address' to know whether it's a Shelley address or not.
+--
+-- @since 2.0.0
+isShelleyAddress :: Address -> Bool
+isShelleyAddress addr
+    | BS.length bytes < 1 + publicKeyHashSize = False
+    | otherwise =
+        let
+            (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+            addrType = fstByte .&. 0b11110000
+        in
+            case addrType of
+               -- 0000: base address: keyhash28,keyhash28
+                0b00000000 -> BS.length rest == 2 * publicKeyHashSize
+               -- 0001: base address: scripthash28,keyhash28
+                0b00010000 -> BS.length rest == 2 * publicKeyHashSize
+               -- 0010: base address: keyhash28,scripthash28
+                0b00100000 -> BS.length rest == 2 * publicKeyHashSize
+               -- 0011: base address: scripthash28,scripthash28
+                0b00110000 -> BS.length rest == 2 * publicKeyHashSize
+               -- 0100: pointer address: keyhash28, 3 variable length uint
+               -- TODO Could fo something better for pointer and try decoding
+               --      the pointer
+                0b01000000 -> BS.length rest > publicKeyHashSize
+               -- 0101: pointer address: scripthash28, 3 variable length uint
+               -- TODO Could fo something better for pointer and try decoding
+               --      the pointer
+                0b01010000 -> BS.length rest > publicKeyHashSize
+               -- 0110: enterprise address: keyhash28
+                0b01100000 -> BS.length rest == publicKeyHashSize
+               -- 0111: enterprise address: scripthash28
+                0b01110000 -> BS.length rest == publicKeyHashSize
+               -- 1000: byron address
+                0b10000000 -> isByronAddress bytes || isIcarusAddress bytes
+                _ -> False
+  where
+    bytes = unAddress addr
+
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
 -- | Convert a public key to a payment 'Address' valid for the given
@@ -433,6 +477,36 @@ paymentAddress
     -> Address
 paymentAddress =
     Internal.paymentAddress
+
+-- | Extend an existing payment 'Address' to make it a delegation address.
+--
+-- @since 2.0.0
+extendAddress
+    :: Address
+    -> Shelley 'StakingK XPub
+    -> Either ErrExtendAddress Address
+extendAddress addr stakingKey = do
+    unless (isShelleyAddress addr) $
+        Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
+
+    let bytes = unAddress addr
+    let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+
+    when ((fstByte .&. 0b11110000) /= 0b01100000) $ do
+        Left $ ErrInvalidAddressType "Only payment addresses can be extended."
+
+    pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+        putWord8 $ fstByte .&. 0b00001111
+        putByteString rest
+        putByteString . blake2b224 $ stakingKey
+
+-- | Captures error occuring when trying to extend an invalid address.
+--
+-- @since 2.0.0
+data ErrExtendAddress
+    = ErrInvalidAddressStyle String
+    | ErrInvalidAddressType String
+    deriving (Show)
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --

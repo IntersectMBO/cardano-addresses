@@ -43,9 +43,6 @@ import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
---
--- address
---
 
 data Cmd = Cmd
     { networkTag :: NetworkTag

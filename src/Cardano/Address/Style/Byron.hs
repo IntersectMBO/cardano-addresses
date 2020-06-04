@@ -274,7 +274,7 @@ deriveAddressPrivateKey acctK =
 -- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
--- | Introspect an 'Address' to know whether it's a Byron address or not.
+-- | Analyze an 'Address' to know whether it's a Byron address or not.
 --
 -- @since 2.0.0
 isByronAddress :: ByteString -> Bool

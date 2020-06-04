@@ -32,9 +32,6 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
---
--- address
---
 
 newtype Cmd = Cmd
     { networkTag :: NetworkTag

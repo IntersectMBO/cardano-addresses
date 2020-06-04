@@ -18,6 +18,7 @@ module Cardano.Address
     , PointerAddress (..)
     , ChainPointer (..)
     , unsafeMkAddress
+    , unAddress
 
       -- * Conversion From / To Text
     , base58
