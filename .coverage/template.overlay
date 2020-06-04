@@ -136,6 +136,27 @@ module "Command.Key.Inspect" {
   tick function "showsPrec" [Show instance];
 }
 
+module "Command.Address" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.Address.Bootstrap" {
+  tick function "showsPrec" [Show instance];
+  tick "rootXPub" [Record Accessor"];
+  tick "derivationPath" [Record Accessor"];
+  tick "networkTag" [Record Accessor"];
+}
+
+module "Command.Address.Payment" {
+  tick function "showsPrec" [Show instance];
+  tick "networkTag" [Record Accessor"];
+}
+
+module "Command.Address.Delegation" {
+  tick function "showsPrec" [Show instance];
+  tick "xpub" [Record Accessor"];
+}
+
 module "Options.Applicative.Derivation" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
@@ -156,6 +177,11 @@ module "Options.Applicative.Style" {
 }
 
 module "Codec.Binary.Encoding" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+}
+
+module "Data.Word7" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
 }

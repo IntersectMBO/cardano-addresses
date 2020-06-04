@@ -12,7 +12,7 @@ import Test.Utils
     ( cli, describeCmd )
 
 spec :: Spec
-spec = describeCmd [ "address", "payment" ] $ do
+spec = describeCmd [ "address", "delegation" ] $ do
     specShelley defaultPhrase "1852H/1815H/0H/2/0"
         "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
         "addr1qpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ewvxwdrt\
