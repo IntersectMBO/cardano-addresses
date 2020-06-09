@@ -55,11 +55,10 @@ mod liftCmd = command "inspect" $
             , "  | cardano-address key public \\\n"
             , "  | cardano-address address payment --network-tag 0 \\\n"
             , "  | cardano-address address delegation $(cat stake.prv | cardano-address key public) \\\n"
-
             , "  | cardano-address address inspect\n"
             , "\n"
             , "  address style:      Shelley\n"
-            , "  address type:       base\n"
+            , "  stake reference:    by value\n"
             , "  spending key hash:  79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65\n"
             , "  stake key hash:     cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94\n"
             , "  network tag:        0"

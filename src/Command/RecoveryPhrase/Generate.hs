@@ -33,7 +33,7 @@ newtype Cmd = Generate
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "generate" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Generate an English recovery phrase."
+        <> progDesc "Generate an English recovery phrase"
   where
     parser = Generate
         <$> mnemonicSizeOpt

@@ -455,7 +455,7 @@ inspectShelleyAddress addr
                 0b00000000 | BS.length rest == 2 * size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "base"
+                    , "stake reference:    " <> "by value"
                     , "spending key hash:  " <> base16 (BS.take size rest)
                     , "stake key hash:     " <> base16 (BS.drop size rest)
                     , "network tag:        " <> show network
@@ -464,7 +464,7 @@ inspectShelleyAddress addr
                 0b00010000 | BS.length rest == 2 * size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "script"
+                    , "stake reference:    " <> "by value"
                     , "script hash:        " <> base16 (BS.take size rest)
                     , "stake key hash:     " <> base16 (BS.drop size rest)
                     , "network tag:        " <> show network
@@ -473,7 +473,7 @@ inspectShelleyAddress addr
                 0b00100000 | BS.length rest == 2 * size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "base"
+                    , "stake reference:    " <> "by value"
                     , "spending key hash:  " <> base16 (BS.take size rest)
                     , "stake script hash:  " <> base16 (BS.drop size rest)
                     , "network tag:        " <> show network
@@ -482,7 +482,7 @@ inspectShelleyAddress addr
                 0b00110000 | BS.length rest == 2 * size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "script"
+                    , "stake reference:    " <> "by value"
                     , "script hash:        " <> base16 (BS.take size rest)
                     , "stake script hash:  " <> base16 (BS.drop size rest)
                     , "network tag:        " <> show network
@@ -493,7 +493,7 @@ inspectShelleyAddress addr
                 0b01000000 | BS.length rest > size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "pointer"
+                    , "stake reference:    " <> "by pointer"
                     , "spending key hash:  " <> base16 (BS.take size rest)
                     , "pointer:            " <> "TODO"
                     , "network tag:        " <> show network
@@ -504,7 +504,7 @@ inspectShelleyAddress addr
                 0b01010000 | BS.length rest > size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "pointer"
+                    , "stake reference:    " <> "by pointer"
                     , "script hash:        " <> base16 (BS.take size rest)
                     , "pointer:            " <> "TODO"
                     , "network tag:        " <> show network
@@ -513,7 +513,7 @@ inspectShelleyAddress addr
                 0b01100000 | BS.length rest == size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "enterprise"
+                    , "stake reference:    " <> "none"
                     , "spending key hash:  " <> base16 (BS.take size rest)
                     , "network tag:        " <> show network
                     ]
@@ -521,7 +521,7 @@ inspectShelleyAddress addr
                 0b01110000 | BS.length rest == size ->
                     Just $ unlines
                     [ "address style:      " <> "Shelley"
-                    , "address type:       " <> "enterprise"
+                    , "stake reference:    " <> "none"
                     , "script hash:        " <> base16 (BS.take size rest)
                     , "network tag:        " <> show network
                     ]

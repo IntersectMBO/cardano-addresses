@@ -33,7 +33,8 @@ specShelley phrase path networkTag want = it ("golden shelley (payment) " <> pat
 
 specMalformedNetwork :: String -> SpecWith ()
 specMalformedNetwork networkTag = it ("malformed network " <> networkTag) $ do
-    (out, err) <- cli [ "address", "payment", "--network-tag", networkTag ] ""
+    (out, err) <- cli [ "address", "payment", "--network-tag", networkTag ]
+        "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
     out `shouldBe` ""
     err `shouldContain` "--network-tag: cannot parse value"
     err `shouldContain` "Usage"

@@ -63,7 +63,7 @@ specInvalidAddress :: String -> SpecWith ()
 specInvalidAddress addr = it ("invalid address " <> addr) $ do
     (out, err) <- cli [ "address", "delegation", defaultXPub ] addr
     out `shouldBe` ""
-    err `shouldContain` "Only payment addresses can be extended."
+    err `shouldContain` "Only payment addresses can be extended"
 
 specMalformedXPub :: String -> SpecWith ()
 specMalformedXPub xpub = it ("malformed xpub " <> xpub) $ do
@@ -75,7 +75,7 @@ specInvalidXPub :: String -> SpecWith ()
 specInvalidXPub xpub = it ("invalid xpub " <> xpub) $ do
     (out, err) <- cli [ "address", "delegation", xpub ] defaultAddr
     out `shouldBe` ""
-    err `shouldContain` "Failed to convert bytes into a valid extended public key."
+    err `shouldContain` "Failed to convert bytes into a valid extended public key"
 
 
 defaultPhrase :: [String]

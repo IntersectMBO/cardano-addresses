@@ -319,10 +319,10 @@ inspectIcarusAddress addr = do
     guard $ 1 `notElem` (fst <$> attrs)
     ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
     pure $ unlines
-        [ "address style:  " <> "Icarus"
-        , "address type:   " <> "bootstrap"
-        , "address root:   " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "network tag:    " <> maybe "ø" show ntwrk
+        [ "address style:    " <> "Icarus"
+        , "stake reference:  " <> "none"
+        , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "network tag:      " <> maybe "ø" show ntwrk
         ]
   where
     bytes :: ByteString

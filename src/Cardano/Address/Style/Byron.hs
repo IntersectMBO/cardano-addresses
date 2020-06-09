@@ -298,7 +298,7 @@ inspectByronAddress addr = do
     ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
     pure $ unlines
         [ "address style:    " <> "Byron"
-        , "address type:     " <> "bootstrap"
+        , "stake reference:  " <> "none"
         , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
         , "derivation path:  " <> T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
         , "network tag:      " <> maybe "ø" show ntwrk

@@ -88,7 +88,7 @@ derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
     <> metavar "DERIVATION-PATH"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (44H/1815H/0H/0)."
+        \'H' (e.g. 44H/1815H/0H/0)."
 
 derivationPathOpt :: Parser DerivationPath
 derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
@@ -96,7 +96,7 @@ derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
     <> long "path"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (44H/1815H/0H/0)."
+        \'H' (e.g. 44H/1815H/0H/0)."
 
 --
 -- Derivation Index
@@ -203,7 +203,7 @@ xpubArg helpDoc =
             Just EBase58   -> fromBase58 (toBytes str)
             Nothing        -> Left
                 "Couldn't detect input encoding? The key must be encoded as \
-                \bech16, bech32 or base58."
+                \base16, bech32 or base58."
         case xpubFromBytes bytes of
             Just xpub -> pure xpub
             Nothing   -> Left

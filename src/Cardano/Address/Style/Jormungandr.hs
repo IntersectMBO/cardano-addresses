@@ -380,6 +380,7 @@ inspectJormungandrAddress addr
                     Just $ unlines
                     [ "address style:    " <> "Jormungandr"
                     , "address type:     " <> "single"
+                    , "stake reference:  " <> "none"
                     , "spending key:     " <> base16 (BS.take size rest)
                     , "network tag:      " <> show network
                     ]
@@ -387,6 +388,7 @@ inspectJormungandrAddress addr
                     Just $ unlines
                     [ "address style:    " <> "Jormungandr"
                     , "address type:     " <> "group"
+                    , "stake reference:  " <> "by value"
                     , "spending key:     " <> base16 (BS.take size rest)
                     , "stake key:        " <> base16 (BS.drop size rest)
                     , "network tag:      " <> show network
@@ -395,6 +397,7 @@ inspectJormungandrAddress addr
                     Just $ unlines
                     [ "address style:    " <> "Jormungandr"
                     , "address type:     " <> "account"
+                    , "stake reference:  " <> "none"
                     , "account key:      " <> base16 (BS.take size rest)
                     , "network tag:      " <> show network
                     ]
@@ -402,6 +405,7 @@ inspectJormungandrAddress addr
                     Just $ unlines
                     [ "address style:    " <> "Jormungandr"
                     , "address type:     " <> "multisig"
+                    , "stake reference:  " <> "none"
                     , "merkle root:      " <> base16 (BS.take size rest)
                     , "network tag:      " <> show network
                     ]

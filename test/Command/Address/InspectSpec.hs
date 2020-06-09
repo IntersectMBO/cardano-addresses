@@ -15,11 +15,11 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "address", "inspect" ] $ do
-    specInspectAddress ["Byron", "bootstrap"]
+    specInspectAddress ["Byron", "none"]
         "37btjrVyb4KEgoGCHJ7XFaJRLBRiVuvcrQWPpp4HeaxdTxhKwQjXHNKL4\
         \3NhXaQNa862BmxSFXZFKqPqbxRc3kCUeTRMwjJevFeCKokBG7A7num5Wh"
 
-    specInspectAddress ["Icarus", "bootstrap"]
+    specInspectAddress ["Icarus", "none"]
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
     specInspectAddress ["Jormungandr", "single"]
@@ -29,10 +29,10 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "addr1s3aa2wrvxxkrrwnsw6zk2qx0ymu96354hq83s0r6203l9pqe6677r\
         \vjwwzcv9nhtynxf728nserccua2w8q949dqzxdmj8wcazwrty4wkdnx06"
 
-    specInspectAddress ["Shelley", "enterprise"]
+    specInspectAddress ["Shelley", "none"]
         "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
 
-    specInspectAddress ["Shelley", "base"]
+    specInspectAddress ["Shelley", "by value"]
         "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ew\
         \vxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
 
@@ -46,7 +46,7 @@ specInspectAddress :: [String] -> String -> SpecWith ()
 specInspectAddress mustHave addr = it addr $ do
     out <- cli [ "address", "inspect" ] addr
     out `shouldContain` "address style:"
-    out `shouldContain` "address type:"
+    out `shouldContain` "stake reference:"
     out `shouldContain` "network tag:"
     forM_ mustHave (shouldContain out)
 

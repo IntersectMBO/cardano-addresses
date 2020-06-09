@@ -70,7 +70,7 @@ run Cmd{networkTag} = do
     xpub <- hGetXPub stdin
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left ErrWrongNetworkTag{} -> do
-            fail "Invalid network tag. Must be between [0; 15]"
+            fail "Invalid network tag. Must be between [0, 15]"
         Right discriminant -> do
             let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
