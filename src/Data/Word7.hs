@@ -18,9 +18,6 @@ module Data.Word7
       -- * Encode / Decode
     , putVariableLengthNat
     , getVariableLengthNat
-
-      -- * Helpers
-    , limit
     ) where
 
 import Prelude
@@ -85,9 +82,9 @@ toNatural =
                (res + (fromIntegral x)*(limit pow + 1), pow + 7)
           )
     (0,0)
-
-limit :: Int -> Natural
-limit pow = 2 ^ pow - 1
+  where
+    limit :: Int -> Natural
+    limit pow = 2 ^ pow - 1
 
 --
 -- Decoding

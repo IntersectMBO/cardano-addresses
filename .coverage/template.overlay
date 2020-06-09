@@ -157,6 +157,13 @@ module "Command.Address.Delegation" {
   tick "xpub" [Record Accessor"];
 }
 
+module "Command.Address.Pointer" {
+  tick function "showsPrec" [Show instance];
+  tick "_slotNum" [Record Accessor"];
+  tick "_transactionIndex" [Record Accessor"];
+  tick "_outputIndex" [Record Accessor"];
+}
+
 module "Options.Applicative.Derivation" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];

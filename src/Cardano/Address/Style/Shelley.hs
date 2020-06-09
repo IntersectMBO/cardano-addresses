@@ -137,7 +137,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.Word7 as Word7
 
 -- $overview
 --
@@ -394,52 +393,23 @@ instance Internal.PaymentAddress Shelley where
 
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey =
-        unsafeFromRight . extendAddress (paymentAddress discrimination paymentKey)
+        unsafeFromRight
+        . extendAddress (paymentAddress discrimination paymentKey)
+        . Left
       where
         unsafeFromRight = either
             (error "impossible: interally generated invalid address")
             id
 
 instance Internal.PointerAddress Shelley where
-    pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
-        unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString (blake2b224 key)
-            putPointer ptr
+    pointerAddress discrimination paymentKey =
+        unsafeFromRight
+        . extendAddress (paymentAddress discrimination paymentKey)
+        . Right
       where
-          -- we use here the fact that pointer address stands for what is named
-          -- the same in delegation specification - Section 3.2.4. What is
-          -- important here is that the address is composed of discrimination
-          -- byte, 28 bytes hashed public key and three numbers depicting slot
-          -- and indices. Moreover, it was decided that first 4 bits for pointer
-          -- address will be `0100`. The next for 4 bits are reserved for network
-          -- discriminator. `0100 0000` is 64 in decimal.
-          firstByte =
-              64 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + publicKeyHashSize + pointerLength
-
-          pointerLength =
-                    sum $ calculateLength <$>
-                    [sl, fromIntegral ix1, fromIntegral ix2]
-
-          calculateLength inp
-              | inp <= fromIntegral (Word7.limit 7) = 1
-              | inp <= fromIntegral (Word7.limit 14) = 2
-              | inp <= fromIntegral (Word7.limit 21) = 3
-              | inp <= fromIntegral (Word7.limit 28) = 4
-              | inp <= fromIntegral (Word7.limit 35) = 5
-              | inp <= fromIntegral (Word7.limit 42) = 6
-              | inp <= fromIntegral (Word7.limit 49) = 7
-              | inp <= fromIntegral (Word7.limit 56) = 8
-              | inp <= fromIntegral (Word7.limit 63) = 9
-              | otherwise = 10
-
-
-          putPointer (ChainPointer slotN ix1' ix2') = do
-              putVariableLengthNat (fromIntegral slotN)
-              putVariableLengthNat ix1'
-              putVariableLengthNat ix2'
+        unsafeFromRight = either
+            (error "impossible: interally generated invalid address")
+            id
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
 --
@@ -578,9 +548,9 @@ paymentAddress =
 -- @since 2.0.0
 extendAddress
     :: Address
-    -> Shelley 'StakingK XPub
+    -> Either (Shelley 'StakingK XPub) ChainPointer
     -> Either ErrExtendAddress Address
-extendAddress addr stakingKey = do
+extendAddress addr stakeReference = do
     when (isNothing (inspectShelleyAddress addr)) $
         Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
 
@@ -590,10 +560,23 @@ extendAddress addr stakingKey = do
     when ((fstByte .&. 0b11110000) /= 0b01100000) $ do
         Left $ ErrInvalidAddressType "Only payment addresses can be extended"
 
-    pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
-        putWord8 $ fstByte .&. 0b00001111
-        putByteString rest
-        putByteString . blake2b224 $ stakingKey
+    case stakeReference of
+        Left stakingKey -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                putWord8 $ fstByte .&. 0b00001111
+                putByteString rest
+                putByteString . blake2b224 $ stakingKey
+
+        Right pointer -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                putWord8 $ fstByte .&. 0b01001111
+                putByteString rest
+                putPointer pointer
+  where
+    putPointer (ChainPointer a b c) = do
+        putVariableLengthNat a
+        putVariableLengthNat b
+        putVariableLengthNat c
 
 -- | Captures error occuring when trying to extend an invalid address.
 --
