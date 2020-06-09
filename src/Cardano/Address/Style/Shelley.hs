@@ -5,6 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -100,12 +101,16 @@ import Control.Exception.Base
     ( assert )
 import Control.Monad
     ( when )
+import Control.Monad
+    ( guard )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
     ( Blake2b_224 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
+import Data.Binary.Get
+    ( runGetOrFail )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.Bits
@@ -114,12 +119,14 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Functor
+    ( ($>) )
 import Data.Maybe
     ( fromMaybe, isNothing )
 import Data.Word
     ( Word32 )
 import Data.Word7
-    ( putVariableLengthNat )
+    ( getVariableLengthNat, putVariableLengthNat )
 import GHC.Generics
     ( Generic )
 
@@ -454,77 +461,79 @@ inspectShelleyAddress addr
                -- 0000: base address: keyhash28,keyhash28
                 0b00000000 | BS.length rest == 2 * size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by value"
-                    , "spending key hash:  " <> base16 (BS.take size rest)
-                    , "stake key hash:     " <> base16 (BS.drop size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "stake key hash:     " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 0001: base address: scripthash28,keyhash28
                 0b00010000 | BS.length rest == 2 * size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by value"
-                    , "script hash:        " <> base16 (BS.take size rest)
-                    , "stake key hash:     " <> base16 (BS.drop size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "stake key hash:     " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 0010: base address: keyhash28,scripthash28
                 0b00100000 | BS.length rest == 2 * size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by value"
-                    , "spending key hash:  " <> base16 (BS.take size rest)
-                    , "stake script hash:  " <> base16 (BS.drop size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "stake script hash:  " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 0011: base address: scripthash28,scripthash28
                 0b00110000 | BS.length rest == 2 * size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by value"
-                    , "script hash:        " <> base16 (BS.take size rest)
-                    , "stake script hash:  " <> base16 (BS.drop size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "stake script hash:  " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 0100: pointer address: keyhash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01000000 | BS.length rest > size ->
+                0b01000000 | BS.length rest > size -> do
+                    ptr <- getPtr (BS.drop size rest)
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by pointer"
-                    , "spending key hash:  " <> base16 (BS.take size rest)
-                    , "pointer:            " <> "TODO"
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by pointer"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "pointer:            " <> prettyPtr ptr
+                        , "network tag:        " <> show network
+                        ]
                -- 0101: pointer address: scripthash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01010000 | BS.length rest > size ->
+                0b01010000 | BS.length rest > size -> do
+                    ptr <- getPtr (BS.drop size rest)
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "by pointer"
-                    , "script hash:        " <> base16 (BS.take size rest)
-                    , "pointer:            " <> "TODO"
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by pointer"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "pointer:            " <> prettyPtr ptr
+                        , "network tag:        " <> show network
+                        ]
                -- 0110: enterprise address: keyhash28
                 0b01100000 | BS.length rest == size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "none"
-                    , "spending key hash:  " <> base16 (BS.take size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "none"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 0111: enterprise address: scripthash28
                 0b01110000 | BS.length rest == size ->
                     Just $ unlines
-                    [ "address style:      " <> "Shelley"
-                    , "stake reference:    " <> "none"
-                    , "script hash:        " <> base16 (BS.take size rest)
-                    , "network tag:        " <> show network
-                    ]
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "none"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "network tag:        " <> show network
+                        ]
                -- 1000: byron address
                 0b10000000 ->
                     inspectByronAddress addr <|> inspectIcarusAddress addr
@@ -533,6 +542,23 @@ inspectShelleyAddress addr
   where
     bytes  = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
+
+    prettyPtr :: ChainPointer -> String
+    prettyPtr ChainPointer{slotNum,transactionIndex,outputIndex} = unwords
+        [ "sl#" <> show slotNum
+        , "tx#" <> show transactionIndex
+        , "ix#" <> show outputIndex
+        ]
+
+    getPtr :: ByteString -> Maybe ChainPointer
+    getPtr source = case runGetOrFail get (BL.fromStrict source) of
+        Left{} -> Nothing
+        Right (rest, _, a) -> guard (BL.null rest) $> a
+      where
+        get = ChainPointer
+            <$> getVariableLengthNat
+            <*> getVariableLengthNat
+            <*> getVariableLengthNat
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -683,7 +709,6 @@ liftXPub = Shelley
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =
     BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey
-
 
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)
 publicKeyHashSize :: Int

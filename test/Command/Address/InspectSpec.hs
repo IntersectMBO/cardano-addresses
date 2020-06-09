@@ -36,6 +36,9 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ew\
         \vxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
 
+    specInspectAddress ["Shelley", "by pointer"]
+        "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
+
     specInspectMalformed
         "💩"
 
