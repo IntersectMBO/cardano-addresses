@@ -8,6 +8,9 @@ module "Cardano.Address" {
   inside "invariantNetworkTag" {
     tick "otherwise" [Invariant];
   }
+  tick "slotNum" [Record Accessor"];
+  tick "transactionIndex" [Record Accessor"];
+  tick "outputIndex" [Record Accessor"];
 }
 
 module "Cardano.Address.Derivation" {
@@ -162,6 +165,10 @@ module "Command.Address.Pointer" {
   tick "_slotNum" [Record Accessor"];
   tick "_transactionIndex" [Record Accessor"];
   tick "_outputIndex" [Record Accessor"];
+}
+
+module "Command.Address.Inspect" {
+  tick function "showsPrec" [Show instance];
 }
 
 module "Options.Applicative.Derivation" {

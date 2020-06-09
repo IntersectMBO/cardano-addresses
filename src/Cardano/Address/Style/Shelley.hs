@@ -100,9 +100,7 @@ import Control.DeepSeq
 import Control.Exception.Base
     ( assert )
 import Control.Monad
-    ( when )
-import Control.Monad
-    ( guard )
+    ( guard, when )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
