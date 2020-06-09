@@ -5,7 +5,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -35,6 +37,7 @@ module Cardano.Address.Style.Byron
 
       -- * Addresses
       -- $addresses
+    , inspectByronAddress
     , paymentAddress
 
       -- * Network Discrimination
@@ -44,6 +47,7 @@ module Cardano.Address.Style.Byron
 
       -- * Unsafe
     , liftXPrv
+    , liftXPub
 
       -- Internals
     , minSeedLengthBytes
@@ -56,6 +60,7 @@ import Cardano.Address
     , AddressDiscrimination (..)
     , HasNetworkDiscriminant (..)
     , NetworkTag (..)
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -72,6 +77,8 @@ import Cardano.Address.Derivation
     )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
@@ -86,16 +93,21 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.List
+    ( find )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.ByteArray as BA
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 -- $overview
 --
@@ -186,9 +198,10 @@ type family DerivationPath (depth :: Depth) :: * where
 instance Internal.GenMasterKey Byron where
     type SecondFactor Byron = ()
 
-    genMasterKeyFromXPrv = liftXPrv ()
+    genMasterKeyFromXPrv xprv =
+        liftXPrv (toXPub xprv) () xprv
     genMasterKeyFromMnemonic (SomeMnemonic mw) () =
-        liftXPrv () xprv
+        liftXPrv (toXPub xprv) () xprv
       where
         xprv = generate (hashSeed seedValidated)
         seed  = entropyToBytes $ mnemonicToEntropy mw
@@ -272,6 +285,34 @@ deriveAddressPrivateKey acctK =
 -- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
+-- | Analyze an 'Address' to know whether it's a Byron address or not.
+-- Returns 'Nothing' if the address isn't a byron address, or return a string
+-- ready-to-print that gives information about an address.
+--
+-- @since 2.0.0
+inspectByronAddress :: Address -> Maybe String
+inspectByronAddress addr = do
+    payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+    (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
+    path  <- find ((== 1) . fst) attrs
+    ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    pure $ unlines
+        [ "address style:    " <> "Byron"
+        , "stake reference:  " <> "none"
+        , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "derivation path:  " <> T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
+        , "network tag:      " <> maybe "ø" show ntwrk
+        ]
+  where
+    bytes :: ByteString
+    bytes = unAddress addr
+
+    decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])
+    decodePayload = do
+        _ <- CBOR.decodeListLenCanonicalOf 3
+        root <- CBOR.decodeBytes
+        (root,) <$> CBOR.decodeAllAttributes
+
 instance Internal.PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress
         $ CBOR.toStrictByteString
@@ -333,7 +374,7 @@ byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 -- Unsafe
 --
 
--- | Backdoor for generating a new key from a raw XPrv.
+-- | Backdoor for generating a new key from a raw 'XPrv'.
 --
 -- Note that the @depth@ is left open so that the caller gets to decide what type
 -- of key this is. This is mostly for testing, in practice, seeds are used to
@@ -344,26 +385,48 @@ byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 --
 -- __examples:__
 --
--- >>> liftXPrv () prv
+-- >>> liftXPrv rootPrv () prv
 -- _ :: Byron RootK XPrv
 --
--- >>> liftXPrv minBound prv
+-- >>> liftXPrv rootPrv minBound prv
 -- _ :: Byron AccountK XPrv
 --
--- >>> liftXPrv (minBound, minBound) prv
+-- >>> liftXPrv rootPrv (minBound, minBound) prv
 -- _ :: Byron AddressK XPrv
 --
--- @since 1.0.0
+-- @since 2.0.0
 liftXPrv
-    :: DerivationPath depth
+    :: XPub -- ^ A root public key
+    -> DerivationPath depth
     -> XPrv
     -> Byron depth XPrv
-liftXPrv derivationPath getKey = Byron
+liftXPrv rootPub derivationPath getKey = Byron
     { getKey
     , derivationPath
-    , payloadPassphrase = hdPassphrase (toXPub getKey)
+    , payloadPassphrase = hdPassphrase rootPub
     }
 {-# DEPRECATED liftXPrv "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
+
+-- | Backdoor for generating a new key from a raw 'XPub'.
+--
+-- Note that the @depth@ is left open so that the caller gets to decide what type
+-- of key this is. This is mostly for testing, in practice, seeds are used to
+-- represent root keys, and one should 'genMasterKeyFromXPrv'
+--
+-- see also 'liftXPrv'
+--
+-- @since 2.0.0
+liftXPub
+    :: XPub -- ^ A root public key
+    -> DerivationPath depth
+    -> XPub
+    -> Byron depth XPub
+liftXPub rootPub derivationPath getKey = Byron
+    { getKey
+    , derivationPath
+    , payloadPassphrase = hdPassphrase rootPub
+    }
+{-# DEPRECATED liftXPub "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
 
 --
 -- Internal

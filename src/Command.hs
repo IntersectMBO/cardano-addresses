@@ -21,14 +21,16 @@ import Control.Monad
 import Options.Applicative
     ( ParserInfo
     , customExecParser
+    , footerDoc
     , helper
     , info
     , prefs
     , progDesc
-    , progDesc
     , showHelpOnEmpty
     , subparser
     )
+import Options.Applicative.Help.Pretty
+    ( string )
 import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
@@ -36,6 +38,7 @@ import System.IO
 import System.IO.Extra
     ( prettyIOException )
 
+import qualified Command.Address as Address
 import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
 
@@ -43,14 +46,25 @@ import qualified Command.RecoveryPhrase as RecoveryPhrase
 data CLI
     = RecoveryPhrase RecoveryPhrase.Cmd
     | Key Key.Cmd
+    | Address Address.Cmd
     deriving (Show)
 
 cli :: ParserInfo CLI
-cli = info (helper <*> parser) $ progDesc "cardano-addresses"
+cli = info (helper <*> parser) $ mempty
+    <> progDesc "cardano-addresses"
+    <> footerDoc (Just $ string $ mconcat
+        [ "💡 Need auto-completion?\n\n"
+        , "  ↳ source <(cardano-address --bash-completion-script `which cardano-address`)\n"
+        , "\n"
+        , "Or alternatively --fish-completion-script / --zsh-completion-script.\n"
+        , "For a long-term solution, you may want to put this script in the relevant place. e.g.:\n\n"
+        , "  ↳ /etc/bash_completion.d"
+        ])
   where
     parser = subparser $ mconcat
         [ RecoveryPhrase.mod RecoveryPhrase
         , Key.mod Key
+        , Address.mod Address
         ]
 
 -- | Run a given command
@@ -58,6 +72,7 @@ run :: CLI -> IO ()
 run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
+    Address sub -> Address.run sub
 
 -- | Parse command line options and arguments
 parse :: IO CLI

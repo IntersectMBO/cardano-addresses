@@ -60,15 +60,52 @@ de05de03906c441d7101963fe7cb9e9aa6c13dd833ee16156e2d675990a5fcb3
 ```console
 $ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
 $ cat recovery-phrase.prv \
-  | cardano-address key from-recovery-phrase Shelley \
-  | cardano-address key child 1852H/1815H/0H/2/0 \
-  | cardano-address key public 
+| cardano-address key from-recovery-phrase Shelley \
+| cardano-address key child 1852H/1815H/0H/2/0 \
+| cardano-address key public 
 xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sjlugy655aqemlvk6gmkuna46xwj9g4frwzw
 ```
 
 > :information_source: `1852H/1815H/0H/2/0` is the derivation path that is typically used by Cardano wallet to identify a stake key within HD wallet. If you seek compatibility with Daedalus or Yoroi, use this as well!
 
 </details>
+
+<details>
+  <summary>How to generate a payment address</summary>
+
+```console
+  $ cardano-address recovery-phrase generate --size 15 \
+  | cardano-address key from-recovery-phrase Shelley > root.prv
+
+  $ cat root.prv \
+  | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv
+
+  $ cat addr.prv \
+  | cardano-address key public \
+  | cardano-address address payment --network-tag 0
+  
+  addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg
+```
+</details>
+
+<details>
+  <summary>How to generate a delegation address</summary>
+
+  Follow the steps from 'How to generate a payment address'. Then, simply extend 
+  an existing payment address with a stake key!
+
+```console
+  $ cat root.prv \
+  | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
+
+  $ cat addr.prv \
+  | cardano-address key public \
+  | cardano-address address payment --network-tag 0
+  | cardano-address address delegation $(cat stake.prv | cardano-address key public)"
+  addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
+```
+</details>
+
 
 
 ## Contributing

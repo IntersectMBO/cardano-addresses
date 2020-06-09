@@ -50,7 +50,7 @@ data Cmd = Child
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "child" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Derive child keys from a parent public/private key."
+        <> progDesc "Derive child keys from a parent public/private key"
         <> footerDoc (Just $ string $ mconcat
             [ "The parent key is read from stdin."
             ])

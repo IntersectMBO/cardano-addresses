@@ -8,6 +8,9 @@ module "Cardano.Address" {
   inside "invariantNetworkTag" {
     tick "otherwise" [Invariant];
   }
+  tick "slotNum" [Record Accessor"];
+  tick "transactionIndex" [Record Accessor"];
+  tick "outputIndex" [Record Accessor"];
 }
 
 module "Cardano.Address.Derivation" {
@@ -136,6 +139,38 @@ module "Command.Key.Inspect" {
   tick function "showsPrec" [Show instance];
 }
 
+module "Command.Address" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.Address.Bootstrap" {
+  tick function "showsPrec" [Show instance];
+  tick "rootXPub" [Record Accessor"];
+  tick "derivationPath" [Record Accessor"];
+  tick "networkTag" [Record Accessor"];
+}
+
+module "Command.Address.Payment" {
+  tick function "showsPrec" [Show instance];
+  tick "networkTag" [Record Accessor"];
+}
+
+module "Command.Address.Delegation" {
+  tick function "showsPrec" [Show instance];
+  tick "xpub" [Record Accessor"];
+}
+
+module "Command.Address.Pointer" {
+  tick function "showsPrec" [Show instance];
+  tick "_slotNum" [Record Accessor"];
+  tick "_transactionIndex" [Record Accessor"];
+  tick "_outputIndex" [Record Accessor"];
+}
+
+module "Command.Address.Inspect" {
+  tick function "showsPrec" [Show instance];
+}
+
 module "Options.Applicative.Derivation" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
@@ -156,6 +191,11 @@ module "Options.Applicative.Style" {
 }
 
 module "Codec.Binary.Encoding" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
+}
+
+module "Data.Word7" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
 }

@@ -15,19 +15,21 @@ module Data.Word7
     , toWord7s
     , toNatural
 
-      -- * Encode
+      -- * Encode / Decode
     , putVariableLengthNat
-
-      -- * Helpers
-    , limit
+    , getVariableLengthNat
     ) where
 
 import Prelude
 
+import Data.Binary.Get
+    ( Get, getWord8 )
 import Data.Binary.Put
     ( Put, putWord8 )
 import Data.Bits
-    ( shiftR, (.&.), (.|.) )
+    ( shiftL, shiftR, (.&.), (.|.) )
+import Data.List
+    ( foldl' )
 import Data.Word
     ( Word8 )
 import Numeric.Natural
@@ -63,10 +65,15 @@ toWord8 (Word7 x) = x
 -- > [Word7 1,Word7 21,Word7 27]
 toWord7s :: Natural -> [Word7]
 toWord7s = reverse . go
-    where
-        go n
-            | n <= 0x7F = [Word7 . fromIntegral $ n]
-            | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
+  where
+    go n
+        | n <= 0x7F = [Word7 . fromIntegral $ n]
+        | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
+
+word7sToNat :: [Word7] -> Natural
+word7sToNat = foldl' f 0
+  where
+    f n (Word7 r) = shiftL n 7 .|. (fromIntegral r)
 
 toNatural :: [Word7] -> Natural
 toNatural =
@@ -75,17 +82,27 @@ toNatural =
                (res + (fromIntegral x)*(limit pow + 1), pow + 7)
           )
     (0,0)
-
-limit :: Int -> Natural
-limit pow = 2 ^ pow - 1
+  where
+    limit :: Int -> Natural
+    limit pow = 2 ^ pow - 1
 
 --
 -- Decoding
 --
 putVariableLengthNat :: Natural -> Put
 putVariableLengthNat = putWord7s . toWord7s
+  where
+    putWord7s :: [Word7] -> Put
+    putWord7s [] = pure ()
+    putWord7s [Word7 x] = putWord8 x
+    putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) >> putWord7s xs
 
-putWord7s :: [Word7] -> Put
-putWord7s [] = pure ()
-putWord7s [Word7 x] = putWord8 x
-putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) >> putWord7s xs
+getVariableLengthNat :: Get Natural
+getVariableLengthNat = word7sToNat <$> getWord7s
+  where
+    getWord7s :: Get [Word7]
+    getWord7s = do
+      next <- getWord8
+      case next .&. 0x80 of
+        0x80 -> (:) (toWord7 next) <$> getWord7s
+        _ -> pure [Word7 next]

@@ -18,6 +18,7 @@ module Cardano.Address
     , PointerAddress (..)
     , ChainPointer (..)
     , unsafeMkAddress
+    , unAddress
 
       -- * Conversion From / To Text
     , base58
@@ -198,7 +199,7 @@ class HasNetworkDiscriminant (key :: Depth -> * -> *) where
 -- (1) In 'Address' payloads, to discriminate addresses between networks.
 -- (2) At the network-level, when doing handshake with nodes.
 newtype NetworkTag
-    = NetworkTag Word32
+    = NetworkTag { unNetworkTag :: Word32 }
     deriving (Generic, Show, Eq)
 instance NFData NetworkTag
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -33,6 +34,7 @@ module Cardano.Address.Style.Jormungandr
 
       -- * Addresses
       -- $addresses
+    , inspectJormungandrAddress
     , paymentAddress
     , delegationAddress
 
@@ -58,6 +60,7 @@ import Cardano.Address
     , NetworkTag (..)
     , invariantNetworkTag
     , invariantSize
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -75,12 +78,18 @@ import Cardano.Address.Derivation
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
+import Control.Arrow
+    ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
+import Data.Bits
+    ( shiftR, (.&.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.Maybe
@@ -94,7 +103,10 @@ import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Crypto.PubKey.Ed25519 as Ed25519
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 -- $overview
 --
@@ -346,6 +358,62 @@ instance Internal.DelegationAddress Jormungandr where
       where
           (NetworkTag firstByte) = networkTag @Jormungandr discrimination
           expectedLength = 1 + 2*publicKeySize
+
+-- | Analyze an 'Address' to know whether it's a Jormungandr address or not.
+--
+-- Returns 'Nothing' if it's not a valid Shelley address, or a ready-to-print
+-- string giving details about the 'Jormungandr'.
+--
+-- @since 2.0.0
+inspectJormungandrAddress :: Address -> Maybe String
+inspectJormungandrAddress addr
+    | BS.length bytes < 1 + publicKeySize = Nothing
+    | otherwise =
+        let
+            (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+            addrType = fstByte .&. 0b01111111
+            network  = (fstByte .&. 0b10000000) `shiftR` 7
+            size = publicKeySize
+        in
+            case addrType of
+                0x03 | BS.length rest == size ->
+                    Just $ unlines
+                    [ "address style:    " <> "Jormungandr"
+                    , "address type:     " <> "single"
+                    , "stake reference:  " <> "none"
+                    , "spending key:     " <> base16 (BS.take size rest)
+                    , "network tag:      " <> show network
+                    ]
+                0x04 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                    [ "address style:    " <> "Jormungandr"
+                    , "address type:     " <> "group"
+                    , "stake reference:  " <> "by value"
+                    , "spending key:     " <> base16 (BS.take size rest)
+                    , "stake key:        " <> base16 (BS.drop size rest)
+                    , "network tag:      " <> show network
+                    ]
+                0x05 | BS.length rest == size ->
+                    Just $ unlines
+                    [ "address style:    " <> "Jormungandr"
+                    , "address type:     " <> "account"
+                    , "stake reference:  " <> "none"
+                    , "account key:      " <> base16 (BS.take size rest)
+                    , "network tag:      " <> show network
+                    ]
+                0x06 | BS.length rest == size ->
+                    Just $ unlines
+                    [ "address style:    " <> "Jormungandr"
+                    , "address type:     " <> "multisig"
+                    , "stake reference:  " <> "none"
+                    , "merkle root:      " <> base16 (BS.take size rest)
+                    , "network tag:      " <> show network
+                    ]
+                _ ->
+                    Nothing
+  where
+    bytes = unAddress addr
+    base16 = T.unpack . T.decodeUtf8 . encode EBase16
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --

@@ -1,9 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -33,13 +35,18 @@ module Cardano.Address.Style.Shelley
 
       -- * Addresses
       -- $addresses
+    , inspectShelleyAddress
     , paymentAddress
     , delegationAddress
     , pointerAddress
+    , extendAddress
+    , ErrExtendAddress (..)
 
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
+    , shelleyMainnet
+    , shelleyTestnet
 
       -- * Unsafe
     , liftXPrv
@@ -60,6 +67,7 @@ import Cardano.Address
     , NetworkTag (..)
     , invariantNetworkTag
     , invariantSize
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -75,38 +83,59 @@ import Cardano.Address.Derivation
     , generateNew
     , xpubPublicKey
     )
+import Cardano.Address.Style.Byron
+    ( inspectByronAddress )
+import Cardano.Address.Style.Icarus
+    ( inspectIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
+import Control.Applicative
+    ( (<|>) )
+import Control.Arrow
+    ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Control.Monad
+    ( guard, when )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
     ( Blake2b_224 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
+import Data.Binary.Get
+    ( runGetOrFail )
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
+import Data.Bits
+    ( (.&.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Functor
+    ( ($>) )
 import Data.Maybe
-    ( fromMaybe )
+    ( fromMaybe, isNothing )
 import Data.Word
-    ( Word32, Word8 )
+    ( Word32 )
 import Data.Word7
-    ( putVariableLengthNat )
+    ( getVariableLengthNat, putVariableLengthNat )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
-import qualified Data.Word7 as Word7
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
+
 -- $overview
 --
 -- This module provides an implementation of:
@@ -361,63 +390,143 @@ instance Internal.PaymentAddress Shelley where
           expectedLength = 1 + publicKeyHashSize
 
 instance Internal.DelegationAddress Shelley where
-    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString . blake2b224 $ paymentKey
-            putByteString . blake2b224 $ stakingKey
+    delegationAddress discrimination paymentKey =
+        unsafeFromRight
+        . extendAddress (paymentAddress discrimination paymentKey)
+        . Left
       where
-          -- we use here the fact that delegation address stands for what is named
-          -- as base address - refer to delegation specification - Section 3.2.1.
-          -- What is important here is that the address is composed of discrimination
-          -- byte and two 28 bytes hashed public keys, one for payment key and the
-          -- other for staking/reword key.
-          -- Moreover, it was decided that first 4 bits for enterprise address
-          -- will be `0000`. The next for bits are reserved for network discriminator.
-          firstByte =
-              invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + 2*publicKeyHashSize
+        unsafeFromRight = either
+            (error "impossible: interally generated invalid address")
+            id
 
 instance Internal.PointerAddress Shelley where
-    pointerAddress discrimination key ptr@(ChainPointer sl ix1 ix2) =
-        unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString (blake2b224 key)
-            putPointer ptr
+    pointerAddress discrimination paymentKey =
+        unsafeFromRight
+        . extendAddress (paymentAddress discrimination paymentKey)
+        . Right
       where
-          -- we use here the fact that pointer address stands for what is named
-          -- the same in delegation specification - Section 3.2.4. What is
-          -- important here is that the address is composed of discrimination
-          -- byte, 28 bytes hashed public key and three numbers depicting slot
-          -- and indices. Moreover, it was decided that first 4 bits for pointer
-          -- address will be `0100`. The next for 4 bits are reserved for network
-          -- discriminator. `0100 0000` is 64 in decimal.
-          firstByte =
-              64 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + publicKeyHashSize + pointerLength
+        unsafeFromRight = either
+            (error "impossible: interally generated invalid address")
+            id
 
-          pointerLength =
-                    sum $ calculateLength <$>
-                    [sl, fromIntegral ix1, fromIntegral ix2]
+-- | Analyze an 'Address' to know whether it's a Shelley address or not.
+--
+-- Returns 'Nothing' if it's not a valid Shelley address, or a ready-to-print
+-- string giving details about the 'Address'.
+--
+-- @since 2.0.0
+inspectShelleyAddress :: Address -> Maybe String
+inspectShelleyAddress addr
+    | BS.length bytes < 1 + publicKeyHashSize = Nothing
+    | otherwise =
+        let
+            (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+            addrType = fstByte .&. 0b11110000
+            network  = fstByte .&. 0b00001111
+            size = publicKeyHashSize
+        in
+            case addrType of
+               -- 0000: base address: keyhash28,keyhash28
+                0b00000000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "stake key hash:     " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 0001: base address: scripthash28,keyhash28
+                0b00010000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "stake key hash:     " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 0010: base address: keyhash28,scripthash28
+                0b00100000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "stake script hash:  " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 0011: base address: scripthash28,scripthash28
+                0b00110000 | BS.length rest == 2 * size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by value"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "stake script hash:  " <> base16 (BS.drop size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 0100: pointer address: keyhash28, 3 variable length uint
+               -- TODO Could fo something better for pointer and try decoding
+               --      the pointer
+                0b01000000 | BS.length rest > size -> do
+                    ptr <- getPtr (BS.drop size rest)
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by pointer"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "pointer:            " <> prettyPtr ptr
+                        , "network tag:        " <> show network
+                        ]
+               -- 0101: pointer address: scripthash28, 3 variable length uint
+               -- TODO Could fo something better for pointer and try decoding
+               --      the pointer
+                0b01010000 | BS.length rest > size -> do
+                    ptr <- getPtr (BS.drop size rest)
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "by pointer"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "pointer:            " <> prettyPtr ptr
+                        , "network tag:        " <> show network
+                        ]
+               -- 0110: enterprise address: keyhash28
+                0b01100000 | BS.length rest == size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "none"
+                        , "spending key hash:  " <> base16 (BS.take size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 0111: enterprise address: scripthash28
+                0b01110000 | BS.length rest == size ->
+                    Just $ unlines
+                        [ "address style:      " <> "Shelley"
+                        , "stake reference:    " <> "none"
+                        , "script hash:        " <> base16 (BS.take size rest)
+                        , "network tag:        " <> show network
+                        ]
+               -- 1000: byron address
+                0b10000000 ->
+                    inspectByronAddress addr <|> inspectIcarusAddress addr
+                _ ->
+                    Nothing
+  where
+    bytes  = unAddress addr
+    base16 = T.unpack . T.decodeUtf8 . encode EBase16
 
-          calculateLength inp
-              | inp <= fromIntegral (Word7.limit 7) = 1
-              | inp <= fromIntegral (Word7.limit 14) = 2
-              | inp <= fromIntegral (Word7.limit 21) = 3
-              | inp <= fromIntegral (Word7.limit 28) = 4
-              | inp <= fromIntegral (Word7.limit 35) = 5
-              | inp <= fromIntegral (Word7.limit 42) = 6
-              | inp <= fromIntegral (Word7.limit 49) = 7
-              | inp <= fromIntegral (Word7.limit 56) = 8
-              | inp <= fromIntegral (Word7.limit 63) = 9
-              | otherwise = 10
+    prettyPtr :: ChainPointer -> String
+    prettyPtr ChainPointer{slotNum,transactionIndex,outputIndex} = unwords
+        [ "sl#" <> show slotNum
+        , "tx#" <> show transactionIndex
+        , "ix#" <> show outputIndex
+        ]
 
-
-          putPointer (ChainPointer slotN ix1' ix2') = do
-              putVariableLengthNat (fromIntegral slotN)
-              putVariableLengthNat ix1'
-              putVariableLengthNat ix2'
+    getPtr :: ByteString -> Maybe ChainPointer
+    getPtr source = case runGetOrFail get (BL.fromStrict source) of
+        Left{} -> Nothing
+        Right (rest, _, a) -> guard (BL.null rest) $> a
+      where
+        get = ChainPointer
+            <$> getVariableLengthNat
+            <*> getVariableLengthNat
+            <*> getVariableLengthNat
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -431,6 +540,49 @@ paymentAddress
     -> Address
 paymentAddress =
     Internal.paymentAddress
+
+-- | Extend an existing payment 'Address' to make it a delegation address.
+--
+-- @since 2.0.0
+extendAddress
+    :: Address
+    -> Either (Shelley 'StakingK XPub) ChainPointer
+    -> Either ErrExtendAddress Address
+extendAddress addr stakeReference = do
+    when (isNothing (inspectShelleyAddress addr)) $
+        Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
+
+    let bytes = unAddress addr
+    let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+
+    when ((fstByte .&. 0b11110000) /= 0b01100000) $ do
+        Left $ ErrInvalidAddressType "Only payment addresses can be extended"
+
+    case stakeReference of
+        Left stakingKey -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                putWord8 $ fstByte .&. 0b00001111
+                putByteString rest
+                putByteString . blake2b224 $ stakingKey
+
+        Right pointer -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                putWord8 $ fstByte .&. 0b01001111
+                putByteString rest
+                putPointer pointer
+  where
+    putPointer (ChainPointer a b c) = do
+        putVariableLengthNat a
+        putVariableLengthNat b
+        putVariableLengthNat c
+
+-- | Captures error occuring when trying to extend an invalid address.
+--
+-- @since 2.0.0
+data ErrExtendAddress
+    = ErrInvalidAddressStyle String
+    | ErrInvalidAddressType String
+    deriving (Show)
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -476,7 +628,7 @@ instance HasNetworkDiscriminant Shelley where
 --
 -- @since 2.0.0
 newtype MkNetworkDiscriminantError
-    = ErrWrongNetworkTag Word8
+    = ErrWrongNetworkTag Integer
       -- ^ Wrong network tag.
     deriving (Eq, Show)
 
@@ -486,11 +638,23 @@ newtype MkNetworkDiscriminantError
 --
 -- @since 2.0.0
 mkNetworkDiscriminant
-    :: Word8
+    :: Integer
     -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 mkNetworkDiscriminant nTag
     | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
+
+-- | 'NetworkDicriminant' for Cardano MainNet & Shelley
+--
+-- @since 2.0.0
+shelleyMainnet :: NetworkDiscriminant Shelley
+shelleyMainnet = NetworkTag 1
+
+-- | 'NetworkDicriminant' for Cardano Testnet & Shelley
+--
+-- @since 2.0.0
+shelleyTestnet :: NetworkDiscriminant Shelley
+shelleyTestnet = NetworkTag 0
 
 --
 -- Unsafe
@@ -526,7 +690,6 @@ liftXPub = Shelley
 blake2b224 :: Shelley depth XPub -> ByteString
 blake2b224 =
     BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey
-
 
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)
 publicKeyHashSize :: Int

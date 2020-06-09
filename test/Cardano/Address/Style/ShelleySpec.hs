@@ -57,8 +57,6 @@ import Data.Either
     ( rights )
 import Data.Text
     ( Text )
-import Data.Word
-    ( Word8 )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -881,7 +879,7 @@ data GoldenTestPointerAddress = GoldenTestPointerAddress
     ,  stakePtr :: ChainPointer
 
       -- | Network tag
-    ,  networkTag :: Word8
+    ,  networkTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
@@ -904,7 +902,7 @@ data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
        verKey :: Text
 
       -- | Network tag
-    ,  networkTag :: Word8
+    ,  networkTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
@@ -931,7 +929,7 @@ data GoldenTestBaseAddress = GoldenTestBaseAddress
     ,  verKeyStake :: Text
 
       -- | Network tag
-    ,  networkTag :: Word8
+    ,  networkTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
