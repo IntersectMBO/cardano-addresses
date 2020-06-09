@@ -37,214 +37,215 @@ span.spaces    { background: white }
 <span class="lineno">   18 </span>    , PointerAddress (..)
 <span class="lineno">   19 </span>    , ChainPointer (..)
 <span class="lineno">   20 </span>    , unsafeMkAddress
-<span class="lineno">   21 </span>
-<span class="lineno">   22 </span>      -- * Conversion From / To Text
-<span class="lineno">   23 </span>    , base58
-<span class="lineno">   24 </span>    , fromBase58
-<span class="lineno">   25 </span>    , bech32
-<span class="lineno">   26 </span>    , bech32With
-<span class="lineno">   27 </span>    , fromBech32
-<span class="lineno">   28 </span>
-<span class="lineno">   29 </span>      -- Internal / Network Discrimination
-<span class="lineno">   30 </span>    , HasNetworkDiscriminant (..)
-<span class="lineno">   31 </span>    , AddressDiscrimination (..)
-<span class="lineno">   32 </span>    , NetworkTag (..)
-<span class="lineno">   33 </span>    , invariantSize
-<span class="lineno">   34 </span>    , invariantNetworkTag
-<span class="lineno">   35 </span>    ) where
-<span class="lineno">   36 </span>
-<span class="lineno">   37 </span>import Prelude
-<span class="lineno">   38 </span>
-<span class="lineno">   39 </span>import Cardano.Address.Derivation
-<span class="lineno">   40 </span>    ( Depth (..), XPub )
-<span class="lineno">   41 </span>import Cardano.Codec.Cbor
-<span class="lineno">   42 </span>    ( decodeAddress, deserialiseCbor )
-<span class="lineno">   43 </span>import Codec.Binary.Bech32
-<span class="lineno">   44 </span>    ( HumanReadablePart )
-<span class="lineno">   45 </span>import Codec.Binary.Encoding
-<span class="lineno">   46 </span>    ( AbstractEncoding (..), encode )
-<span class="lineno">   47 </span>import Control.DeepSeq
-<span class="lineno">   48 </span>    ( NFData )
-<span class="lineno">   49 </span>import Control.Monad
-<span class="lineno">   50 </span>    ( (&lt;=&lt;) )
-<span class="lineno">   51 </span>import Data.ByteString
-<span class="lineno">   52 </span>    ( ByteString )
-<span class="lineno">   53 </span>import Data.Either.Extra
-<span class="lineno">   54 </span>    ( eitherToMaybe )
-<span class="lineno">   55 </span>import Data.Text
-<span class="lineno">   56 </span>    ( Text )
-<span class="lineno">   57 </span>import Data.Word
-<span class="lineno">   58 </span>    ( Word32, Word8 )
-<span class="lineno">   59 </span>import GHC.Generics
-<span class="lineno">   60 </span>    ( Generic )
-<span class="lineno">   61 </span>import GHC.Stack
-<span class="lineno">   62 </span>    ( HasCallStack )
-<span class="lineno">   63 </span>import Numeric.Natural
-<span class="lineno">   64 </span>    ( Natural )
-<span class="lineno">   65 </span>
-<span class="lineno">   66 </span>import qualified Codec.Binary.Bech32.TH as Bech32
-<span class="lineno">   67 </span>import qualified Codec.Binary.Encoding as E
-<span class="lineno">   68 </span>import qualified Data.ByteString as BS
-<span class="lineno">   69 </span>import qualified Data.Text.Encoding as T
-<span class="lineno">   70 </span>
-<span class="lineno">   71 </span>-- | An 'Address' type representing 'Cardano' addresses. Internals are
-<span class="lineno">   72 </span>-- irrevelant to the user.
-<span class="lineno">   73 </span>--
-<span class="lineno">   74 </span>-- @since 1.0.0
-<span class="lineno">   75 </span>newtype Address = Address
-<span class="lineno">   76 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">unAddress</span></span></span> :: ByteString
-<span class="lineno">   77 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
-<span class="lineno">   78 </span>instance NFData Address
-<span class="lineno">   79 </span>
-<span class="lineno">   80 </span>-- Unsafe constructor for easily lifting bytes inside an 'Address'.
-<span class="lineno">   81 </span>--
-<span class="lineno">   82 </span>-- /!\ Use at your own risks.
-<span class="lineno">   83 </span>unsafeMkAddress :: ByteString -&gt; Address
-<span class="lineno">   84 </span><span class="decl"><span class="istickedoff">unsafeMkAddress = Address</span></span>
-<span class="lineno">   85 </span>
-<span class="lineno">   86 </span>-- | Encode an 'Address' to a base58 'Text'.
-<span class="lineno">   87 </span>--
-<span class="lineno">   88 </span>-- @since 1.0.0
-<span class="lineno">   89 </span>base58 :: Address -&gt; Text
-<span class="lineno">   90 </span><span class="decl"><span class="istickedoff">base58 = T.decodeUtf8 . encode EBase58 . unAddress</span></span>
-<span class="lineno">   91 </span>
-<span class="lineno">   92 </span>-- | Decode a base58-encoded 'Text' into an 'Address'
-<span class="lineno">   93 </span>--
-<span class="lineno">   94 </span>-- @since 1.0.0
-<span class="lineno">   95 </span>fromBase58 :: Text -&gt; Maybe Address
-<span class="lineno">   96 </span><span class="decl"><span class="istickedoff">fromBase58 =</span>
-<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">deserialiseCbor (unsafeMkAddress &lt;$&gt; decodeAddress)</span>
-<span class="lineno">   98 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
-<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">eitherToMaybe . E.fromBase58 . T.encodeUtf8</span></span>
-<span class="lineno">  100 </span>
-<span class="lineno">  101 </span>-- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
-<span class="lineno">  102 </span>--
-<span class="lineno">  103 </span>-- @since 1.0.0
-<span class="lineno">  104 </span>bech32 :: Address -&gt; Text
-<span class="lineno">  105 </span><span class="decl"><span class="istickedoff">bech32 = bech32With hrp</span>
-<span class="lineno">  106 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  107 </span><span class="spaces">    </span><span class="istickedoff">hrp = [Bech32.humanReadablePart|addr|]</span></span>
-<span class="lineno">  108 </span>
-<span class="lineno">  109 </span>-- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
-<span class="lineno">  110 </span>--
-<span class="lineno">  111 </span>-- @since 2.0.0
-<span class="lineno">  112 </span>bech32With :: HumanReadablePart -&gt; Address -&gt; Text
-<span class="lineno">  113 </span><span class="decl"><span class="istickedoff">bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp) . unAddress</span></span>
-<span class="lineno">  114 </span>
-<span class="lineno">  115 </span>-- | Decode a bech32-encoded  'Text' into an 'Address'
-<span class="lineno">  116 </span>--
-<span class="lineno">  117 </span>-- @since 1.0.0
-<span class="lineno">  118 </span>fromBech32 :: Text -&gt; Maybe Address
-<span class="lineno">  119 </span><span class="decl"><span class="istickedoff">fromBech32 = eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 . T.encodeUtf8</span></span>
-<span class="lineno">  120 </span>
-<span class="lineno">  121 </span>-- | Encoding of addresses for certain key types and backend targets.
-<span class="lineno">  122 </span>--
-<span class="lineno">  123 </span>-- @since 1.0.0
-<span class="lineno">  124 </span>class HasNetworkDiscriminant key =&gt; PaymentAddress key where
-<span class="lineno">  125 </span>    -- | Convert a public key to a payment 'Address' valid for the given
-<span class="lineno">  126 </span>    -- network discrimination.
-<span class="lineno">  127 </span>    --
-<span class="lineno">  128 </span>    -- @since 1.0.0
-<span class="lineno">  129 </span>    paymentAddress :: NetworkDiscriminant key -&gt; key 'AddressK XPub -&gt; Address
-<span class="lineno">  130 </span>
-<span class="lineno">  131 </span>-- | Encoding of delegation addresses for certain key types and backend targets.
-<span class="lineno">  132 </span>--
-<span class="lineno">  133 </span>-- @since 2.0.0
-<span class="lineno">  134 </span>class PaymentAddress key
-<span class="lineno">  135 </span>    =&gt; DelegationAddress key where
-<span class="lineno">  136 </span>    -- | Convert a public key and a staking key to a delegation 'Address' valid
-<span class="lineno">  137 </span>    -- for the given network discrimination. Funds sent to this address will be
-<span class="lineno">  138 </span>    -- delegated according to the delegation settings attached to the delegation
-<span class="lineno">  139 </span>    -- key.
-<span class="lineno">  140 </span>    --
-<span class="lineno">  141 </span>    -- @since 2.0.0
-<span class="lineno">  142 </span>    delegationAddress
-<span class="lineno">  143 </span>        :: NetworkDiscriminant key
-<span class="lineno">  144 </span>        -&gt;  key 'AddressK XPub
-<span class="lineno">  145 </span>            -- ^ Payment key
-<span class="lineno">  146 </span>        -&gt;  key 'StakingK XPub
-<span class="lineno">  147 </span>            -- ^ Staking key
-<span class="lineno">  148 </span>        -&gt; Address
-<span class="lineno">  149 </span>
-<span class="lineno">  150 </span>-- | A 'ChainPointer' type representing location of some object
-<span class="lineno">  151 </span>-- in the blockchain (eg., staking certificate). This can be achieved
-<span class="lineno">  152 </span>-- unambiguously by specifying slot number, transaction index and the index
-<span class="lineno">  153 </span>-- in the object list (eg., certification list).
-<span class="lineno">  154 </span>-- For staking certificates, alternatively,  the staking key can be used and
-<span class="lineno">  155 </span>-- then 'DelegationAddress' can be used.
-<span class="lineno">  156 </span>--
-<span class="lineno">  157 </span>-- @since 2.0.0
-<span class="lineno">  158 </span>data ChainPointer = ChainPointer
-<span class="lineno">  159 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">slotNum</span></span></span> :: Natural
-<span class="lineno">  160 </span>      -- ^ Pointer to the slot
-<span class="lineno">  161 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">transactionIndex</span></span></span> :: Natural
-<span class="lineno">  162 </span>      -- ^ transaction index
-<span class="lineno">  163 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">outputIndex</span></span></span> :: Natural
-<span class="lineno">  164 </span>      -- ^ output list index
-<span class="lineno">  165 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
-<span class="lineno">  166 </span>instance NFData ChainPointer
-<span class="lineno">  167 </span>
-<span class="lineno">  168 </span>-- | Encoding of pointer addresses for payment key type, pointer to staking
-<span class="lineno">  169 </span>-- certificate in the blockchain and backend targets.
-<span class="lineno">  170 </span>--
-<span class="lineno">  171 </span>-- @since 2.0.0
-<span class="lineno">  172 </span>class PaymentAddress key
-<span class="lineno">  173 </span>    =&gt; PointerAddress key where
-<span class="lineno">  174 </span>    -- | Convert a payment public key and a pointer to staking key in the
-<span class="lineno">  175 </span>    -- blockchain to a delegation 'Address' valid for the given network
-<span class="lineno">  176 </span>    -- discrimination. Funds sent to this address will be delegated according to
-<span class="lineno">  177 </span>    -- the delegation settings attached to the delegation key located by
-<span class="lineno">  178 </span>    -- 'ChainPointer'.
-<span class="lineno">  179 </span>    --
-<span class="lineno">  180 </span>    -- @since 2.0.0
-<span class="lineno">  181 </span>    pointerAddress
-<span class="lineno">  182 </span>        :: NetworkDiscriminant key
-<span class="lineno">  183 </span>        -&gt;  key 'AddressK XPub
-<span class="lineno">  184 </span>            -- ^ Payment key
-<span class="lineno">  185 </span>        -&gt;  ChainPointer
-<span class="lineno">  186 </span>            -- ^ Pointer to locate staking key in blockchain
-<span class="lineno">  187 </span>        -&gt; Address
-<span class="lineno">  188 </span>
-<span class="lineno">  189 </span>class HasNetworkDiscriminant (key :: Depth -&gt; * -&gt; *) where
-<span class="lineno">  190 </span>    type NetworkDiscriminant key :: *
-<span class="lineno">  191 </span>
-<span class="lineno">  192 </span>    addressDiscrimination :: NetworkDiscriminant key -&gt; AddressDiscrimination
-<span class="lineno">  193 </span>    networkTag :: NetworkDiscriminant key -&gt; NetworkTag
-<span class="lineno">  194 </span>
-<span class="lineno">  195 </span>-- Magic constant associated with a given network. This is mainly used in two
-<span class="lineno">  196 </span>-- places:
-<span class="lineno">  197 </span>--
-<span class="lineno">  198 </span>-- (1) In 'Address' payloads, to discriminate addresses between networks.
-<span class="lineno">  199 </span>-- (2) At the network-level, when doing handshake with nodes.
-<span class="lineno">  200 </span>newtype NetworkTag
-<span class="lineno">  201 </span>    = NetworkTag Word32
-<span class="lineno">  202 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>)
-<span class="lineno">  203 </span>instance NFData NetworkTag
-<span class="lineno">  204 </span>
-<span class="lineno">  205 </span>-- Describe requirements for address discrimination on the Byron era.
-<span class="lineno">  206 </span>data AddressDiscrimination
-<span class="lineno">  207 </span>    = RequiresNetworkTag
-<span class="lineno">  208 </span>    | RequiresNoTag
-<span class="lineno">  209 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
-<span class="lineno">  210 </span>instance NFData AddressDiscrimination
-<span class="lineno">  211 </span>
-<span class="lineno">  212 </span>invariantSize :: HasCallStack =&gt; Int -&gt; ByteString -&gt; ByteString
-<span class="lineno">  213 </span><span class="decl"><span class="istickedoff">invariantSize expectedLength bytes</span>
-<span class="lineno">  214 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">BS.length bytes == expectedLength</span> = bytes</span>
-<span class="lineno">  215 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
-<span class="lineno">  216 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;length was &quot;</span></span>
-<span class="lineno">  217 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show (BS.length bytes)</span></span>
-<span class="lineno">  218 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be &quot;</span></span>
-<span class="lineno">  219 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ (show expectedLength)</span></span></span>
-<span class="lineno">  220 </span>
-<span class="lineno">  221 </span>invariantNetworkTag :: HasCallStack =&gt; Word32 -&gt; NetworkTag -&gt; Word8
-<span class="lineno">  222 </span><span class="decl"><span class="istickedoff">invariantNetworkTag limit (NetworkTag num)</span>
-<span class="lineno">  223 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">num &lt; limit</span> = fromIntegral num</span>
-<span class="lineno">  224 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
-<span class="lineno">  225 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;network tag was &quot;</span></span>
-<span class="lineno">  226 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show num</span></span>
-<span class="lineno">  227 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be less than &quot;</span></span>
-<span class="lineno">  228 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show limit</span></span></span>
+<span class="lineno">   21 </span>    , unAddress
+<span class="lineno">   22 </span>
+<span class="lineno">   23 </span>      -- * Conversion From / To Text
+<span class="lineno">   24 </span>    , base58
+<span class="lineno">   25 </span>    , fromBase58
+<span class="lineno">   26 </span>    , bech32
+<span class="lineno">   27 </span>    , bech32With
+<span class="lineno">   28 </span>    , fromBech32
+<span class="lineno">   29 </span>
+<span class="lineno">   30 </span>      -- Internal / Network Discrimination
+<span class="lineno">   31 </span>    , HasNetworkDiscriminant (..)
+<span class="lineno">   32 </span>    , AddressDiscrimination (..)
+<span class="lineno">   33 </span>    , NetworkTag (..)
+<span class="lineno">   34 </span>    , invariantSize
+<span class="lineno">   35 </span>    , invariantNetworkTag
+<span class="lineno">   36 </span>    ) where
+<span class="lineno">   37 </span>
+<span class="lineno">   38 </span>import Prelude
+<span class="lineno">   39 </span>
+<span class="lineno">   40 </span>import Cardano.Address.Derivation
+<span class="lineno">   41 </span>    ( Depth (..), XPub )
+<span class="lineno">   42 </span>import Cardano.Codec.Cbor
+<span class="lineno">   43 </span>    ( decodeAddress, deserialiseCbor )
+<span class="lineno">   44 </span>import Codec.Binary.Bech32
+<span class="lineno">   45 </span>    ( HumanReadablePart )
+<span class="lineno">   46 </span>import Codec.Binary.Encoding
+<span class="lineno">   47 </span>    ( AbstractEncoding (..), encode )
+<span class="lineno">   48 </span>import Control.DeepSeq
+<span class="lineno">   49 </span>    ( NFData )
+<span class="lineno">   50 </span>import Control.Monad
+<span class="lineno">   51 </span>    ( (&lt;=&lt;) )
+<span class="lineno">   52 </span>import Data.ByteString
+<span class="lineno">   53 </span>    ( ByteString )
+<span class="lineno">   54 </span>import Data.Either.Extra
+<span class="lineno">   55 </span>    ( eitherToMaybe )
+<span class="lineno">   56 </span>import Data.Text
+<span class="lineno">   57 </span>    ( Text )
+<span class="lineno">   58 </span>import Data.Word
+<span class="lineno">   59 </span>    ( Word32, Word8 )
+<span class="lineno">   60 </span>import GHC.Generics
+<span class="lineno">   61 </span>    ( Generic )
+<span class="lineno">   62 </span>import GHC.Stack
+<span class="lineno">   63 </span>    ( HasCallStack )
+<span class="lineno">   64 </span>import Numeric.Natural
+<span class="lineno">   65 </span>    ( Natural )
+<span class="lineno">   66 </span>
+<span class="lineno">   67 </span>import qualified Codec.Binary.Bech32.TH as Bech32
+<span class="lineno">   68 </span>import qualified Codec.Binary.Encoding as E
+<span class="lineno">   69 </span>import qualified Data.ByteString as BS
+<span class="lineno">   70 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   71 </span>
+<span class="lineno">   72 </span>-- | An 'Address' type representing 'Cardano' addresses. Internals are
+<span class="lineno">   73 </span>-- irrevelant to the user.
+<span class="lineno">   74 </span>--
+<span class="lineno">   75 </span>-- @since 1.0.0
+<span class="lineno">   76 </span>newtype Address = Address
+<span class="lineno">   77 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">unAddress</span></span></span> :: ByteString
+<span class="lineno">   78 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   79 </span>instance NFData Address
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>-- Unsafe constructor for easily lifting bytes inside an 'Address'.
+<span class="lineno">   82 </span>--
+<span class="lineno">   83 </span>-- /!\ Use at your own risks.
+<span class="lineno">   84 </span>unsafeMkAddress :: ByteString -&gt; Address
+<span class="lineno">   85 </span><span class="decl"><span class="istickedoff">unsafeMkAddress = Address</span></span>
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>-- | Encode an 'Address' to a base58 'Text'.
+<span class="lineno">   88 </span>--
+<span class="lineno">   89 </span>-- @since 1.0.0
+<span class="lineno">   90 </span>base58 :: Address -&gt; Text
+<span class="lineno">   91 </span><span class="decl"><span class="istickedoff">base58 = T.decodeUtf8 . encode EBase58 . unAddress</span></span>
+<span class="lineno">   92 </span>
+<span class="lineno">   93 </span>-- | Decode a base58-encoded 'Text' into an 'Address'
+<span class="lineno">   94 </span>--
+<span class="lineno">   95 </span>-- @since 1.0.0
+<span class="lineno">   96 </span>fromBase58 :: Text -&gt; Maybe Address
+<span class="lineno">   97 </span><span class="decl"><span class="istickedoff">fromBase58 =</span>
+<span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">deserialiseCbor (unsafeMkAddress &lt;$&gt; decodeAddress)</span>
+<span class="lineno">   99 </span><span class="spaces">   </span><span class="istickedoff">&lt;=&lt;</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">eitherToMaybe . E.fromBase58 . T.encodeUtf8</span></span>
+<span class="lineno">  101 </span>
+<span class="lineno">  102 </span>-- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
+<span class="lineno">  103 </span>--
+<span class="lineno">  104 </span>-- @since 1.0.0
+<span class="lineno">  105 </span>bech32 :: Address -&gt; Text
+<span class="lineno">  106 </span><span class="decl"><span class="istickedoff">bech32 = bech32With hrp</span>
+<span class="lineno">  107 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  108 </span><span class="spaces">    </span><span class="istickedoff">hrp = [Bech32.humanReadablePart|addr|]</span></span>
+<span class="lineno">  109 </span>
+<span class="lineno">  110 </span>-- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
+<span class="lineno">  111 </span>--
+<span class="lineno">  112 </span>-- @since 2.0.0
+<span class="lineno">  113 </span>bech32With :: HumanReadablePart -&gt; Address -&gt; Text
+<span class="lineno">  114 </span><span class="decl"><span class="istickedoff">bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp) . unAddress</span></span>
+<span class="lineno">  115 </span>
+<span class="lineno">  116 </span>-- | Decode a bech32-encoded  'Text' into an 'Address'
+<span class="lineno">  117 </span>--
+<span class="lineno">  118 </span>-- @since 1.0.0
+<span class="lineno">  119 </span>fromBech32 :: Text -&gt; Maybe Address
+<span class="lineno">  120 </span><span class="decl"><span class="istickedoff">fromBech32 = eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 . T.encodeUtf8</span></span>
+<span class="lineno">  121 </span>
+<span class="lineno">  122 </span>-- | Encoding of addresses for certain key types and backend targets.
+<span class="lineno">  123 </span>--
+<span class="lineno">  124 </span>-- @since 1.0.0
+<span class="lineno">  125 </span>class HasNetworkDiscriminant key =&gt; PaymentAddress key where
+<span class="lineno">  126 </span>    -- | Convert a public key to a payment 'Address' valid for the given
+<span class="lineno">  127 </span>    -- network discrimination.
+<span class="lineno">  128 </span>    --
+<span class="lineno">  129 </span>    -- @since 1.0.0
+<span class="lineno">  130 </span>    paymentAddress :: NetworkDiscriminant key -&gt; key 'AddressK XPub -&gt; Address
+<span class="lineno">  131 </span>
+<span class="lineno">  132 </span>-- | Encoding of delegation addresses for certain key types and backend targets.
+<span class="lineno">  133 </span>--
+<span class="lineno">  134 </span>-- @since 2.0.0
+<span class="lineno">  135 </span>class PaymentAddress key
+<span class="lineno">  136 </span>    =&gt; DelegationAddress key where
+<span class="lineno">  137 </span>    -- | Convert a public key and a staking key to a delegation 'Address' valid
+<span class="lineno">  138 </span>    -- for the given network discrimination. Funds sent to this address will be
+<span class="lineno">  139 </span>    -- delegated according to the delegation settings attached to the delegation
+<span class="lineno">  140 </span>    -- key.
+<span class="lineno">  141 </span>    --
+<span class="lineno">  142 </span>    -- @since 2.0.0
+<span class="lineno">  143 </span>    delegationAddress
+<span class="lineno">  144 </span>        :: NetworkDiscriminant key
+<span class="lineno">  145 </span>        -&gt;  key 'AddressK XPub
+<span class="lineno">  146 </span>            -- ^ Payment key
+<span class="lineno">  147 </span>        -&gt;  key 'StakingK XPub
+<span class="lineno">  148 </span>            -- ^ Staking key
+<span class="lineno">  149 </span>        -&gt; Address
+<span class="lineno">  150 </span>
+<span class="lineno">  151 </span>-- | A 'ChainPointer' type representing location of some object
+<span class="lineno">  152 </span>-- in the blockchain (eg., staking certificate). This can be achieved
+<span class="lineno">  153 </span>-- unambiguously by specifying slot number, transaction index and the index
+<span class="lineno">  154 </span>-- in the object list (eg., certification list).
+<span class="lineno">  155 </span>-- For staking certificates, alternatively,  the staking key can be used and
+<span class="lineno">  156 </span>-- then 'DelegationAddress' can be used.
+<span class="lineno">  157 </span>--
+<span class="lineno">  158 </span>-- @since 2.0.0
+<span class="lineno">  159 </span>data ChainPointer = ChainPointer
+<span class="lineno">  160 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">slotNum</span></span></span> :: Natural
+<span class="lineno">  161 </span>      -- ^ Pointer to the slot
+<span class="lineno">  162 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">transactionIndex</span></span></span> :: Natural
+<span class="lineno">  163 </span>      -- ^ transaction index
+<span class="lineno">  164 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">outputIndex</span></span></span> :: Natural
+<span class="lineno">  165 </span>      -- ^ output list index
+<span class="lineno">  166 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  167 </span>instance NFData ChainPointer
+<span class="lineno">  168 </span>
+<span class="lineno">  169 </span>-- | Encoding of pointer addresses for payment key type, pointer to staking
+<span class="lineno">  170 </span>-- certificate in the blockchain and backend targets.
+<span class="lineno">  171 </span>--
+<span class="lineno">  172 </span>-- @since 2.0.0
+<span class="lineno">  173 </span>class PaymentAddress key
+<span class="lineno">  174 </span>    =&gt; PointerAddress key where
+<span class="lineno">  175 </span>    -- | Convert a payment public key and a pointer to staking key in the
+<span class="lineno">  176 </span>    -- blockchain to a delegation 'Address' valid for the given network
+<span class="lineno">  177 </span>    -- discrimination. Funds sent to this address will be delegated according to
+<span class="lineno">  178 </span>    -- the delegation settings attached to the delegation key located by
+<span class="lineno">  179 </span>    -- 'ChainPointer'.
+<span class="lineno">  180 </span>    --
+<span class="lineno">  181 </span>    -- @since 2.0.0
+<span class="lineno">  182 </span>    pointerAddress
+<span class="lineno">  183 </span>        :: NetworkDiscriminant key
+<span class="lineno">  184 </span>        -&gt;  key 'AddressK XPub
+<span class="lineno">  185 </span>            -- ^ Payment key
+<span class="lineno">  186 </span>        -&gt;  ChainPointer
+<span class="lineno">  187 </span>            -- ^ Pointer to locate staking key in blockchain
+<span class="lineno">  188 </span>        -&gt; Address
+<span class="lineno">  189 </span>
+<span class="lineno">  190 </span>class HasNetworkDiscriminant (key :: Depth -&gt; * -&gt; *) where
+<span class="lineno">  191 </span>    type NetworkDiscriminant key :: *
+<span class="lineno">  192 </span>
+<span class="lineno">  193 </span>    addressDiscrimination :: NetworkDiscriminant key -&gt; AddressDiscrimination
+<span class="lineno">  194 </span>    networkTag :: NetworkDiscriminant key -&gt; NetworkTag
+<span class="lineno">  195 </span>
+<span class="lineno">  196 </span>-- Magic constant associated with a given network. This is mainly used in two
+<span class="lineno">  197 </span>-- places:
+<span class="lineno">  198 </span>--
+<span class="lineno">  199 </span>-- (1) In 'Address' payloads, to discriminate addresses between networks.
+<span class="lineno">  200 </span>-- (2) At the network-level, when doing handshake with nodes.
+<span class="lineno">  201 </span>newtype NetworkTag
+<span class="lineno">  202 </span>    = NetworkTag { <span class="istickedoff"><span class="decl"><span class="istickedoff">unNetworkTag</span></span></span> :: Word32 }
+<span class="lineno">  203 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>)
+<span class="lineno">  204 </span>instance NFData NetworkTag
+<span class="lineno">  205 </span>
+<span class="lineno">  206 </span>-- Describe requirements for address discrimination on the Byron era.
+<span class="lineno">  207 </span>data AddressDiscrimination
+<span class="lineno">  208 </span>    = RequiresNetworkTag
+<span class="lineno">  209 </span>    | RequiresNoTag
+<span class="lineno">  210 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  211 </span>instance NFData AddressDiscrimination
+<span class="lineno">  212 </span>
+<span class="lineno">  213 </span>invariantSize :: HasCallStack =&gt; Int -&gt; ByteString -&gt; ByteString
+<span class="lineno">  214 </span><span class="decl"><span class="istickedoff">invariantSize expectedLength bytes</span>
+<span class="lineno">  215 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">BS.length bytes == expectedLength</span> = bytes</span>
+<span class="lineno">  216 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
+<span class="lineno">  217 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;length was &quot;</span></span>
+<span class="lineno">  218 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show (BS.length bytes)</span></span>
+<span class="lineno">  219 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be &quot;</span></span>
+<span class="lineno">  220 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ (show expectedLength)</span></span></span>
+<span class="lineno">  221 </span>
+<span class="lineno">  222 </span>invariantNetworkTag :: HasCallStack =&gt; Word32 -&gt; NetworkTag -&gt; Word8
+<span class="lineno">  223 </span><span class="decl"><span class="istickedoff">invariantNetworkTag limit (NetworkTag num)</span>
+<span class="lineno">  224 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">num &lt; limit</span> = fromIntegral num</span>
+<span class="lineno">  225 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
+<span class="lineno">  226 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;network tag was &quot;</span></span>
+<span class="lineno">  227 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show num</span></span>
+<span class="lineno">  228 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be less than &quot;</span></span>
+<span class="lineno">  229 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show limit</span></span></span>
 
 </pre>
 </body>

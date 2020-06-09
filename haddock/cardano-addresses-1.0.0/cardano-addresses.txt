@@ -471,6 +471,13 @@ deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> AccountingStyle -> Inde
 --   softwares (Daedalus, Yoroi, Adalite...).
 deriveStakingPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'StakingK XPrv
 
+-- | Analyze an <a>Address</a> to know whether it's a Jormungandr address
+--   or not.
+--   
+--   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
+--   ready-to-print string giving details about the <a>Jormungandr</a>.
+inspectJormungandrAddress :: Address -> Maybe String
+
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
 paymentAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'AddressK XPub -> Address
@@ -555,6 +562,11 @@ deriveAccountPrivateKey :: Byron  'RootK XPrv -> Index  'WholeDomain  'AccountK 
 -- | <i>Deprecated: see <a>Icarus</a></i>
 deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'AddressK -> Byron  'AddressK XPrv
 
+-- | Analyze an <a>Address</a> to know whether it's a Byron address or not.
+--   Returns <a>Nothing</a> if the address isn't a byron address, or return
+--   a string ready-to-print that gives information about an address.
+inspectByronAddress :: Address -> Maybe String
+
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
 paymentAddress :: NetworkDiscriminant Byron -> Byron  'AddressK XPub -> Address
@@ -568,7 +580,7 @@ byronStaging :: NetworkDiscriminant Byron
 -- | <a>NetworkDiscriminant</a> for Cardano TestNet &amp; Byron
 byronTestnet :: NetworkDiscriminant Byron
 
--- | Backdoor for generating a new key from a raw XPrv.
+-- | Backdoor for generating a new key from a raw <a>XPrv</a>.
 --   
 --   Note that the <tt>depth</tt> is left open so that the caller gets to
 --   decide what type of key this is. This is mostly for testing, in
@@ -581,22 +593,34 @@ byronTestnet :: NetworkDiscriminant Byron
 --   <b>examples:</b>
 --   
 --   <pre>
---   &gt;&gt;&gt; liftXPrv () prv
+--   &gt;&gt;&gt; liftXPrv rootPrv () prv
 --   _ :: Byron RootK XPrv
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; liftXPrv minBound prv
+--   &gt;&gt;&gt; liftXPrv rootPrv minBound prv
 --   _ :: Byron AccountK XPrv
 --   </pre>
 --   
 --   <pre>
---   &gt;&gt;&gt; liftXPrv (minBound, minBound) prv
+--   &gt;&gt;&gt; liftXPrv rootPrv (minBound, minBound) prv
 --   _ :: Byron AddressK XPrv
 --   </pre>
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-liftXPrv :: DerivationPath depth -> XPrv -> Byron depth XPrv
+liftXPrv :: XPub -> DerivationPath depth -> XPrv -> Byron depth XPrv
+
+-- | Backdoor for generating a new key from a raw <a>XPub</a>.
+--   
+--   Note that the <tt>depth</tt> is left open so that the caller gets to
+--   decide what type of key this is. This is mostly for testing, in
+--   practice, seeds are used to represent root keys, and one should
+--   <a>genMasterKeyFromXPrv</a>
+--   
+--   see also <a>liftXPrv</a>
+
+-- | <i>Deprecated: see <a>Icarus</a></i>
+liftXPub :: XPub -> DerivationPath depth -> XPub -> Byron depth XPub
 instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.Address.Style.Byron.Byron depth key)
@@ -659,6 +683,15 @@ icarusTestnet :: NetworkDiscriminant Icarus
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPrv :: XPrv -> Icarus depth XPrv
+
+-- | Unsafe backdoor for constructing an <a>Icarus</a> key from a raw
+--   <a>XPub</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftXPub :: XPub -> Icarus depth XPub
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Icarus.Icarus depth key)
@@ -680,7 +713,7 @@ toWord8 :: Word7 -> Word8
 toWord7s :: Natural -> [Word7]
 toNatural :: [Word7] -> Natural
 putVariableLengthNat :: Natural -> Put
-limit :: Int -> Natural
+getVariableLengthNat :: Get Natural
 instance GHC.Show.Show Data.Word7.Word7
 instance GHC.Classes.Eq Data.Word7.Word7
 
@@ -724,6 +757,13 @@ deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
 -- | Derives an address public key from the given account public key.
 deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
 
+-- | Analyze an <a>Address</a> to know whether it's a Shelley address or
+--   not.
+--   
+--   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
+--   ready-to-print string giving details about the <a>Address</a>.
+inspectShelleyAddress :: Address -> Maybe String
+
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
 paymentAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> Address
@@ -739,17 +779,32 @@ delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> S
 --   discrimination.
 pointerAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> ChainPointer -> Address
 
+-- | Extend an existing payment <a>Address</a> to make it a delegation
+--   address.
+extendAddress :: Address -> Either (Shelley  'StakingK XPub) ChainPointer -> Either ErrExtendAddress Address
+
+-- | Captures error occuring when trying to extend an invalid address.
+data ErrExtendAddress
+ErrInvalidAddressStyle :: String -> ErrExtendAddress
+ErrInvalidAddressType :: String -> ErrExtendAddress
+
 -- | Error reported from trying to create a network discriminant from
 --   number
 newtype MkNetworkDiscriminantError
 
 -- | Wrong network tag.
-ErrWrongNetworkTag :: Word8 -> MkNetworkDiscriminantError
+ErrWrongNetworkTag :: Integer -> MkNetworkDiscriminantError
 
 -- | Construct <a>NetworkDiscriminant</a> for Cardano <a>Shelley</a> from a
 --   number. If the number is invalid, ie., not between 0 and 15, then
 --   <a>MkNetworkDiscriminantError</a> is thrown.
-mkNetworkDiscriminant :: Word8 -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+mkNetworkDiscriminant :: Integer -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+
+-- | <tt>NetworkDicriminant</tt> for Cardano MainNet &amp; Shelley
+shelleyMainnet :: NetworkDiscriminant Shelley
+
+-- | <tt>NetworkDicriminant</tt> for Cardano Testnet &amp; Shelley
+shelleyTestnet :: NetworkDiscriminant Shelley
 
 -- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
 --   <a>XPrv</a>. this is unsafe because it lets the caller choose the
@@ -770,6 +825,7 @@ liftXPrv :: XPrv -> Shelley depth XPrv
 liftXPub :: XPub -> Shelley depth XPub
 instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrExtendAddress
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)

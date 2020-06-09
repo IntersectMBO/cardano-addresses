@@ -36,7 +36,7 @@ span.spaces    { background: white }
 <span class="lineno">   17 </span>import Cardano.Mnemonic
 <span class="lineno">   18 </span>    ( entropyToMnemonic, genEntropy, mnemonicToText )
 <span class="lineno">   19 </span>import Options.Applicative
-<span class="lineno">   20 </span>    ( CommandFields, Mod, command, helper, info )
+<span class="lineno">   20 </span>    ( CommandFields, Mod, command, helper, info, progDesc )
 <span class="lineno">   21 </span>import Options.Applicative.MnemonicSize
 <span class="lineno">   22 </span>    ( MnemonicSize (..), mnemonicSizeOpt )
 <span class="lineno">   23 </span>
@@ -51,21 +51,22 @@ span.spaces    { background: white }
 <span class="lineno">   32 </span>
 <span class="lineno">   33 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
 <span class="lineno">   34 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;generate&quot; $</span>
-<span class="lineno">   35 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) mempty</span>
-<span class="lineno">   36 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   37 </span><span class="spaces">    </span><span class="istickedoff">parser = Generate</span>
-<span class="lineno">   38 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; mnemonicSizeOpt</span></span>
-<span class="lineno">   39 </span>
-<span class="lineno">   40 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   41 </span><span class="decl"><span class="istickedoff">run Generate{size} = do</span>
-<span class="lineno">   42 </span><span class="spaces">    </span><span class="istickedoff">m &lt;- case size of</span>
-<span class="lineno">   43 </span><span class="spaces">        </span><span class="istickedoff">MS_9  -&gt; mnemonicToText @9  . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   44 </span><span class="spaces">        </span><span class="istickedoff">MS_12 -&gt; mnemonicToText @12 . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   45 </span><span class="spaces">        </span><span class="istickedoff">MS_15 -&gt; mnemonicToText @15 . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">MS_18 -&gt; mnemonicToText @18 . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">MS_21 -&gt; mnemonicToText @21 . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   48 </span><span class="spaces">        </span><span class="istickedoff">MS_24 -&gt; mnemonicToText @24 . entropyToMnemonic &lt;$&gt; genEntropy</span>
-<span class="lineno">   49 </span><span class="spaces">    </span><span class="istickedoff">B8.putStrLn $ T.encodeUtf8 $ T.unwords m</span></span>
+<span class="lineno">   35 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   36 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Generate an English recovery phrase&quot;</span>
+<span class="lineno">   37 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   38 </span><span class="spaces">    </span><span class="istickedoff">parser = Generate</span>
+<span class="lineno">   39 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; mnemonicSizeOpt</span></span>
+<span class="lineno">   40 </span>
+<span class="lineno">   41 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   42 </span><span class="decl"><span class="istickedoff">run Generate{size} = do</span>
+<span class="lineno">   43 </span><span class="spaces">    </span><span class="istickedoff">m &lt;- case size of</span>
+<span class="lineno">   44 </span><span class="spaces">        </span><span class="istickedoff">MS_9  -&gt; mnemonicToText @9  . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   45 </span><span class="spaces">        </span><span class="istickedoff">MS_12 -&gt; mnemonicToText @12 . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">MS_15 -&gt; mnemonicToText @15 . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">MS_18 -&gt; mnemonicToText @18 . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   48 </span><span class="spaces">        </span><span class="istickedoff">MS_21 -&gt; mnemonicToText @21 . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   49 </span><span class="spaces">        </span><span class="istickedoff">MS_24 -&gt; mnemonicToText @24 . entropyToMnemonic &lt;$&gt; genEntropy</span>
+<span class="lineno">   50 </span><span class="spaces">    </span><span class="istickedoff">B8.putStrLn $ T.encodeUtf8 $ T.unwords m</span></span>
 
 </pre>
 </body>

@@ -311,15 +311,15 @@ span.spaces    { background: white }
 <span class="lineno">  292 </span>
 <span class="lineno">  293 </span>decodeProtocolMagicAttr
 <span class="lineno">  294 </span>    :: CBOR.Decoder s (Maybe Word32)
-<span class="lineno">  295 </span><span class="decl"><span class="nottickedoff">decodeProtocolMagicAttr = do</span>
-<span class="lineno">  296 </span><span class="spaces">    </span><span class="nottickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
-<span class="lineno">  297 </span><span class="spaces">    </span><span class="nottickedoff">_ &lt;- CBOR.decodeBytes</span>
-<span class="lineno">  298 </span><span class="spaces">    </span><span class="nottickedoff">attrs &lt;- decodeAllAttributes</span>
-<span class="lineno">  299 </span><span class="spaces">    </span><span class="nottickedoff">case find ((== 2) . fst) attrs of</span>
-<span class="lineno">  300 </span><span class="spaces">        </span><span class="nottickedoff">Nothing -&gt; pure Nothing</span>
-<span class="lineno">  301 </span><span class="spaces">        </span><span class="nottickedoff">Just (_, bytes) -&gt; case deserialiseCbor CBOR.decodeWord32 bytes of</span>
-<span class="lineno">  302 </span><span class="spaces">            </span><span class="nottickedoff">Nothing -&gt; fail &quot;unable to decode attribute into protocol magic&quot;</span>
-<span class="lineno">  303 </span><span class="spaces">            </span><span class="nottickedoff">Just pm -&gt; pure (Just pm)</span></span>
+<span class="lineno">  295 </span><span class="decl"><span class="istickedoff">decodeProtocolMagicAttr = do</span>
+<span class="lineno">  296 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  297 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  298 </span><span class="spaces">    </span><span class="istickedoff">attrs &lt;- decodeAllAttributes</span>
+<span class="lineno">  299 </span><span class="spaces">    </span><span class="istickedoff">case find ((== 2) . fst) attrs of</span>
+<span class="lineno">  300 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; pure Nothing</span>
+<span class="lineno">  301 </span><span class="spaces">        </span><span class="istickedoff">Just (_, bytes) -&gt; case deserialiseCbor CBOR.decodeWord32 bytes of</span>
+<span class="lineno">  302 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">fail &quot;unable to decode attribute into protocol magic&quot;</span></span>
+<span class="lineno">  303 </span><span class="spaces">            </span><span class="istickedoff">Just pm -&gt; pure (Just pm)</span></span>
 <span class="lineno">  304 </span>
 <span class="lineno">  305 </span>-- | The attributes are pairs of numeric tags and bytes, where the bytes will be
 <span class="lineno">  306 </span>-- CBOR-encoded stuff. This decoder does not enforce &quot;canonicity&quot; of entries.

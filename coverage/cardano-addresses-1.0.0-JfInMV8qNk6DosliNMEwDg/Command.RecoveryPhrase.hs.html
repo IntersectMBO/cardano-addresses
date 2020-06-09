@@ -44,7 +44,7 @@ span.spaces    { background: white }
 <span class="lineno">   25 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
 <span class="lineno">   26 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;recovery-phrase&quot; $</span>
 <span class="lineno">   27 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   28 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;About recovery phrases.&quot;</span>
+<span class="lineno">   28 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;About recovery phrases&quot;</span>
 <span class="lineno">   29 </span><span class="spaces">  </span><span class="istickedoff">where</span>
 <span class="lineno">   30 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
 <span class="lineno">   31 </span><span class="spaces">        </span><span class="istickedoff">[ Generate.mod Generate</span>
