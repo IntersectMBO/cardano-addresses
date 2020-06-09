@@ -96,8 +96,8 @@ tests:
     - base58-bytestring
     - bech32
     - bech32-th
+    - binary
     - bytestring
-    - bech32
     - cardano-addresses
     - cardano-crypto
     - containers
