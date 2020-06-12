@@ -14,6 +14,8 @@
 This module provides mnemonic (backup phrase) creation, and conversion of a
 mnemonic to seed for wallet restoration, and address derivation functionalities.
 
+![](.github/example.gif)
+
 ## Documentation
 
 API documentation is available [here](https://input-output-hk.github.io/cardano-addresses/haddock).
@@ -29,7 +31,7 @@ Here's are some key examples:
 <details>
   <summary>How to generate a recovery phrase</summary>
 
-```console
+```
 $ cardano-address recovery-phrase generate --size 15
 east student silly already breeze enact seat trade few way online skin grass humble electric
 ```
@@ -38,7 +40,7 @@ east student silly already breeze enact seat trade few way online skin grass hum
 <details>
   <summary>How to generate a root private key</summary>
 
-```console
+```
 $ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
 $ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley
 xprv1fzu4e8cecxshgzzxzh7557sd8tffqreeq2je7fgsm7f02mq849vdupw7qwgxc3qawyqev0l8ew0f4fkp8hvr8mskz4hz6e6ejzjlevcskcl6lqpr07u7552fsfgteztuclse7luh4cp493zdhkrjdss0250cdw8n
@@ -46,7 +48,7 @@ xprv1fzu4e8cecxshgzzxzh7557sd8tffqreeq2je7fgsm7f02mq849vdupw7qwgxc3qawyqev0l8ew0
 
 Notice the `xprv` prefix to identify an e**x**tended **prv**ivate key. Should you prefer an hexadecimal output, you can choose a different output encoding via a special flag:
 
-```console
+```
 $ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley --base16
 48b95c9f19c1a174084615fd4a7a0d3ad2900f3902a59f2510df92f56c07a958
 de05de03906c441d7101963fe7cb9e9aa6c13dd833ee16156e2d675990a5fcb3
@@ -57,7 +59,7 @@ de05de03906c441d7101963fe7cb9e9aa6c13dd833ee16156e2d675990a5fcb3
 <details>
   <summary>How to generate a public stake key</summary>
 
-```console
+```
 $ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
 $ cat recovery-phrase.prv \
 | cardano-address key from-recovery-phrase Shelley \
@@ -73,7 +75,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 <details>
   <summary>How to generate a payment address</summary>
 
-```console
+```
   $ cardano-address recovery-phrase generate --size 15 \
   | cardano-address key from-recovery-phrase Shelley > root.prv
 
@@ -94,7 +96,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
   Follow the steps from 'How to generate a payment address'. Then, simply extend 
   an existing payment address with a stake key!
 
-```console
+```
   $ cat root.prv \
   | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
 
