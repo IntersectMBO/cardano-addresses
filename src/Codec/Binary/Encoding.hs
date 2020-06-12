@@ -39,7 +39,7 @@ import Data.ByteString
 import Data.ByteString.Base58
     ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
 import Data.Char
-    ( isDigit, isLower, toLower )
+    ( isLetter, isLower, isUpper, ord, toLower )
 import Data.List
     ( nub, sort )
 import System.Console.ANSI
@@ -110,13 +110,16 @@ detectEncoding str = isBase16 <|> isBech32  <|> isBase58
         pure EBase16
 
     isBech32 = do
-        guard (all (`elem` Bech32.dataCharList) (stripPrefix str))
-        guard (all (\c -> isLower c || isDigit c) str)
-        guard ('1' `elem` str)
-        guard (length (stripPrefix str) > 6)
+        guard (not (null humanpart))
+        guard (all (\c -> ord c >= 33 && ord c <= 126) humanpart)
+        guard (length datapart >= 6)
+        guard (all (`elem` Bech32.dataCharList) datapart)
+        guard (all isUpper alpha || all isLower alpha)
         pure (EBech32 ())
       where
-        stripPrefix = reverse . takeWhile (/= '1') . reverse
+        datapart  = reverse . takeWhile (/= '1') . reverse $ str
+        humanpart = takeWhile (/= '1') str
+        alpha = filter isLetter str
 
     isBase58 = do
         guard (all (`elem` T.unpack (T.decodeUtf8 $ unAlphabet bitcoinAlphabet)) str)

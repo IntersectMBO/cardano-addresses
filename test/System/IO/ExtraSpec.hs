@@ -57,9 +57,6 @@ spec = do
         specRoundtrip "MyString" base16
         specRoundtrip "MyString" base58
 
-        specValidEncodedString bech32
-            "ed25519_sk1l25926aaaf7ty55g99r285wptc7nqrzager5jghurqdswklj4pvszzp8qg"
-
         specInvalidEncodedString "bech321aaaaaaaaaaaaaaaa"
             (`shouldContain` "Bech32 error: Invalid character(s) in string")
         specInvalidEncodedString "bech321f4u4xarjd9hxwrhö"
@@ -100,18 +97,6 @@ specInvalidEncodedString str assertion = it ("invalid encoding; " <> str) $ do
             assertion (show e)
         Right{} ->
             expectationFailure "expected hGetBytes to fail but didn't"
-
-specValidEncodedString
-    :: (String -> ByteString)
-    -> String
-    -> SpecWith ()
-specValidEncodedString encoder str = it str $ do
-    result <- try $ withHandle (\h -> B8.hPutStr h (bytes str)) hGetBytes
-    case result of
-        Left (e :: SomeException) ->
-            expectationFailure $ "expected hGetBytes to succeed but didn't: " <> show e
-        Right str' ->
-            encoder (unbytes str') `shouldBe` (bytes str)
 
 base16 :: String -> ByteString
 base16 = encode EBase16 . bytes
