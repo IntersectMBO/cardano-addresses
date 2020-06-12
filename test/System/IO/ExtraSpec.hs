@@ -53,9 +53,12 @@ import qualified Data.Text.Encoding as T
 spec :: Spec
 spec = do
     describe "hGetBytes" $ do
-        specDecodeString "MyString" bech32
-        specDecodeString "MyString" base16
-        specDecodeString "MyString" base58
+        specRoundtrip "MyString" bech32
+        specRoundtrip "MyString" base16
+        specRoundtrip "MyString" base58
+
+        specValidEncodedString bech32
+            "ed25519_sk1l25926aaaf7ty55g99r285wptc7nqrzager5jghurqdswklj4pvszzp8qg"
 
         specInvalidEncodedString "bech321aaaaaaaaaaaaaaaa"
             (`shouldContain` "Bech32 error: Invalid character(s) in string")
@@ -76,13 +79,13 @@ spec = do
         prop "roundtrip: hGetXP__ vs hPutBytes" $
             withMaxSuccess 1000 propGetAnyRoundtrip
 
-specDecodeString
+specRoundtrip
     :: String
     -> (String -> ByteString)
     -> SpecWith ()
-specDecodeString str encoder = it (str <> " => " <> unbytes (encoder str)) $ do
+specRoundtrip str encoder = it (str <> " => " <> unbytes (encoder str)) $ do
     str' <- withHandle
-        (\h -> B8.hPutStr h (bech32 str))
+        (\h -> B8.hPutStr h (encoder str))
         (fmap unbytes . hGetBytes)
     str `shouldBe` str'
 
@@ -97,6 +100,18 @@ specInvalidEncodedString str assertion = it ("invalid encoding; " <> str) $ do
             assertion (show e)
         Right{} ->
             expectationFailure "expected hGetBytes to fail but didn't"
+
+specValidEncodedString
+    :: (String -> ByteString)
+    -> String
+    -> SpecWith ()
+specValidEncodedString encoder str = it str $ do
+    result <- try $ withHandle (\h -> B8.hPutStr h (bytes str)) hGetBytes
+    case result of
+        Left (e :: SomeException) ->
+            expectationFailure $ "expected hGetBytes to succeed but didn't: " <> show e
+        Right str' ->
+            encoder (unbytes str') `shouldBe` (bytes str)
 
 base16 :: String -> ByteString
 base16 = encode EBase16 . bytes
