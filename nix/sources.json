@@ -1,0 +1,50 @@
+{
+    "cardano-byron-proxy": {
+        "branch": "master",
+        "description": "A bydirectional proxy between the Shelly and Byron versions of the Cardano network",
+        "homepage": null,
+        "owner": "input-output-hk",
+        "repo": "cardano-byron-proxy",
+        "rev": "5538821647728516d5702cbfd9fb3000fcf41082",
+        "sha256": "10s3ivzv6hb7mb32imi2dga02vlaibsx8z1m2h7ns8cfkj4yng30",
+        "type": "tarball",
+        "url": "https://github.com/input-output-hk/cardano-byron-proxy/archive/5538821647728516d5702cbfd9fb3000fcf41082.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "cardano-sl": {
+        "branch": "develop",
+        "description": "Cryptographic currency implementing Ouroboros PoS protocol",
+        "homepage": "",
+        "owner": "input-output-hk",
+        "repo": "cardano-sl",
+        "rev": "5b35df50cce1ba65da49848f9888c6324796f10f",
+        "sha256": "1slr4lkqpaypwmpydabzlg5qlqpc296z0rpw7y1cns4nm0fb7plv",
+        "type": "tarball",
+        "url": "https://github.com/input-output-hk/cardano-sl/archive/5b35df50cce1ba65da49848f9888c6324796f10f.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "haskell.nix": {
+        "branch": "master",
+        "description": "Alternative Haskell Infrastructure for Nixpkgs",
+        "homepage": "https://input-output-hk.github.io/haskell.nix",
+        "owner": "input-output-hk",
+        "repo": "haskell.nix",
+        "rev": "c474dcec4a435698cd7978ef25e6fea25ff6795b",
+        "sha256": "149n40p56njpzibbkxlqj7rv8f2yvgfqni9m6xr8rvl5yry1lxd0",
+        "type": "tarball",
+        "url": "https://github.com/input-output-hk/haskell.nix/archive/c474dcec4a435698cd7978ef25e6fea25ff6795b.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "iohk-nix": {
+        "branch": "master",
+        "description": "nix scripts shared across projects",
+        "homepage": null,
+        "owner": "input-output-hk",
+        "repo": "iohk-nix",
+        "rev": "8b1d65ba294708b12d7b15103ac35431d9b60819",
+        "sha256": "1z23lw28s3wa5bf5yr89i61m413ad299lyhv02i9r36p28wjl94g",
+        "type": "tarball",
+        "url": "https://github.com/input-output-hk/iohk-nix/archive/8b1d65ba294708b12d7b15103ac35431d9b60819.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}
