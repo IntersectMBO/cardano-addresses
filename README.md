@@ -20,9 +20,9 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 API documentation is available [here](https://input-output-hk.github.io/cardano-addresses/haddock).
 
-## Command-Line 
+## Command-Line
 
-`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/input-output-hk/cardano-addresses/releases) to get a pre-compiled binary. The command-line is self explanatory by using `--help` on various commands and sub-commands. 
+`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/input-output-hk/cardano-addresses/releases) to get a pre-compiled binary, or [build a Docker image](#Docker image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 
@@ -64,7 +64,7 @@ $ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
 $ cat recovery-phrase.prv \
 | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
-| cardano-address key public 
+| cardano-address key public
 xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sjlugy655aqemlvk6gmkuna46xwj9g4frwzw
 ```
 
@@ -85,7 +85,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
   $ cat addr.prv \
   | cardano-address key public \
   | cardano-address address payment --network-tag 0
-  
+
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg
 ```
 </details>
@@ -93,7 +93,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 <details>
   <summary>How to generate a delegation address</summary>
 
-  Follow the steps from 'How to generate a payment address'. Then, simply extend 
+  Follow the steps from 'How to generate a payment address'. Then, simply extend
   an existing payment address with a stake key!
 
 ```
@@ -108,7 +108,17 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 ```
 </details>
 
-
+## Docker Image
+### Build
+```
+$ docker build -t cardano-address .
+```
+### Run
+Use the auto-remove flag `--rm` when running commands.
+```
+$ docker run --rm cardano-address recovery-phrase generate --size 15
+dismiss grit bacon glare napkin satisfy tribe proud carpet bench fantasy rich history face north
+```
 
 ## Contributing
 
