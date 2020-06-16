@@ -28,4 +28,4 @@ RUN mkdir /etc/bash_completion.d
 RUN cardano-address --bash-completion-script `which cardano-address` > /etc/bash_completion.d/cardano-address
 RUN echo "source /etc/bash_completion.d/cardano-address" >> ~/.bashrc
 RUN echo "cardano-address --help" >> ~/.bashrc
-ENTRYPOINT ["/root/cardano-address"]
+ENTRYPOINT ["cardano-address"]
