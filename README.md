@@ -119,6 +119,15 @@ Use the auto-remove flag `--rm` when running commands.
 $ docker run --rm cardano-address recovery-phrase generate --size 15
 dismiss grit bacon glare napkin satisfy tribe proud carpet bench fantasy rich history face north
 ```
+Use the interactive flag `-i` when piping stdin
+```
+$ echo "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u" | docker run --rm -i cardano-addresses address inspect
+address style:      Shelley
+stake reference:    by pointer
+spending key hash:  1730b1b700d616d51555538e83d67f13c113ad5f9b22212703482cb3
+pointer:            sl#24157 tx#177 ix#42
+network tag:        0
+```
 
 ## Contributing
 
