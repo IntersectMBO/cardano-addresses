@@ -91,6 +91,8 @@ import Crypto.Hash.Algorithms
     ( SHA256 (..), SHA512 (..) )
 import Crypto.MAC.HMAC
     ( HMAC, hmac )
+import Data.Aeson
+    ( toJSON, (.=) )
 import Data.Bits
     ( clearBit, setBit, testBit )
 import Data.ByteArray
@@ -111,6 +113,7 @@ import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
+import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -308,21 +311,21 @@ deriveAddressPublicKey =
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
 -- | Analyze an 'Address' to know whether it's an Icarus address or not.
--- Returns 'Nothing' if the address isn't a byron address, or return a string
--- ready-to-print that gives information about an address.
+-- Returns 'Nothing' if the address isn't a byron address, or return a
+-- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
-inspectIcarusAddress :: Address -> Maybe String
+inspectIcarusAddress :: Address -> Maybe Json.Value
 inspectIcarusAddress addr = do
     payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
     (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
     guard $ 1 `notElem` (fst <$> attrs)
     ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
-    pure $ unlines
-        [ "address style:    " <> "Icarus"
-        , "stake reference:  " <> "none"
-        , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "network tag:      " <> maybe "ø" show ntwrk
+    pure $ Json.object
+        [ "address_style"   .= Json.String "Icarus"
+        , "stake_reference" .= Json.String "none"
+        , "address_root"    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "network_tag"     .= maybe Json.Null toJSON ntwrk
         ]
   where
     bytes :: ByteString

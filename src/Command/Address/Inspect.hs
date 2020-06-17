@@ -24,8 +24,6 @@ import Cardano.Address.Style.Shelley
     ( inspectShelleyAddress )
 import Control.Applicative
     ( (<|>) )
-import Control.Monad
-    ( forM_ )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
@@ -33,11 +31,10 @@ import Options.Applicative.Help.Pretty
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBytes, hPutBold )
+    ( hGetBytes )
 
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
+import qualified Data.Aeson.Encode.Pretty as Json
+import qualified Data.ByteString.Lazy.Char8 as BL8
 
 
 data Cmd = Inspect
@@ -56,12 +53,13 @@ mod liftCmd = command "inspect" $
             , "  | cardano-address address payment --network-tag 0 \\\n"
             , "  | cardano-address address delegation $(cat stake.prv | cardano-address key public) \\\n"
             , "  | cardano-address address inspect\n"
-            , "\n"
-            , "  address style:      Shelley\n"
-            , "  stake reference:    by value\n"
-            , "  spending key hash:  79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65\n"
-            , "  stake key hash:     cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94\n"
-            , "  network tag:        0"
+            , "  {\n"
+            , "      \"stake_reference\": \"by value\",\n"
+            , "      \"stake_key_hash\": \"6b542d6da35e6c95d95a33c6f66ec482d3f4caf3ad35e2ede09cf827\",\n"
+            , "      \"address_style\": \"Shelley\",\n"
+            , "      \"spending_key_hash\": \"44bc4f524f49a78a9c8a45b882d8710cb9254b3da6a978d50dc9b870\",\n"
+            , "      \"network_tag\": 0\n"
+            , "  }\n"
             ])
   where
     parser = pure Inspect
@@ -70,11 +68,8 @@ run :: Cmd -> IO ()
 run Inspect = do
     bytes <- hGetBytes stdin
     case inspect (unsafeMkAddress bytes) of
-        Nothing -> fail "Unrecognized address on standard input"
-        Just str -> forM_ (T.pack <$> lines str) $ \line -> do
-            let (label, value) = T.breakOn ":" line
-            hPutBold     stdout (T.encodeUtf8 label)
-            B8.hPutStrLn stdout (T.encodeUtf8 value)
+        Nothing   -> fail "Unrecognized address on standard input"
+        Just json -> BL8.hPutStrLn stdout (Json.encodePretty json)
   where
     inspect addr =
         inspectByronAddress       addr <|>

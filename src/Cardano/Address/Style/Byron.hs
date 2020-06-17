@@ -87,6 +87,8 @@ import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
     ( Blake2b_256, SHA512 (..) )
+import Data.Aeson
+    ( toJSON, (.=) )
 import Data.Bifunctor
     ( bimap )
 import Data.ByteArray
@@ -105,6 +107,7 @@ import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
+import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -286,22 +289,22 @@ deriveAddressPrivateKey acctK =
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 -- | Analyze an 'Address' to know whether it's a Byron address or not.
--- Returns 'Nothing' if the address isn't a byron address, or return a string
--- ready-to-print that gives information about an address.
+-- Returns 'Nothing' if the address isn't a byron address, or return a
+-- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
-inspectByronAddress :: Address -> Maybe String
+inspectByronAddress :: Address -> Maybe Json.Value
 inspectByronAddress addr = do
     payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
     (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
     path  <- find ((== 1) . fst) attrs
     ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
-    pure $ unlines
-        [ "address style:    " <> "Byron"
-        , "stake reference:  " <> "none"
-        , "address root:     " <> T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "derivation path:  " <> T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
-        , "network tag:      " <> maybe "ø" show ntwrk
+    pure $ Json.object
+        [ "address_style"   .= Json.String "Byron"
+        , "stake_reference" .= Json.String "none"
+        , "address_root"    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)
+        , "derivation_path" .= T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
+        , "network_tag"     .= maybe Json.Null toJSON ntwrk
         ]
   where
     bytes :: ByteString

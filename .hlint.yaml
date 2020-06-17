@@ -30,7 +30,7 @@
 
 - modules:
   # Enforce some common qualified imports aliases across the codebase
-  - {name: [Data.Aeson, Data.Aeson.Types], as: Aeson}
+  - {name: [Data.Aeson, Data.Aeson.Types], as: Json}
   - {name: [Data.ByteArray], as: BA}
   - {name: [Data.ByteString.Base16], as: B16}
   - {name: [Data.ByteString.Char8], as: B8}
