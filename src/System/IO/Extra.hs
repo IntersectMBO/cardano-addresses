@@ -15,12 +15,10 @@ module System.IO.Extra
     , hGetXP__
 
     -- ** Write
-    , hPutBold
     , hPutBytes
 
     -- * I/O Helpers
     , prettyIOException
-    , withSGR
     ) where
 
 import Prelude
@@ -39,15 +37,13 @@ import Codec.Binary.Encoding
     , fromBech32
     )
 import Control.Exception
-    ( IOException, bracket )
+    ( IOException )
 import Data.ByteString
     ( ByteString )
-import System.Console.ANSI
-    ( ConsoleIntensity (..), SGR (..), hSetSGR )
 import System.Exit
     ( exitFailure )
 import System.IO
-    ( Handle, hIsTerminalDevice, stderr )
+    ( Handle, stderr )
 
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
@@ -119,11 +115,6 @@ hPutBytes :: Handle -> ByteString -> Encoding -> IO ()
 hPutBytes h bytes =
     B8.hPutStr h . flip encode bytes
 
--- | Print bytes to the console, but in bold.
-hPutBold :: Handle -> ByteString -> IO ()
-hPutBold h bytes =
-    withSGR h (SetConsoleIntensity BoldIntensity) $ B8.hPutStr h bytes
-
 --
 -- Helpers
 --
@@ -133,16 +124,3 @@ prettyIOException :: IOException -> IO a
 prettyIOException e = do
     B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e
     exitFailure
-
--- | Bracket-style constructor for applying ANSI Select Graphic Rendition to an
--- action and revert back to normal after.
---
--- This does nothing if the device isn't an ANSI terminal.
-withSGR :: Handle -> SGR -> IO a -> IO a
-withSGR h sgr action = hIsTerminalDevice h >>= \case
-    True  -> bracket aFirst aLast aBetween
-    False -> action
-  where
-    aFirst = ([] <$ hSetSGR h [sgr])
-    aLast = hSetSGR h
-    aBetween = const action

@@ -14,18 +14,27 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( XPrv, XPub, xprvChainCode, xprvPrivateKey, xpubChainCode, xpubPublicKey )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
+import Data.Aeson
+    ( (.=) )
+import Data.ByteString
+    ( ByteString )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Encoding
-    ( AbstractEncoding (..) )
 import Options.Applicative.Help.Pretty
     ( string )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetXP__, hPutBold, hPutBytes )
+    ( hGetXP__ )
 
-import qualified Data.ByteString.Char8 as B8
+import qualified Data.Aeson as Json
+import qualified Data.Aeson.Encode.Pretty as Json
+import qualified Data.ByteString.Lazy.Char8 as BL8
+import qualified Data.Text.Encoding as T
 
 
 data Cmd = Inspect
@@ -45,22 +54,27 @@ run :: Cmd -> IO ()
 run Inspect = do
     either inspectXPub inspectXPrv =<< hGetXP__ stdin
   where
-    newline = B8.hPutStrLn stdout ""
+    base16 :: ByteString -> Text
+    base16 = T.decodeUtf8 . encode EBase16
 
     inspectXPub :: XPub -> IO ()
     inspectXPub xpub = do
-        hPutBold stdout "key type:     " *> B8.hPutStr stdout "public"    *> newline
-        hPutBold stdout "extended key: " *> hPutBytes  stdout pub EBase16 *> newline
-        hPutBold stdout "chain code:   " *> hPutBytes  stdout cc  EBase16 *> newline
+        BL8.hPutStrLn stdout $ Json.encodePretty $ Json.object
+            [ "key_type" .= Json.String "public"
+            , "extended_key" .= Json.String (base16 pub)
+            , "chain_code" .= Json.String (base16 cc)
+            ]
       where
         pub = xpubPublicKey xpub
         cc  = xpubChainCode xpub
 
     inspectXPrv :: XPrv -> IO ()
-    inspectXPrv xprv = do
-        hPutBold stdout "key type:     " *> B8.hPutStr stdout "private"   *> newline
-        hPutBold stdout "extended key: " *> hPutBytes  stdout prv EBase16 *> newline
-        hPutBold stdout "chain code:   " *> hPutBytes  stdout cc  EBase16 *> newline
+    inspectXPrv xprv =
+        BL8.hPutStrLn stdout $ Json.encodePretty $ Json.object
+            [ "key_type" .= Json.String "private"
+            , "extended_key" .= Json.String (base16 prv)
+            , "chain_code" .= Json.String (base16 cc)
+            ]
       where
         prv = xprvPrivateKey xprv
         cc  = xprvChainCode  xprv
