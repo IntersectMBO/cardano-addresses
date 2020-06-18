@@ -24,8 +24,10 @@ import GHC.Generics
     ( Generic )
 import Options.Applicative
     ( Parser
+    , completer
     , eitherReader
     , help
+    , listCompleter
     , long
     , metavar
     , option
@@ -54,9 +56,10 @@ mnemonicSizeFromString str =
             <> intercalate ", " sizeStrs
             <> "."
   where
-    sizes    = enumerate
-    sizeMap  = sizeStrs `zip` sizes
-    sizeStrs = mnemonicSizeToString <$> sizes
+    sizeMap  = sizeStrs `zip` enumerate
+
+sizeStrs :: [String]
+sizeStrs = mnemonicSizeToString <$> enumerate
 
 --
 -- Applicative Parser
@@ -69,3 +72,4 @@ mnemonicSizeOpt = option (eitherReader mnemonicSizeFromString) $ mempty
     <> help "Number of mnemonic words to generate. Must be a multiple of 3."
     <> value MS_15
     <> showDefaultWith mnemonicSizeToString
+    <> completer (listCompleter sizeStrs)

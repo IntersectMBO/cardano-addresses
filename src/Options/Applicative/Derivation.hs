@@ -53,7 +53,17 @@ import Data.List
 import Data.Word
     ( Word32 )
 import Options.Applicative
-    ( Parser, argument, eitherReader, flag, help, long, metavar, option )
+    ( Parser
+    , argument
+    , completer
+    , eitherReader
+    , flag
+    , help
+    , listCompleter
+    , long
+    , metavar
+    , option
+    )
 import Safe
     ( readEitherSafe )
 
@@ -88,7 +98,8 @@ derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
     <> metavar "DERIVATION-PATH"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (e.g. 44H/1815H/0H/0)."
+        \'H' (e.g. 1852H/1815H/0H/0)."
+    <> completer (listCompleter ["1852H/1815H/0H/", "44H/1815H/0H/"])
 
 derivationPathOpt :: Parser DerivationPath
 derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
@@ -96,7 +107,8 @@ derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
     <> long "path"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (e.g. 44H/1815H/0H/0)."
+        \'H' (e.g. 1852H/1815H/0H/0)."
+    <> completer (listCompleter ["1852H/1815H/0H/", "44H/1815H/0H/"])
 
 --
 -- Derivation Index
