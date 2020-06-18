@@ -34,7 +34,7 @@ import Options.Applicative
     , progDesc
     )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, indent, string, vsep )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -57,22 +57,21 @@ mod liftCmd = command "pointer" $
         <> progDesc "Create a pointer address"
         <> header "Create addresses with a pointer that indicate the position \
             \of a registered stake address on the chain."
-        <> footerDoc (Just $ string $ mconcat
-            [ "The payment address is read from stdin.\n"
-            , "\n"
-            , "Example:\n"
-            , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
-            , "  | cardano-address key from-recovery-phrase Shelley > root.prv\n"
-            , "\n"
-            , "  $ cat root.prv \\\n"
-            , "  | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv\n"
-            , "\n"
-            , "  $ cat addr.prv \\\n"
-            , "  | cardano-address key public \\\n"
-            , "  | cardano-address address payment --network-tag 0\\\n"
-            , "  | cardano-address address pointer 42 14 0\n"
-            , "\n"
-            , "  addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu"
+        <> footerDoc (Just $ vsep
+            [ string "The payment address is read from stdin."
+            , string ""
+            , string "Example:"
+            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 15 \\"
+            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat root.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H/0/0 > addr.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat addr.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key public \\"
+            , indent 4 $ bold $ string "| cardano-address address payment --network-tag 0\\"
+            , indent 4 $ bold $ string "| cardano-address address pointer 42 14 0"
+            , indent 2 $ string "addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu"
             ])
   where
     parser = Cmd

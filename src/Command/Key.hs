@@ -23,7 +23,7 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, indent, string, vsep )
 
 import qualified Command.Key.Child as Child
 import qualified Command.Key.FromRecoveryPhrase as FromRecoveryPhrase
@@ -41,27 +41,29 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "key" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "About public/private keys"
-        <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n\n"
-            , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
-            , "  | cardano-address key from-recovery-phrase Shelley > root.prv \n"
-            , "  \n"
-            , "  $ cat root.prv \\\n"
-            , "  | cardano-address key child 1852H/1815H/0H \\\n"
-            , "  | tee acct.prv \\\n"
-            , "  | cardano-address key public > acct.pub \n"
-            , "  \n"
-            , "  $ cat acct.prv | cardano-address key inspect\n"
-            , "  key type:     private\n"
-            , "  extended key: 586063c612e8eaa3d807c444c1e5c1630e5a486071edbe18fd900f68236d96438d5f4e3...\n"
-            , "  chain code:   09b9b219ab1df2bce6597704009cc8ced2fccc9655ff0aebf409b55f0a36ee96\n"
-            , "  \n"
-            , "  $ cat acct.pub | cardano-address key inspect\n"
-            , "  key type:     public\n"
-            , "  extended key: 406f0caac3a0977684aa4b7182ff62612aa4fbe576c1ba0b9a41c7b11f4a1167\n"
-            , "  chain code:   09b9b219ab1df2bce6597704009cc8ced2fccc9655ff0aebf409b55f0a36ee96\n"
-            , "  \n"
-            , "  $ cat acct.pub | cardano-address key child 0/0 > addr.pub"
+        <> footerDoc (Just $ vsep
+            [ string "Example:"
+            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 15 \\"
+            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat root.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H \\"
+            , indent 4 $ bold $ string "| tee acct.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key public > acct.pub"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cardano-address key inspect <<< $(cat acct.prv)"
+            , indent 2 $ string "{"
+            , indent 2 $ string "    \"key_type\": \"private\","
+            , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
+            , indent 2 $ string "    \"extended_key\": \"90ead3efad7aacac242705ede323665387f49ed847bed025eb333708ccf6aa54403482a867daeb18f38c57d6cddd7e6fd6aed4a3209f7425a3d1c5d9987a9c5f\""
+            , indent 2 $ string "}"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cardano-address key inspect <<< $(cat acct.pub)"
+            , indent 2 $ string "{"
+            , indent 2 $ string "    \"key_type\": \"public\","
+            , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
+            , indent 2 $ string "    \"extended_key\": \"d306350ee88f51fb710252e27f0c40006c58e994761b383e02d400e2be59b3cc\""
+            , indent 2 $ string "}"
             ])
   where
     parser = subparser $ mconcat

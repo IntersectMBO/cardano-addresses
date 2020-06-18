@@ -23,7 +23,7 @@ import Options.Applicative
 import Options.Applicative.Encoding
     ( Encoding, encodingOpt )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, indent, string, vsep )
 import Options.Applicative.Style
     ( Style, generateRootKey, styleArg )
 import System.IO
@@ -41,12 +41,12 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "from-recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Convert a recovery phrase to an extended private key"
-        <> footerDoc (Just $ string $ mconcat
-            [ "The recovery phrase is read from stdin."
-            , "\n\n"
-            , "Example:\n\n"
-            , "  $ cardano-address recovery-phrase generate \\\n"
-            , "  | cardano-address key from-recovery-phrase icarus \\\n"
+        <> footerDoc (Just $ vsep
+            [ string "The recovery phrase is read from stdin."
+            , string ""
+            , string "Example:"
+            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate \\"
+            , indent 2 $ bold $ string "| cardano-address key from-recovery-phrase Icarus"
             ])
   where
     parser = FromRecoveryPhrase

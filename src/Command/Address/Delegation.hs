@@ -24,7 +24,7 @@ import Options.Applicative
 import Options.Applicative.Derivation
     ( xpubArg )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, indent, string, vsep )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -43,25 +43,24 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "delegation" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Create a delegation address"
-        <> footerDoc (Just $ string $ mconcat
-            [ "The payment address is read from stdin.\n"
-            , "\n"
-            , "Example:\n"
-            , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
-            , "  | cardano-address key from-recovery-phrase Shelley > root.prv\n"
-            , "\n"
-            , "  $ cat root.prv \\\n"
-            , "  | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv\n"
-            , "\n"
-            , "  $ cat root.prv \\\n"
-            , "  | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv\n"
-            , "\n"
-            , "  $ cat addr.prv \\\n"
-            , "  | cardano-address key public \\\n"
-            , "  | cardano-address address payment --network-tag 0 \\\n"
-            , "  | cardano-address address delegation $(cat stake.prv | cardano-address key public)\n"
-            , "\n"
-            , "  addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k..."
+        <> footerDoc (Just $ vsep
+            [ string "The payment address is read from stdin."
+            , string ""
+            , string "Example:"
+            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 15 \\"
+            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat root.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H/2/0 > stake.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat root.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H/0/0 > addr.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat addr.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key public \\"
+            , indent 4 $ bold $ string "| cardano-address address payment --network-tag 0 \\"
+            , indent 4 $ bold $ string "| cardano-address address delegation $(cat stake.prv | cardano-address key public)"
+            , indent 2 $ string "addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k..."
             ])
   where
     parser = Cmd

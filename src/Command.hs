@@ -30,7 +30,7 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, hsep, string, vsep )
 import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
@@ -52,13 +52,15 @@ data CLI
 cli :: ParserInfo CLI
 cli = info (helper <*> parser) $ mempty
     <> progDesc "cardano-addresses"
-    <> footerDoc (Just $ string $ mconcat
-        [ "💡 Need auto-completion?\n\n"
-        , "  ↳ source <(cardano-address --bash-completion-script `which cardano-address`)\n"
-        , "\n"
-        , "Or alternatively --fish-completion-script / --zsh-completion-script.\n"
-        , "For a long-term solution, you may want to put this script in the relevant place. e.g.:\n\n"
-        , "  ↳ /etc/bash_completion.d"
+    <> footerDoc (Just $ vsep
+        [ string "💡 Need auto-completion?"
+        , string ""
+        , hsep [string "  ↳", bold $ string "source <(cardano-address --bash-completion-script `which cardano-address`)"]
+        , string ""
+        , string "Or alternatively --fish-completion-script / --zsh-completion-script."
+        , string "For a long-term solution, you may want to put this script in the relevant place. e.g.:"
+        , string ""
+        , hsep [string "  ↳", bold $ string "/etc/bash_completion.d"]
         ])
   where
     parser = subparser $ mconcat
