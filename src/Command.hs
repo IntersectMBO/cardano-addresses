@@ -36,7 +36,7 @@ import System.Console.ANSI
 import System.IO
     ( BufferMode (..), Handle, hSetBuffering, stderr, stdout )
 import System.IO.Extra
-    ( prettyIOException )
+    ( prettyIOException, progName )
 
 import qualified Command.Address as Address
 import qualified Command.Key as Key
@@ -51,11 +51,16 @@ data CLI
 
 cli :: ParserInfo CLI
 cli = info (helper <*> parser) $ mempty
-    <> progDesc "cardano-addresses"
+    <> progDesc "Command-line for address and key manipulation in Cardano."
     <> footerDoc (Just $ vsep
         [ string "💡 Need auto-completion?"
         , string ""
-        , hsep [string "  ↳", bold $ string "source <(cardano-address --bash-completion-script `which cardano-address`)"]
+        , hsep
+            [ string "  ↳"
+            , bold $ string "source <("
+            , bold $ string progName
+            , bold $ string $ "--bash-completion-script `which"<>progName<>"`)"
+            ]
         , string ""
         , string "Or alternatively --fish-completion-script / --zsh-completion-script."
         , string "For a long-term solution, you may want to put this script in the relevant place. e.g.:"

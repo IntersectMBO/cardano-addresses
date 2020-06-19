@@ -31,7 +31,7 @@ import Options.Applicative.Help.Pretty
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBytes )
+    ( hGetBytes, progName )
 
 import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.ByteString.Lazy.Char8 as BL8
@@ -49,10 +49,10 @@ mod liftCmd = command "inspect" $
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string "$ cat addr.prv \\"
-            , indent 4 $ bold $ string "| cardano-address key public \\"
-            , indent 4 $ bold $ string "| cardano-address address payment --network-tag 0 \\"
-            , indent 4 $ bold $ string "| cardano-address address delegation $(cat stake.prv | cardano-address key public) \\"
-            , indent 4 $ bold $ string "| cardano-address address inspect"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag 0 \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address delegation $(cat stake.prv | "<>progName<>" key public) \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address inspect"
             , indent 2 $ string "{"
             , indent 2 $ string "    \"address_style\": \"Shelley\","
             , indent 2 $ string "    \"stake_reference\": \"by value\","

@@ -24,6 +24,8 @@ import Options.Applicative
     )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
+import System.IO.Extra
+    ( progName )
 
 import qualified Command.Key.Child as Child
 import qualified Command.Key.FromRecoveryPhrase as FromRecoveryPhrase
@@ -43,22 +45,22 @@ mod liftCmd = command "key" $
         <> progDesc "About public/private keys"
         <> footerDoc (Just $ vsep
             [ string "Example:"
-            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H \\"
             , indent 4 $ bold $ string "| tee acct.prv \\"
-            , indent 4 $ bold $ string "| cardano-address key public > acct.pub"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public > acct.pub"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cardano-address key inspect <<< $(cat acct.prv)"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" key inspect <<< $(cat acct.prv)"
             , indent 2 $ string "{"
             , indent 2 $ string "    \"key_type\": \"private\","
             , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
             , indent 2 $ string "    \"extended_key\": \"90ead3efad7aacac242705ede323665387f49ed847bed025eb333708ccf6aa54403482a867daeb18f38c57d6cddd7e6fd6aed4a3209f7425a3d1c5d9987a9c5f\""
             , indent 2 $ string "}"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cardano-address key inspect <<< $(cat acct.pub)"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" key inspect <<< $(cat acct.pub)"
             , indent 2 $ string "{"
             , indent 2 $ string "    \"key_type\": \"public\","
             , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","

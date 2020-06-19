@@ -41,7 +41,7 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetXPub )
+    ( hGetXPub, progName )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
@@ -62,13 +62,13 @@ mod liftCmd = command "bootstrap" $
         <> header "Those addresses, now deprecated, were used during the Byron era."
         <> footerDoc (Just $ vsep
             [ string "Example:"
-            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 12 \\"
-            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Byron > root.prv"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 12 \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Byron > root.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string "| cardano-address key child 14H/42H > addr.prv"
-            , indent 4 $ bold $ string "| cardano-address key public \\"
-            , indent 4 $ bold $ string "| cardano-address address bootstrap $(cat root.prv | cardano-address key public) \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child 14H/42H > addr.prv"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap $(cat root.prv | "<>progName<>" key public) \\"
             , indent 8 $ bold $ string "--network-tag 764824073 --path 14H/42H"
             , indent 2 $ string "DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM..."
             ])
