@@ -45,7 +45,7 @@ span.spaces    { background: white }
 <span class="lineno">   26 </span>import Data.List
 <span class="lineno">   27 </span>    ( intercalate )
 <span class="lineno">   28 </span>import Options.Applicative
-<span class="lineno">   29 </span>    ( Parser, argument, eitherReader, help, metavar )
+<span class="lineno">   29 </span>    ( Parser, argument, completer, eitherReader, help, listCompleter, metavar )
 <span class="lineno">   30 </span>
 <span class="lineno">   31 </span>import qualified Cardano.Address.Style.Byron as Byron
 <span class="lineno">   32 </span>import qualified Cardano.Address.Style.Icarus as Icarus
@@ -95,18 +95,21 @@ span.spaces    { background: white }
 <span class="lineno">   76 </span>styleArg :: Parser Style
 <span class="lineno">   77 </span><span class="decl"><span class="istickedoff">styleArg = argument (eitherReader reader) $ mempty</span>
 <span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;STYLE&quot;</span>
-<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help styles</span>
-<span class="lineno">   80 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   81 </span><span class="spaces">    </span><span class="istickedoff">styles :: String</span>
-<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">styles = intercalate &quot; | &quot; $ show @Style &lt;$&gt; [minBound .. maxBound]</span>
-<span class="lineno">   83 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">reader :: String -&gt; Either String Style</span>
-<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">reader str = case toLower &lt;$&gt; str of</span>
-<span class="lineno">   86 </span><span class="spaces">        </span><span class="istickedoff">&quot;byron&quot;       -&gt; Right Byron</span>
-<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">&quot;icarus&quot;      -&gt; Right Icarus</span>
-<span class="lineno">   88 </span><span class="spaces">        </span><span class="istickedoff">&quot;jormungandr&quot; -&gt; Right Jormungandr</span>
-<span class="lineno">   89 </span><span class="spaces">        </span><span class="istickedoff">&quot;shelley&quot;     -&gt; Right Shelley</span>
-<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">_             -&gt; Left $ &quot;Unknown style; expecting one of &quot; &lt;&gt; styles</span></span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help styles'</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter styles)</span></span>
+<span class="lineno">   81 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">styles :: [String]</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">styles = show @Style &lt;$&gt; [minBound .. maxBound]</span>
+<span class="lineno">   84 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">styles' = intercalate &quot; | &quot; styles</span>
+<span class="lineno">   86 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">reader :: String -&gt; Either String Style</span>
+<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">reader str = case toLower &lt;$&gt; str of</span>
+<span class="lineno">   89 </span><span class="spaces">        </span><span class="istickedoff">&quot;byron&quot;       -&gt; Right Byron</span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">&quot;icarus&quot;      -&gt; Right Icarus</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">&quot;jormungandr&quot; -&gt; Right Jormungandr</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">&quot;shelley&quot;     -&gt; Right Shelley</span>
+<span class="lineno">   93 </span><span class="spaces">        </span><span class="istickedoff">_             -&gt; Left $ &quot;Unknown style; expecting one of &quot; &lt;&gt; styles'</span></span>
 
 </pre>
 </body>

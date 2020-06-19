@@ -41,7 +41,7 @@ span.spaces    { background: white }
 <span class="lineno">   22 </span>import Options.Applicative.Discrimination
 <span class="lineno">   23 </span>    ( NetworkTag (..), networkTagOpt )
 <span class="lineno">   24 </span>import Options.Applicative.Help.Pretty
-<span class="lineno">   25 </span>    ( string )
+<span class="lineno">   25 </span>    ( bold, indent, string, vsep )
 <span class="lineno">   26 </span>import Options.Applicative.Style
 <span class="lineno">   27 </span>    ( Style (..) )
 <span class="lineno">   28 </span>import System.IO
@@ -63,34 +63,33 @@ span.spaces    { background: white }
 <span class="lineno">   44 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
 <span class="lineno">   45 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a payment address&quot;</span>
 <span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Payment addresses carry no delegation rights whatsoever.&quot;</span>
-<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ string $ mconcat</span>
-<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff">[ &quot;Example:\n&quot;</span>
-<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  $ cardano-address recovery-phrase generate --size 15 \\\n&quot;</span>
-<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  | cardano-address key from-recovery-phrase Shelley &gt; root.prv\n&quot;</span>
-<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">, &quot;\n&quot;</span>
-<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  $ cat root.prv \\\n&quot;</span>
-<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  | cardano-address key child 1852H/1815H/0H/0/0 &gt; addr.prv\n&quot;</span>
-<span class="lineno">   54 </span><span class="spaces">            </span><span class="istickedoff">, &quot;\n&quot;</span>
-<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  $ cat addr.prv \\\n&quot;</span>
-<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  | cardano-address key public \\\n&quot;</span>
-<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  | cardano-address address payment --network-tag 0\n&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, &quot;\n&quot;</span>
-<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, &quot;  addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg&quot;</span>
-<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">])</span>
-<span class="lineno">   61 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   62 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
-<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; networkTagOpt Shelley</span></span>
-<span class="lineno">   64 </span>
-<span class="lineno">   65 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   66 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag} = do</span>
-<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">xpub &lt;- hGetXPub stdin</span>
-<span class="lineno">   68 </span><span class="spaces">    </span><span class="istickedoff">case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of</span>
-<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff">Left ErrWrongNetworkTag{} -&gt; do</span>
-<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">fail &quot;Invalid network tag. Must be between [0, 15]&quot;</span>
-<span class="lineno">   71 </span><span class="spaces">        </span><span class="istickedoff">Right discriminant -&gt; do</span>
-<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)</span>
-<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
-<span class="lineno">   74 </span>
+<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;Example:&quot;</span>
+<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cardano-address recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
+<span class="lineno">   54 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
+<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key public \\&quot;</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address address payment --network-tag 0&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg&quot;</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   60 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   61 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; networkTagOpt Shelley</span></span>
+<span class="lineno">   63 </span>
+<span class="lineno">   64 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   65 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag} = do</span>
+<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">xpub &lt;- hGetXPub stdin</span>
+<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of</span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">Left ErrWrongNetworkTag{} -&gt; do</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">fail &quot;Invalid network tag. Must be between [0, 15]&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">        </span><span class="istickedoff">Right discriminant -&gt; do</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
+<span class="lineno">   73 </span>
 
 </pre>
 </body>

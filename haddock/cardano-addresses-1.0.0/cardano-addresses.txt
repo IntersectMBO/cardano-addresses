@@ -476,7 +476,7 @@ deriveStakingPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'StakingK
 --   
 --   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
 --   ready-to-print string giving details about the <a>Jormungandr</a>.
-inspectJormungandrAddress :: Address -> Maybe String
+inspectJormungandrAddress :: Address -> Maybe Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -564,8 +564,8 @@ deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'Addres
 
 -- | Analyze an <a>Address</a> to know whether it's a Byron address or not.
 --   Returns <a>Nothing</a> if the address isn't a byron address, or return
---   a string ready-to-print that gives information about an address.
-inspectByronAddress :: Address -> Maybe String
+--   a structured JSON that gives information about an address.
+inspectByronAddress :: Address -> Maybe Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -762,7 +762,7 @@ deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  '
 --   
 --   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
 --   ready-to-print string giving details about the <a>Address</a>.
-inspectShelleyAddress :: Address -> Maybe String
+inspectShelleyAddress :: Address -> Maybe Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
