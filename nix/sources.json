@@ -1,28 +1,4 @@
 {
-    "cardano-byron-proxy": {
-        "branch": "master",
-        "description": "A bydirectional proxy between the Shelly and Byron versions of the Cardano network",
-        "homepage": null,
-        "owner": "input-output-hk",
-        "repo": "cardano-byron-proxy",
-        "rev": "5538821647728516d5702cbfd9fb3000fcf41082",
-        "sha256": "10s3ivzv6hb7mb32imi2dga02vlaibsx8z1m2h7ns8cfkj4yng30",
-        "type": "tarball",
-        "url": "https://github.com/input-output-hk/cardano-byron-proxy/archive/5538821647728516d5702cbfd9fb3000fcf41082.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
-    "cardano-sl": {
-        "branch": "develop",
-        "description": "Cryptographic currency implementing Ouroboros PoS protocol",
-        "homepage": "",
-        "owner": "input-output-hk",
-        "repo": "cardano-sl",
-        "rev": "5b35df50cce1ba65da49848f9888c6324796f10f",
-        "sha256": "1slr4lkqpaypwmpydabzlg5qlqpc296z0rpw7y1cns4nm0fb7plv",
-        "type": "tarball",
-        "url": "https://github.com/input-output-hk/cardano-sl/archive/5b35df50cce1ba65da49848f9888c6324796f10f.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
     "haskell.nix": {
         "branch": "master",
         "description": "Alternative Haskell Infrastructure for Nixpkgs",
