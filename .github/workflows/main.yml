@@ -26,21 +26,18 @@ jobs:
     - name: 🧰 Setup Stack
       uses: mstksg/setup-stack@v1
 
-    - name: 🔑 Cache Key
-      id: cache_key
-      run: echo ::set-output name=key::$(md5sum stack.yaml | awk '{print $1}')
+    - name: 🔑 Variables
+      id: variables
+      run: |
+        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+        echo ::set-output name=cache_key::$(md5sum stack.yaml | awk '{print $1}')
 
     - name: 💾 Cache Dependencies
       id: cache
       uses: actions/cache@v1
       with:
         path: ~/.stack
-        key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
-
-    - name: 🏷️ Variables
-      id: variables
-      run: |
-        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+        key: ${{ matrix.os }}-${{ steps.variables.outputs.cache_key }}
 
     - name: 📸 Build Snapshot
       if: steps.cache.outputs.cache-hit != 'true'
@@ -50,6 +47,7 @@ jobs:
     - name: 🔨 Build & Test
       run: |
         stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag $PKG_NAME:release
+        mkdir -p bin && cp $(stack path --local-install-root)/bin/* bin && chmod +x bin/*
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
         sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
         wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
@@ -58,8 +56,14 @@ jobs:
       env:
         PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
 
-    - name: 📘 Publish Documentation
-      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
+    - name: 📎 Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ matrix.os }}-exe
+        path: bin
+
+    - name: 📤 Publish Documentation
+      if: github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -68,11 +72,35 @@ jobs:
 
   release:
     needs: [build]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     if: ${{ startsWith(github.ref, 'refs/tags') }}
-    runs-on: ubuntu-latest
     steps:
     - name: 📥 Checkout repository
       uses: actions/checkout@v1
+
+    - name: 🏷️ Variables
+      id: variables
+      run: |
+        echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+
+    - name: 🐧 Download Artifact (linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/download-artifact@v1
+      with:
+        name: ubuntu-latest-exe
+
+    - name: 📦 Package Artifacts
+      run: |
+        mv ubuntu-latest-exe bin
+        tar czf $PKG_NAME-$TAG-linux64.tar.gz README.md LICENSE NOTICE bin/*
+        rm -rf bin
+      env:
+        PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
+        TAG: ${{ steps.variables.outputs.tag }}
 
     - name: 🚀 Release
       uses: docker://antonyurchenko/git-release:latest
@@ -83,3 +111,6 @@ jobs:
         CHANGELOG_FILE: "ChangeLog.md"
         ALLOW_EMPTY_CHANGELOG: "false"
         ALLOW_TAG_PREFIX: "true"
+      with:
+        args: |
+          ${{ steps.variables.outputs.pkg_name }}-${{ steps.variables.outputs.tag }}-linux64.tar.gz

@@ -3,7 +3,6 @@
 </p>
 
 <p align="center">
-  <a href="https://hackage.haskell.org/package/cardano-addresses"><img src="https://img.shields.io/hackage/v/cardano-addresses?style=for-the-badge" /></a>
   <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
   <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous Integration?style=for-the-badge" /></a>
   <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
@@ -20,9 +19,9 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 API documentation is available [here](https://input-output-hk.github.io/cardano-addresses/haddock).
 
-## Command-Line
+## Command-Line 
 
-`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/input-output-hk/cardano-addresses/releases) to get a pre-compiled binary, or [build a Docker image](#Docker image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
+`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/input-output-hk/cardano-addresses/releases) or [continuous integration artifacts](https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A%22Continuous+Integration%22) to get a pre-compiled binary, or [build a Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 

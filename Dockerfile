@@ -9,13 +9,32 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   git=1:2.11.*
 RUN stack upgrade --binary-version 2.1.3
 
-COPY stack.yaml package.yaml ./
+# Leverage Docker cache, build in three steps: 1) snapshot, 2) deps, 3) app
+COPY stack.yaml .
+SHELL ["/bin/bash", "-c"]
+RUN echo $'name: placeholder \n\
+library:                     \n\
+  dependencies:              \n\
+  - aeson                    \n\
+  - base                     \n\
+  - base-compat              \n\
+  - bifunctors               \n\
+  - bytestring               \n\
+  - extra                    \n\
+  - lens                     \n\
+  - ordered-containers       \n\
+  - text                     \n\
+  - unordered-containers     \n\
+  - vector                   \n\
+' > package.yaml
 RUN stack setup
 RUN stack build --only-snapshot
-RUN stack build --only-dependencies
+RUN rm placeholder.cabal
 
+COPY package.yaml .
+RUN stack build --only-dependencies
 COPY . .
-RUN stack install
+RUN stack install --flag cardano-addresses:release
 
 #                                                                              #
 # ---------------------------------- RUN ------------------------------------- #
