@@ -33,6 +33,8 @@ library:
   default-extensions:
   - NoImplicitPrelude
   dependencies:
+  - aeson
+  - aeson-pretty
   - ansi-terminal
   - base58-bytestring
   - basement

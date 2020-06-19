@@ -22,7 +22,7 @@ import Options.Applicative
 import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( bold, indent, string, vsep )
 import Options.Applicative.Style
     ( Style (..) )
 import System.IO
@@ -44,19 +44,18 @@ mod liftCmd = command "payment" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Create a payment address"
         <> header "Payment addresses carry no delegation rights whatsoever."
-        <> footerDoc (Just $ string $ mconcat
-            [ "Example:\n"
-            , "  $ cardano-address recovery-phrase generate --size 15 \\\n"
-            , "  | cardano-address key from-recovery-phrase Shelley > root.prv\n"
-            , "\n"
-            , "  $ cat root.prv \\\n"
-            , "  | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv\n"
-            , "\n"
-            , "  $ cat addr.prv \\\n"
-            , "  | cardano-address key public \\\n"
-            , "  | cardano-address address payment --network-tag 0\n"
-            , "\n"
-            , "  addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg"
+        <> footerDoc (Just $ vsep
+            [ string "Example:"
+            , indent 2 $ bold $ string "$ cardano-address recovery-phrase generate --size 15 \\"
+            , indent 4 $ bold $ string "| cardano-address key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat root.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key child 1852H/1815H/0H/0/0 > addr.prv"
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string "$ cat addr.prv \\"
+            , indent 4 $ bold $ string "| cardano-address key public \\"
+            , indent 4 $ bold $ string "| cardano-address address payment --network-tag 0"
+            , indent 2 $ string "addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg"
             ])
   where
     parser = Cmd

@@ -26,7 +26,7 @@ import Data.Char
 import Data.List
     ( intercalate )
 import Options.Applicative
-    ( Parser, argument, eitherReader, help, metavar )
+    ( Parser, argument, completer, eitherReader, help, listCompleter, metavar )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
@@ -76,10 +76,13 @@ generateRootKey mw = \case
 styleArg :: Parser Style
 styleArg = argument (eitherReader reader) $ mempty
     <> metavar "STYLE"
-    <> help styles
+    <> help styles'
+    <> completer (listCompleter styles)
   where
-    styles :: String
-    styles = intercalate " | " $ show @Style <$> [minBound .. maxBound]
+    styles :: [String]
+    styles = show @Style <$> [minBound .. maxBound]
+
+    styles' = intercalate " | " styles
 
     reader :: String -> Either String Style
     reader str = case toLower <$> str of
@@ -87,4 +90,4 @@ styleArg = argument (eitherReader reader) $ mempty
         "icarus"      -> Right Icarus
         "jormungandr" -> Right Jormungandr
         "shelley"     -> Right Shelley
-        _             -> Left $ "Unknown style; expecting one of " <> styles
+        _             -> Left $ "Unknown style; expecting one of " <> styles'

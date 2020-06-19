@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d81c450646d16f17cc664effa47145cb60c41e5683c91e6d92c83d61ee2df13
+-- hash: 914290d4127de4ecec3de55cab527b0bac04bd20033e880e4da520a1879ef2ab
 
 name:           cardano-addresses
 version:        1.0.0
@@ -68,7 +68,9 @@ library
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
-      ansi-terminal
+      aeson
+    , aeson-pretty
+    , ansi-terminal
     , base >=4.7 && <5
     , base58-bytestring
     , basement

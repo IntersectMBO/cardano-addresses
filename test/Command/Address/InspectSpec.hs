@@ -48,9 +48,9 @@ spec = describeCmd [ "address", "inspect" ] $ do
 specInspectAddress :: [String] -> String -> SpecWith ()
 specInspectAddress mustHave addr = it addr $ do
     out <- cli [ "address", "inspect" ] addr
-    out `shouldContain` "address style:"
-    out `shouldContain` "stake reference:"
-    out `shouldContain` "network tag:"
+    out `shouldContain` "address_style"
+    out `shouldContain` "stake_reference"
+    out `shouldContain` "network_tag"
     forM_ mustHave (shouldContain out)
 
 specInspectMalformed :: String -> SpecWith ()

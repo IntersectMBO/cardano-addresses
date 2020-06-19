@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
@@ -15,7 +17,7 @@ import Prelude
 import Cardano.Address
     ( NetworkTag (..) )
 import Options.Applicative
-    ( Parser, auto, helpDoc, long, metavar, option )
+    ( Parser, auto, completer, helpDoc, listCompleter, long, metavar, option )
 import Options.Applicative.Help.Pretty
     ( string, vsep )
 import Options.Applicative.Style
@@ -35,6 +37,7 @@ networkTagOpt style = option (NetworkTag <$> auto) $ mempty
     <> metavar "NETWORK-TAG"
     <> long "network-tag"
     <> helpDoc  (Just (vsep (string <$> doc style)))
+    <> completer (listCompleter $ show <$> tagsFor style)
   where
     doc style' =
         [ "A tag which identifies a Cardano network."
@@ -56,4 +59,20 @@ networkTagOpt style = option (NetworkTag <$> auto) $ mempty
             [ "┌ Shelley ─────────────────"
             , "│ mainnet: " <> show (unNetworkTag Shelley.shelleyMainnet)
             , "│ testnet: " <> show (unNetworkTag Shelley.shelleyTestnet)
+            ]
+
+    tagsFor = \case
+        Byron ->
+            [ unNetworkTag (snd Byron.byronMainnet)
+            , unNetworkTag (snd Byron.byronStaging)
+            , unNetworkTag (snd Byron.byronTestnet)
+            ]
+        Icarus ->
+            tagsFor Byron
+        Jormungandr ->
+            [ unNetworkTag Jormungandr.incentivizedTestnet
+            ]
+        Shelley ->
+            [ unNetworkTag Shelley.shelleyMainnet
+            , unNetworkTag Shelley.shelleyTestnet
             ]

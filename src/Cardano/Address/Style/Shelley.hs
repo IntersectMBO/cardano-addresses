@@ -107,6 +107,8 @@ import Crypto.Hash.Algorithms
     ( Blake2b_224 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
+import Data.Aeson
+    ( (.=) )
 import Data.Binary.Get
     ( runGetOrFail )
 import Data.Binary.Put
@@ -130,6 +132,7 @@ import GHC.Generics
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
+import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
@@ -415,7 +418,7 @@ instance Internal.PointerAddress Shelley where
 -- string giving details about the 'Address'.
 --
 -- @since 2.0.0
-inspectShelleyAddress :: Address -> Maybe String
+inspectShelleyAddress :: Address -> Maybe Json.Value
 inspectShelleyAddress addr
     | BS.length bytes < 1 + publicKeyHashSize = Nothing
     | otherwise =
@@ -428,79 +431,79 @@ inspectShelleyAddress addr
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
                 0b00000000 | BS.length rest == 2 * size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by value"
-                        , "spending key hash:  " <> base16 (BS.take size rest)
-                        , "stake key hash:     " <> base16 (BS.drop size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "stake_key_hash"    .= base16 (BS.drop size rest)
+                        , "network_tag"       .= network
                         ]
                -- 0001: base address: scripthash28,keyhash28
                 0b00010000 | BS.length rest == 2 * size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by value"
-                        , "script hash:        " <> base16 (BS.take size rest)
-                        , "stake key hash:     " <> base16 (BS.drop size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "stake_key_hash"    .= base16 (BS.drop size rest)
+                        , "network_tag"       .= network
                         ]
                -- 0010: base address: keyhash28,scripthash28
                 0b00100000 | BS.length rest == 2 * size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by value"
-                        , "spending key hash:  " <> base16 (BS.take size rest)
-                        , "stake script hash:  " <> base16 (BS.drop size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "stake_script_hash" .= base16 (BS.drop size rest)
+                        , "network_tag"       .= network
                         ]
                -- 0011: base address: scripthash28,scripthash28
                 0b00110000 | BS.length rest == 2 * size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by value"
-                        , "script hash:        " <> base16 (BS.take size rest)
-                        , "stake script hash:  " <> base16 (BS.drop size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "stake_script_hash" .= base16 (BS.drop size rest)
+                        , "network_tag"       .= network
                         ]
                -- 0100: pointer address: keyhash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
                 0b01000000 | BS.length rest > size -> do
                     ptr <- getPtr (BS.drop size rest)
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by pointer"
-                        , "spending key hash:  " <> base16 (BS.take size rest)
-                        , "pointer:            " <> prettyPtr ptr
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by pointer"
+                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "pointer"           .= ptrToJSON ptr
+                        , "network_tag"       .= network
                         ]
                -- 0101: pointer address: scripthash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
                 0b01010000 | BS.length rest > size -> do
                     ptr <- getPtr (BS.drop size rest)
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "by pointer"
-                        , "script hash:        " <> base16 (BS.take size rest)
-                        , "pointer:            " <> prettyPtr ptr
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by pointer"
+                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "pointer"           .= ptrToJSON ptr
+                        , "network_tag"       .= network
                         ]
                -- 0110: enterprise address: keyhash28
                 0b01100000 | BS.length rest == size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "none"
-                        , "spending key hash:  " <> base16 (BS.take size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "none"
+                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "network_tag"       .= network
                         ]
                -- 0111: enterprise address: scripthash28
                 0b01110000 | BS.length rest == size ->
-                    Just $ unlines
-                        [ "address style:      " <> "Shelley"
-                        , "stake reference:    " <> "none"
-                        , "script hash:        " <> base16 (BS.take size rest)
-                        , "network tag:        " <> show network
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "none"
+                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "network_tag"       .= network
                         ]
                -- 1000: byron address
                 0b10000000 ->
@@ -511,11 +514,11 @@ inspectShelleyAddress addr
     bytes  = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
 
-    prettyPtr :: ChainPointer -> String
-    prettyPtr ChainPointer{slotNum,transactionIndex,outputIndex} = unwords
-        [ "sl#" <> show slotNum
-        , "tx#" <> show transactionIndex
-        , "ix#" <> show outputIndex
+    ptrToJSON :: ChainPointer -> Json.Value
+    ptrToJSON ChainPointer{slotNum,transactionIndex,outputIndex} = Json.object
+        [ "slot_num" .= slotNum
+        , "transaction_index" .= transactionIndex
+        , "output_index" .= outputIndex
         ]
 
     getPtr :: ByteString -> Maybe ChainPointer
