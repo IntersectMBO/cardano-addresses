@@ -57,7 +57,7 @@ span.spaces    { background: white }
 <span class="lineno">   38 </span>import System.IO
 <span class="lineno">   39 </span>    ( stdin, stdout )
 <span class="lineno">   40 </span>import System.IO.Extra
-<span class="lineno">   41 </span>    ( hGetBytes )
+<span class="lineno">   41 </span>    ( hGetBytes, progName )
 <span class="lineno">   42 </span>
 <span class="lineno">   43 </span>import qualified Cardano.Address.Style.Shelley as Shelley
 <span class="lineno">   44 </span>import qualified Data.ByteString.Char8 as B8
@@ -80,16 +80,16 @@ span.spaces    { background: white }
 <span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
 <span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
 <span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
-<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cardano-address recovery-phrase generate --size 15 \\&quot;</span>
-<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
 <span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
 <span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
-<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
 <span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
 <span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
-<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address key public \\&quot;</span>
-<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address address payment --network-tag 0\\&quot;</span>
-<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;| cardano-address address pointer 42 14 0&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0\\&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address pointer 42 14 0&quot;</span>
 <span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu&quot;</span>
 <span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">])</span>
 <span class="lineno">   76 </span><span class="spaces">  </span><span class="istickedoff">where</span>

@@ -55,7 +55,7 @@ span.spaces    { background: white }
 <span class="lineno">   36 </span>import System.IO
 <span class="lineno">   37 </span>    ( BufferMode (..), Handle, hSetBuffering, stderr, stdout )
 <span class="lineno">   38 </span>import System.IO.Extra
-<span class="lineno">   39 </span>    ( prettyIOException )
+<span class="lineno">   39 </span>    ( prettyIOException, progName )
 <span class="lineno">   40 </span>
 <span class="lineno">   41 </span>import qualified Command.Address as Address
 <span class="lineno">   42 </span>import qualified Command.Key as Key
@@ -70,44 +70,49 @@ span.spaces    { background: white }
 <span class="lineno">   51 </span>
 <span class="lineno">   52 </span>cli :: ParserInfo CLI
 <span class="lineno">   53 </span><span class="decl"><span class="istickedoff">cli = info (helper &lt;*&gt; parser) $ mempty</span>
-<span class="lineno">   54 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; progDesc <span class="nottickedoff">&quot;cardano-addresses&quot;</span></span>
+<span class="lineno">   54 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; progDesc <span class="nottickedoff">&quot;Command-line for address and key manipulation in Cardano.&quot;</span></span>
 <span class="lineno">   55 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; footerDoc <span class="nottickedoff">(Just $ vsep</span></span>
 <span class="lineno">   56 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">[ string &quot;💡 Need auto-completion?&quot;</span></span>
 <span class="lineno">   57 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
-<span class="lineno">   58 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, hsep [string &quot;  ↳&quot;, bold $ string &quot;source &lt;(cardano-address --bash-completion-script `which cardano-address`)&quot;]</span></span>
-<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
-<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;Or alternatively --fish-completion-script / --zsh-completion-script.&quot;</span></span>
-<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;For a long-term solution, you may want to put this script in the relevant place. e.g.:&quot;</span></span>
-<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
-<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, hsep [string &quot;  ↳&quot;, bold $ string &quot;/etc/bash_completion.d&quot;]</span></span>
-<span class="lineno">   64 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">])</span></span>
-<span class="lineno">   65 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
-<span class="lineno">   67 </span><span class="spaces">        </span><span class="istickedoff">[ RecoveryPhrase.mod RecoveryPhrase</span>
-<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">, Key.mod Key</span>
-<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff">, Address.mod Address</span>
-<span class="lineno">   70 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
-<span class="lineno">   71 </span>
-<span class="lineno">   72 </span>-- | Run a given command
-<span class="lineno">   73 </span>run :: CLI -&gt; IO ()
-<span class="lineno">   74 </span><span class="decl"><span class="istickedoff">run = handle prettyIOException . \case</span>
-<span class="lineno">   75 </span><span class="spaces">    </span><span class="istickedoff">RecoveryPhrase sub -&gt; RecoveryPhrase.run sub</span>
-<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">Key sub -&gt; Key.run sub</span>
-<span class="lineno">   77 </span><span class="spaces">    </span><span class="istickedoff">Address sub -&gt; Address.run sub</span></span>
-<span class="lineno">   78 </span>
-<span class="lineno">   79 </span>-- | Parse command line options and arguments
-<span class="lineno">   80 </span>parse :: IO CLI
-<span class="lineno">   81 </span><span class="decl"><span class="istickedoff">parse = customExecParser (prefs showHelpOnEmpty) cli</span></span>
-<span class="lineno">   82 </span>
-<span class="lineno">   83 </span>-- | Enable ANSI colors on Windows and correct output buffering
-<span class="lineno">   84 </span>setup :: IO ()
-<span class="lineno">   85 </span><span class="decl"><span class="istickedoff">setup =</span>
-<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">mapM_ hSetup [stderr, stdout]</span>
-<span class="lineno">   87 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">hSetup :: Handle -&gt; IO ()</span>
-<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">hSetup h = do</span>
-<span class="lineno">   90 </span><span class="spaces">      </span><span class="istickedoff">void $ hSupportsANSIWithoutEmulation h</span>
-<span class="lineno">   91 </span><span class="spaces">      </span><span class="istickedoff">hSetBuffering h NoBuffering</span></span>
+<span class="lineno">   58 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, hsep</span></span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ string &quot;  ↳&quot;</span></span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, bold $ string &quot;source &lt;(&quot;</span></span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, bold $ string progName</span></span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, bold $ string $ &quot;--bash-completion-script `which&quot;&lt;&gt;progName&lt;&gt;&quot;`)&quot;</span></span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   64 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
+<span class="lineno">   65 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;Or alternatively --fish-completion-script / --zsh-completion-script.&quot;</span></span>
+<span class="lineno">   66 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;For a long-term solution, you may want to put this script in the relevant place. e.g.:&quot;</span></span>
+<span class="lineno">   67 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">, hsep [string &quot;  ↳&quot;, bold $ string &quot;/etc/bash_completion.d&quot;]</span></span>
+<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">])</span></span>
+<span class="lineno">   70 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
+<span class="lineno">   72 </span><span class="spaces">        </span><span class="istickedoff">[ RecoveryPhrase.mod RecoveryPhrase</span>
+<span class="lineno">   73 </span><span class="spaces">        </span><span class="istickedoff">, Key.mod Key</span>
+<span class="lineno">   74 </span><span class="spaces">        </span><span class="istickedoff">, Address.mod Address</span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">   76 </span>
+<span class="lineno">   77 </span>-- | Run a given command
+<span class="lineno">   78 </span>run :: CLI -&gt; IO ()
+<span class="lineno">   79 </span><span class="decl"><span class="istickedoff">run = handle prettyIOException . \case</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">RecoveryPhrase sub -&gt; RecoveryPhrase.run sub</span>
+<span class="lineno">   81 </span><span class="spaces">    </span><span class="istickedoff">Key sub -&gt; Key.run sub</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">Address sub -&gt; Address.run sub</span></span>
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>-- | Parse command line options and arguments
+<span class="lineno">   85 </span>parse :: IO CLI
+<span class="lineno">   86 </span><span class="decl"><span class="istickedoff">parse = customExecParser (prefs showHelpOnEmpty) cli</span></span>
+<span class="lineno">   87 </span>
+<span class="lineno">   88 </span>-- | Enable ANSI colors on Windows and correct output buffering
+<span class="lineno">   89 </span>setup :: IO ()
+<span class="lineno">   90 </span><span class="decl"><span class="istickedoff">setup =</span>
+<span class="lineno">   91 </span><span class="spaces">    </span><span class="istickedoff">mapM_ hSetup [stderr, stdout]</span>
+<span class="lineno">   92 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">hSetup :: Handle -&gt; IO ()</span>
+<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">hSetup h = do</span>
+<span class="lineno">   95 </span><span class="spaces">      </span><span class="istickedoff">void $ hSupportsANSIWithoutEmulation h</span>
+<span class="lineno">   96 </span><span class="spaces">      </span><span class="istickedoff">hSetBuffering h NoBuffering</span></span>
 
 </pre>
 </body>
