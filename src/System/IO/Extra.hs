@@ -61,7 +61,7 @@ import qualified Data.Text.Encoding as T
 -- | Read some bytes from the console, and decode them if the encoding is recognized.
 hGetBytes :: Handle -> IO ByteString
 hGetBytes h = do
-    raw <- B8.filter (/= '\n') <$> B8.hGetContents h
+    raw <- B8.filter isNewline <$> B8.hGetContents h
     case detectEncoding (T.unpack $ T.decodeUtf8 raw) of
         Just (EBase16  ) -> decode fromBase16 raw
         Just (EBech32{}) -> decode fromBech32 raw
@@ -76,12 +76,10 @@ hGetBytes h = do
 -- | Read some English mnemonic words from the console, or fail.
 hGetSomeMnemonic :: Handle -> IO SomeMnemonic
 hGetSomeMnemonic h = do
-    wrds <- T.words . trim '\n' . T.decodeUtf8 <$> B8.hGetContents h
+    wrds <- T.words . T.filter isNewline . T.decodeUtf8 <$> B8.hGetContents h
     case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
-  where
-    trim c = T.filter (/= c)
 
 -- | Read an encoded private key from the console, or fail.
 hGetXPrv :: Handle -> IO XPrv
@@ -122,6 +120,9 @@ hPutBytes h bytes =
 --
 -- Helpers
 --
+
+isNewline :: Char -> Bool
+isNewline = (`notElem` ['\n', '\r'])
 
 -- | Fail with a colored red error message.
 prettyIOException :: IOException -> IO a
