@@ -34,7 +34,17 @@ import Options.Applicative.Help.Pretty
 import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
-    ( BufferMode (..), Handle, hSetBuffering, stderr, stdout )
+    ( BufferMode (..)
+    , Handle
+    , hSetBuffering
+    , hSetEncoding
+    , mkTextEncoding
+    , stderr
+    , stdin
+    , stdout
+    )
+import System.IO.CodePage
+    ( withCP65001 )
 import System.IO.Extra
     ( prettyIOException, progName )
 
@@ -76,7 +86,7 @@ cli = info (helper <*> parser) $ mempty
 
 -- | Run a given command
 run :: CLI -> IO ()
-run = handle prettyIOException . \case
+run = withUtf8Encoding . handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
     Address sub -> Address.run sub
@@ -94,3 +104,16 @@ setup =
     hSetup h = do
       void $ hSupportsANSIWithoutEmulation h
       hSetBuffering h NoBuffering
+
+-- | Force the locale text encoding to UTF-8. This is needed because the CLI
+-- prints UTF-8 characters regardless of the @LANG@ environment variable or any
+-- other settings.
+--
+-- On Windows the current console code page is changed to UTF-8.
+withUtf8Encoding :: IO a -> IO a
+withUtf8Encoding action = withCP65001 (setUtf8EncodingHandles >> action)
+  where
+    setUtf8EncodingHandles :: IO ()
+    setUtf8EncodingHandles = do
+        utf8' <- mkTextEncoding "UTF-8//TRANSLIT"
+        mapM_ (`hSetEncoding` utf8') [stdin, stdout, stderr]

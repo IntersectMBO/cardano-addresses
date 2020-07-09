@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 914290d4127de4ecec3de55cab527b0bac04bd20033e880e4da520a1879ef2ab
+-- hash: 1bf8e783e1cb5c31b6ef7ac957c0fca1a9fa8daaaf00a362cd64af98ff64392c
 
 name:           cardano-addresses
 version:        1.0.0
@@ -80,6 +80,7 @@ library
     , bytestring
     , cardano-crypto
     , cborg
+    , code-page
     , cryptonite
     , deepseq
     , digest
@@ -145,6 +146,10 @@ test-suite unit
       test
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-tools:
+      cardano-address
+  build-tool-depends:
+      hspec-discover:hspec-discover
   build-depends:
       QuickCheck
     , base >=4.7 && <5
