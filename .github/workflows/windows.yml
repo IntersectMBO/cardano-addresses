@@ -1,0 +1,38 @@
+name: Continuous Integration (Windows)
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+    tags: [ "*.*.*" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v1
+
+    - name: 🧰 Setup Stack
+      uses: mstksg/setup-stack@69e4283f
+
+    - name: 💾 Cache Dependencies
+      id: cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.stack
+        key: ${{ matrix.os }}-${{ hashFiles('stack.yaml') }}
+
+    - name: 📸 Build Snapshot
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        stack --no-terminal test --bench --only-snapshot
+
+    - name: 🔨 Build & Test
+      run: |
+        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release
