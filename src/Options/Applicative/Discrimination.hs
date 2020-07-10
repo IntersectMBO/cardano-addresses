@@ -17,11 +17,21 @@ import Prelude
 import Cardano.Address
     ( NetworkTag (..) )
 import Options.Applicative
-    ( Parser, auto, completer, helpDoc, listCompleter, long, metavar, option )
+    ( Parser
+    , completer
+    , eitherReader
+    , helpDoc
+    , listCompleter
+    , long
+    , metavar
+    , option
+    )
 import Options.Applicative.Help.Pretty
     ( string, vsep )
 import Options.Applicative.Style
     ( Style (..) )
+import Text.Read
+    ( readMaybe )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Jormungandr as Jormungandr
@@ -33,7 +43,7 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 
 -- | Parse a 'NetworkTag' from the command-line, as an option
 networkTagOpt :: Style -> Parser NetworkTag
-networkTagOpt style = option (NetworkTag <$> auto) $ mempty
+networkTagOpt style = option (eitherReader reader) $ mempty
     <> metavar "NETWORK-TAG"
     <> long "network-tag"
     <> helpDoc  (Just (vsep (string <$> doc style)))
@@ -76,3 +86,9 @@ networkTagOpt style = option (NetworkTag <$> auto) $ mempty
             [ unNetworkTag Shelley.shelleyMainnet
             , unNetworkTag Shelley.shelleyTestnet
             ]
+
+    reader =
+        maybe
+            (Left "Invalid network tag. Must be a integer value.")
+            (Right . NetworkTag)
+            . readMaybe

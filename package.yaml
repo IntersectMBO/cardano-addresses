@@ -44,6 +44,7 @@ library:
   - bytestring
   - cardano-crypto
   - cborg
+  - code-page
   - cryptonite
   - deepseq
   - digest
@@ -94,6 +95,9 @@ tests:
     - condition: flag(release)
       ghc-options:
       - -Werror
+    build-tools:
+    - hspec-discover
+    - cardano-address
     dependencies:
     - base58-bytestring
     - bech32

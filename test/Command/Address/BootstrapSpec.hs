@@ -53,7 +53,7 @@ specInvalidNetwork :: String -> SpecWith ()
 specInvalidNetwork networkTag = it ("invalid network " <> networkTag) $ do
     (out, err) <- cli [ "address", "bootstrap", "--network-tag", networkTag ] ""
     out `shouldBe` ""
-    err `shouldContain` "--network-tag: cannot parse value"
+    err `shouldContain` "Invalid network tag. Must be a integer value."
     err `shouldContain` "Usage"
 
 defaultPhrase :: [String]
