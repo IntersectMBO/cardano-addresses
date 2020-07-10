@@ -10,6 +10,9 @@ module Command
     , setup
     , parse
     , run
+
+    -- * I/O Fix
+    , withUtf8Encoding
     ) where
 
 import Prelude
@@ -86,7 +89,7 @@ cli = info (helper <*> parser) $ mempty
 
 -- | Run a given command
 run :: CLI -> IO ()
-run = withUtf8Encoding . handle prettyIOException . \case
+run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
     Address sub -> Address.run sub
@@ -98,7 +101,7 @@ parse = customExecParser (prefs showHelpOnEmpty) cli
 -- | Enable ANSI colors on Windows and correct output buffering
 setup :: IO ()
 setup =
-    mapM_ hSetup [stderr, stdout]
+    mapM_ hSetup [stderr, stdout, stdin]
   where
     hSetup :: Handle -> IO ()
     hSetup h = do
