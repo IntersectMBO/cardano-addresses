@@ -37,7 +37,7 @@ specMalformedNetwork networkTag = it ("malformed network " <> networkTag) $ do
         >>= cli [ "key", "public" ]
         >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` ""
-    err `shouldContain` "--network-tag: cannot parse value"
+    err `shouldContain` "Invalid network tag. Must be a integer value."
     err `shouldContain` "Usage"
 
 specInvalidNetwork :: String -> SpecWith ()
