@@ -34,7 +34,15 @@ import Options.Applicative.Help.Pretty
 import System.Console.ANSI
     ( hSupportsANSIWithoutEmulation )
 import System.IO
-    ( BufferMode (..), Handle, hSetBuffering, stderr, stdout )
+    ( BufferMode (..)
+    , Handle
+    , hSetBuffering
+    , hSetEncoding
+    , mkTextEncoding
+    , stderr
+    , stdin
+    , stdout
+    )
 import System.IO.Extra
     ( prettyIOException, progName )
 
@@ -85,10 +93,13 @@ run = handle prettyIOException . \case
 parse :: IO CLI
 parse = customExecParser (prefs showHelpOnEmpty) cli
 
--- | Enable ANSI colors on Windows and correct output buffering
+-- | Enable ANSI colors on Windows and correct output buffering.
+-- Force input/output text encoding to be utf-8 regardless of system setting.
 setup :: IO ()
-setup =
+setup = do
     mapM_ hSetup [stderr, stdout]
+    utf8' <- mkTextEncoding "UTF-8//TRANSLIT"
+    mapM_ (`hSetEncoding` utf8') [stdin, stdout, stderr]
   where
     hSetup :: Handle -> IO ()
     hSetup h = do
