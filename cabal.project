@@ -1,7 +1,8 @@
 index-state: 2020-04-01T00:00:00Z
 
 packages:
-  ./
+  core
+  command-line
 
 source-repository-package
   type: git

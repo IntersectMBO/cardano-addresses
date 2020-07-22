@@ -66,6 +66,8 @@ import Options.Applicative
     )
 import Safe
     ( readEitherSafe )
+import System.IO.Extra
+    ( markCharsRedAtIndices )
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -211,7 +213,7 @@ xpubArg helpDoc =
     reader str = do
         bytes <- case detectEncoding str of
             Just EBase16   -> fromBase16 (toBytes str)
-            Just EBech32{} -> fromBech32 (toBytes str)
+            Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
             Just EBase58   -> fromBase58 (toBytes str)
             Nothing        -> Left
                 "Couldn't detect input encoding? The key must be encoded as \

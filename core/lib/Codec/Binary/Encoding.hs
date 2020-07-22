@@ -17,9 +17,6 @@ module Codec.Binary.Encoding
     , fromBase16
     , fromBase58
     , fromBech32
-
-      -- * Internal
-    , markCharsRedAtIndices
     ) where
 
 import Prelude
@@ -40,15 +37,6 @@ import Data.ByteString.Base58
     ( bitcoinAlphabet, decodeBase58, encodeBase58, unAlphabet )
 import Data.Char
     ( isLetter, isLower, isUpper, ord, toLower )
-import Data.List
-    ( nub, sort )
-import System.Console.ANSI
-    ( Color (..)
-    , ColorIntensity (..)
-    , ConsoleLayer (..)
-    , SGR (..)
-    , setSGRCode
-    )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
@@ -134,8 +122,11 @@ fromBase16 = convertFromBase Base16
 -- | Try decoding a bech32-encoded 'ByteString'
 --
 -- @since 2.0.0
-fromBech32 :: ByteString -> Either String ByteString
-fromBech32 raw = left errToString $ do
+fromBech32
+    :: ([Int] -> String -> String)
+    -> ByteString
+    -> Either String ByteString
+fromBech32 markCharsRedAtIndices raw = left errToString $ do
     (_hrp, dp) <- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw
     maybe (Left Nothing) Right $ Bech32.dataPartToBytes dp
   where
@@ -162,21 +153,3 @@ fromBech32 raw = left errToString $ do
 fromBase58 :: ByteString -> Either String ByteString
 fromBase58 raw = maybe (Left "Invalid Base58-encoded string.") Right $ do
     decodeBase58 bitcoinAlphabet raw
-
---
--- Helpers
---
-
--- | Mark all characters from a given string as red (in a console).
-markCharsRedAtIndices :: Integral i => [i] -> String -> String
-markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)
-  where
-    go _c [] [] = mempty
-    go c (i:is) (s:ss)
-        | c == i    = red ++ s:def ++ go (c + 1) is ss
-        | otherwise = s : go (c + 1) (i:is) ss
-    go _ [] ss = ss
-    go _ _ [] = [] -- NOTE: Really an error case.
-
-    red = setSGRCode [SetColor Foreground Vivid Red]
-    def = setSGRCode [Reset]

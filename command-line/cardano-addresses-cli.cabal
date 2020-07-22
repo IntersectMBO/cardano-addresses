@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1bf8e783e1cb5c31b6ef7ac957c0fca1a9fa8daaaf00a362cd64af98ff64392c
+-- hash: d9a80b0e4ba6bd331c243e584292f78964fd68b1b32f977b65eb13bdc94a87aa
 
-name:           cardano-addresses
+name:           cardano-addresses-cli
 version:        1.0.0
-synopsis:       Library utilities for mnemonic generation and address derivation.
+synopsis:       Utils for constructing a command-line on top of cardano-addresses.
 description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 category:       Cardano
 homepage:       https://github.com/input-output-hk/cardano-addresses#readme
@@ -31,15 +31,6 @@ flag release
 
 library
   exposed-modules:
-      Cardano.Address
-      Cardano.Address.Derivation
-      Cardano.Address.Style.Byron
-      Cardano.Address.Style.Icarus
-      Cardano.Address.Style.Jormungandr
-      Cardano.Address.Style.Shelley
-      Cardano.Codec.Cbor
-      Cardano.Mnemonic
-      Codec.Binary.Encoding
       Command
       Command.Address
       Command.Address.Bootstrap
@@ -54,7 +45,6 @@ library
       Command.Key.Public
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
-      Data.Word7
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
       Options.Applicative.Encoding
@@ -62,9 +52,9 @@ library
       Options.Applicative.Style
       System.IO.Extra
   other-modules:
-      Paths_cardano_addresses
+      Paths_cardano_addresses_cli
   hs-source-dirs:
-      src
+      lib
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
@@ -72,22 +62,13 @@ library
     , aeson-pretty
     , ansi-terminal
     , base >=4.7 && <5
-    , base58-bytestring
-    , basement
     , bech32
     , bech32-th
-    , binary
     , bytestring
+    , cardano-addresses
     , cardano-crypto
-    , cborg
     , code-page
-    , cryptonite
-    , deepseq
-    , digest
-    , exceptions
     , extra
-    , fmt
-    , memory
     , optparse-applicative
     , safe
     , text
@@ -98,13 +79,13 @@ library
 executable cardano-address
   main-is: Main.hs
   other-modules:
-      Paths_cardano_addresses
+      Paths_cardano_addresses_cli
   hs-source-dirs:
-      app
+      exe
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , cardano-addresses
+    , cardano-addresses-cli
   if flag(release)
     ghc-options: -Werror -static -O2
     cc-options: -static
@@ -115,15 +96,6 @@ test-suite unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-      Cardano.Address.DerivationSpec
-      Cardano.Address.Style.ByronSpec
-      Cardano.Address.Style.IcarusSpec
-      Cardano.Address.Style.JormungandrSpec
-      Cardano.Address.Style.ShelleySpec
-      Cardano.AddressSpec
-      Cardano.Codec.CborSpec
-      Cardano.MnemonicSpec
-      Codec.Binary.EncodingSpec
       Command.Address.BootstrapSpec
       Command.Address.DelegationSpec
       Command.Address.InspectSpec
@@ -136,12 +108,11 @@ test-suite unit
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
-      Data.Word7Spec
       Options.Applicative.DerivationSpec
       System.IO.ExtraSpec
       Test.Arbitrary
       Test.Utils
-      Paths_cardano_addresses
+      Paths_cardano_addresses_cli
   hs-source-dirs:
       test
   default-extensions: NoImplicitPrelude
@@ -153,13 +124,11 @@ test-suite unit
   build-depends:
       QuickCheck
     , base >=4.7 && <5
-    , base58-bytestring
     , bech32
     , bech32-th
-    , binary
     , bytestring
     , cardano-addresses
-    , cardano-crypto
+    , cardano-addresses-cli
     , containers
     , hspec
     , memory

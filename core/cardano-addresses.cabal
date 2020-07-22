@@ -1,0 +1,108 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 85720e79cd4f94877c3b88f6888b88c8b6a58674b1d2918d8cdbddf18d61844d
+
+name:           cardano-addresses
+version:        1.0.0
+synopsis:       Library utilities for mnemonic generation and address derivation.
+description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+category:       Cardano
+homepage:       https://github.com/input-output-hk/cardano-addresses#readme
+bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
+author:         IOHK
+maintainer:     operations@iohk.io
+copyright:      2020 IOHK
+license:        Apache-2.0
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/input-output-hk/cardano-addresses
+
+flag release
+  description: Compile executables for a release.
+  manual: True
+  default: False
+
+library
+  exposed-modules:
+      Cardano.Address
+      Cardano.Address.Derivation
+      Cardano.Address.Style.Byron
+      Cardano.Address.Style.Icarus
+      Cardano.Address.Style.Jormungandr
+      Cardano.Address.Style.Shelley
+      Cardano.Codec.Cbor
+      Cardano.Mnemonic
+      Codec.Binary.Encoding
+      Data.Word7
+  other-modules:
+      Paths_cardano_addresses
+  hs-source-dirs:
+      lib
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , base58-bytestring
+    , basement
+    , bech32
+    , bech32-th
+    , binary
+    , bytestring
+    , cardano-crypto
+    , cborg
+    , cryptonite
+    , deepseq
+    , digest
+    , exceptions
+    , extra
+    , fmt
+    , memory
+    , text
+  if flag(release)
+    ghc-options: -Werror
+  default-language: Haskell2010
+
+test-suite unit
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Cardano.Address.DerivationSpec
+      Cardano.Address.Style.ByronSpec
+      Cardano.Address.Style.IcarusSpec
+      Cardano.Address.Style.JormungandrSpec
+      Cardano.Address.Style.ShelleySpec
+      Cardano.AddressSpec
+      Cardano.Codec.CborSpec
+      Cardano.MnemonicSpec
+      Codec.Binary.EncodingSpec
+      Data.Word7Spec
+      Test.Arbitrary
+      Paths_cardano_addresses
+  hs-source-dirs:
+      test
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      hspec-discover:hspec-discover
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , bech32
+    , binary
+    , bytestring
+    , cardano-addresses
+    , cardano-crypto
+    , hspec
+    , memory
+    , text
+  if flag(release)
+    ghc-options: -Werror
+  default-language: Haskell2010

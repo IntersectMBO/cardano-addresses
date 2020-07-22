@@ -1,11 +1,11 @@
-name:                cardano-addresses
+name:                cardano-addresses-cli
 version:             1.0.0
 github:              input-output-hk/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
 copyright:           2020 IOHK
-synopsis:            Library utilities for mnemonic generation and address derivation.
+synopsis:            Utils for constructing a command-line on top of cardano-addresses.
 category:            Cardano
 
 description: |
@@ -21,7 +21,7 @@ flags:
     manual: True
 
 library:
-  source-dirs: src
+  source-dirs: lib
   ghc-options:
   - -Wall
   - -Wcompat
@@ -36,22 +36,13 @@ library:
   - aeson
   - aeson-pretty
   - ansi-terminal
-  - base58-bytestring
-  - basement
   - bech32
   - bech32-th
-  - binary
   - bytestring
+  - cardano-addresses
   - cardano-crypto
-  - cborg
   - code-page
-  - cryptonite
-  - deepseq
-  - digest
-  - exceptions
   - extra
-  - fmt
-  - memory
   - optparse-applicative
   - safe
   - text
@@ -59,7 +50,7 @@ library:
 executables:
   cardano-address:
     main: Main.hs
-    source-dirs: app
+    source-dirs: exe
     ghc-options:
     - -Wall
     - -Wcompat
@@ -68,7 +59,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - cardano-addresses
+    - cardano-addresses-cli
     when:
     - condition: flag(release)
       ghc-options:
@@ -99,13 +90,11 @@ tests:
     - hspec-discover
     - cardano-address
     dependencies:
-    - base58-bytestring
     - bech32
     - bech32-th
-    - binary
     - bytestring
     - cardano-addresses
-    - cardano-crypto
+    - cardano-addresses-cli
     - containers
     - hspec
     - memory
