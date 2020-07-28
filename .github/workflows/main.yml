@@ -26,18 +26,12 @@ jobs:
     - name: 🧰 Setup Stack
       uses: mstksg/setup-stack@v1
 
-    - name: 🔑 Variables
-      id: variables
-      run: |
-        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
-        echo ::set-output name=cache_key::${{ hashFiles('stack.yaml') }}
-
     - name: 💾 Cache Dependencies
       id: cache
       uses: actions/cache@v1
       with:
         path: ~/.stack
-        key: ${{ matrix.os }}-${{ steps.variables.outputs.cache_key }}
+        key: ${{ matrix.os }}-${{ hashFiles('stack.yaml') }}
 
     - name: 📸 Build Snapshot
       if: steps.cache.outputs.cache-hit != 'true'
@@ -46,15 +40,13 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag $PKG_NAME:release
+        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release --flag cardano-addresses-cli:release
         mkdir -p bin && cp $(stack path --local-install-root)/bin/* bin && chmod +x bin/*
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
         sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
         wget -O Makefile https://raw.githubusercontent.com/input-output-hk/adrestia/master/.haskell/coverage/Makefile
         mkdir -p .coverage && touch .coverage/template.overlay
         DESTDIR=dist/coverage make report && DESTDIR=dist/coverage make badge
-      env:
-        PKG_NAME: ${{ steps.variables.outputs.pkg_name }}
 
     - name: 📎 Upload Artifact
       uses: actions/upload-artifact@v1
@@ -85,7 +77,7 @@ jobs:
       id: variables
       run: |
         echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-        echo ::set-output name=pkg_name::$(cat *.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+        echo ::set-output name=pkg_name::$(cat core/*.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
 
     - name: 🐧 Download Artifact (linux)
       if: matrix.os == 'ubuntu-latest'
