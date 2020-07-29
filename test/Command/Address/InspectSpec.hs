@@ -45,6 +45,11 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectInvalid
         "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65"
 
+    -- 28-byte long script hash
+    specInspectInvalid
+        "addr1y9xup4n8cyckl7zw2u33pcn9ake3xvzy3vmtw9u79rw5r8ky\
+        \6pru7d6jgn4t89vy3n3d68sx5uej906uwpp83dtefn6qv4hscd"
+
 specInspectAddress :: [String] -> String -> SpecWith ()
 specInspectAddress mustHave addr = it addr $ do
     out <- cli [ "address", "inspect" ] addr

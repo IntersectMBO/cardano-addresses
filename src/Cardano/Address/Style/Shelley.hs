@@ -54,7 +54,7 @@ module Cardano.Address.Style.Shelley
 
       -- Internals
     , minSeedLengthBytes
-    , publicKeyHashSize
+    , pubkeyHashSize
     ) where
 
 import Prelude
@@ -104,7 +104,7 @@ import Control.Monad
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
-    ( Blake2b_224 (..) )
+    ( Blake2b_224 (..), Blake2b_256 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Aeson
@@ -390,7 +390,7 @@ instance Internal.PaymentAddress Shelley where
           -- `0110 0000` is 96 in decimal.
           firstByte =
               96 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + publicKeyHashSize
+          expectedLength = 1 + pubkeyHashSize
 
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey =
@@ -420,89 +420,88 @@ instance Internal.PointerAddress Shelley where
 -- @since 2.0.0
 inspectShelleyAddress :: Address -> Maybe Json.Value
 inspectShelleyAddress addr
-    | BS.length bytes < 1 + publicKeyHashSize = Nothing
+    | BS.length bytes < 1 + pubkeyHashSize = Nothing
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
             addrType = fstByte .&. 0b11110000
             network  = fstByte .&. 0b00001111
-            size = publicKeyHashSize
         in
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
-                0b00000000 | BS.length rest == 2 * size ->
+                0b00000000 | BS.length rest == 2 * pubkeyHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 (BS.take size rest)
-                        , "stake_key_hash"    .= base16 (BS.drop size rest)
+                        , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
+                        , "stake_key_hash"    .= base16 (BS.drop pubkeyHashSize rest)
                         , "network_tag"       .= network
                         ]
-               -- 0001: base address: scripthash28,keyhash28
-                0b00010000 | BS.length rest == 2 * size ->
+               -- 0001: base address: scripthash32,keyhash28
+                0b00010000 | BS.length rest == pubkeyHashSize + scriptHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 (BS.take size rest)
-                        , "stake_key_hash"    .= base16 (BS.drop size rest)
+                        , "script_hash"       .= base16 (BS.take scriptHashSize rest)
+                        , "stake_key_hash"    .= base16 (BS.drop scriptHashSize rest)
                         , "network_tag"       .= network
                         ]
-               -- 0010: base address: keyhash28,scripthash28
-                0b00100000 | BS.length rest == 2 * size ->
+               -- 0010: base address: keyhash28,scripthash32
+                0b00100000 | BS.length rest == pubkeyHashSize + scriptHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 (BS.take size rest)
-                        , "stake_script_hash" .= base16 (BS.drop size rest)
+                        , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
+                        , "stake_script_hash" .= base16 (BS.drop pubkeyHashSize rest)
                         , "network_tag"       .= network
                         ]
-               -- 0011: base address: scripthash28,scripthash28
-                0b00110000 | BS.length rest == 2 * size ->
+               -- 0011: base address: scripthash32,scripthash32
+                0b00110000 | BS.length rest == 2 * scriptHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 (BS.take size rest)
-                        , "stake_script_hash" .= base16 (BS.drop size rest)
+                        , "script_hash"       .= base16 (BS.take scriptHashSize rest)
+                        , "stake_script_hash" .= base16 (BS.drop scriptHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0100: pointer address: keyhash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01000000 | BS.length rest > size -> do
-                    ptr <- getPtr (BS.drop size rest)
+                0b01000000 | BS.length rest > pubkeyHashSize -> do
+                    ptr <- getPtr (BS.drop pubkeyHashSize rest)
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
-                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
                         , "pointer"           .= ptrToJSON ptr
                         , "network_tag"       .= network
                         ]
-               -- 0101: pointer address: scripthash28, 3 variable length uint
+               -- 0101: pointer address: scripthash32, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01010000 | BS.length rest > size -> do
-                    ptr <- getPtr (BS.drop size rest)
+                0b01010000 | BS.length rest > scriptHashSize -> do
+                    ptr <- getPtr (BS.drop scriptHashSize rest)
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
-                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "script_hash"       .= base16 (BS.take scriptHashSize rest)
                         , "pointer"           .= ptrToJSON ptr
                         , "network_tag"       .= network
                         ]
                -- 0110: enterprise address: keyhash28
-                0b01100000 | BS.length rest == size ->
+                0b01100000 | BS.length rest == pubkeyHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
-                        , "spending_key_hash" .= base16 (BS.take size rest)
+                        , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
                         , "network_tag"       .= network
                         ]
-               -- 0111: enterprise address: scripthash28
-                0b01110000 | BS.length rest == size ->
+               -- 0111: enterprise address: scripthash32
+                0b01110000 | BS.length rest == scriptHashSize ->
                     Just $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
-                        , "script_hash"       .= base16 (BS.take size rest)
+                        , "script_hash"       .= base16 (BS.take scriptHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 1000: byron address
@@ -695,8 +694,12 @@ blake2b224 =
     BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey
 
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)
-publicKeyHashSize :: Int
-publicKeyHashSize = hashDigestSize Blake2b_224
+pubkeyHashSize :: Int
+pubkeyHashSize = hashDigestSize Blake2b_224
+
+-- Size, in bytes, of a hash of a script.
+scriptHashSize :: Int
+scriptHashSize = hashDigestSize Blake2b_256
 
 -- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
