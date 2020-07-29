@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1bf8e783e1cb5c31b6ef7ac957c0fca1a9fa8daaaf00a362cd64af98ff64392c
+-- hash: 85720e79cd4f94877c3b88f6888b88c8b6a58674b1d2918d8cdbddf18d61844d
 
 name:           cardano-addresses
 version:        1.0.0
@@ -40,37 +40,15 @@ library
       Cardano.Codec.Cbor
       Cardano.Mnemonic
       Codec.Binary.Encoding
-      Command
-      Command.Address
-      Command.Address.Bootstrap
-      Command.Address.Delegation
-      Command.Address.Inspect
-      Command.Address.Payment
-      Command.Address.Pointer
-      Command.Key
-      Command.Key.Child
-      Command.Key.FromRecoveryPhrase
-      Command.Key.Inspect
-      Command.Key.Public
-      Command.RecoveryPhrase
-      Command.RecoveryPhrase.Generate
       Data.Word7
-      Options.Applicative.Derivation
-      Options.Applicative.Discrimination
-      Options.Applicative.Encoding
-      Options.Applicative.MnemonicSize
-      Options.Applicative.Style
-      System.IO.Extra
   other-modules:
       Paths_cardano_addresses
   hs-source-dirs:
-      src
+      lib
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
       aeson
-    , aeson-pretty
-    , ansi-terminal
     , base >=4.7 && <5
     , base58-bytestring
     , basement
@@ -80,7 +58,6 @@ library
     , bytestring
     , cardano-crypto
     , cborg
-    , code-page
     , cryptonite
     , deepseq
     , digest
@@ -88,27 +65,9 @@ library
     , extra
     , fmt
     , memory
-    , optparse-applicative
-    , safe
     , text
   if flag(release)
     ghc-options: -Werror
-  default-language: Haskell2010
-
-executable cardano-address
-  main-is: Main.hs
-  other-modules:
-      Paths_cardano_addresses
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , cardano-addresses
-  if flag(release)
-    ghc-options: -Werror -static -O2
-    cc-options: -static
-    ld-options: -static -pthread
   default-language: Haskell2010
 
 test-suite unit
@@ -124,47 +83,25 @@ test-suite unit
       Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
       Codec.Binary.EncodingSpec
-      Command.Address.BootstrapSpec
-      Command.Address.DelegationSpec
-      Command.Address.InspectSpec
-      Command.Address.PaymentSpec
-      Command.Address.PointerSpec
-      Command.Key.ChildSpec
-      Command.Key.FromRecoveryPhraseSpec
-      Command.Key.InspectSpec
-      Command.Key.PublicSpec
-      Command.KeySpec
-      Command.RecoveryPhrase.GenerateSpec
-      Command.RecoveryPhraseSpec
       Data.Word7Spec
-      Options.Applicative.DerivationSpec
-      System.IO.ExtraSpec
       Test.Arbitrary
-      Test.Utils
       Paths_cardano_addresses
   hs-source-dirs:
       test
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-tools:
-      cardano-address
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck
     , base >=4.7 && <5
-    , base58-bytestring
     , bech32
-    , bech32-th
     , binary
     , bytestring
     , cardano-addresses
     , cardano-crypto
-    , containers
     , hspec
     , memory
-    , process
-    , temporary
     , text
   if flag(release)
     ghc-options: -Werror

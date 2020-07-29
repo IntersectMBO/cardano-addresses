@@ -1,0 +1,141 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 3737cc69d18f00a50e3c375be8e4be7728f2315689dc3bc92200f54e3c79c5b6
+
+name:           cardano-addresses-cli
+version:        1.0.0
+synopsis:       Utils for constructing a command-line on top of cardano-addresses.
+description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+category:       Cardano
+homepage:       https://github.com/input-output-hk/cardano-addresses#readme
+bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
+author:         IOHK
+maintainer:     operations@iohk.io
+copyright:      2020 IOHK
+license:        Apache-2.0
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/input-output-hk/cardano-addresses
+
+flag release
+  description: Compile executables for a release.
+  manual: True
+  default: False
+
+library
+  exposed-modules:
+      Command
+      Command.Address
+      Command.Address.Bootstrap
+      Command.Address.Delegation
+      Command.Address.Inspect
+      Command.Address.Payment
+      Command.Address.Pointer
+      Command.Key
+      Command.Key.Child
+      Command.Key.FromRecoveryPhrase
+      Command.Key.Inspect
+      Command.Key.Public
+      Command.RecoveryPhrase
+      Command.RecoveryPhrase.Generate
+      Options.Applicative.Derivation
+      Options.Applicative.Discrimination
+      Options.Applicative.Encoding
+      Options.Applicative.MnemonicSize
+      Options.Applicative.Style
+      System.IO.Extra
+  other-modules:
+      Paths_cardano_addresses_cli
+  hs-source-dirs:
+      lib
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
+  build-depends:
+      aeson
+    , aeson-pretty
+    , ansi-terminal
+    , base >=4.7 && <5
+    , bech32
+    , bech32-th
+    , bytestring
+    , cardano-addresses
+    , cardano-crypto
+    , code-page
+    , extra
+    , optparse-applicative
+    , safe
+    , text
+  if flag(release)
+    ghc-options: -Werror
+  default-language: Haskell2010
+
+executable cardano-address
+  main-is: Main.hs
+  other-modules:
+      Paths_cardano_addresses_cli
+  hs-source-dirs:
+      exe
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cardano-addresses-cli
+  if flag(release)
+    ghc-options: -Werror -static -O2
+    cc-options: -static
+    ld-options: -static -pthread
+  default-language: Haskell2010
+
+test-suite unit
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      AutoDiscover
+      Command.Address.BootstrapSpec
+      Command.Address.DelegationSpec
+      Command.Address.InspectSpec
+      Command.Address.PaymentSpec
+      Command.Address.PointerSpec
+      Command.Key.ChildSpec
+      Command.Key.FromRecoveryPhraseSpec
+      Command.Key.InspectSpec
+      Command.Key.PublicSpec
+      Command.KeySpec
+      Command.RecoveryPhrase.GenerateSpec
+      Command.RecoveryPhraseSpec
+      Options.Applicative.DerivationSpec
+      System.IO.ExtraSpec
+      Test.Arbitrary
+      Test.Utils
+      Paths_cardano_addresses_cli
+  hs-source-dirs:
+      test
+  default-extensions: NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-tools:
+      cardano-address
+  build-tool-depends:
+      hspec-discover:hspec-discover
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , bech32
+    , bech32-th
+    , bytestring
+    , cardano-addresses
+    , cardano-addresses-cli
+    , containers
+    , hspec
+    , memory
+    , process
+    , temporary
+    , text
+  if flag(release)
+    ghc-options: -Werror
+  default-language: Haskell2010

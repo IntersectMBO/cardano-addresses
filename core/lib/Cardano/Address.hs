@@ -111,13 +111,15 @@ bech32 = bech32With hrp
 --
 -- @since 2.0.0
 bech32With :: HumanReadablePart -> Address -> Text
-bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp) . unAddress
+bech32With hrp =
+    T.decodeUtf8 . encode (EBech32 hrp) . unAddress
 
 -- | Decode a bech32-encoded  'Text' into an 'Address'
 --
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
-fromBech32 = eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 . T.encodeUtf8
+fromBech32 =
+    eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 (const id) . T.encodeUtf8
 
 -- | Encoding of addresses for certain key types and backend targets.
 --

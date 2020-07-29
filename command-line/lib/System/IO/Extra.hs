@@ -19,6 +19,7 @@ module System.IO.Extra
     -- * I/O Helpers
     , prettyIOException
     , progName
+    , markCharsRedAtIndices
     ) where
 
 import Prelude
@@ -40,6 +41,15 @@ import Control.Exception
     ( IOException )
 import Data.ByteString
     ( ByteString )
+import Data.List
+    ( nub, sort )
+import System.Console.ANSI
+    ( Color (..)
+    , ColorIntensity (..)
+    , ConsoleLayer (..)
+    , SGR (..)
+    , setSGRCode
+    )
 import System.Environment
     ( getProgName )
 import System.Exit
@@ -64,7 +74,7 @@ hGetBytes h = do
     raw <- B8.filter noNewline <$> B8.hGetContents h
     case detectEncoding (T.unpack $ T.decodeUtf8 raw) of
         Just (EBase16  ) -> decode fromBase16 raw
-        Just (EBech32{}) -> decode fromBech32 raw
+        Just (EBech32{}) -> decode (fromBech32 markCharsRedAtIndices) raw
         Just (EBase58  ) -> decode fromBase58 raw
         Nothing          -> fail
             "Couldn't detect input encoding? Data on stdin must be encoded as \
@@ -129,6 +139,20 @@ prettyIOException :: IOException -> IO a
 prettyIOException e = do
     B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e
     exitFailure
+
+-- | Mark all characters from a given string as red (in a console).
+markCharsRedAtIndices :: Integral i => [i] -> String -> String
+markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)
+  where
+    go _c [] [] = mempty
+    go c (i:is) (s:ss)
+        | c == i    = red ++ s:def ++ go (c + 1) is ss
+        | otherwise = s : go (c + 1) (i:is) ss
+    go _ [] ss = ss
+    go _ _ [] = [] -- NOTE: Really an error case.
+
+    red = setSGRCode [SetColor Foreground Vivid Red]
+    def = setSGRCode [Reset]
 
 -- | Get program name to avoid hard-coding it in documentation excerpt.
 progName :: String
