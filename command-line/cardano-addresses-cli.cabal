@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d9a80b0e4ba6bd331c243e584292f78964fd68b1b32f977b65eb13bdc94a87aa
+-- hash: 3737cc69d18f00a50e3c375be8e4be7728f2315689dc3bc92200f54e3c79c5b6
 
 name:           cardano-addresses-cli
 version:        1.0.0
@@ -96,6 +96,7 @@ test-suite unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      AutoDiscover
       Command.Address.BootstrapSpec
       Command.Address.DelegationSpec
       Command.Address.InspectSpec
