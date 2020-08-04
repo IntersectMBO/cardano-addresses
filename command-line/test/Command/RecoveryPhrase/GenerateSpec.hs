@@ -20,7 +20,7 @@ spec = describeCmd ["recovery-phrase", "generate"] $ do
 specDefaultSize :: SpecWith ()
 specDefaultSize = it "ø; default size" $ do
     out <- cli ["recovery-phrase", "generate"] mempty
-    length (words out) `shouldBe` 15
+    length (words out) `shouldBe` 24
 
 specSpecificSize :: Int -> SpecWith ()
 specSpecificSize n = it ("--size=" <> show n <> "; valid size") $ do
