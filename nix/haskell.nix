@@ -14,7 +14,7 @@
 let
 
   src = haskell-nix.haskellLib.cleanGit {
-      name = "cardano-node-src";
+      name = "cardano-addresses-src";
       src = ../.;
   };
 
@@ -48,8 +48,10 @@ let
           # "stm" "terminfo"
         ];
       }
-      # TODO: Compile all local packages with -Werror:
-      { packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ]; }
+      {
+        packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
+        packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
+      }
       # Musl libc fully static build
       (lib.optionalAttrs stdenv.hostPlatform.isMusl (let
         # Module options which adds GHC flags and libraries for a fully static build
