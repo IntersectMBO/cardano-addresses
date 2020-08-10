@@ -16,7 +16,6 @@ COPY core/package.yaml core/package.yaml
 COPY command-line/package.yaml command-line/package.yaml
 RUN stack setup
 RUN stack build --only-snapshot
-COPY package.yaml .
 RUN stack build --only-dependencies
 COPY . .
 RUN stack install --flag cardano-addresses:release
