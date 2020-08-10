@@ -11,28 +11,11 @@ RUN stack upgrade --binary-version 2.1.3
 
 # Leverage Docker cache, build in three steps: 1) snapshot, 2) deps, 3) app
 COPY stack.yaml .
-SHELL ["/bin/bash", "-c"]
 RUN mkdir -p command-line core
-RUN echo $'name: placeholder \n\
-library:                     \n\
-  dependencies:              \n\
-  - aeson                    \n\
-  - base                     \n\
-  - base-compat              \n\
-  - bifunctors               \n\
-  - bytestring               \n\
-  - extra                    \n\
-  - lens                     \n\
-  - ordered-containers       \n\
-  - text                     \n\
-  - unordered-containers     \n\
-  - vector                   \n\
-' > package.yaml
-RUN cp package.yaml core/package.yaml && cp package.yaml command-line/package.yaml
+COPY core/package.yaml core/package.yaml
+COPY command-line/package.yaml command-line/package.yaml
 RUN stack setup
 RUN stack build --only-snapshot
-RUN rm placeholder.cabal
-
 COPY package.yaml .
 RUN stack build --only-dependencies
 COPY . .
