@@ -12,6 +12,7 @@ RUN stack upgrade --binary-version 2.1.3
 # Leverage Docker cache, build in three steps: 1) snapshot, 2) deps, 3) app
 COPY stack.yaml .
 SHELL ["/bin/bash", "-c"]
+RUN mkdir -p command-line core
 RUN echo $'name: placeholder \n\
 library:                     \n\
   dependencies:              \n\
@@ -27,6 +28,7 @@ library:                     \n\
   - unordered-containers     \n\
   - vector                   \n\
 ' > package.yaml
+RUN cp package.yaml core/package.yaml && cp package.yaml command-line/package.yaml
 RUN stack setup
 RUN stack build --only-snapshot
 RUN rm placeholder.cabal
