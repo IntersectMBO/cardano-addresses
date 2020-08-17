@@ -73,6 +73,8 @@ import Cardano.Address.Derivation
     , generateNew
     , xprvFromBytes
     )
+import Cardano.Address.Errors
+    ( IcarusAddrError (..) )
 import Cardano.Address.Style.Byron
     ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
@@ -86,7 +88,9 @@ import Control.DeepSeq
 import Control.Exception.Base
     ( assert )
 import Control.Monad
-    ( guard )
+    ( when )
+import Control.Monad.Catch
+    ( MonadThrow, throwM )
 import Crypto.Hash.Algorithms
     ( SHA256 (..), SHA512 (..) )
 import Crypto.MAC.HMAC
@@ -311,16 +315,19 @@ deriveAddressPublicKey =
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
 -- | Analyze an 'Address' to know whether it's an Icarus address or not.
--- Returns 'Nothing' if the address isn't a byron address, or return a
+-- Throws 'IcarusAddrError' if the address isn't a byron address, or return a
 -- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
-inspectIcarusAddress :: Address -> Maybe Json.Value
+inspectIcarusAddress :: MonadThrow m => Address -> m Json.Value
 inspectIcarusAddress addr = do
-    payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
-    (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
-    guard $ 1 `notElem` (fst <$> attrs)
-    ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    payload <- either (throwM . IcDeserialiseError) pure
+        $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+    (root, attrs) <- either (throwM . IcDeserialiseError) pure
+        $ CBOR.deserialiseCbor decodePayload payload
+    when (elem 1 . fmap fst $ attrs) $ throwM IcUnexpectedDerivationPath
+    ntwrk <- either (throwM . IcDeserialiseError) pure
+        $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
     pure $ Json.object
         [ "address_style"   .= Json.String "Icarus"
         , "stake_reference" .= Json.String "none"

@@ -85,6 +85,8 @@ import Cardano.Address.Derivation
     , generateNew
     , xpubPublicKey
     )
+import Cardano.Address.Errors
+    ( ShelleyAddrError (..) )
 import Cardano.Address.Style.Byron
     ( inspectByronAddress )
 import Cardano.Address.Style.Icarus
@@ -94,7 +96,7 @@ import Cardano.Mnemonic
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
-    ( (<|>) )
+    ( Alternative, (<|>) )
 import Control.Arrow
     ( first )
 import Control.DeepSeq
@@ -103,6 +105,8 @@ import Control.Exception.Base
     ( assert )
 import Control.Monad
     ( guard, when )
+import Control.Monad.Catch
+    ( MonadThrow, throwM )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
@@ -439,13 +443,13 @@ instance Internal.PointerAddress Shelley where
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
 --
--- Returns 'Nothing' if it's not a valid Shelley address, or a ready-to-print
+-- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
 -- string giving details about the 'Address'.
 --
 -- @since 2.0.0
-inspectShelleyAddress :: Address -> Maybe Json.Value
+inspectShelleyAddress :: (Alternative m, MonadThrow m) => Address -> m Json.Value
 inspectShelleyAddress addr
-    | BS.length bytes < 1 + pubkeyHashSize = Nothing
+    | BS.length bytes < 1 + pubkeyHashSize = throwM (ShWrongInputSize (BS.length bytes))
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
@@ -455,7 +459,7 @@ inspectShelleyAddress addr
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
                 0b00000000 | BS.length rest == 2 * pubkeyHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
@@ -464,7 +468,7 @@ inspectShelleyAddress addr
                         ]
                -- 0001: base address: scripthash32,keyhash28
                 0b00010000 | BS.length rest == pubkeyHashSize + scriptHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "script_hash"       .= base16 (BS.take scriptHashSize rest)
@@ -473,7 +477,7 @@ inspectShelleyAddress addr
                         ]
                -- 0010: base address: keyhash28,scripthash32
                 0b00100000 | BS.length rest == pubkeyHashSize + scriptHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
@@ -482,7 +486,7 @@ inspectShelleyAddress addr
                         ]
                -- 0011: base address: scripthash32,scripthash32
                 0b00110000 | BS.length rest == 2 * scriptHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "script_hash"       .= base16 (BS.take scriptHashSize rest)
@@ -494,7 +498,7 @@ inspectShelleyAddress addr
                --      the pointer
                 0b01000000 | BS.length rest > pubkeyHashSize -> do
                     ptr <- getPtr (BS.drop pubkeyHashSize rest)
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
                         , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
@@ -506,7 +510,7 @@ inspectShelleyAddress addr
                --      the pointer
                 0b01010000 | BS.length rest > scriptHashSize -> do
                     ptr <- getPtr (BS.drop scriptHashSize rest)
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
                         , "script_hash"       .= base16 (BS.take scriptHashSize rest)
@@ -515,7 +519,7 @@ inspectShelleyAddress addr
                         ]
                -- 0110: enterprise address: keyhash28
                 0b01100000 | BS.length rest == pubkeyHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
                         , "spending_key_hash" .= base16 (BS.take pubkeyHashSize rest)
@@ -523,7 +527,7 @@ inspectShelleyAddress addr
                         ]
                -- 0111: enterprise address: scripthash32
                 0b01110000 | BS.length rest == scriptHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
                         , "script_hash"       .= base16 (BS.take scriptHashSize rest)
@@ -534,7 +538,7 @@ inspectShelleyAddress addr
                     inspectByronAddress addr <|> inspectIcarusAddress addr
                -- 1110: reward account: keyhash28
                 0b11100000 | BS.length rest == pubkeyHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "stake_key_hash"    .= base16 (BS.take pubkeyHashSize rest)
@@ -542,14 +546,13 @@ inspectShelleyAddress addr
                         ]
                -- 1111: reward account: scripthash32
                 0b11110000 | BS.length rest == scriptHashSize ->
-                    Just $ Json.object
+                    pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
                         , "script_hash"       .= base16 (BS.take scriptHashSize rest)
                         , "network_tag"       .= network
                         ]
-                _ ->
-                    Nothing
+                _ -> throwM ShUnknownAddrType
   where
     bytes  = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
@@ -561,9 +564,9 @@ inspectShelleyAddress addr
         , "output_index" .= outputIndex
         ]
 
-    getPtr :: ByteString -> Maybe ChainPointer
+    getPtr :: (Alternative m, MonadThrow m) => ByteString -> m ChainPointer
     getPtr source = case runGetOrFail get (BL.fromStrict source) of
-        Left{} -> Nothing
+        Left (_, _, e) -> throwM (ShPtrRetrieveError e)
         Right (rest, _, a) -> guard (BL.null rest) $> a
       where
         get = ChainPointer

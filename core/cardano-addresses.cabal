@@ -33,6 +33,7 @@ library
   exposed-modules:
       Cardano.Address
       Cardano.Address.Derivation
+      Cardano.Address.Errors
       Cardano.Address.Style.Byron
       Cardano.Address.Style.Icarus
       Cardano.Address.Style.Jormungandr

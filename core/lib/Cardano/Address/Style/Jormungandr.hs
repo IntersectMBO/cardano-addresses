@@ -76,6 +76,8 @@ import Cardano.Address.Derivation
     , generateNew
     , xpubPublicKey
     )
+import Cardano.Address.Errors
+    ( JormungandrAddrError (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -86,6 +88,8 @@ import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Control.Monad.Catch
+    ( MonadThrow, throwM )
 import Data.Aeson
     ( (.=) )
 import Data.Binary.Put
@@ -364,13 +368,13 @@ instance Internal.DelegationAddress Jormungandr where
 
 -- | Analyze an 'Address' to know whether it's a Jormungandr address or not.
 --
--- Returns 'Nothing' if it's not a valid Shelley address, or a ready-to-print
+-- Throws 'JormungandrAddrError' if it's not a valid Shelley address, or a ready-to-print
 -- string giving details about the 'Jormungandr'.
 --
 -- @since 2.0.0
-inspectJormungandrAddress :: Address -> Maybe Json.Value
+inspectJormungandrAddress :: MonadThrow m => Address -> m Json.Value
 inspectJormungandrAddress addr
-    | BS.length bytes < 1 + publicKeySize = Nothing
+    | BS.length bytes < 1 + publicKeySize = throwM (JoWrongInputSize (BS.length bytes))
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
@@ -380,7 +384,7 @@ inspectJormungandrAddress addr
         in
             case addrType of
                 0x03 | BS.length rest == size ->
-                    Just $ Json.object
+                    pure $ Json.object
                     [ "address_style"   .= Json.String "Jormungandr"
                     , "address_type"    .= Json.String "single"
                     , "stake_reference" .= Json.String "none"
@@ -388,7 +392,7 @@ inspectJormungandrAddress addr
                     , "network_tag"     .= network
                     ]
                 0x04 | BS.length rest == 2 * size ->
-                    Just $ Json.object
+                    pure $ Json.object
                     [ "address_style"   .= Json.String "Jormungandr"
                     , "address_type"    .= Json.String "group"
                     , "stake_reference" .= Json.String "by value"
@@ -397,7 +401,7 @@ inspectJormungandrAddress addr
                     , "network_tag"     .= network
                     ]
                 0x05 | BS.length rest == size ->
-                    Just $ Json.object
+                    pure $ Json.object
                     [ "address_style"   .= Json.String "Jormungandr"
                     , "address_type"    .= Json.String "account"
                     , "stake_reference" .= Json.String "none"
@@ -405,15 +409,14 @@ inspectJormungandrAddress addr
                     , "network_tag"     .= network
                     ]
                 0x06 | BS.length rest == size ->
-                    Just $ Json.object
+                    pure $ Json.object
                     [ "address_style"   .= Json.String "Jormungandr"
                     , "address_type"    .= Json.String "multisig"
                     , "stake_reference" .= Json.String "none"
                     , "merkle_root"     .= base16 (BS.take size rest)
                     , "network_tag"     .= network
                     ]
-                _ ->
-                    Nothing
+                _ -> throwM JoUnknownAddrType
   where
     bytes = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
