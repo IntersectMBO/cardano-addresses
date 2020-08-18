@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3737cc69d18f00a50e3c375be8e4be7728f2315689dc3bc92200f54e3c79c5b6
+-- hash: 23602f11d7fb1ac8c8333e3d2d3c95385ea53972cbde55027a9b540b975d71c2
 
 name:           cardano-addresses-cli
 version:        1.0.0
@@ -38,6 +38,7 @@ library
       Command.Address.Inspect
       Command.Address.Payment
       Command.Address.Pointer
+      Command.Address.Reward
       Command.Key
       Command.Key.Child
       Command.Key.FromRecoveryPhrase
@@ -68,7 +69,9 @@ library
     , cardano-addresses
     , cardano-crypto
     , code-page
+    , exceptions
     , extra
+    , fmt
     , optparse-applicative
     , safe
     , text
@@ -102,6 +105,7 @@ test-suite unit
       Command.Address.InspectSpec
       Command.Address.PaymentSpec
       Command.Address.PointerSpec
+      Command.Address.RewardSpec
       Command.Key.ChildSpec
       Command.Key.FromRecoveryPhraseSpec
       Command.Key.InspectSpec
