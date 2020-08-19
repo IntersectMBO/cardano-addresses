@@ -182,7 +182,7 @@ span.spaces    { background: white }
 <span class="lineno">  163 </span>-- @since 1.0.0
 <span class="lineno">  164 </span>xprvFromBytes :: ByteString -&gt; Maybe XPrv
 <span class="lineno">  165 </span><span class="decl"><span class="istickedoff">xprvFromBytes bytes</span>
-<span class="lineno">  166 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlyfalse">BS.length bytes /= 96</span> = <span class="nottickedoff">Nothing</span></span>
+<span class="lineno">  166 </span><span class="spaces">    </span><span class="istickedoff">| BS.length bytes /= 96 = Nothing</span>
 <span class="lineno">  167 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
 <span class="lineno">  168 </span><span class="spaces">        </span><span class="istickedoff">let (prv, cc) = BS.splitAt 64 bytes</span>
 <span class="lineno">  169 </span><span class="spaces">        </span><span class="istickedoff">pub &lt;- ed25519ScalarMult (BS.take 32 prv)</span>
@@ -319,7 +319,7 @@ span.spaces    { background: white }
 <span class="lineno">  300 </span>data AccountingStyle
 <span class="lineno">  301 </span>    = UTxOExternal
 <span class="lineno">  302 </span>    | UTxOInternal
-<span class="lineno">  303 </span>    deriving (Generic, Typeable, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>)
+<span class="lineno">  303 </span>    deriving (Generic, Typeable, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>)
 <span class="lineno">  304 </span>
 <span class="lineno">  305 </span>instance NFData AccountingStyle
 <span class="lineno">  306 </span>
@@ -344,8 +344,8 @@ span.spaces    { background: white }
 <span class="lineno">  325 </span>--
 <span class="lineno">  326 </span>-- @since 1.0.0
 <span class="lineno">  327 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
-<span class="lineno">  328 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">getIndex</span></span></span> :: Word32 }
-<span class="lineno">  329 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  328 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">getIndex</span></span></span> :: Word32 }
+<span class="lineno">  329 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">  330 </span>
 <span class="lineno">  331 </span>instance NFData (Index derivationType depth)
 <span class="lineno">  332 </span>

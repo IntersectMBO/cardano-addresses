@@ -178,8 +178,8 @@ span.spaces    { background: white }
 <span class="lineno">  159 </span>{-# DEPRECATED payloadPassphrase &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  160 </span>
 <span class="lineno">  161 </span>instance (NFData key, NFData (DerivationPath depth)) =&gt; NFData (Byron depth key)
-<span class="lineno">  162 </span><span class="decl"><span class="nottickedoff">deriving instance (Show key, Show (DerivationPath depth)) =&gt; Show (Byron depth key)</span></span>
-<span class="lineno">  163 </span><span class="decl"><span class="nottickedoff">deriving instance (Eq key, Eq (DerivationPath depth)) =&gt; Eq (Byron depth key)</span></span>
+<span class="lineno">  162 </span><span class="decl"><span class="istickedoff">deriving instance (Show key, Show (DerivationPath depth)) =&gt; Show (Byron depth key)</span></span>
+<span class="lineno">  163 </span><span class="decl"><span class="istickedoff">deriving instance (Eq key, Eq (DerivationPath depth)) =&gt; Eq (Byron depth key)</span></span>
 <span class="lineno">  164 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Byron depth))</span></span></span></span>
 <span class="lineno">  165 </span>
 <span class="lineno">  166 </span>-- | The hierarchical derivation indices for a given level/depth.
@@ -221,14 +221,14 @@ span.spaces    { background: white }
 <span class="lineno">  202 </span>    type SecondFactor Byron = ()
 <span class="lineno">  203 </span>
 <span class="lineno">  204 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromXPrv xprv =</span>
-<span class="lineno">  205 </span><span class="spaces">        </span><span class="istickedoff">liftXPrv <span class="nottickedoff">(toXPub xprv)</span> <span class="nottickedoff">()</span> xprv</span></span>
+<span class="lineno">  205 </span><span class="spaces">        </span><span class="istickedoff">liftXPrv (toXPub xprv) () xprv</span></span>
 <span class="lineno">  206 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic (SomeMnemonic mw) () =</span>
-<span class="lineno">  207 </span><span class="spaces">        </span><span class="istickedoff">liftXPrv (toXPub xprv) <span class="nottickedoff">()</span> xprv</span>
+<span class="lineno">  207 </span><span class="spaces">        </span><span class="istickedoff">liftXPrv (toXPub xprv) () xprv</span>
 <span class="lineno">  208 </span><span class="spaces">      </span><span class="istickedoff">where</span>
 <span class="lineno">  209 </span><span class="spaces">        </span><span class="istickedoff">xprv = generate (hashSeed seedValidated)</span>
 <span class="lineno">  210 </span><span class="spaces">        </span><span class="istickedoff">seed  = entropyToBytes $ mnemonicToEntropy mw</span>
 <span class="lineno">  211 </span><span class="spaces">        </span><span class="istickedoff">seedValidated = assert</span>
-<span class="lineno">  212 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  212 </span><span class="spaces">            </span><span class="istickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span>
 <span class="lineno">  213 </span><span class="spaces">            </span><span class="istickedoff">seed</span></span>
 <span class="lineno">  214 </span>
 <span class="lineno">  215 </span>instance Internal.HardDerivation Byron where
@@ -255,8 +255,8 @@ span.spaces    { background: white }
 <span class="lineno">  236 </span>    :: SomeMnemonic
 <span class="lineno">  237 </span>        -- ^ Some valid mnemonic sentence.
 <span class="lineno">  238 </span>    -&gt; Byron 'RootK XPrv
-<span class="lineno">  239 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromMnemonic =</span>
-<span class="lineno">  240 </span><span class="spaces">    </span><span class="nottickedoff">flip Internal.genMasterKeyFromMnemonic ()</span></span>
+<span class="lineno">  239 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic =</span>
+<span class="lineno">  240 </span><span class="spaces">    </span><span class="istickedoff">flip Internal.genMasterKeyFromMnemonic ()</span></span>
 <span class="lineno">  241 </span>{-# DEPRECATED genMasterKeyFromMnemonic &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  242 </span>
 <span class="lineno">  243 </span>-- | Generate a root key from a corresponding root 'XPrv'
@@ -265,8 +265,8 @@ span.spaces    { background: white }
 <span class="lineno">  246 </span>genMasterKeyFromXPrv
 <span class="lineno">  247 </span>    :: XPrv
 <span class="lineno">  248 </span>    -&gt; Byron 'RootK XPrv
-<span class="lineno">  249 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv =</span>
-<span class="lineno">  250 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  249 </span><span class="decl"><span class="istickedoff">genMasterKeyFromXPrv =</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromXPrv</span></span>
 <span class="lineno">  251 </span>{-# DEPRECATED genMasterKeyFromXPrv &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  252 </span>
 <span class="lineno">  253 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
@@ -278,8 +278,8 @@ span.spaces    { background: white }
 <span class="lineno">  259 </span>    :: Byron 'RootK XPrv
 <span class="lineno">  260 </span>    -&gt; Index 'WholeDomain 'AccountK
 <span class="lineno">  261 </span>    -&gt; Byron 'AccountK XPrv
-<span class="lineno">  262 </span><span class="decl"><span class="nottickedoff">deriveAccountPrivateKey =</span>
-<span class="lineno">  263 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  262 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey =</span>
+<span class="lineno">  263 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAccountPrivateKey</span></span>
 <span class="lineno">  264 </span>{-# DEPRECATED deriveAccountPrivateKey &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  265 </span>
 <span class="lineno">  266 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
@@ -291,8 +291,8 @@ span.spaces    { background: white }
 <span class="lineno">  272 </span>    :: Byron 'AccountK XPrv
 <span class="lineno">  273 </span>    -&gt; Index 'WholeDomain 'AddressK
 <span class="lineno">  274 </span>    -&gt; Byron 'AddressK XPrv
-<span class="lineno">  275 </span><span class="decl"><span class="nottickedoff">deriveAddressPrivateKey acctK =</span>
-<span class="lineno">  276 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPrivateKey acctK ()</span></span>
+<span class="lineno">  275 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey acctK =</span>
+<span class="lineno">  276 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey acctK ()</span></span>
 <span class="lineno">  277 </span>{-# DEPRECATED deriveAddressPrivateKey &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  278 </span>
 <span class="lineno">  279 </span>--
@@ -313,27 +313,27 @@ span.spaces    { background: white }
 <span class="lineno">  294 </span>--
 <span class="lineno">  295 </span>-- @since 2.0.0
 <span class="lineno">  296 </span>inspectByronAddress :: Address -&gt; Maybe Json.Value
-<span class="lineno">  297 </span><span class="decl"><span class="nottickedoff">inspectByronAddress addr = do</span>
-<span class="lineno">  298 </span><span class="spaces">    </span><span class="nottickedoff">payload &lt;- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
-<span class="lineno">  299 </span><span class="spaces">    </span><span class="nottickedoff">(root, attrs) &lt;- CBOR.deserialiseCbor decodePayload payload</span>
-<span class="lineno">  300 </span><span class="spaces">    </span><span class="nottickedoff">path  &lt;- find ((== 1) . fst) attrs</span>
-<span class="lineno">  301 </span><span class="spaces">    </span><span class="nottickedoff">ntwrk &lt;- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
-<span class="lineno">  302 </span><span class="spaces">    </span><span class="nottickedoff">pure $ Json.object</span>
-<span class="lineno">  303 </span><span class="spaces">        </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Byron&quot;</span>
-<span class="lineno">  304 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
-<span class="lineno">  305 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;address_root&quot;    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)</span>
-<span class="lineno">  306 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;derivation_path&quot; .= T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)</span>
-<span class="lineno">  307 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;network_tag&quot;     .= maybe Json.Null toJSON ntwrk</span>
-<span class="lineno">  308 </span><span class="spaces">        </span><span class="nottickedoff">]</span>
-<span class="lineno">  309 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">  310 </span><span class="spaces">    </span><span class="nottickedoff">bytes :: ByteString</span>
-<span class="lineno">  311 </span><span class="spaces">    </span><span class="nottickedoff">bytes = unAddress addr</span>
-<span class="lineno">  312 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">  313 </span><span class="spaces">    </span><span class="nottickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
-<span class="lineno">  314 </span><span class="spaces">    </span><span class="nottickedoff">decodePayload = do</span>
-<span class="lineno">  315 </span><span class="spaces">        </span><span class="nottickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
-<span class="lineno">  316 </span><span class="spaces">        </span><span class="nottickedoff">root &lt;- CBOR.decodeBytes</span>
-<span class="lineno">  317 </span><span class="spaces">        </span><span class="nottickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span></span>
+<span class="lineno">  297 </span><span class="decl"><span class="istickedoff">inspectByronAddress addr = do</span>
+<span class="lineno">  298 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
+<span class="lineno">  299 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- CBOR.deserialiseCbor decodePayload payload</span>
+<span class="lineno">  300 </span><span class="spaces">    </span><span class="istickedoff">path  &lt;- find ((== 1) . fst) attrs</span>
+<span class="lineno">  301 </span><span class="spaces">    </span><span class="istickedoff">ntwrk &lt;- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
+<span class="lineno">  302 </span><span class="spaces">    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  303 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Byron&quot;</span>
+<span class="lineno">  304 </span><span class="spaces">        </span><span class="istickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
+<span class="lineno">  305 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_root&quot;    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)</span>
+<span class="lineno">  306 </span><span class="spaces">        </span><span class="istickedoff">, &quot;derivation_path&quot; .= T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)</span>
+<span class="lineno">  307 </span><span class="spaces">        </span><span class="istickedoff">, &quot;network_tag&quot;     .= maybe <span class="nottickedoff">Json.Null</span> toJSON ntwrk</span>
+<span class="lineno">  308 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  309 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  310 </span><span class="spaces">    </span><span class="istickedoff">bytes :: ByteString</span>
+<span class="lineno">  311 </span><span class="spaces">    </span><span class="istickedoff">bytes = unAddress addr</span>
+<span class="lineno">  312 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  313 </span><span class="spaces">    </span><span class="istickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
+<span class="lineno">  314 </span><span class="spaces">    </span><span class="istickedoff">decodePayload = do</span>
+<span class="lineno">  315 </span><span class="spaces">        </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  316 </span><span class="spaces">        </span><span class="istickedoff">root &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  317 </span><span class="spaces">        </span><span class="istickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span></span>
 <span class="lineno">  318 </span>
 <span class="lineno">  319 </span>instance Internal.PaymentAddress Byron where
 <span class="lineno">  320 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
@@ -362,8 +362,8 @@ span.spaces    { background: white }
 <span class="lineno">  343 </span>    :: NetworkDiscriminant Byron
 <span class="lineno">  344 </span>    -&gt; Byron 'AddressK XPub
 <span class="lineno">  345 </span>    -&gt; Address
-<span class="lineno">  346 </span><span class="decl"><span class="nottickedoff">paymentAddress =</span>
-<span class="lineno">  347 </span><span class="spaces">    </span><span class="nottickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  346 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  347 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
 <span class="lineno">  348 </span>
 <span class="lineno">  349 </span>--
 <span class="lineno">  350 </span>-- Network Discrimination
@@ -378,7 +378,7 @@ span.spaces    { background: white }
 <span class="lineno">  359 </span>--
 <span class="lineno">  360 </span>-- @since 2.0.0
 <span class="lineno">  361 </span>byronMainnet :: NetworkDiscriminant Byron
-<span class="lineno">  362 </span><span class="decl"><span class="istickedoff">byronMainnet = (RequiresNoTag, <span class="nottickedoff">NetworkTag 764824073</span>)</span></span>
+<span class="lineno">  362 </span><span class="decl"><span class="istickedoff">byronMainnet = (RequiresNoTag, NetworkTag 764824073)</span></span>
 <span class="lineno">  363 </span>
 <span class="lineno">  364 </span>-- | 'NetworkDiscriminant' for Cardano Staging &amp; Byron
 <span class="lineno">  365 </span>--
@@ -443,11 +443,11 @@ span.spaces    { background: white }
 <span class="lineno">  424 </span>    -&gt; DerivationPath depth
 <span class="lineno">  425 </span>    -&gt; XPub
 <span class="lineno">  426 </span>    -&gt; Byron depth XPub
-<span class="lineno">  427 </span><span class="decl"><span class="nottickedoff">liftXPub rootPub derivationPath getKey = Byron</span>
-<span class="lineno">  428 </span><span class="spaces">    </span><span class="nottickedoff">{ getKey</span>
-<span class="lineno">  429 </span><span class="spaces">    </span><span class="nottickedoff">, derivationPath</span>
-<span class="lineno">  430 </span><span class="spaces">    </span><span class="nottickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
-<span class="lineno">  431 </span><span class="spaces">    </span><span class="nottickedoff">}</span></span>
+<span class="lineno">  427 </span><span class="decl"><span class="istickedoff">liftXPub rootPub derivationPath getKey = Byron</span>
+<span class="lineno">  428 </span><span class="spaces">    </span><span class="istickedoff">{ getKey</span>
+<span class="lineno">  429 </span><span class="spaces">    </span><span class="istickedoff">, derivationPath</span>
+<span class="lineno">  430 </span><span class="spaces">    </span><span class="istickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
+<span class="lineno">  431 </span><span class="spaces">    </span><span class="istickedoff">}</span></span>
 <span class="lineno">  432 </span>{-# DEPRECATED liftXPub &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  433 </span>
 <span class="lineno">  434 </span>--
@@ -488,7 +488,7 @@ span.spaces    { background: white }
 <span class="lineno">  469 </span>hdPassphrase :: XPub -&gt; ScrubbedBytes
 <span class="lineno">  470 </span><span class="decl"><span class="istickedoff">hdPassphrase masterKey =</span>
 <span class="lineno">  471 </span><span class="spaces">    </span><span class="istickedoff">PBKDF2.generate</span>
-<span class="lineno">  472 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC <span class="nottickedoff">SHA512</span>)</span>
+<span class="lineno">  472 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
 <span class="lineno">  473 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.Parameters 500 32)</span>
 <span class="lineno">  474 </span><span class="spaces">    </span><span class="istickedoff">(xpubToBytes masterKey)</span>
 <span class="lineno">  475 </span><span class="spaces">    </span><span class="istickedoff">(&quot;address-hashing&quot; :: ByteString)</span></span>

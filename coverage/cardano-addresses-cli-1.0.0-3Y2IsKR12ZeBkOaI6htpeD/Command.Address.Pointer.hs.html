@@ -65,51 +65,51 @@ span.spaces    { background: white }
 <span class="lineno">   46 </span>
 <span class="lineno">   47 </span>
 <span class="lineno">   48 </span>data Cmd = Cmd
-<span class="lineno">   49 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">_slotNum</span></span></span> :: Natural
-<span class="lineno">   50 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">_transactionIndex</span></span></span> :: Natural
-<span class="lineno">   51 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">_outputIndex</span></span></span> :: Natural
-<span class="lineno">   52 </span>    } deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   49 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">_slotNum</span></span></span> :: Natural
+<span class="lineno">   50 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">_transactionIndex</span></span></span> :: Natural
+<span class="lineno">   51 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">_outputIndex</span></span></span> :: Natural
+<span class="lineno">   52 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   53 </span>
 <span class="lineno">   54 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-<span class="lineno">   55 </span><span class="decl"><span class="nottickedoff">mod liftCmd = command &quot;pointer&quot; $</span>
-<span class="lineno">   56 </span><span class="spaces">    </span><span class="nottickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   57 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; progDesc &quot;Create a pointer address&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; header &quot;Create addresses with a pointer that indicate the position \</span>
-<span class="lineno">   59 </span><span class="spaces">            </span><span class="nottickedoff">\of a registered stake address on the chain.&quot;</span>
-<span class="lineno">   60 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
-<span class="lineno">   61 </span><span class="spaces">            </span><span class="nottickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
-<span class="lineno">   62 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;&quot;</span>
-<span class="lineno">   63 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;Example:&quot;</span>
-<span class="lineno">   64 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
-<span class="lineno">   65 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
-<span class="lineno">   66 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   67 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
-<span class="lineno">   68 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
-<span class="lineno">   69 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   70 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
-<span class="lineno">   71 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
-<span class="lineno">   72 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0\\&quot;</span>
-<span class="lineno">   73 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address pointer 42 14 0&quot;</span>
-<span class="lineno">   74 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu&quot;</span>
-<span class="lineno">   75 </span><span class="spaces">            </span><span class="nottickedoff">])</span>
-<span class="lineno">   76 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   77 </span><span class="spaces">    </span><span class="nottickedoff">parser = Cmd</span>
-<span class="lineno">   78 </span><span class="spaces">        </span><span class="nottickedoff">&lt;$&gt; argument auto (metavar &quot;SLOT&quot; &lt;&gt; help &quot;A slot number&quot;)</span>
-<span class="lineno">   79 </span><span class="spaces">        </span><span class="nottickedoff">&lt;*&gt; argument auto (metavar &quot;TX&quot;   &lt;&gt; help &quot;A transaction index within that slot&quot;)</span>
-<span class="lineno">   80 </span><span class="spaces">        </span><span class="nottickedoff">&lt;*&gt; argument auto (metavar &quot;OUT&quot;  &lt;&gt; help &quot;An output index within that transaction&quot;)</span></span>
+<span class="lineno">   55 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;pointer&quot; $</span>
+<span class="lineno">   56 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   57 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a pointer address&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Create addresses with a pointer that indicate the position \</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">\of a registered stake address on the chain.&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0\\&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address pointer 42 14 0&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   76 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   77 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; argument auto (metavar &quot;SLOT&quot; &lt;&gt; help &quot;A slot number&quot;)</span>
+<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; argument auto (metavar &quot;TX&quot;   &lt;&gt; help &quot;A transaction index within that slot&quot;)</span>
+<span class="lineno">   80 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; argument auto (metavar &quot;OUT&quot;  &lt;&gt; help &quot;An output index within that transaction&quot;)</span></span>
 <span class="lineno">   81 </span>
 <span class="lineno">   82 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   83 </span><span class="decl"><span class="nottickedoff">run Cmd{_slotNum,_transactionIndex,_outputIndex} = do</span>
-<span class="lineno">   84 </span><span class="spaces">    </span><span class="nottickedoff">bytes &lt;- hGetBytes stdin</span>
-<span class="lineno">   85 </span><span class="spaces">    </span><span class="nottickedoff">let ptr = ChainPointer</span>
-<span class="lineno">   86 </span><span class="spaces">            </span><span class="nottickedoff">{ slotNum = _slotNum</span>
-<span class="lineno">   87 </span><span class="spaces">            </span><span class="nottickedoff">, transactionIndex = _transactionIndex</span>
-<span class="lineno">   88 </span><span class="spaces">            </span><span class="nottickedoff">, outputIndex = _outputIndex</span>
-<span class="lineno">   89 </span><span class="spaces">            </span><span class="nottickedoff">}</span>
-<span class="lineno">   90 </span><span class="spaces">    </span><span class="nottickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (Right ptr) of</span>
-<span class="lineno">   91 </span><span class="spaces">        </span><span class="nottickedoff">Left (ErrInvalidAddressStyle msg) -&gt; fail msg</span>
-<span class="lineno">   92 </span><span class="spaces">        </span><span class="nottickedoff">Left (ErrInvalidAddressType  msg) -&gt; fail msg</span>
-<span class="lineno">   93 </span><span class="spaces">        </span><span class="nottickedoff">Right addr -&gt; B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
+<span class="lineno">   83 </span><span class="decl"><span class="istickedoff">run Cmd{_slotNum,_transactionIndex,_outputIndex} = do</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes stdin</span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">let ptr = ChainPointer</span>
+<span class="lineno">   86 </span><span class="spaces">            </span><span class="istickedoff">{ slotNum = _slotNum</span>
+<span class="lineno">   87 </span><span class="spaces">            </span><span class="istickedoff">, transactionIndex = _transactionIndex</span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff">, outputIndex = _outputIndex</span>
+<span class="lineno">   89 </span><span class="spaces">            </span><span class="istickedoff">}</span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (Right ptr) of</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressStyle msg) -&gt; <span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType  msg) -&gt; fail msg</span>
+<span class="lineno">   93 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt; B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
 
 </pre>
 </body>

@@ -62,7 +62,7 @@ span.spaces    { background: white }
 <span class="lineno">   43 </span>    | Icarus
 <span class="lineno">   44 </span>    | Jormungandr
 <span class="lineno">   45 </span>    | Shelley
-<span class="lineno">   46 </span>    deriving (<span class="decl"><span class="nottickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Bounded</span></span></span></span>)
+<span class="lineno">   46 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>)
 <span class="lineno">   47 </span>
 <span class="lineno">   48 </span>-- TODO
 <span class="lineno">   49 </span>-- Allow passphrase here.
@@ -70,22 +70,22 @@ span.spaces    { background: white }
 <span class="lineno">   51 </span>-- | Generate an extended root private key from a mnemonic sentence, in the
 <span class="lineno">   52 </span>-- given style.
 <span class="lineno">   53 </span>generateRootKey :: SomeMnemonic -&gt; Style -&gt; IO XPrv
-<span class="lineno">   54 </span><span class="decl"><span class="nottickedoff">generateRootKey mw = \case</span>
-<span class="lineno">   55 </span><span class="spaces">    </span><span class="nottickedoff">Byron -&gt; do</span>
-<span class="lineno">   56 </span><span class="spaces">        </span><span class="nottickedoff">let rootK = Byron.genMasterKeyFromMnemonic mw</span>
-<span class="lineno">   57 </span><span class="spaces">        </span><span class="nottickedoff">pure $ Byron.getKey rootK</span>
-<span class="lineno">   58 </span><span class="spaces">    </span><span class="nottickedoff">Icarus -&gt; do</span>
-<span class="lineno">   59 </span><span class="spaces">        </span><span class="nottickedoff">let sndFactor = mempty</span>
-<span class="lineno">   60 </span><span class="spaces">        </span><span class="nottickedoff">let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor</span>
-<span class="lineno">   61 </span><span class="spaces">        </span><span class="nottickedoff">pure $ Icarus.getKey rootK</span>
-<span class="lineno">   62 </span><span class="spaces">    </span><span class="nottickedoff">Jormungandr -&gt; do</span>
-<span class="lineno">   63 </span><span class="spaces">        </span><span class="nottickedoff">let sndFactor = mempty</span>
-<span class="lineno">   64 </span><span class="spaces">        </span><span class="nottickedoff">let rootK = Jormungandr.genMasterKeyFromMnemonic mw sndFactor</span>
-<span class="lineno">   65 </span><span class="spaces">        </span><span class="nottickedoff">pure $ Jormungandr.getKey rootK</span>
-<span class="lineno">   66 </span><span class="spaces">    </span><span class="nottickedoff">Shelley -&gt; do</span>
-<span class="lineno">   67 </span><span class="spaces">        </span><span class="nottickedoff">let sndFactor = mempty</span>
-<span class="lineno">   68 </span><span class="spaces">        </span><span class="nottickedoff">let rootK = Shelley.genMasterKeyFromMnemonic mw sndFactor</span>
-<span class="lineno">   69 </span><span class="spaces">        </span><span class="nottickedoff">pure $ Shelley.getKey rootK</span></span>
+<span class="lineno">   54 </span><span class="decl"><span class="istickedoff">generateRootKey mw = \case</span>
+<span class="lineno">   55 </span><span class="spaces">    </span><span class="istickedoff">Byron -&gt; do</span>
+<span class="lineno">   56 </span><span class="spaces">        </span><span class="istickedoff">let rootK = Byron.genMasterKeyFromMnemonic mw</span>
+<span class="lineno">   57 </span><span class="spaces">        </span><span class="istickedoff">pure $ Byron.getKey rootK</span>
+<span class="lineno">   58 </span><span class="spaces">    </span><span class="istickedoff">Icarus -&gt; do</span>
+<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff">let sndFactor = mempty</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">pure $ Icarus.getKey rootK</span>
+<span class="lineno">   62 </span><span class="spaces">    </span><span class="istickedoff">Jormungandr -&gt; do</span>
+<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">let sndFactor = mempty</span>
+<span class="lineno">   64 </span><span class="spaces">        </span><span class="istickedoff">let rootK = Jormungandr.genMasterKeyFromMnemonic mw sndFactor</span>
+<span class="lineno">   65 </span><span class="spaces">        </span><span class="istickedoff">pure $ Jormungandr.getKey rootK</span>
+<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">Shelley -&gt; do</span>
+<span class="lineno">   67 </span><span class="spaces">        </span><span class="istickedoff">let sndFactor = mempty</span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">let rootK = Shelley.genMasterKeyFromMnemonic mw sndFactor</span>
+<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff">pure $ Shelley.getKey rootK</span></span>
 <span class="lineno">   70 </span>
 <span class="lineno">   71 </span>--
 <span class="lineno">   72 </span>-- Applicative Parser
@@ -93,23 +93,23 @@ span.spaces    { background: white }
 <span class="lineno">   74 </span>
 <span class="lineno">   75 </span>-- | Parse a 'Style' from the command-line, as an argument.
 <span class="lineno">   76 </span>styleArg :: Parser Style
-<span class="lineno">   77 </span><span class="decl"><span class="nottickedoff">styleArg = argument (eitherReader reader) $ mempty</span>
-<span class="lineno">   78 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; metavar &quot;STYLE&quot;</span>
-<span class="lineno">   79 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; help styles'</span>
-<span class="lineno">   80 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; completer (listCompleter styles)</span>
-<span class="lineno">   81 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   82 </span><span class="spaces">    </span><span class="nottickedoff">styles :: [String]</span>
-<span class="lineno">   83 </span><span class="spaces">    </span><span class="nottickedoff">styles = show @Style &lt;$&gt; [minBound .. maxBound]</span>
-<span class="lineno">   84 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">   85 </span><span class="spaces">    </span><span class="nottickedoff">styles' = intercalate &quot; | &quot; styles</span>
-<span class="lineno">   86 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">   87 </span><span class="spaces">    </span><span class="nottickedoff">reader :: String -&gt; Either String Style</span>
-<span class="lineno">   88 </span><span class="spaces">    </span><span class="nottickedoff">reader str = case toLower &lt;$&gt; str of</span>
-<span class="lineno">   89 </span><span class="spaces">        </span><span class="nottickedoff">&quot;byron&quot;       -&gt; Right Byron</span>
-<span class="lineno">   90 </span><span class="spaces">        </span><span class="nottickedoff">&quot;icarus&quot;      -&gt; Right Icarus</span>
-<span class="lineno">   91 </span><span class="spaces">        </span><span class="nottickedoff">&quot;jormungandr&quot; -&gt; Right Jormungandr</span>
-<span class="lineno">   92 </span><span class="spaces">        </span><span class="nottickedoff">&quot;shelley&quot;     -&gt; Right Shelley</span>
-<span class="lineno">   93 </span><span class="spaces">        </span><span class="nottickedoff">_             -&gt; Left $ &quot;Unknown style; expecting one of &quot; &lt;&gt; styles'</span></span>
+<span class="lineno">   77 </span><span class="decl"><span class="istickedoff">styleArg = argument (eitherReader reader) $ mempty</span>
+<span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;STYLE&quot;</span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help styles'</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter styles)</span></span>
+<span class="lineno">   81 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">styles :: [String]</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">styles = show @Style &lt;$&gt; [minBound .. maxBound]</span>
+<span class="lineno">   84 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">styles' = intercalate &quot; | &quot; styles</span>
+<span class="lineno">   86 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">reader :: String -&gt; Either String Style</span>
+<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">reader str = case toLower &lt;$&gt; str of</span>
+<span class="lineno">   89 </span><span class="spaces">        </span><span class="istickedoff">&quot;byron&quot;       -&gt; Right Byron</span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">&quot;icarus&quot;      -&gt; Right Icarus</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">&quot;jormungandr&quot; -&gt; Right Jormungandr</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">&quot;shelley&quot;     -&gt; Right Shelley</span>
+<span class="lineno">   93 </span><span class="spaces">        </span><span class="istickedoff">_             -&gt; Left $ &quot;Unknown style; expecting one of &quot; &lt;&gt; styles'</span></span>
 
 </pre>
 </body>

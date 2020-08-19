@@ -57,44 +57,44 @@ span.spaces    { background: white }
 <span class="lineno">   38 </span>
 <span class="lineno">   39 </span>
 <span class="lineno">   40 </span>data Cmd = Inspect
-<span class="lineno">   41 </span>    deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   41 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   42 </span>
 <span class="lineno">   43 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-<span class="lineno">   44 </span><span class="decl"><span class="nottickedoff">mod liftCmd = command &quot;inspect&quot; $</span>
-<span class="lineno">   45 </span><span class="spaces">    </span><span class="nottickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   46 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; progDesc &quot;Show information about an address&quot;</span>
-<span class="lineno">   47 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
-<span class="lineno">   48 </span><span class="spaces">            </span><span class="nottickedoff">[ string &quot;The address is read from stdin.&quot;</span>
-<span class="lineno">   49 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;&quot;</span>
-<span class="lineno">   50 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;Example:&quot;</span>
-<span class="lineno">   51 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
-<span class="lineno">   52 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
-<span class="lineno">   53 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0 \\&quot;</span>
-<span class="lineno">   54 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address delegation $(cat stake.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public) \\&quot;</span>
-<span class="lineno">   55 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address inspect&quot;</span>
-<span class="lineno">   56 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;{&quot;</span>
-<span class="lineno">   57 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;    \&quot;address_style\&quot;: \&quot;Shelley\&quot;,&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;    \&quot;stake_reference\&quot;: \&quot;by value\&quot;,&quot;</span>
-<span class="lineno">   59 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;    \&quot;stake_key_hash\&quot;: \&quot;6b542d6da35e6c95d95a33c6f66ec482d3f4caf3ad35e2ede09cf827\&quot;,&quot;</span>
-<span class="lineno">   60 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;    \&quot;spending_key_hash\&quot;: \&quot;44bc4f524f49a78a9c8a45b882d8710cb9254b3da6a978d50dc9b870\&quot;,&quot;</span>
-<span class="lineno">   61 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;    \&quot;network_tag\&quot;: 0&quot;</span>
-<span class="lineno">   62 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;}&quot;</span>
-<span class="lineno">   63 </span><span class="spaces">            </span><span class="nottickedoff">])</span>
-<span class="lineno">   64 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   65 </span><span class="spaces">    </span><span class="nottickedoff">parser = pure Inspect</span></span>
+<span class="lineno">   44 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;inspect&quot; $</span>
+<span class="lineno">   45 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Show information about an address&quot;</span>
+<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The address is read from stdin.&quot;</span>
+<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0 \\&quot;</span>
+<span class="lineno">   54 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address delegation $(cat stake.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public) \\&quot;</span>
+<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address inspect&quot;</span>
+<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;{&quot;</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;address_style\&quot;: \&quot;Shelley\&quot;,&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;stake_reference\&quot;: \&quot;by value\&quot;,&quot;</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;stake_key_hash\&quot;: \&quot;6b542d6da35e6c95d95a33c6f66ec482d3f4caf3ad35e2ede09cf827\&quot;,&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;spending_key_hash\&quot;: \&quot;44bc4f524f49a78a9c8a45b882d8710cb9254b3da6a978d50dc9b870\&quot;,&quot;</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;network_tag\&quot;: 0&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;}&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   64 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   65 </span><span class="spaces">    </span><span class="istickedoff">parser = pure Inspect</span></span>
 <span class="lineno">   66 </span>
 <span class="lineno">   67 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   68 </span><span class="decl"><span class="nottickedoff">run Inspect = do</span>
-<span class="lineno">   69 </span><span class="spaces">    </span><span class="nottickedoff">bytes &lt;- hGetBytes stdin</span>
-<span class="lineno">   70 </span><span class="spaces">    </span><span class="nottickedoff">case inspect (unsafeMkAddress bytes) of</span>
-<span class="lineno">   71 </span><span class="spaces">        </span><span class="nottickedoff">Nothing   -&gt; fail &quot;Unrecognized address on standard input&quot;</span>
-<span class="lineno">   72 </span><span class="spaces">        </span><span class="nottickedoff">Just json -&gt; BL8.hPutStrLn stdout (Json.encodePretty json)</span>
-<span class="lineno">   73 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   74 </span><span class="spaces">    </span><span class="nottickedoff">inspect addr =</span>
-<span class="lineno">   75 </span><span class="spaces">        </span><span class="nottickedoff">inspectByronAddress       addr &lt;|&gt;</span>
-<span class="lineno">   76 </span><span class="spaces">        </span><span class="nottickedoff">inspectIcarusAddress      addr &lt;|&gt;</span>
-<span class="lineno">   77 </span><span class="spaces">        </span><span class="nottickedoff">inspectJormungandrAddress addr &lt;|&gt;</span>
-<span class="lineno">   78 </span><span class="spaces">        </span><span class="nottickedoff">inspectShelleyAddress     addr</span></span>
+<span class="lineno">   68 </span><span class="decl"><span class="istickedoff">run Inspect = do</span>
+<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes stdin</span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">case inspect (unsafeMkAddress bytes) of</span>
+<span class="lineno">   71 </span><span class="spaces">        </span><span class="istickedoff">Nothing   -&gt; fail &quot;Unrecognized address on standard input&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">        </span><span class="istickedoff">Just json -&gt; BL8.hPutStrLn stdout (Json.encodePretty json)</span>
+<span class="lineno">   73 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   74 </span><span class="spaces">    </span><span class="istickedoff">inspect addr =</span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff">inspectByronAddress       addr &lt;|&gt;</span>
+<span class="lineno">   76 </span><span class="spaces">        </span><span class="istickedoff">inspectIcarusAddress      addr &lt;|&gt;</span>
+<span class="lineno">   77 </span><span class="spaces">        </span><span class="istickedoff">inspectJormungandrAddress addr &lt;|&gt;</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">inspectShelleyAddress     addr</span></span>
 
 </pre>
 </body>

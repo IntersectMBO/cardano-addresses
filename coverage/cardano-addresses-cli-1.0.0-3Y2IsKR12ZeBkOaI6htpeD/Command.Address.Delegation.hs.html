@@ -55,43 +55,43 @@ span.spaces    { background: white }
 <span class="lineno">   36 </span>
 <span class="lineno">   37 </span>
 <span class="lineno">   38 </span>newtype Cmd = Cmd
-<span class="lineno">   39 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">xpub</span></span></span> :: XPub
-<span class="lineno">   40 </span>    } deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   39 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">xpub</span></span></span> :: XPub
+<span class="lineno">   40 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   41 </span>
 <span class="lineno">   42 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-<span class="lineno">   43 </span><span class="decl"><span class="nottickedoff">mod liftCmd = command &quot;delegation&quot; $</span>
-<span class="lineno">   44 </span><span class="spaces">    </span><span class="nottickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   45 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; progDesc &quot;Create a delegation address&quot;</span>
-<span class="lineno">   46 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
-<span class="lineno">   47 </span><span class="spaces">            </span><span class="nottickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
-<span class="lineno">   48 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;&quot;</span>
-<span class="lineno">   49 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;Example:&quot;</span>
-<span class="lineno">   50 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
-<span class="lineno">   51 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
-<span class="lineno">   52 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   53 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
-<span class="lineno">   54 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/2/0 &gt; stake.prv&quot;</span>
-<span class="lineno">   55 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   56 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
-<span class="lineno">   57 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   59 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
-<span class="lineno">   60 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
-<span class="lineno">   61 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0 \\&quot;</span>
-<span class="lineno">   62 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address delegation $(cat stake.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public)&quot;</span>
-<span class="lineno">   63 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k...&quot;</span>
-<span class="lineno">   64 </span><span class="spaces">            </span><span class="nottickedoff">])</span>
-<span class="lineno">   65 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   66 </span><span class="spaces">    </span><span class="nottickedoff">parser = Cmd</span>
-<span class="lineno">   67 </span><span class="spaces">        </span><span class="nottickedoff">&lt;$&gt; xpubArg &quot;An extended stake public key.&quot;</span></span>
+<span class="lineno">   43 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;delegation&quot; $</span>
+<span class="lineno">   44 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   45 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a delegation address&quot;</span>
+<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   47 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
+<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   54 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/2/0 &gt; stake.prv&quot;</span>
+<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0 \\&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address delegation $(cat stake.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public)&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k...&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   65 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   67 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; xpubArg &quot;An extended stake public key.&quot;</span></span>
 <span class="lineno">   68 </span>
 <span class="lineno">   69 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   70 </span><span class="decl"><span class="nottickedoff">run Cmd{xpub} = do</span>
-<span class="lineno">   71 </span><span class="spaces">    </span><span class="nottickedoff">bytes &lt;- hGetBytes stdin</span>
-<span class="lineno">   72 </span><span class="spaces">    </span><span class="nottickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.liftXPub xpub) of</span>
-<span class="lineno">   73 </span><span class="spaces">        </span><span class="nottickedoff">Left (ErrInvalidAddressStyle msg) -&gt; fail msg</span>
-<span class="lineno">   74 </span><span class="spaces">        </span><span class="nottickedoff">Left (ErrInvalidAddressType  msg) -&gt; fail msg</span>
-<span class="lineno">   75 </span><span class="spaces">        </span><span class="nottickedoff">Right addr -&gt; B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
+<span class="lineno">   70 </span><span class="decl"><span class="istickedoff">run Cmd{xpub} = do</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes stdin</span>
+<span class="lineno">   72 </span><span class="spaces">    </span><span class="istickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.liftXPub xpub) of</span>
+<span class="lineno">   73 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressStyle msg) -&gt; <span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   74 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType  msg) -&gt; fail msg</span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt; B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span></span>
 
 </pre>
 </body>

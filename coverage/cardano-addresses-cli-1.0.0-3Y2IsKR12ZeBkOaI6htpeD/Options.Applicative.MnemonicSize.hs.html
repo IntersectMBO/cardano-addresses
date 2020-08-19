@@ -61,37 +61,37 @@ span.spaces    { background: white }
 <span class="lineno">   42 </span>
 <span class="lineno">   43 </span>data MnemonicSize
 <span class="lineno">   44 </span>    = MS_9 | MS_12 | MS_15 | MS_18 | MS_21 | MS_24
-<span class="lineno">   45 </span>    deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Bounded</span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>)
+<span class="lineno">   45 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Enum</span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">   46 </span>
 <span class="lineno">   47 </span>mnemonicSizeToString :: MnemonicSize -&gt; String
-<span class="lineno">   48 </span><span class="decl"><span class="nottickedoff">mnemonicSizeToString = drop 3 . show</span></span>
+<span class="lineno">   48 </span><span class="decl"><span class="istickedoff">mnemonicSizeToString = drop 3 . show</span></span>
 <span class="lineno">   49 </span>
 <span class="lineno">   50 </span>mnemonicSizeFromString :: String -&gt; Either String MnemonicSize
-<span class="lineno">   51 </span><span class="decl"><span class="nottickedoff">mnemonicSizeFromString str =</span>
-<span class="lineno">   52 </span><span class="spaces">    </span><span class="nottickedoff">case lookup str sizeMap of</span>
-<span class="lineno">   53 </span><span class="spaces">        </span><span class="nottickedoff">Just ms -&gt; Right ms</span>
-<span class="lineno">   54 </span><span class="spaces">        </span><span class="nottickedoff">Nothing -&gt; Left $ mempty</span>
-<span class="lineno">   55 </span><span class="spaces">            </span><span class="nottickedoff">&lt;&gt; &quot;Invalid mnemonic size. Expected one of: &quot;</span>
-<span class="lineno">   56 </span><span class="spaces">            </span><span class="nottickedoff">&lt;&gt; intercalate &quot;, &quot; sizeStrs</span>
-<span class="lineno">   57 </span><span class="spaces">            </span><span class="nottickedoff">&lt;&gt; &quot;.&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   59 </span><span class="spaces">    </span><span class="nottickedoff">sizeMap  = sizeStrs `zip` enumerate</span></span>
+<span class="lineno">   51 </span><span class="decl"><span class="istickedoff">mnemonicSizeFromString str =</span>
+<span class="lineno">   52 </span><span class="spaces">    </span><span class="istickedoff">case lookup str sizeMap of</span>
+<span class="lineno">   53 </span><span class="spaces">        </span><span class="istickedoff">Just ms -&gt; Right ms</span>
+<span class="lineno">   54 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; Left $ mempty</span>
+<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">&lt;&gt; &quot;Invalid mnemonic size. Expected one of: &quot;</span>
+<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">&lt;&gt; intercalate &quot;, &quot; sizeStrs</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">&lt;&gt; &quot;.&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   59 </span><span class="spaces">    </span><span class="istickedoff">sizeMap  = sizeStrs `zip` enumerate</span></span>
 <span class="lineno">   60 </span>
 <span class="lineno">   61 </span>sizeStrs :: [String]
-<span class="lineno">   62 </span><span class="decl"><span class="nottickedoff">sizeStrs = mnemonicSizeToString &lt;$&gt; enumerate</span></span>
+<span class="lineno">   62 </span><span class="decl"><span class="istickedoff">sizeStrs = mnemonicSizeToString &lt;$&gt; enumerate</span></span>
 <span class="lineno">   63 </span>
 <span class="lineno">   64 </span>--
 <span class="lineno">   65 </span>-- Applicative Parser
 <span class="lineno">   66 </span>--
 <span class="lineno">   67 </span>
 <span class="lineno">   68 </span>mnemonicSizeOpt :: Parser MnemonicSize
-<span class="lineno">   69 </span><span class="decl"><span class="nottickedoff">mnemonicSizeOpt = option (eitherReader mnemonicSizeFromString) $ mempty</span>
-<span class="lineno">   70 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; long &quot;size&quot;</span>
-<span class="lineno">   71 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; metavar &quot;INT&quot;</span>
-<span class="lineno">   72 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; help &quot;Number of mnemonic words to generate. Must be a multiple of 3.&quot;</span>
-<span class="lineno">   73 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; value MS_24</span>
-<span class="lineno">   74 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; showDefaultWith mnemonicSizeToString</span>
-<span class="lineno">   75 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; completer (listCompleter sizeStrs)</span></span>
+<span class="lineno">   69 </span><span class="decl"><span class="istickedoff">mnemonicSizeOpt = option (eitherReader mnemonicSizeFromString) $ mempty</span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; long &quot;size&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;INT&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help &quot;Number of mnemonic words to generate. Must be a multiple of 3.&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; value MS_24</span>
+<span class="lineno">   74 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; showDefaultWith mnemonicSizeToString</span>
+<span class="lineno">   75 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter sizeStrs)</span></span></span>
 
 </pre>
 </body>

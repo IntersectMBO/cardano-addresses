@@ -69,58 +69,58 @@ span.spaces    { background: white }
 <span class="lineno">   50 </span>
 <span class="lineno">   51 </span>
 <span class="lineno">   52 </span>data Cmd = Cmd
-<span class="lineno">   53 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">rootXPub</span></span></span> :: Maybe XPub
-<span class="lineno">   54 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">derivationPath</span></span></span> :: Maybe DerivationPath
-<span class="lineno">   55 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">networkTag</span></span></span> :: NetworkTag
-<span class="lineno">   56 </span>    } deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   53 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">rootXPub</span></span></span> :: Maybe XPub
+<span class="lineno">   54 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">derivationPath</span></span></span> :: Maybe DerivationPath
+<span class="lineno">   55 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">networkTag</span></span></span> :: NetworkTag
+<span class="lineno">   56 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   57 </span>
 <span class="lineno">   58 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-<span class="lineno">   59 </span><span class="decl"><span class="nottickedoff">mod liftCmd = command &quot;bootstrap&quot; $</span>
-<span class="lineno">   60 </span><span class="spaces">    </span><span class="nottickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   61 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; progDesc &quot;Create a bootstrap address&quot;</span>
-<span class="lineno">   62 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; header &quot;Those addresses, now deprecated, were used during the Byron era.&quot;</span>
-<span class="lineno">   63 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
-<span class="lineno">   64 </span><span class="spaces">            </span><span class="nottickedoff">[ string &quot;Example:&quot;</span>
-<span class="lineno">   65 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 12 \\&quot;</span>
-<span class="lineno">   66 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Byron &gt; root.prv&quot;</span>
-<span class="lineno">   67 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;&quot;</span>
-<span class="lineno">   68 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
-<span class="lineno">   69 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 14H/42H &gt; addr.prv&quot;</span>
-<span class="lineno">   70 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
-<span class="lineno">   71 </span><span class="spaces">            </span><span class="nottickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address bootstrap $(cat root.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public) \\&quot;</span>
-<span class="lineno">   72 </span><span class="spaces">            </span><span class="nottickedoff">, indent 8 $ bold $ string &quot;--network-tag 764824073 --path 14H/42H&quot;</span>
-<span class="lineno">   73 </span><span class="spaces">            </span><span class="nottickedoff">, indent 2 $ string &quot;DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM...&quot;</span>
-<span class="lineno">   74 </span><span class="spaces">            </span><span class="nottickedoff">])</span>
-<span class="lineno">   75 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   76 </span><span class="spaces">    </span><span class="nottickedoff">parser = Cmd</span>
-<span class="lineno">   77 </span><span class="spaces">        </span><span class="nottickedoff">&lt;$&gt; optional (xpubArg &quot;A root public key. Needed for Byron addresses only.&quot;)</span>
-<span class="lineno">   78 </span><span class="spaces">        </span><span class="nottickedoff">&lt;*&gt; optional derivationPathOpt</span>
-<span class="lineno">   79 </span><span class="spaces">        </span><span class="nottickedoff">&lt;*&gt; networkTagOpt Byron</span></span>
+<span class="lineno">   59 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;bootstrap&quot; $</span>
+<span class="lineno">   60 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a bootstrap address&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Those addresses, now deprecated, were used during the Byron era.&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;Example:&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 12 \\&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Byron &gt; root.prv&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 14H/42H &gt; addr.prv&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address bootstrap $(cat root.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public) \\&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 8 $ bold $ string &quot;--network-tag 764824073 --path 14H/42H&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM...&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   75 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   77 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; optional (xpubArg &quot;A root public key. Needed for Byron addresses only.&quot;)</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; optional derivationPathOpt</span>
+<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; networkTagOpt Byron</span></span>
 <span class="lineno">   80 </span>
 <span class="lineno">   81 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   82 </span><span class="decl"><span class="nottickedoff">run Cmd{networkTag,rootXPub,derivationPath} = do</span>
-<span class="lineno">   83 </span><span class="spaces">    </span><span class="nottickedoff">xpub &lt;- hGetXPub stdin</span>
-<span class="lineno">   84 </span><span class="spaces">    </span><span class="nottickedoff">addr &lt;- case derivationPath of</span>
-<span class="lineno">   85 </span><span class="spaces">        </span><span class="nottickedoff">Nothing -&gt;</span>
-<span class="lineno">   86 </span><span class="spaces">            </span><span class="nottickedoff">pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)</span>
-<span class="lineno">   87 </span><span class="spaces">        </span><span class="nottickedoff">Just untypedPath -&gt; do</span>
-<span class="lineno">   88 </span><span class="spaces">            </span><span class="nottickedoff">root &lt;- maybe</span>
-<span class="lineno">   89 </span><span class="spaces">                </span><span class="nottickedoff">(fail &quot;A root public key must be provided when --path is provided&quot;) pure rootXPub</span>
-<span class="lineno">   90 </span><span class="spaces">            </span><span class="nottickedoff">case castDerivationPath untypedPath of</span>
-<span class="lineno">   91 </span><span class="spaces">                </span><span class="nottickedoff">[acctIx, addrIx] -&gt; do</span>
-<span class="lineno">   92 </span><span class="spaces">                    </span><span class="nottickedoff">let path = (acctIx, toEnum (fromEnum addrIx))</span>
-<span class="lineno">   93 </span><span class="spaces">                    </span><span class="nottickedoff">let xkey = Byron.liftXPub root path xpub</span>
-<span class="lineno">   94 </span><span class="spaces">                    </span><span class="nottickedoff">pure $ Byron.paymentAddress discriminant xkey</span>
-<span class="lineno">   95 </span><span class="spaces">                </span><span class="nottickedoff">_ -&gt; do</span>
-<span class="lineno">   96 </span><span class="spaces">                    </span><span class="nottickedoff">fail &quot;Byron derivation path must describe 2 levels (e.g. 0H/0H)&quot;</span>
-<span class="lineno">   97 </span><span class="spaces">    </span><span class="nottickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ base58 addr</span>
-<span class="lineno">   98 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   99 </span><span class="spaces">    </span><span class="nottickedoff">discriminant :: NetworkDiscriminant Byron -- Or Icarus, same.</span>
-<span class="lineno">  100 </span><span class="spaces">    </span><span class="nottickedoff">discriminant</span>
-<span class="lineno">  101 </span><span class="spaces">        </span><span class="nottickedoff">| networkTag == snd Byron.byronMainnet =</span>
-<span class="lineno">  102 </span><span class="spaces">            </span><span class="nottickedoff">Byron.byronMainnet</span>
-<span class="lineno">  103 </span><span class="spaces">        </span><span class="nottickedoff">| otherwise =</span>
-<span class="lineno">  104 </span><span class="spaces">            </span><span class="nottickedoff">(RequiresNetworkTag, networkTag)</span></span>
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag,rootXPub,derivationPath} = do</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">xpub &lt;- hGetXPub stdin</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">addr &lt;- case derivationPath of</span>
+<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt;</span>
+<span class="lineno">   86 </span><span class="spaces">            </span><span class="istickedoff">pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)</span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">Just untypedPath -&gt; do</span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff">root &lt;- maybe</span>
+<span class="lineno">   89 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(fail &quot;A root public key must be provided when --path is provided&quot;)</span> pure rootXPub</span>
+<span class="lineno">   90 </span><span class="spaces">            </span><span class="istickedoff">case castDerivationPath untypedPath of</span>
+<span class="lineno">   91 </span><span class="spaces">                </span><span class="istickedoff">[acctIx, addrIx] -&gt; do</span>
+<span class="lineno">   92 </span><span class="spaces">                    </span><span class="istickedoff">let path = (acctIx, toEnum (fromEnum addrIx))</span>
+<span class="lineno">   93 </span><span class="spaces">                    </span><span class="istickedoff">let xkey = Byron.liftXPub root path xpub</span>
+<span class="lineno">   94 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Byron.paymentAddress discriminant xkey</span>
+<span class="lineno">   95 </span><span class="spaces">                </span><span class="istickedoff">_ -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   96 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Byron derivation path must describe 2 levels (e.g. 0H/0H)&quot;</span></span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ base58 addr</span>
+<span class="lineno">   98 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">discriminant :: NetworkDiscriminant Byron -- Or Icarus, same.</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">discriminant</span>
+<span class="lineno">  101 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">networkTag == snd Byron.byronMainnet</span> =</span>
+<span class="lineno">  102 </span><span class="spaces">            </span><span class="istickedoff">Byron.byronMainnet</span>
+<span class="lineno">  103 </span><span class="spaces">        </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> =</span>
+<span class="lineno">  104 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">(RequiresNetworkTag, <span class="istickedoff">networkTag</span>)</span></span></span>
 
 </pre>
 </body>

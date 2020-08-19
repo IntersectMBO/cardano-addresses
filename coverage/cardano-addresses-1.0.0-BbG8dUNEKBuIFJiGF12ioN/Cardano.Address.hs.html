@@ -94,7 +94,7 @@ span.spaces    { background: white }
 <span class="lineno">   75 </span>-- @since 1.0.0
 <span class="lineno">   76 </span>newtype Address = Address
 <span class="lineno">   77 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">unAddress</span></span></span> :: ByteString
-<span class="lineno">   78 </span>    } deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">   78 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">   79 </span>instance NFData Address
 <span class="lineno">   80 </span>
 <span class="lineno">   81 </span>-- Unsafe constructor for easily lifting bytes inside an 'Address'.
@@ -178,13 +178,13 @@ span.spaces    { background: white }
 <span class="lineno">  159 </span>--
 <span class="lineno">  160 </span>-- @since 2.0.0
 <span class="lineno">  161 </span>data ChainPointer = ChainPointer
-<span class="lineno">  162 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">slotNum</span></span></span> :: Natural
+<span class="lineno">  162 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">slotNum</span></span></span> :: Natural
 <span class="lineno">  163 </span>      -- ^ Pointer to the slot
-<span class="lineno">  164 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">transactionIndex</span></span></span> :: Natural
+<span class="lineno">  164 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">transactionIndex</span></span></span> :: Natural
 <span class="lineno">  165 </span>      -- ^ transaction index
-<span class="lineno">  166 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">outputIndex</span></span></span> :: Natural
+<span class="lineno">  166 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">outputIndex</span></span></span> :: Natural
 <span class="lineno">  167 </span>      -- ^ output list index
-<span class="lineno">  168 </span>    } deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  168 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">  169 </span>instance NFData ChainPointer
 <span class="lineno">  170 </span>
 <span class="lineno">  171 </span>-- | Encoding of pointer addresses for payment key type, pointer to staking
@@ -220,21 +220,21 @@ span.spaces    { background: white }
 <span class="lineno">  201 </span>-- (1) In 'Address' payloads, to discriminate addresses between networks.
 <span class="lineno">  202 </span>-- (2) At the network-level, when doing handshake with nodes.
 <span class="lineno">  203 </span>newtype NetworkTag
-<span class="lineno">  204 </span>    = NetworkTag { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">unNetworkTag</span></span></span> :: Word32 }
-<span class="lineno">  205 </span>    deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>)
+<span class="lineno">  204 </span>    = NetworkTag { <span class="istickedoff"><span class="decl"><span class="istickedoff">unNetworkTag</span></span></span> :: Word32 }
+<span class="lineno">  205 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>)
 <span class="lineno">  206 </span>instance NFData NetworkTag
 <span class="lineno">  207 </span>
 <span class="lineno">  208 </span>-- Describe requirements for address discrimination on the Byron era.
 <span class="lineno">  209 </span>data AddressDiscrimination
 <span class="lineno">  210 </span>    = RequiresNetworkTag
 <span class="lineno">  211 </span>    | RequiresNoTag
-<span class="lineno">  212 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>)
+<span class="lineno">  212 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">  213 </span>instance NFData AddressDiscrimination
 <span class="lineno">  214 </span>
 <span class="lineno">  215 </span>invariantSize :: HasCallStack =&gt; Int -&gt; ByteString -&gt; ByteString
 <span class="lineno">  216 </span><span class="decl"><span class="istickedoff">invariantSize expectedLength bytes</span>
 <span class="lineno">  217 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">BS.length bytes == expectedLength</span> = bytes</span>
-<span class="lineno">  218 </span><span class="spaces">    </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">error</span></span>
+<span class="lineno">  218 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
 <span class="lineno">  219 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;length was &quot;</span></span>
 <span class="lineno">  220 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show (BS.length bytes)</span></span>
 <span class="lineno">  221 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be &quot;</span></span>
@@ -243,7 +243,7 @@ span.spaces    { background: white }
 <span class="lineno">  224 </span>invariantNetworkTag :: HasCallStack =&gt; Word32 -&gt; NetworkTag -&gt; Word8
 <span class="lineno">  225 </span><span class="decl"><span class="istickedoff">invariantNetworkTag limit (NetworkTag num)</span>
 <span class="lineno">  226 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">num &lt; limit</span> = fromIntegral num</span>
-<span class="lineno">  227 </span><span class="spaces">    </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">error</span></span>
+<span class="lineno">  227 </span><span class="spaces">    </span><span class="istickedoff">| otherwise = <span class="nottickedoff">error</span></span>
 <span class="lineno">  228 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">$ &quot;network tag was &quot;</span></span>
 <span class="lineno">  229 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ show num</span></span>
 <span class="lineno">  230 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">++ &quot;, but expected to be less than &quot;</span></span>

@@ -62,55 +62,55 @@ span.spaces    { background: white }
 <span class="lineno">   43 </span>
 <span class="lineno">   44 </span>-- | Parse a 'NetworkTag' from the command-line, as an option
 <span class="lineno">   45 </span>networkTagOpt :: Style -&gt; Parser NetworkTag
-<span class="lineno">   46 </span><span class="decl"><span class="nottickedoff">networkTagOpt style = option (eitherReader reader) $ mempty</span>
-<span class="lineno">   47 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; metavar &quot;NETWORK-TAG&quot;</span>
-<span class="lineno">   48 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; long &quot;network-tag&quot;</span>
-<span class="lineno">   49 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; helpDoc  (Just (vsep (string &lt;$&gt; doc style)))</span>
-<span class="lineno">   50 </span><span class="spaces">    </span><span class="nottickedoff">&lt;&gt; completer (listCompleter $ show &lt;$&gt; tagsFor style)</span>
-<span class="lineno">   51 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   52 </span><span class="spaces">    </span><span class="nottickedoff">doc style' =</span>
-<span class="lineno">   53 </span><span class="spaces">        </span><span class="nottickedoff">[ &quot;A tag which identifies a Cardano network.&quot;</span>
-<span class="lineno">   54 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;&quot;</span>
-<span class="lineno">   55 </span><span class="spaces">        </span><span class="nottickedoff">] ++ case style' of</span>
-<span class="lineno">   56 </span><span class="spaces">        </span><span class="nottickedoff">Byron -&gt;</span>
-<span class="lineno">   57 </span><span class="spaces">            </span><span class="nottickedoff">[ &quot;┌ Byron / Icarus ──────────&quot;</span>
-<span class="lineno">   58 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ mainnet: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronMainnet))</span>
-<span class="lineno">   59 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ staging: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronStaging))</span>
-<span class="lineno">   60 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronTestnet))</span>
-<span class="lineno">   61 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   62 </span><span class="spaces">        </span><span class="nottickedoff">Icarus -&gt;</span>
-<span class="lineno">   63 </span><span class="spaces">            </span><span class="nottickedoff">doc Byron</span>
-<span class="lineno">   64 </span><span class="spaces">        </span><span class="nottickedoff">Jormungandr -&gt;</span>
-<span class="lineno">   65 </span><span class="spaces">            </span><span class="nottickedoff">[ &quot;┌ Jormungandr ─────────────&quot;</span>
-<span class="lineno">   66 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag Jormungandr.incentivizedTestnet)</span>
-<span class="lineno">   67 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   68 </span><span class="spaces">        </span><span class="nottickedoff">Shelley -&gt;</span>
-<span class="lineno">   69 </span><span class="spaces">            </span><span class="nottickedoff">[ &quot;┌ Shelley ─────────────────&quot;</span>
-<span class="lineno">   70 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ mainnet: &quot; &lt;&gt; show (unNetworkTag Shelley.shelleyMainnet)</span>
-<span class="lineno">   71 </span><span class="spaces">            </span><span class="nottickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag Shelley.shelleyTestnet)</span>
-<span class="lineno">   72 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   73 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">   74 </span><span class="spaces">    </span><span class="nottickedoff">tagsFor = \case</span>
-<span class="lineno">   75 </span><span class="spaces">        </span><span class="nottickedoff">Byron -&gt;</span>
-<span class="lineno">   76 </span><span class="spaces">            </span><span class="nottickedoff">[ unNetworkTag (snd Byron.byronMainnet)</span>
-<span class="lineno">   77 </span><span class="spaces">            </span><span class="nottickedoff">, unNetworkTag (snd Byron.byronStaging)</span>
-<span class="lineno">   78 </span><span class="spaces">            </span><span class="nottickedoff">, unNetworkTag (snd Byron.byronTestnet)</span>
-<span class="lineno">   79 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   80 </span><span class="spaces">        </span><span class="nottickedoff">Icarus -&gt;</span>
-<span class="lineno">   81 </span><span class="spaces">            </span><span class="nottickedoff">tagsFor Byron</span>
-<span class="lineno">   82 </span><span class="spaces">        </span><span class="nottickedoff">Jormungandr -&gt;</span>
-<span class="lineno">   83 </span><span class="spaces">            </span><span class="nottickedoff">[ unNetworkTag Jormungandr.incentivizedTestnet</span>
-<span class="lineno">   84 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   85 </span><span class="spaces">        </span><span class="nottickedoff">Shelley -&gt;</span>
-<span class="lineno">   86 </span><span class="spaces">            </span><span class="nottickedoff">[ unNetworkTag Shelley.shelleyMainnet</span>
-<span class="lineno">   87 </span><span class="spaces">            </span><span class="nottickedoff">, unNetworkTag Shelley.shelleyTestnet</span>
-<span class="lineno">   88 </span><span class="spaces">            </span><span class="nottickedoff">]</span>
-<span class="lineno">   89 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">   90 </span><span class="spaces">    </span><span class="nottickedoff">reader =</span>
-<span class="lineno">   91 </span><span class="spaces">        </span><span class="nottickedoff">maybe</span>
-<span class="lineno">   92 </span><span class="spaces">            </span><span class="nottickedoff">(Left &quot;Invalid network tag. Must be a integer value.&quot;)</span>
-<span class="lineno">   93 </span><span class="spaces">            </span><span class="nottickedoff">(Right . NetworkTag)</span>
-<span class="lineno">   94 </span><span class="spaces">            </span><span class="nottickedoff">. readMaybe</span></span>
+<span class="lineno">   46 </span><span class="decl"><span class="istickedoff">networkTagOpt style = option (eitherReader reader) $ mempty</span>
+<span class="lineno">   47 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;NETWORK-TAG&quot;</span>
+<span class="lineno">   48 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; long &quot;network-tag&quot;</span>
+<span class="lineno">   49 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; helpDoc  (Just (vsep (string &lt;$&gt; doc style)))</span>
+<span class="lineno">   50 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter $ show &lt;$&gt; tagsFor style)</span></span>
+<span class="lineno">   51 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   52 </span><span class="spaces">    </span><span class="istickedoff">doc style' =</span>
+<span class="lineno">   53 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;A tag which identifies a Cardano network.&quot;</span>
+<span class="lineno">   54 </span><span class="spaces">        </span><span class="istickedoff">, &quot;&quot;</span>
+<span class="lineno">   55 </span><span class="spaces">        </span><span class="istickedoff">] ++ case style' of</span>
+<span class="lineno">   56 </span><span class="spaces">        </span><span class="istickedoff">Byron -&gt;</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">[ &quot;┌ Byron / Icarus ──────────&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, &quot;│ mainnet: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronMainnet))</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, &quot;│ staging: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronStaging))</span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag (snd Byron.byronTestnet))</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">]</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">Icarus -&gt;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">doc Byron</span></span>
+<span class="lineno">   64 </span><span class="spaces">        </span><span class="istickedoff">Jormungandr -&gt;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ &quot;┌ Jormungandr ─────────────&quot;</span></span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag Jormungandr.incentivizedTestnet)</span></span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">Shelley -&gt;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">[ &quot;┌ Shelley ─────────────────&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, &quot;│ mainnet: &quot; &lt;&gt; show (unNetworkTag Shelley.shelleyMainnet)</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, &quot;│ testnet: &quot; &lt;&gt; show (unNetworkTag Shelley.shelleyTestnet)</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">]</span>
+<span class="lineno">   73 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   74 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">tagsFor = \case</span></span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Byron -&gt;</span></span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag (snd Byron.byronMainnet)</span></span>
+<span class="lineno">   77 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronStaging)</span></span>
+<span class="lineno">   78 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronTestnet)</span></span>
+<span class="lineno">   79 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   80 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Icarus -&gt;</span></span>
+<span class="lineno">   81 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">tagsFor Byron</span></span>
+<span class="lineno">   82 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Jormungandr -&gt;</span></span>
+<span class="lineno">   83 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag Jormungandr.incentivizedTestnet</span></span>
+<span class="lineno">   84 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Shelley -&gt;</span></span>
+<span class="lineno">   86 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag Shelley.shelleyMainnet</span></span>
+<span class="lineno">   87 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag Shelley.shelleyTestnet</span></span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   89 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">reader =</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">maybe</span>
+<span class="lineno">   92 </span><span class="spaces">            </span><span class="istickedoff">(Left &quot;Invalid network tag. Must be a integer value.&quot;)</span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff">(Right . NetworkTag)</span>
+<span class="lineno">   94 </span><span class="spaces">            </span><span class="istickedoff">. readMaybe</span></span>
 
 </pre>
 </body>

@@ -164,7 +164,7 @@ span.spaces    { background: white }
 <span class="lineno">  145 </span>        --
 <span class="lineno">  146 </span>        -- @since 2.0.0
 <span class="lineno">  147 </span>    }
-<span class="lineno">  148 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  148 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">  149 </span>
 <span class="lineno">  150 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Jormungandr depth))</span></span></span></span>
 <span class="lineno">  151 </span>instance (NFData key) =&gt; NFData (Jormungandr depth key)
@@ -201,13 +201,13 @@ span.spaces    { background: white }
 <span class="lineno">  182 </span>instance Internal.GenMasterKey Jormungandr where
 <span class="lineno">  183 </span>    type SecondFactor Jormungandr = ScrubbedBytes
 <span class="lineno">  184 </span>
-<span class="lineno">  185 </span>    <span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
+<span class="lineno">  185 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
 <span class="lineno">  186 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic fstFactor sndFactor =</span>
 <span class="lineno">  187 </span><span class="spaces">        </span><span class="istickedoff">Jormungandr $ generateNew seedValidated sndFactor</span>
 <span class="lineno">  188 </span><span class="spaces">        </span><span class="istickedoff">where</span>
 <span class="lineno">  189 </span><span class="spaces">            </span><span class="istickedoff">seed  = someMnemonicToBytes fstFactor</span>
 <span class="lineno">  190 </span><span class="spaces">            </span><span class="istickedoff">seedValidated = assert</span>
-<span class="lineno">  191 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  191 </span><span class="spaces">                </span><span class="istickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span>
 <span class="lineno">  192 </span><span class="spaces">                </span><span class="istickedoff">seed</span></span>
 <span class="lineno">  193 </span>
 <span class="lineno">  194 </span>instance Internal.HardDerivation Jormungandr where
@@ -243,7 +243,7 @@ span.spaces    { background: white }
 <span class="lineno">  224 </span>
 <span class="lineno">  225 </span>instance Internal.SoftDerivation Jormungandr where
 <span class="lineno">  226 </span>    <span class="decl"><span class="istickedoff">deriveAddressPublicKey (Jormungandr accXPub) accountingStyle addrIx =</span>
-<span class="lineno">  227 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe <span class="nottickedoff">errWrongIndex</span> $ do</span>
+<span class="lineno">  227 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe errWrongIndex $ do</span>
 <span class="lineno">  228 </span><span class="spaces">            </span><span class="istickedoff">let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle</span>
 <span class="lineno">  229 </span><span class="spaces">            </span><span class="istickedoff">changeXPub &lt;- -- lvl4 derivation in bip44 is derivation of change chain</span>
 <span class="lineno">  230 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 accXPub changeCode</span>
@@ -251,11 +251,11 @@ span.spaces    { background: white }
 <span class="lineno">  232 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 changeXPub addrIx</span>
 <span class="lineno">  233 </span><span class="spaces">            </span><span class="istickedoff">return $ Jormungandr addrXPub</span>
 <span class="lineno">  234 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  235 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">errWrongIndex = error $</span></span>
-<span class="lineno">  236 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span></span>
-<span class="lineno">  237 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span></span>
-<span class="lineno">  238 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\either a programmer error, or, we may have reached the maximum \</span></span>
-<span class="lineno">  239 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\number of addresses for a given wallet.&quot;</span></span></span>
+<span class="lineno">  235 </span><span class="spaces">        </span><span class="istickedoff">errWrongIndex = error $</span>
+<span class="lineno">  236 </span><span class="spaces">            </span><span class="istickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span>
+<span class="lineno">  237 </span><span class="spaces">            </span><span class="istickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span>
+<span class="lineno">  238 </span><span class="spaces">            </span><span class="istickedoff">\either a programmer error, or, we may have reached the maximum \</span>
+<span class="lineno">  239 </span><span class="spaces">            </span><span class="istickedoff">\number of addresses for a given wallet.&quot;</span></span>
 <span class="lineno">  240 </span>
 <span class="lineno">  241 </span>instance Internal.StakingDerivation Jormungandr where
 <span class="lineno">  242 </span>    <span class="decl"><span class="istickedoff">deriveStakingPrivateKey (Jormungandr accXPrv) =</span>
@@ -276,16 +276,16 @@ span.spaces    { background: white }
 <span class="lineno">  257 </span>    -&gt; ScrubbedBytes
 <span class="lineno">  258 </span>        -- ^ An optional second-factor passphrase (or 'mempty')
 <span class="lineno">  259 </span>    -&gt; Jormungandr 'RootK XPrv
-<span class="lineno">  260 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromMnemonic =</span>
-<span class="lineno">  261 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromMnemonic</span></span>
+<span class="lineno">  260 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic =</span>
+<span class="lineno">  261 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromMnemonic</span></span>
 <span class="lineno">  262 </span>
 <span class="lineno">  263 </span>-- | Generate a root key from a corresponding root 'XPrv'
 <span class="lineno">  264 </span>--
 <span class="lineno">  265 </span>-- @since 2.0.0
 <span class="lineno">  266 </span>genMasterKeyFromXPrv
 <span class="lineno">  267 </span>    :: XPrv -&gt; Jormungandr 'RootK XPrv
-<span class="lineno">  268 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv =</span>
-<span class="lineno">  269 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  268 </span><span class="decl"><span class="istickedoff">genMasterKeyFromXPrv =</span>
+<span class="lineno">  269 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromXPrv</span></span>
 <span class="lineno">  270 </span>
 <span class="lineno">  271 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  272 </span>--
@@ -296,8 +296,8 @@ span.spaces    { background: white }
 <span class="lineno">  277 </span>    :: Jormungandr 'RootK XPrv
 <span class="lineno">  278 </span>    -&gt; Index 'Hardened 'AccountK
 <span class="lineno">  279 </span>    -&gt; Jormungandr 'AccountK XPrv
-<span class="lineno">  280 </span><span class="decl"><span class="nottickedoff">deriveAccountPrivateKey =</span>
-<span class="lineno">  281 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  280 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey =</span>
+<span class="lineno">  281 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAccountPrivateKey</span></span>
 <span class="lineno">  282 </span>
 <span class="lineno">  283 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  284 </span>--
@@ -309,8 +309,8 @@ span.spaces    { background: white }
 <span class="lineno">  290 </span>    -&gt; AccountingStyle
 <span class="lineno">  291 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  292 </span>    -&gt; Jormungandr 'AddressK XPrv
-<span class="lineno">  293 </span><span class="decl"><span class="nottickedoff">deriveAddressPrivateKey =</span>
-<span class="lineno">  294 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPrivateKey</span></span>
+<span class="lineno">  293 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey =</span>
+<span class="lineno">  294 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey</span></span>
 <span class="lineno">  295 </span>
 <span class="lineno">  296 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  297 </span>--
@@ -322,8 +322,8 @@ span.spaces    { background: white }
 <span class="lineno">  303 </span>    -&gt; AccountingStyle
 <span class="lineno">  304 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  305 </span>    -&gt; Jormungandr 'AddressK XPub
-<span class="lineno">  306 </span><span class="decl"><span class="nottickedoff">deriveAddressPublicKey =</span>
-<span class="lineno">  307 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPublicKey</span></span>
+<span class="lineno">  306 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey =</span>
+<span class="lineno">  307 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPublicKey</span></span>
 <span class="lineno">  308 </span>
 <span class="lineno">  309 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  310 </span>--
@@ -339,8 +339,8 @@ span.spaces    { background: white }
 <span class="lineno">  320 </span>deriveStakingPrivateKey
 <span class="lineno">  321 </span>    :: Jormungandr 'AccountK XPrv
 <span class="lineno">  322 </span>    -&gt; Jormungandr 'StakingK XPrv
-<span class="lineno">  323 </span><span class="decl"><span class="nottickedoff">deriveStakingPrivateKey =</span>
-<span class="lineno">  324 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveStakingPrivateKey</span></span>
+<span class="lineno">  323 </span><span class="decl"><span class="istickedoff">deriveStakingPrivateKey =</span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveStakingPrivateKey</span></span>
 <span class="lineno">  325 </span>
 <span class="lineno">  326 </span>--
 <span class="lineno">  327 </span>-- Addresses
@@ -388,54 +388,54 @@ span.spaces    { background: white }
 <span class="lineno">  369 </span>--
 <span class="lineno">  370 </span>-- @since 2.0.0
 <span class="lineno">  371 </span>inspectJormungandrAddress :: Address -&gt; Maybe Json.Value
-<span class="lineno">  372 </span><span class="decl"><span class="nottickedoff">inspectJormungandrAddress addr</span>
-<span class="lineno">  373 </span><span class="spaces">    </span><span class="nottickedoff">| BS.length bytes &lt; 1 + publicKeySize = Nothing</span>
-<span class="lineno">  374 </span><span class="spaces">    </span><span class="nottickedoff">| otherwise =</span>
-<span class="lineno">  375 </span><span class="spaces">        </span><span class="nottickedoff">let</span>
-<span class="lineno">  376 </span><span class="spaces">            </span><span class="nottickedoff">(fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
-<span class="lineno">  377 </span><span class="spaces">            </span><span class="nottickedoff">addrType = fstByte .&amp;. 0b01111111</span>
-<span class="lineno">  378 </span><span class="spaces">            </span><span class="nottickedoff">network  = (fstByte .&amp;. 0b10000000) `shiftR` 7</span>
-<span class="lineno">  379 </span><span class="spaces">            </span><span class="nottickedoff">size = publicKeySize</span>
-<span class="lineno">  380 </span><span class="spaces">        </span><span class="nottickedoff">in</span>
-<span class="lineno">  381 </span><span class="spaces">            </span><span class="nottickedoff">case addrType of</span>
-<span class="lineno">  382 </span><span class="spaces">                </span><span class="nottickedoff">0x03 | BS.length rest == size -&gt;</span>
-<span class="lineno">  383 </span><span class="spaces">                    </span><span class="nottickedoff">Just $ Json.object</span>
-<span class="lineno">  384 </span><span class="spaces">                    </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
-<span class="lineno">  385 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;single&quot;</span>
-<span class="lineno">  386 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
-<span class="lineno">  387 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;spending_key&quot;    .= base16 (BS.take size rest)</span>
-<span class="lineno">  388 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span>
-<span class="lineno">  389 </span><span class="spaces">                    </span><span class="nottickedoff">]</span>
-<span class="lineno">  390 </span><span class="spaces">                </span><span class="nottickedoff">0x04 | BS.length rest == 2 * size -&gt;</span>
-<span class="lineno">  391 </span><span class="spaces">                    </span><span class="nottickedoff">Just $ Json.object</span>
-<span class="lineno">  392 </span><span class="spaces">                    </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
-<span class="lineno">  393 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;group&quot;</span>
-<span class="lineno">  394 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;by value&quot;</span>
-<span class="lineno">  395 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;spending_key&quot;    .= base16 (BS.take size rest)</span>
-<span class="lineno">  396 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;stake_key&quot;       .= base16 (BS.drop size rest)</span>
-<span class="lineno">  397 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span>
-<span class="lineno">  398 </span><span class="spaces">                    </span><span class="nottickedoff">]</span>
-<span class="lineno">  399 </span><span class="spaces">                </span><span class="nottickedoff">0x05 | BS.length rest == size -&gt;</span>
-<span class="lineno">  400 </span><span class="spaces">                    </span><span class="nottickedoff">Just $ Json.object</span>
-<span class="lineno">  401 </span><span class="spaces">                    </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
-<span class="lineno">  402 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;account&quot;</span>
-<span class="lineno">  403 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
-<span class="lineno">  404 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;account_key&quot;     .= base16 (BS.take size rest)</span>
-<span class="lineno">  405 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span>
-<span class="lineno">  406 </span><span class="spaces">                    </span><span class="nottickedoff">]</span>
-<span class="lineno">  407 </span><span class="spaces">                </span><span class="nottickedoff">0x06 | BS.length rest == size -&gt;</span>
-<span class="lineno">  408 </span><span class="spaces">                    </span><span class="nottickedoff">Just $ Json.object</span>
-<span class="lineno">  409 </span><span class="spaces">                    </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
-<span class="lineno">  410 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;multisig&quot;</span>
-<span class="lineno">  411 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
-<span class="lineno">  412 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;merkle_root&quot;     .= base16 (BS.take size rest)</span>
-<span class="lineno">  413 </span><span class="spaces">                    </span><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span>
-<span class="lineno">  414 </span><span class="spaces">                    </span><span class="nottickedoff">]</span>
-<span class="lineno">  415 </span><span class="spaces">                </span><span class="nottickedoff">_ -&gt;</span>
-<span class="lineno">  416 </span><span class="spaces">                    </span><span class="nottickedoff">Nothing</span>
-<span class="lineno">  417 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">  418 </span><span class="spaces">    </span><span class="nottickedoff">bytes = unAddress addr</span>
-<span class="lineno">  419 </span><span class="spaces">    </span><span class="nottickedoff">base16 = T.unpack . T.decodeUtf8 . encode EBase16</span></span>
+<span class="lineno">  372 </span><span class="decl"><span class="istickedoff">inspectJormungandrAddress addr</span>
+<span class="lineno">  373 </span><span class="spaces">    </span><span class="istickedoff">| BS.length bytes &lt; 1 + publicKeySize = Nothing</span>
+<span class="lineno">  374 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  375 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  376 </span><span class="spaces">            </span><span class="istickedoff">(fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
+<span class="lineno">  377 </span><span class="spaces">            </span><span class="istickedoff">addrType = fstByte .&amp;. 0b01111111</span>
+<span class="lineno">  378 </span><span class="spaces">            </span><span class="istickedoff">network  = (fstByte .&amp;. 0b10000000) `shiftR` 7</span>
+<span class="lineno">  379 </span><span class="spaces">            </span><span class="istickedoff">size = publicKeySize</span>
+<span class="lineno">  380 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  381 </span><span class="spaces">            </span><span class="istickedoff">case addrType of</span>
+<span class="lineno">  382 </span><span class="spaces">                </span><span class="istickedoff">0x03 | BS.length rest == size -&gt;</span>
+<span class="lineno">  383 </span><span class="spaces">                    </span><span class="istickedoff">Just $ Json.object</span>
+<span class="lineno">  384 </span><span class="spaces">                    </span><span class="istickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
+<span class="lineno">  385 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;address_type&quot;    .= Json.String &quot;single&quot;</span>
+<span class="lineno">  386 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
+<span class="lineno">  387 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;spending_key&quot;    .= base16 (BS.take size rest)</span>
+<span class="lineno">  388 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;network_tag&quot;     .= network</span>
+<span class="lineno">  389 </span><span class="spaces">                    </span><span class="istickedoff">]</span>
+<span class="lineno">  390 </span><span class="spaces">                </span><span class="istickedoff">0x04 | <span class="tickonlytrue">BS.length rest == 2 * size</span> -&gt;</span>
+<span class="lineno">  391 </span><span class="spaces">                    </span><span class="istickedoff">Just $ Json.object</span>
+<span class="lineno">  392 </span><span class="spaces">                    </span><span class="istickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span>
+<span class="lineno">  393 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;address_type&quot;    .= Json.String &quot;group&quot;</span>
+<span class="lineno">  394 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;stake_reference&quot; .= Json.String &quot;by value&quot;</span>
+<span class="lineno">  395 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;spending_key&quot;    .= base16 (BS.take size rest)</span>
+<span class="lineno">  396 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;stake_key&quot;       .= base16 (BS.drop size rest)</span>
+<span class="lineno">  397 </span><span class="spaces">                    </span><span class="istickedoff">, &quot;network_tag&quot;     .= network</span>
+<span class="lineno">  398 </span><span class="spaces">                    </span><span class="istickedoff">]</span>
+<span class="lineno">  399 </span><span class="spaces">                </span><span class="istickedoff">0x05 | <span class="nottickedoff">BS.length rest == size</span> -&gt;</span>
+<span class="lineno">  400 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">Just $ Json.object</span></span>
+<span class="lineno">  401 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span></span>
+<span class="lineno">  402 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;account&quot;</span></span>
+<span class="lineno">  403 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span></span>
+<span class="lineno">  404 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;account_key&quot;     .= base16 (BS.take size rest)</span></span>
+<span class="lineno">  405 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span></span>
+<span class="lineno">  406 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  407 </span><span class="spaces">                </span><span class="istickedoff">0x06 | <span class="nottickedoff">BS.length rest == size</span> -&gt;</span>
+<span class="lineno">  408 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">Just $ Json.object</span></span>
+<span class="lineno">  409 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Jormungandr&quot;</span></span>
+<span class="lineno">  410 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;address_type&quot;    .= Json.String &quot;multisig&quot;</span></span>
+<span class="lineno">  411 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span></span>
+<span class="lineno">  412 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;merkle_root&quot;     .= base16 (BS.take size rest)</span></span>
+<span class="lineno">  413 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;     .= network</span></span>
+<span class="lineno">  414 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  415 </span><span class="spaces">                </span><span class="istickedoff">_ -&gt;</span>
+<span class="lineno">  416 </span><span class="spaces">                    </span><span class="istickedoff">Nothing</span>
+<span class="lineno">  417 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  418 </span><span class="spaces">    </span><span class="istickedoff">bytes = unAddress addr</span>
+<span class="lineno">  419 </span><span class="spaces">    </span><span class="istickedoff">base16 = T.unpack . T.decodeUtf8 . encode EBase16</span></span>
 <span class="lineno">  420 </span>
 <span class="lineno">  421 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 <span class="lineno">  422 </span>--
@@ -447,8 +447,8 @@ span.spaces    { background: white }
 <span class="lineno">  428 </span>    :: NetworkDiscriminant Jormungandr
 <span class="lineno">  429 </span>    -&gt; Jormungandr 'AddressK XPub
 <span class="lineno">  430 </span>    -&gt; Address
-<span class="lineno">  431 </span><span class="decl"><span class="nottickedoff">paymentAddress =</span>
-<span class="lineno">  432 </span><span class="spaces">    </span><span class="nottickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  431 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  432 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
 <span class="lineno">  433 </span>
 <span class="lineno">  434 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 <span class="lineno">  435 </span>--
@@ -463,8 +463,8 @@ span.spaces    { background: white }
 <span class="lineno">  444 </span>    -&gt; Jormungandr 'AddressK XPub
 <span class="lineno">  445 </span>    -&gt; Jormungandr 'StakingK XPub
 <span class="lineno">  446 </span>    -&gt; Address
-<span class="lineno">  447 </span><span class="decl"><span class="nottickedoff">delegationAddress =</span>
-<span class="lineno">  448 </span><span class="spaces">    </span><span class="nottickedoff">Internal.delegationAddress</span></span>
+<span class="lineno">  447 </span><span class="decl"><span class="istickedoff">delegationAddress =</span>
+<span class="lineno">  448 </span><span class="spaces">    </span><span class="istickedoff">Internal.delegationAddress</span></span>
 <span class="lineno">  449 </span>
 <span class="lineno">  450 </span>--
 <span class="lineno">  451 </span>-- Network Discrimination

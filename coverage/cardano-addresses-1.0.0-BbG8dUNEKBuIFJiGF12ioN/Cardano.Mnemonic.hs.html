@@ -169,13 +169,13 @@ span.spaces    { background: white }
 <span class="lineno">  150 </span>        --
 <span class="lineno">  151 </span>        -- @since 1.0.0
 <span class="lineno">  152 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">mnemonicToSentence</span></span></span> :: MnemonicSentence mw
-<span class="lineno">  153 </span>    } deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">  153 </span>    } deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">  154 </span>
 <span class="lineno">  155 </span>-- This wraps EntropyError of &quot;Cardano.Encoding.BIP39&quot;
 <span class="lineno">  156 </span>newtype MnemonicException csz =
 <span class="lineno">  157 </span>    UnexpectedEntropyError (EntropyError csz)
 <span class="lineno">  158 </span>    -- ^ Invalid entropy length or checksum
-<span class="lineno">  159 </span>    deriving (<span class="decl"><span class="nottickedoff">Show</span></span>, Typeable)
+<span class="lineno">  159 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>, Typeable)
 <span class="lineno">  160 </span>
 <span class="lineno">  161 </span>-- | This wraps errors from &quot;Cardano.Encoding.BIP39&quot;
 <span class="lineno">  162 </span>data MkMnemonicError csz
@@ -185,7 +185,7 @@ span.spaces    { background: white }
 <span class="lineno">  166 </span>      -- ^ Invalid entropy length or checksum.
 <span class="lineno">  167 </span>    | ErrDictionary DictionaryError
 <span class="lineno">  168 </span>      -- ^ Invalid word in mnemonic.
-<span class="lineno">  169 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">  169 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">  170 </span>
 <span class="lineno">  171 </span><span class="decl"><span class="istickedoff">deriving instance Eq (EntropyError czs)</span></span>
 <span class="lineno">  172 </span><span class="decl"><span class="istickedoff">deriving instance Eq MnemonicWordsError</span></span>
@@ -223,7 +223,7 @@ span.spaces    { background: white }
 <span class="lineno">  204 </span><span class="decl"><span class="istickedoff">genEntropy =</span>
 <span class="lineno">  205 </span><span class="spaces">    </span><span class="istickedoff">let</span>
 <span class="lineno">  206 </span><span class="spaces">        </span><span class="istickedoff">size =</span>
-<span class="lineno">  207 </span><span class="spaces">            </span><span class="istickedoff">fromIntegral $ natVal @ent <span class="nottickedoff">Proxy</span></span>
+<span class="lineno">  207 </span><span class="spaces">            </span><span class="istickedoff">fromIntegral $ natVal @ent Proxy</span>
 <span class="lineno">  208 </span><span class="spaces">        </span><span class="istickedoff">eitherToIO =</span>
 <span class="lineno">  209 </span><span class="spaces">            </span><span class="istickedoff">either <span class="nottickedoff">(throwM . UnexpectedEntropyError)</span> return</span>
 <span class="lineno">  210 </span><span class="spaces">    </span><span class="istickedoff">in</span>
@@ -330,12 +330,12 @@ span.spaces    { background: white }
 <span class="lineno">  311 </span>data SomeMnemonic where
 <span class="lineno">  312 </span>    SomeMnemonic :: forall mw. KnownNat mw =&gt; Mnemonic mw -&gt; SomeMnemonic
 <span class="lineno">  313 </span>
-<span class="lineno">  314 </span><span class="decl"><span class="nottickedoff">deriving instance Show SomeMnemonic</span></span>
+<span class="lineno">  314 </span><span class="decl"><span class="istickedoff">deriving instance Show SomeMnemonic</span></span>
 <span class="lineno">  315 </span>instance Eq SomeMnemonic where
-<span class="lineno">  316 </span>    <span class="decl"><span class="nottickedoff">(SomeMnemonic mwa) == (SomeMnemonic mwb) =</span>
-<span class="lineno">  317 </span><span class="spaces">        </span><span class="nottickedoff">case typeOf mwa `testEquality` typeOf mwb of</span>
-<span class="lineno">  318 </span><span class="spaces">            </span><span class="nottickedoff">Nothing -&gt; False</span>
-<span class="lineno">  319 </span><span class="spaces">            </span><span class="nottickedoff">Just Refl -&gt; mwa == mwb</span></span>
+<span class="lineno">  316 </span>    <span class="decl"><span class="istickedoff">(SomeMnemonic mwa) == (SomeMnemonic mwb) =</span>
+<span class="lineno">  317 </span><span class="spaces">        </span><span class="istickedoff">case typeOf mwa `testEquality` typeOf mwb of</span>
+<span class="lineno">  318 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; False</span>
+<span class="lineno">  319 </span><span class="spaces">            </span><span class="istickedoff">Just Refl -&gt; mwa == mwb</span></span>
 <span class="lineno">  320 </span>
 <span class="lineno">  321 </span>-- | This class enables caller to parse text list of variable length
 <span class="lineno">  322 </span>-- into mnemonic sentences.
@@ -363,7 +363,7 @@ span.spaces    { background: white }
 <span class="lineno">  344 </span>-- @since 1.0.0
 <span class="lineno">  345 </span>newtype MkSomeMnemonicError (sz :: [Nat]) =
 <span class="lineno">  346 </span>    MkSomeMnemonicError { <span class="istickedoff"><span class="decl"><span class="istickedoff">getMkSomeMnemonicError</span></span></span> :: String }
-<span class="lineno">  347 </span>    deriving stock (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">  347 </span>    deriving stock (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">  348 </span>
 <span class="lineno">  349 </span>instance {-# OVERLAPS #-}
 <span class="lineno">  350 </span>    ( n ~ EntropySize mw
@@ -384,8 +384,8 @@ span.spaces    { background: white }
 <span class="lineno">  365 </span><span class="spaces">            </span><span class="istickedoff">mkSomeMnemonic @rest parts</span>
 <span class="lineno">  366 </span><span class="spaces">        </span><span class="istickedoff">promote e e' =</span>
 <span class="lineno">  367 </span><span class="spaces">            </span><span class="istickedoff">let</span>
-<span class="lineno">  368 </span><span class="spaces">                </span><span class="istickedoff">sz = fromEnum &lt;$&gt; natVals <span class="nottickedoff">(Proxy :: Proxy (mw ': rest))</span></span>
-<span class="lineno">  369 </span><span class="spaces">                </span><span class="istickedoff">mw = fromEnum $ natVal <span class="nottickedoff">(Proxy :: Proxy mw)</span></span>
+<span class="lineno">  368 </span><span class="spaces">                </span><span class="istickedoff">sz = fromEnum &lt;$&gt; natVals (Proxy :: Proxy (mw ': rest))</span>
+<span class="lineno">  369 </span><span class="spaces">                </span><span class="istickedoff">mw = fromEnum $ natVal (Proxy :: Proxy mw)</span>
 <span class="lineno">  370 </span><span class="spaces">            </span><span class="istickedoff">in if length parts `notElem` sz</span>
 <span class="lineno">  371 </span><span class="spaces">                </span><span class="istickedoff">then MkSomeMnemonicError</span>
 <span class="lineno">  372 </span><span class="spaces">                    </span><span class="istickedoff">$  &quot;Invalid number of words: &quot;</span>
@@ -402,7 +402,7 @@ span.spaces    { background: white }
 <span class="lineno">  383 </span>    <span class="decl"><span class="istickedoff">natVals _ = []</span></span>
 <span class="lineno">  384 </span>
 <span class="lineno">  385 </span>instance (KnownNat n, NatVals rest) =&gt; NatVals (n ': rest) where
-<span class="lineno">  386 </span>    <span class="decl"><span class="istickedoff">natVals _ = natVal <span class="nottickedoff">(Proxy :: Proxy n)</span> : natVals <span class="nottickedoff">(Proxy :: Proxy rest)</span></span></span>
+<span class="lineno">  386 </span>    <span class="decl"><span class="istickedoff">natVals _ = natVal (Proxy :: Proxy n) : natVals (Proxy :: Proxy rest)</span></span>
 <span class="lineno">  387 </span>
 <span class="lineno">  388 </span>instance
 <span class="lineno">  389 </span>    ( n ~ EntropySize mw
@@ -417,7 +417,7 @@ span.spaces    { background: white }
 <span class="lineno">  398 </span><span class="spaces">        </span><span class="istickedoff">pretty = \case</span>
 <span class="lineno">  399 </span><span class="spaces">            </span><span class="istickedoff">ErrMnemonicWords ErrWrongNumberOfWords{} -&gt;</span>
 <span class="lineno">  400 </span><span class="spaces">                </span><span class="istickedoff">&quot;Invalid number of words: &quot;</span>
-<span class="lineno">  401 </span><span class="spaces">                </span><span class="istickedoff">&lt;&gt; show (natVal <span class="nottickedoff">(Proxy :: Proxy mw)</span>)</span>
+<span class="lineno">  401 </span><span class="spaces">                </span><span class="istickedoff">&lt;&gt; show (natVal (Proxy :: Proxy mw))</span>
 <span class="lineno">  402 </span><span class="spaces">                </span><span class="istickedoff">&lt;&gt; &quot; words are expected.&quot;</span>
 <span class="lineno">  403 </span><span class="spaces">            </span><span class="istickedoff">ErrDictionary (ErrInvalidDictionaryWord _) -&gt;</span>
 <span class="lineno">  404 </span><span class="spaces">                </span><span class="istickedoff">&quot;Found an unknown word not present in the pre-defined dictionary. \</span>

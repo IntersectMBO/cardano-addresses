@@ -56,35 +56,35 @@ span.spaces    { background: white }
 <span class="lineno">   37 </span>    | Delegation Delegation.Cmd
 <span class="lineno">   38 </span>    | Pointer Pointer.Cmd
 <span class="lineno">   39 </span>    | Inspect Inspect.Cmd
-<span class="lineno">   40 </span>    deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   40 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   41 </span>
 <span class="lineno">   42 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-<span class="lineno">   43 </span><span class="decl"><span class="nottickedoff">mod liftCmd = command &quot;address&quot; $</span>
-<span class="lineno">   44 </span><span class="spaces">    </span><span class="nottickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   45 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; progDesc &quot;About addresses&quot;</span>
-<span class="lineno">   46 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
-<span class="lineno">   47 </span><span class="spaces">            </span><span class="nottickedoff">[ string &quot;Integrating with Byron?&quot;</span>
-<span class="lineno">   48 </span><span class="spaces">            </span><span class="nottickedoff">, hsep [ string &quot;  ↳ Look at&quot;, bold $ string &quot;'bootstrap'&quot;, string &quot;.&quot; ]</span>
-<span class="lineno">   49 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;&quot;</span>
-<span class="lineno">   50 </span><span class="spaces">            </span><span class="nottickedoff">, string &quot;Integrating with Shelley?&quot;</span>
-<span class="lineno">   51 </span><span class="spaces">            </span><span class="nottickedoff">, hsep [ string &quot;  ↳ Look at&quot;, bold $ string &quot;'payment'&quot;, string &quot;&amp;&quot;, bold $ string &quot;'delegation'&quot;, string &quot;.&quot; ]</span>
-<span class="lineno">   52 </span><span class="spaces">            </span><span class="nottickedoff">])</span>
-<span class="lineno">   53 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">   54 </span><span class="spaces">    </span><span class="nottickedoff">parser = subparser $ mconcat</span>
-<span class="lineno">   55 </span><span class="spaces">        </span><span class="nottickedoff">[ Bootstrap.mod Bootstrap</span>
-<span class="lineno">   56 </span><span class="spaces">        </span><span class="nottickedoff">, Payment.mod Payment</span>
-<span class="lineno">   57 </span><span class="spaces">        </span><span class="nottickedoff">, Delegation.mod Delegation</span>
-<span class="lineno">   58 </span><span class="spaces">        </span><span class="nottickedoff">, Pointer.mod Pointer</span>
-<span class="lineno">   59 </span><span class="spaces">        </span><span class="nottickedoff">, Inspect.mod Inspect</span>
-<span class="lineno">   60 </span><span class="spaces">        </span><span class="nottickedoff">]</span></span>
+<span class="lineno">   43 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;address&quot; $</span>
+<span class="lineno">   44 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   45 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc <span class="nottickedoff">&quot;About addresses&quot;</span></span>
+<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc <span class="nottickedoff">(Just $ vsep</span></span>
+<span class="lineno">   47 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ string &quot;Integrating with Byron?&quot;</span></span>
+<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, hsep [ string &quot;  ↳ Look at&quot;, bold $ string &quot;'bootstrap'&quot;, string &quot;.&quot; ]</span></span>
+<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, string &quot;&quot;</span></span>
+<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, string &quot;Integrating with Shelley?&quot;</span></span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, hsep [ string &quot;  ↳ Look at&quot;, bold $ string &quot;'payment'&quot;, string &quot;&amp;&quot;, bold $ string &quot;'delegation'&quot;, string &quot;.&quot; ]</span></span>
+<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">])</span></span>
+<span class="lineno">   53 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   54 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
+<span class="lineno">   55 </span><span class="spaces">        </span><span class="istickedoff">[ Bootstrap.mod Bootstrap</span>
+<span class="lineno">   56 </span><span class="spaces">        </span><span class="istickedoff">, Payment.mod Payment</span>
+<span class="lineno">   57 </span><span class="spaces">        </span><span class="istickedoff">, Delegation.mod Delegation</span>
+<span class="lineno">   58 </span><span class="spaces">        </span><span class="istickedoff">, Pointer.mod Pointer</span>
+<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff">, Inspect.mod Inspect</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
 <span class="lineno">   61 </span>
 <span class="lineno">   62 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   63 </span><span class="decl"><span class="nottickedoff">run = \case</span>
-<span class="lineno">   64 </span><span class="spaces">    </span><span class="nottickedoff">Bootstrap sub -&gt; Bootstrap.run sub</span>
-<span class="lineno">   65 </span><span class="spaces">    </span><span class="nottickedoff">Payment sub -&gt; Payment.run sub</span>
-<span class="lineno">   66 </span><span class="spaces">    </span><span class="nottickedoff">Delegation sub -&gt; Delegation.run sub</span>
-<span class="lineno">   67 </span><span class="spaces">    </span><span class="nottickedoff">Pointer sub -&gt; Pointer.run sub</span>
-<span class="lineno">   68 </span><span class="spaces">    </span><span class="nottickedoff">Inspect sub -&gt; Inspect.run sub</span></span>
+<span class="lineno">   63 </span><span class="decl"><span class="istickedoff">run = \case</span>
+<span class="lineno">   64 </span><span class="spaces">    </span><span class="istickedoff">Bootstrap sub -&gt; Bootstrap.run sub</span>
+<span class="lineno">   65 </span><span class="spaces">    </span><span class="istickedoff">Payment sub -&gt; Payment.run sub</span>
+<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">Delegation sub -&gt; Delegation.run sub</span>
+<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">Pointer sub -&gt; Pointer.run sub</span>
+<span class="lineno">   68 </span><span class="spaces">    </span><span class="istickedoff">Inspect sub -&gt; Inspect.run sub</span></span>
 
 </pre>
 </body>

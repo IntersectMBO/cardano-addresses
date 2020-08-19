@@ -104,18 +104,18 @@ span.spaces    { background: white }
 <span class="lineno">   85 </span>
 <span class="lineno">   86 </span>-- | Read some English mnemonic words from the console, or fail.
 <span class="lineno">   87 </span>hGetSomeMnemonic :: Handle -&gt; IO SomeMnemonic
-<span class="lineno">   88 </span><span class="decl"><span class="nottickedoff">hGetSomeMnemonic h = do</span>
-<span class="lineno">   89 </span><span class="spaces">    </span><span class="nottickedoff">wrds &lt;- T.words . T.filter noNewline . T.decodeUtf8 &lt;$&gt; B8.hGetContents h</span>
-<span class="lineno">   90 </span><span class="spaces">    </span><span class="nottickedoff">case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of</span>
-<span class="lineno">   91 </span><span class="spaces">        </span><span class="nottickedoff">Left (MkSomeMnemonicError e) -&gt; fail e</span>
-<span class="lineno">   92 </span><span class="spaces">        </span><span class="nottickedoff">Right mw -&gt; pure mw</span></span>
+<span class="lineno">   88 </span><span class="decl"><span class="istickedoff">hGetSomeMnemonic h = do</span>
+<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">wrds &lt;- T.words . T.filter noNewline . T.decodeUtf8 &lt;$&gt; B8.hGetContents h</span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">Left (MkSomeMnemonicError e) -&gt; fail e</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">Right mw -&gt; pure mw</span></span>
 <span class="lineno">   93 </span>
 <span class="lineno">   94 </span>-- | Read an encoded private key from the console, or fail.
 <span class="lineno">   95 </span>hGetXPrv :: Handle -&gt; IO XPrv
 <span class="lineno">   96 </span><span class="decl"><span class="istickedoff">hGetXPrv h = do</span>
 <span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes h</span>
 <span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">case xprvFromBytes bytes of</span>
-<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">Nothing  -&gt; <span class="nottickedoff">fail &quot;Couldn't convert bytes into extended private key.&quot;</span></span>
+<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">Nothing  -&gt; fail &quot;Couldn't convert bytes into extended private key.&quot;</span>
 <span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">Just key -&gt; pure key</span></span>
 <span class="lineno">  101 </span>
 <span class="lineno">  102 </span>-- | Read an encoded public key from the console, or fail.
@@ -155,9 +155,9 @@ span.spaces    { background: white }
 <span class="lineno">  136 </span>
 <span class="lineno">  137 </span>-- | Fail with a colored red error message.
 <span class="lineno">  138 </span>prettyIOException :: IOException -&gt; IO a
-<span class="lineno">  139 </span><span class="decl"><span class="nottickedoff">prettyIOException e = do</span>
-<span class="lineno">  140 </span><span class="spaces">    </span><span class="nottickedoff">B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e</span>
-<span class="lineno">  141 </span><span class="spaces">    </span><span class="nottickedoff">exitFailure</span></span>
+<span class="lineno">  139 </span><span class="decl"><span class="istickedoff">prettyIOException e = do</span>
+<span class="lineno">  140 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e</span>
+<span class="lineno">  141 </span><span class="spaces">    </span><span class="istickedoff">exitFailure</span></span>
 <span class="lineno">  142 </span>
 <span class="lineno">  143 </span>-- | Mark all characters from a given string as red (in a console).
 <span class="lineno">  144 </span>markCharsRedAtIndices :: Integral i =&gt; [i] -&gt; String -&gt; String
@@ -175,7 +175,7 @@ span.spaces    { background: white }
 <span class="lineno">  156 </span>
 <span class="lineno">  157 </span>-- | Get program name to avoid hard-coding it in documentation excerpt.
 <span class="lineno">  158 </span>progName :: String
-<span class="lineno">  159 </span><span class="decl"><span class="nottickedoff">progName = unsafePerformIO getProgName</span></span>
+<span class="lineno">  159 </span><span class="decl"><span class="istickedoff">progName = unsafePerformIO getProgName</span></span>
 <span class="lineno">  160 </span>{-# NOINLINE progName #-}
 
 </pre>

@@ -167,7 +167,7 @@ span.spaces    { background: white }
 <span class="lineno">  148 </span>        --
 <span class="lineno">  149 </span>        -- @since 1.0.0
 <span class="lineno">  150 </span>    }
-<span class="lineno">  151 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  151 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
 <span class="lineno">  152 </span>
 <span class="lineno">  153 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Icarus depth))</span></span></span></span>
 <span class="lineno">  154 </span>instance (NFData key) =&gt; NFData (Icarus depth key)
@@ -202,12 +202,12 @@ span.spaces    { background: white }
 <span class="lineno">  183 </span>instance Internal.GenMasterKey Icarus where
 <span class="lineno">  184 </span>    type SecondFactor Icarus = ScrubbedBytes
 <span class="lineno">  185 </span>
-<span class="lineno">  186 </span>    <span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
+<span class="lineno">  186 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
 <span class="lineno">  187 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic (SomeMnemonic mw) sndFactor =</span>
 <span class="lineno">  188 </span><span class="spaces">        </span><span class="istickedoff">let</span>
 <span class="lineno">  189 </span><span class="spaces">            </span><span class="istickedoff">seed  = entropyToBytes $ mnemonicToEntropy mw</span>
 <span class="lineno">  190 </span><span class="spaces">            </span><span class="istickedoff">seedValidated = assert</span>
-<span class="lineno">  191 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span></span>
+<span class="lineno">  191 </span><span class="spaces">                </span><span class="istickedoff">(BA.length seed &gt;= minSeedLengthBytes &amp;&amp; BA.length seed &lt;= 255)</span>
 <span class="lineno">  192 </span><span class="spaces">                </span><span class="istickedoff">seed</span>
 <span class="lineno">  193 </span><span class="spaces">        </span><span class="istickedoff">in Icarus $ generateNew seedValidated sndFactor</span></span>
 <span class="lineno">  194 </span>
@@ -244,7 +244,7 @@ span.spaces    { background: white }
 <span class="lineno">  225 </span>
 <span class="lineno">  226 </span>instance Internal.SoftDerivation Icarus where
 <span class="lineno">  227 </span>    <span class="decl"><span class="istickedoff">deriveAddressPublicKey (Icarus accXPub) accountingStyle addrIx =</span>
-<span class="lineno">  228 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe <span class="nottickedoff">errWrongIndex</span> $ do</span>
+<span class="lineno">  228 </span><span class="spaces">        </span><span class="istickedoff">fromMaybe errWrongIndex $ do</span>
 <span class="lineno">  229 </span><span class="spaces">            </span><span class="istickedoff">let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle</span>
 <span class="lineno">  230 </span><span class="spaces">            </span><span class="istickedoff">changeXPub &lt;- -- lvl4 derivation in bip44 is derivation of change chain</span>
 <span class="lineno">  231 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 accXPub changeCode</span>
@@ -252,11 +252,11 @@ span.spaces    { background: white }
 <span class="lineno">  233 </span><span class="spaces">                </span><span class="istickedoff">deriveXPub DerivationScheme2 changeXPub addrIx</span>
 <span class="lineno">  234 </span><span class="spaces">            </span><span class="istickedoff">return $ Icarus addrXPub</span>
 <span class="lineno">  235 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  236 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">errWrongIndex = error $</span></span>
-<span class="lineno">  237 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span></span>
-<span class="lineno">  238 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span></span>
-<span class="lineno">  239 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\either a programmer error, or, we may have reached the maximum \</span></span>
-<span class="lineno">  240 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">\number of addresses for a given wallet.&quot;</span></span></span>
+<span class="lineno">  236 </span><span class="spaces">        </span><span class="istickedoff">errWrongIndex = error $</span>
+<span class="lineno">  237 </span><span class="spaces">            </span><span class="istickedoff">&quot;deriveAddressPublicKey failed: was given an hardened (or too big) \</span>
+<span class="lineno">  238 </span><span class="spaces">            </span><span class="istickedoff">\index for soft path derivation ( &quot; ++ show addrIx ++ &quot;). This is \</span>
+<span class="lineno">  239 </span><span class="spaces">            </span><span class="istickedoff">\either a programmer error, or, we may have reached the maximum \</span>
+<span class="lineno">  240 </span><span class="spaces">            </span><span class="istickedoff">\number of addresses for a given wallet.&quot;</span></span>
 <span class="lineno">  241 </span>
 <span class="lineno">  242 </span>-- | Generate a root key from a corresponding mnemonic.
 <span class="lineno">  243 </span>--
@@ -267,8 +267,8 @@ span.spaces    { background: white }
 <span class="lineno">  248 </span>    -&gt; ScrubbedBytes
 <span class="lineno">  249 </span>        -- ^ An optional second-factor passphrase (or 'mempty')
 <span class="lineno">  250 </span>    -&gt; Icarus 'RootK XPrv
-<span class="lineno">  251 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromMnemonic =</span>
-<span class="lineno">  252 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromMnemonic</span></span>
+<span class="lineno">  251 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic =</span>
+<span class="lineno">  252 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromMnemonic</span></span>
 <span class="lineno">  253 </span>
 <span class="lineno">  254 </span>-- | Generate a root key from a corresponding root 'XPrv'
 <span class="lineno">  255 </span>--
@@ -276,8 +276,8 @@ span.spaces    { background: white }
 <span class="lineno">  257 </span>genMasterKeyFromXPrv
 <span class="lineno">  258 </span>    :: XPrv
 <span class="lineno">  259 </span>    -&gt; Icarus 'RootK XPrv
-<span class="lineno">  260 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv =</span>
-<span class="lineno">  261 </span><span class="spaces">    </span><span class="nottickedoff">Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  260 </span><span class="decl"><span class="istickedoff">genMasterKeyFromXPrv =</span>
+<span class="lineno">  261 </span><span class="spaces">    </span><span class="istickedoff">Internal.genMasterKeyFromXPrv</span></span>
 <span class="lineno">  262 </span>
 <span class="lineno">  263 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  264 </span>--
@@ -288,8 +288,8 @@ span.spaces    { background: white }
 <span class="lineno">  269 </span>    :: Icarus 'RootK XPrv
 <span class="lineno">  270 </span>    -&gt; Index 'Hardened 'AccountK
 <span class="lineno">  271 </span>    -&gt; Icarus 'AccountK XPrv
-<span class="lineno">  272 </span><span class="decl"><span class="nottickedoff">deriveAccountPrivateKey =</span>
-<span class="lineno">  273 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  272 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey =</span>
+<span class="lineno">  273 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAccountPrivateKey</span></span>
 <span class="lineno">  274 </span>
 <span class="lineno">  275 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  276 </span>--
@@ -301,8 +301,8 @@ span.spaces    { background: white }
 <span class="lineno">  282 </span>    -&gt; AccountingStyle
 <span class="lineno">  283 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  284 </span>    -&gt; Icarus 'AddressK XPrv
-<span class="lineno">  285 </span><span class="decl"><span class="nottickedoff">deriveAddressPrivateKey =</span>
-<span class="lineno">  286 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPrivateKey</span></span>
+<span class="lineno">  285 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey =</span>
+<span class="lineno">  286 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey</span></span>
 <span class="lineno">  287 </span>
 <span class="lineno">  288 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  289 </span>--
@@ -314,8 +314,8 @@ span.spaces    { background: white }
 <span class="lineno">  295 </span>    -&gt; AccountingStyle
 <span class="lineno">  296 </span>    -&gt; Index 'Soft 'AddressK
 <span class="lineno">  297 </span>    -&gt; Icarus 'AddressK XPub
-<span class="lineno">  298 </span><span class="decl"><span class="nottickedoff">deriveAddressPublicKey =</span>
-<span class="lineno">  299 </span><span class="spaces">    </span><span class="nottickedoff">Internal.deriveAddressPublicKey</span></span>
+<span class="lineno">  298 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey =</span>
+<span class="lineno">  299 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPublicKey</span></span>
 <span class="lineno">  300 </span>
 <span class="lineno">  301 </span>--
 <span class="lineno">  302 </span>-- Addresses
@@ -335,26 +335,26 @@ span.spaces    { background: white }
 <span class="lineno">  316 </span>--
 <span class="lineno">  317 </span>-- @since 2.0.0
 <span class="lineno">  318 </span>inspectIcarusAddress :: Address -&gt; Maybe Json.Value
-<span class="lineno">  319 </span><span class="decl"><span class="nottickedoff">inspectIcarusAddress addr = do</span>
-<span class="lineno">  320 </span><span class="spaces">    </span><span class="nottickedoff">payload &lt;- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
-<span class="lineno">  321 </span><span class="spaces">    </span><span class="nottickedoff">(root, attrs) &lt;- CBOR.deserialiseCbor decodePayload payload</span>
-<span class="lineno">  322 </span><span class="spaces">    </span><span class="nottickedoff">guard $ 1 `notElem` (fst &lt;$&gt; attrs)</span>
-<span class="lineno">  323 </span><span class="spaces">    </span><span class="nottickedoff">ntwrk &lt;- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
-<span class="lineno">  324 </span><span class="spaces">    </span><span class="nottickedoff">pure $ Json.object</span>
-<span class="lineno">  325 </span><span class="spaces">        </span><span class="nottickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Icarus&quot;</span>
-<span class="lineno">  326 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
-<span class="lineno">  327 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;address_root&quot;    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)</span>
-<span class="lineno">  328 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;network_tag&quot;     .= maybe Json.Null toJSON ntwrk</span>
-<span class="lineno">  329 </span><span class="spaces">        </span><span class="nottickedoff">]</span>
-<span class="lineno">  330 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
-<span class="lineno">  331 </span><span class="spaces">    </span><span class="nottickedoff">bytes :: ByteString</span>
-<span class="lineno">  332 </span><span class="spaces">    </span><span class="nottickedoff">bytes = unAddress addr</span>
-<span class="lineno">  333 </span><span class="spaces"></span><span class="nottickedoff"></span>
-<span class="lineno">  334 </span><span class="spaces">    </span><span class="nottickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
-<span class="lineno">  335 </span><span class="spaces">    </span><span class="nottickedoff">decodePayload = do</span>
-<span class="lineno">  336 </span><span class="spaces">        </span><span class="nottickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
-<span class="lineno">  337 </span><span class="spaces">        </span><span class="nottickedoff">root &lt;- CBOR.decodeBytes</span>
-<span class="lineno">  338 </span><span class="spaces">        </span><span class="nottickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span></span>
+<span class="lineno">  319 </span><span class="decl"><span class="istickedoff">inspectIcarusAddress addr = do</span>
+<span class="lineno">  320 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
+<span class="lineno">  321 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- CBOR.deserialiseCbor decodePayload payload</span>
+<span class="lineno">  322 </span><span class="spaces">    </span><span class="istickedoff">guard $ <span class="nottickedoff">1</span> `notElem` (<span class="nottickedoff">fst</span> &lt;$&gt; attrs)</span>
+<span class="lineno">  323 </span><span class="spaces">    </span><span class="istickedoff">ntwrk &lt;- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  325 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;address_style&quot;   .= Json.String &quot;Icarus&quot;</span>
+<span class="lineno">  326 </span><span class="spaces">        </span><span class="istickedoff">, &quot;stake_reference&quot; .= Json.String &quot;none&quot;</span>
+<span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_root&quot;    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)</span>
+<span class="lineno">  328 </span><span class="spaces">        </span><span class="istickedoff">, &quot;network_tag&quot;     .= maybe Json.Null <span class="nottickedoff">toJSON</span> ntwrk</span>
+<span class="lineno">  329 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  330 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  331 </span><span class="spaces">    </span><span class="istickedoff">bytes :: ByteString</span>
+<span class="lineno">  332 </span><span class="spaces">    </span><span class="istickedoff">bytes = unAddress addr</span>
+<span class="lineno">  333 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  334 </span><span class="spaces">    </span><span class="istickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
+<span class="lineno">  335 </span><span class="spaces">    </span><span class="istickedoff">decodePayload = do</span>
+<span class="lineno">  336 </span><span class="spaces">        </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  337 </span><span class="spaces">        </span><span class="istickedoff">root &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  338 </span><span class="spaces">        </span><span class="istickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span></span>
 <span class="lineno">  339 </span>
 <span class="lineno">  340 </span>instance Internal.PaymentAddress Icarus where
 <span class="lineno">  341 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
@@ -379,8 +379,8 @@ span.spaces    { background: white }
 <span class="lineno">  360 </span>    :: NetworkDiscriminant Icarus
 <span class="lineno">  361 </span>    -&gt; Icarus 'AddressK XPub
 <span class="lineno">  362 </span>    -&gt; Address
-<span class="lineno">  363 </span><span class="decl"><span class="nottickedoff">paymentAddress =</span>
-<span class="lineno">  364 </span><span class="spaces">    </span><span class="nottickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  363 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  364 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
 <span class="lineno">  365 </span>
 <span class="lineno">  366 </span>--
 <span class="lineno">  367 </span>-- Network Discrimination
@@ -433,7 +433,7 @@ span.spaces    { background: white }
 <span class="lineno">  414 </span>--
 <span class="lineno">  415 </span>-- @since 2.0.0
 <span class="lineno">  416 </span>liftXPub :: XPub -&gt; Icarus depth XPub
-<span class="lineno">  417 </span><span class="decl"><span class="nottickedoff">liftXPub = Icarus</span></span>
+<span class="lineno">  417 </span><span class="decl"><span class="istickedoff">liftXPub = Icarus</span></span>
 <span class="lineno">  418 </span>
 <span class="lineno">  419 </span>--
 <span class="lineno">  420 </span>-- Internal
@@ -496,14 +496,14 @@ span.spaces    { background: white }
 <span class="lineno">  477 </span><span class="spaces">    </span><span class="istickedoff">let cc = hmacSha256 (BS.pack [1] &lt;&gt; seed)</span>
 <span class="lineno">  478 </span><span class="spaces">    </span><span class="istickedoff">let (iL, iR) = first pruneBuffer $ hashRepeatedly seed</span>
 <span class="lineno">  479 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  480 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe <span class="nottickedoff">(Left &quot;invalid xprv&quot;)</span> pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
+<span class="lineno">  480 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe (Left &quot;invalid xprv&quot;) pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
 <span class="lineno">  481 </span><span class="spaces">    </span><span class="istickedoff">pure $ Icarus prv</span>
 <span class="lineno">  482 </span><span class="spaces">  </span><span class="istickedoff">where</span>
 <span class="lineno">  483 </span><span class="spaces">    </span><span class="istickedoff">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span>
 <span class="lineno">  484 </span><span class="spaces">    </span><span class="istickedoff">-- programmer errors (out-of-range byte buffer access or, invalid length for</span>
 <span class="lineno">  485 </span><span class="spaces">    </span><span class="istickedoff">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span>
 <span class="lineno">  486 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight :: Either String a -&gt; a</span>
-<span class="lineno">  487 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either <span class="nottickedoff">error</span> id</span>
+<span class="lineno">  487 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either error id</span>
 <span class="lineno">  488 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  489 </span><span class="spaces">    </span><span class="istickedoff">-- This is the algorithm described in SLIP 0010 for master key generation</span>
 <span class="lineno">  490 </span><span class="spaces">    </span><span class="istickedoff">-- with an extra step to discard _some_ of the potential private keys. Why</span>
@@ -539,10 +539,10 @@ span.spaces    { background: white }
 <span class="lineno">  520 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer :: ByteString -&gt; ByteString</span>
 <span class="lineno">  521 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer bytes =</span>
 <span class="lineno">  522 </span><span class="spaces">        </span><span class="istickedoff">let</span>
-<span class="lineno">  523 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no first byte&quot;)</span> $</span>
+<span class="lineno">  523 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe (error &quot;pruneBuffer: no first byte&quot;) $</span>
 <span class="lineno">  524 </span><span class="spaces">                </span><span class="istickedoff">BS.uncons bytes</span>
 <span class="lineno">  525 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  526 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe <span class="nottickedoff">(error &quot;pruneBuffer: no last byte&quot;)</span> $</span>
+<span class="lineno">  526 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe (error &quot;pruneBuffer: no last byte&quot;) $</span>
 <span class="lineno">  527 </span><span class="spaces">                </span><span class="istickedoff">BS.unsnoc rest</span>
 <span class="lineno">  528 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  529 </span><span class="spaces">            </span><span class="istickedoff">firstPruned = firstByte</span>
@@ -559,7 +559,7 @@ span.spaces    { background: white }
 <span class="lineno">  540 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)</span>
 <span class="lineno">  541 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 :: ByteString -&gt; ByteString</span>
 <span class="lineno">  542 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 bytes = PBKDF2.generate</span>
-<span class="lineno">  543 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.prfHMAC <span class="nottickedoff">SHA512</span>)</span>
+<span class="lineno">  543 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
 <span class="lineno">  544 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.Parameters 2048 64)</span>
 <span class="lineno">  545 </span><span class="spaces">        </span><span class="istickedoff">bytes</span>
 <span class="lineno">  546 </span><span class="spaces">        </span><span class="istickedoff">(&quot;mnemonic&quot; :: ByteString)</span>
