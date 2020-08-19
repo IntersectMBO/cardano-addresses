@@ -39,6 +39,14 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectAddress ["Shelley", "by pointer"]
         "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
 
+    -- reward account: keyhash28
+    specInspectAddress ["Shelley", "by value", "stake_key_hash"]
+        "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
+
+    -- reward account: scripthash32
+    specInspectAddress ["Shelley", "by value", "script_hash"]
+        "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mrgdp5xscfm7jc"
+
     specInspectMalformed
         "💩"
 

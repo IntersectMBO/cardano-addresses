@@ -55,6 +55,7 @@ module Cardano.Address.Style.Shelley
       -- Internals
     , minSeedLengthBytes
     , pubkeyHashSize
+    , scriptHashSize
     ) where
 
 import Prelude
@@ -507,6 +508,22 @@ inspectShelleyAddress addr
                -- 1000: byron address
                 0b10000000 ->
                     inspectByronAddress addr <|> inspectIcarusAddress addr
+               -- 1110: reward account: keyhash28
+                0b11100000 | BS.length rest == pubkeyHashSize ->
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "stake_key_hash"    .= base16 (BS.take pubkeyHashSize rest)
+                        , "network_tag"       .= network
+                        ]
+               -- 1111: reward account: scripthash32
+                0b11110000 | BS.length rest == scriptHashSize ->
+                    Just $ Json.object
+                        [ "address_style"     .= Json.String "Shelley"
+                        , "stake_reference"   .= Json.String "by value"
+                        , "script_hash"       .= base16 (BS.take scriptHashSize rest)
+                        , "network_tag"       .= network
+                        ]
                 _ ->
                     Nothing
   where
