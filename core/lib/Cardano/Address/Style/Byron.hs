@@ -75,6 +75,8 @@ import Cardano.Address.Derivation
     , toXPub
     , xpubToBytes
     )
+import Cardano.Address.Errors
+    ( ByronAddrError (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
 import Codec.Binary.Encoding
@@ -83,6 +85,8 @@ import Control.DeepSeq
     ( NFData )
 import Control.Exception.Base
     ( assert )
+import Control.Monad.Catch
+    ( MonadThrow, throwM )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
@@ -289,16 +293,20 @@ deriveAddressPrivateKey acctK =
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 -- | Analyze an 'Address' to know whether it's a Byron address or not.
--- Returns 'Nothing' if the address isn't a byron address, or return a
+-- Throws 'ByronAddrError' if the address isn't a byron address, or return a
 -- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
-inspectByronAddress :: Address -> Maybe Json.Value
+inspectByronAddress :: MonadThrow m => Address -> m Json.Value
 inspectByronAddress addr = do
-    payload <- CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
-    (root, attrs) <- CBOR.deserialiseCbor decodePayload payload
-    path  <- find ((== 1) . fst) attrs
-    ntwrk <- CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    payload <- either (throwM . BrDeserialiseError) pure
+        $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+    (root, attrs) <- either (throwM . BrDeserialiseError) pure
+        $ CBOR.deserialiseCbor decodePayload payload
+    path  <- maybe (throwM BrMissingExpectedDerivationPath) pure
+        $ find ((== 1) . fst) attrs
+    ntwrk <- either (throwM . BrDeserialiseError) pure
+        $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
     pure $ Json.object
         [ "address_style"   .= Json.String "Byron"
         , "stake_reference" .= Json.String "none"

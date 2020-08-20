@@ -47,6 +47,8 @@ import Cardano.Crypto.Wallet
     ( ChainCode (..), XPub (..) )
 import Control.Monad
     ( replicateM, when )
+import Control.Monad.Catch
+    ( MonadThrow, throwM )
 import Control.Monad.Fail
     ( MonadFail )
 import Crypto.Error
@@ -61,8 +63,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Digest.CRC32
     ( crc32 )
-import Data.Either.Extra
-    ( eitherToMaybe )
 import Data.List
     ( find )
 import Data.Word
@@ -399,11 +399,12 @@ decodeNestedBytes dec bytes =
 
 -- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.
 deserialiseCbor
-    :: (forall s. CBOR.Decoder s a)
+    :: MonadThrow m
+    => (forall s. CBOR.Decoder s a)
     -> ByteString
-    -> Maybe a
+    -> m a
 deserialiseCbor dec =
-    fmap snd . eitherToMaybe . CBOR.deserialiseFromBytes dec . BL.fromStrict
+  fmap snd . either throwM pure . CBOR.deserialiseFromBytes dec . BL.fromStrict
 
 -- | CBOR deserialise without error handling - handy for prototypes or testing.
 unsafeDeserialiseCbor
@@ -415,3 +416,4 @@ unsafeDeserialiseCbor decoder bytes = either
     (\e -> error $ "unsafeSerializeCbor: " <> show e)
     snd
     (CBOR.deserialiseFromBytes decoder bytes)
+

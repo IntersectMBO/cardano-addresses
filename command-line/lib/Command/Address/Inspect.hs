@@ -1,7 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Command.Address.Inspect
     ( Cmd (..)
@@ -13,7 +17,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( unsafeMkAddress )
+    ( Address, unsafeMkAddress )
 import Cardano.Address.Style.Byron
     ( inspectByronAddress )
 import Cardano.Address.Style.Icarus
@@ -24,15 +28,24 @@ import Cardano.Address.Style.Shelley
     ( inspectShelleyAddress )
 import Control.Applicative
     ( (<|>) )
+import Control.Exception
+    ( SomeException, displayException )
+import Control.Monad.Error.Class
+    ( Error )
+import Fmt
+    ( format )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
+import System.Exit
+    ( die )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
     ( hGetBytes, progName )
 
+import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.ByteString.Lazy.Char8 as BL8
 
@@ -64,15 +77,26 @@ mod liftCmd = command "inspect" $
   where
     parser = pure Inspect
 
+
+-- used for 'inspect'
+instance Error SomeException
+
 run :: Cmd -> IO ()
 run Inspect = do
     bytes <- hGetBytes stdin
     case inspect (unsafeMkAddress bytes) of
-        Nothing   -> fail "Unrecognized address on standard input"
-        Just json -> BL8.hPutStrLn stdout (Json.encodePretty json)
+      Right json -> BL8.hPutStrLn stdout (Json.encodePretty json)
+      Left  e    -> die $ format "Error: {}" (displayException e)
   where
-    inspect addr =
-        inspectByronAddress       addr <|>
-        inspectIcarusAddress      addr <|>
-        inspectJormungandrAddress addr <|>
-        inspectShelleyAddress     addr
+    -- We can't use IO here, because (<|>) in IO only catches IOException type,
+    -- but MonadThrow in IO doesn't specialize to IOException.
+    --
+    -- Luckily, there's an existing instance for:
+    --   instance (Error e) => Alternative (Either e)
+    inspect :: (e ~ SomeException) => Address -> Either e Json.Value
+    inspect addr = do
+      foldr1 (<|>)
+        [inspectByronAddress       addr
+        ,inspectIcarusAddress      addr
+        ,inspectJormungandrAddress addr
+        ,inspectShelleyAddress     addr]

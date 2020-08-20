@@ -50,17 +50,18 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectMalformed
         "💩"
 
-    specInspectInvalid
+    specInspectInvalid "Wrong input size of 28"
         "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65"
 
     -- 28-byte long script hash
-    specInspectInvalid
+    specInspectInvalid "Unknown address type"
         "addr1y9xup4n8cyckl7zw2u33pcn9ake3xvzy3vmtw9u79rw5r8ky\
         \6pru7d6jgn4t89vy3n3d68sx5uej906uwpp83dtefn6qv4hscd"
 
 specInspectAddress :: [String] -> String -> SpecWith ()
 specInspectAddress mustHave addr = it addr $ do
-    out <- cli [ "address", "inspect" ] addr
+    (out, err) <- cli [ "address", "inspect" ] addr
+    err `shouldBe` ""
     out `shouldContain` "address_style"
     out `shouldContain` "stake_reference"
     out `shouldContain` "network_tag"
@@ -72,8 +73,8 @@ specInspectMalformed str = it ("malformed: " <> str) $ do
     out `shouldBe` ""
     err `shouldContain` "Couldn't detect input encoding?"
 
-specInspectInvalid :: String -> SpecWith ()
-specInspectInvalid str = it ("invalid: " <> str) $ do
+specInspectInvalid :: String -> String -> SpecWith ()
+specInspectInvalid errstr str = it ("invalid: " <> str) $ do
     (out, err) <- cli [ "address", "inspect" ] str
     out `shouldBe` ""
-    err `shouldContain` "Unrecognized address on standard input"
+    err `shouldContain` errstr

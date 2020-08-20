@@ -44,6 +44,7 @@ library:
   - code-page
   - extra
   - fmt
+  - mtl >= 2.2.2 && < 2.3
   - optparse-applicative
   - safe
   - text
