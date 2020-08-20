@@ -357,6 +357,13 @@ class HasNetworkDiscriminant key => PaymentAddress key
 --   network discrimination.
 paymentAddress :: PaymentAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> Address
 
+-- | Encoding of addresses for certain key types and backend targets.
+class HasNetworkDiscriminant key => StakeAddress key
+
+-- | Convert a staking key to a stake <a>Address</a> (aka: reward account
+--   address) valid for the given network discrimination.
+stakeAddress :: StakeAddress key => NetworkDiscriminant key -> key  'StakingK XPub -> Address
+
 -- | Encoding of delegation addresses for certain key types and backend
 --   targets.
 class PaymentAddress key => DelegationAddress key
@@ -779,6 +786,10 @@ delegationAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> S
 --   discrimination.
 pointerAddress :: NetworkDiscriminant Shelley -> Shelley  'AddressK XPub -> ChainPointer -> Address
 
+-- | Convert a staking key to a stake Address (aka reward account address)
+--   for the given network discrimination.
+stakeAddress :: NetworkDiscriminant Shelley -> Shelley  'StakingK XPub -> Address
+
 -- | Extend an existing payment <a>Address</a> to make it a delegation
 --   address.
 extendAddress :: Address -> Either (Shelley  'StakingK XPub) ChainPointer -> Either ErrExtendAddress Address
@@ -830,11 +841,13 @@ instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.She
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
+instance Formatting.Buildable.Buildable Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
+instance Cardano.Address.StakeAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PointerAddress Cardano.Address.Style.Shelley.Shelley
