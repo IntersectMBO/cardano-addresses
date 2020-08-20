@@ -29,6 +29,7 @@ import qualified Command.Address.Delegation as Delegation
 import qualified Command.Address.Inspect as Inspect
 import qualified Command.Address.Payment as Payment
 import qualified Command.Address.Pointer as Pointer
+import qualified Command.Address.Reward as Reward
 
 
 data Cmd
@@ -37,6 +38,7 @@ data Cmd
     | Delegation Delegation.Cmd
     | Pointer Pointer.Cmd
     | Inspect Inspect.Cmd
+    | Reward Reward.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -57,6 +59,7 @@ mod liftCmd = command "address" $
         , Delegation.mod Delegation
         , Pointer.mod Pointer
         , Inspect.mod Inspect
+        , Reward.mod Reward
         ]
 
 run :: Cmd -> IO ()
@@ -66,3 +69,4 @@ run = \case
     Delegation sub -> Delegation.run sub
     Pointer sub -> Pointer.run sub
     Inspect sub -> Inspect.run sub
+    Reward sub -> Reward.run sub

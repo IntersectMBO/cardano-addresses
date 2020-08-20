@@ -43,6 +43,7 @@ library:
   - cardano-crypto
   - code-page
   - extra
+  - fmt
   - optparse-applicative
   - safe
   - text

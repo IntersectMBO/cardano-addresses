@@ -39,6 +39,7 @@ module Cardano.Address.Style.Shelley
     , paymentAddress
     , delegationAddress
     , pointerAddress
+    , stakeAddress
     , extendAddress
     , ErrExtendAddress (..)
 
@@ -128,6 +129,8 @@ import Data.Word
     ( Word32 )
 import Data.Word7
     ( getVariableLengthNat, putVariableLengthNat )
+import Fmt
+    ( Buildable, build, (+|), (|+) )
 import GHC.Generics
     ( Generic )
 
@@ -375,6 +378,23 @@ deriveStakingPrivateKey =
 -- > bech32 $ pointerAddress tag (toXPub <$> addrK) ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
+instance Internal.StakeAddress Shelley where
+    stakeAddress discrimination k = unsafeMkAddress $
+        invariantSize expectedLength $ BL.toStrict $ runPut $ do
+            putWord8 firstByte
+            putByteString (blake2b224 k)
+      where
+          -- First 4 bits are `1110` for keyhash28 reward account address.
+          -- Next 4 bits are network discriminator.
+          -- `1110 0000` is 224 in decimal.
+          firstByte =
+            let addrType = 224
+                netTagLimit = 16
+            in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
+          expectedLength =
+              let headerSizeBytes = 1
+              in headerSizeBytes + pubkeyHashSize
+
 instance Internal.PaymentAddress Shelley where
     paymentAddress discrimination k = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
@@ -390,8 +410,12 @@ instance Internal.PaymentAddress Shelley where
           -- will be `0110`. The next for 4 bits are reserved for network discriminator.
           -- `0110 0000` is 96 in decimal.
           firstByte =
-              96 + invariantNetworkTag 16 (networkTag @Shelley discrimination)
-          expectedLength = 1 + pubkeyHashSize
+            let addrType = 96
+                netTagLimit = 16
+            in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
+          expectedLength =
+              let headerSizeBytes = 1
+              in headerSizeBytes + pubkeyHashSize
 
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey =
@@ -634,6 +658,20 @@ pointerAddress
 pointerAddress =
     Internal.pointerAddress
 
+-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+--
+-- | Convert a staking key to a stake Address (aka reward account address)
+-- for the given network discrimination.
+--
+-- @since 2.0.0
+stakeAddress
+    :: NetworkDiscriminant Shelley
+    -> Shelley 'StakingK XPub
+    -> Address
+stakeAddress =
+    Internal.stakeAddress
+
+
 --
 -- Network Discriminant
 --
@@ -650,6 +688,9 @@ newtype MkNetworkDiscriminantError
     = ErrWrongNetworkTag Integer
       -- ^ Wrong network tag.
     deriving (Eq, Show)
+
+instance Buildable MkNetworkDiscriminantError where
+  build (ErrWrongNetworkTag i) = "Invalid network tag "+|i|+". Must be between [0, 15]"
 
 -- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
 -- If the number is invalid, ie., not between 0 and 15, then

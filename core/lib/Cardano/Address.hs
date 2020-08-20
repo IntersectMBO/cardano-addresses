@@ -14,6 +14,7 @@ module Cardano.Address
     ( -- * Address
       Address
     , PaymentAddress (..)
+    , StakeAddress (..)
     , DelegationAddress (..)
     , PointerAddress (..)
     , ChainPointer (..)
@@ -120,6 +121,16 @@ bech32With hrp =
 fromBech32 :: Text -> Maybe Address
 fromBech32 =
     eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 (const id) . T.encodeUtf8
+
+-- | Encoding of addresses for certain key types and backend targets.
+--
+-- @since 2.0.0
+class HasNetworkDiscriminant key => StakeAddress key where
+    -- | Convert a staking key to a stake 'Address' (aka: reward account address)
+    -- valid for the given network discrimination.
+    --
+    -- @since 2.0.0
+    stakeAddress :: NetworkDiscriminant key -> key 'StakingK XPub -> Address
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
