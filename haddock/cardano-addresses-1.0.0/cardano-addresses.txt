@@ -9,6 +9,34 @@
 @package cardano-addresses
 @version 1.0.0
 
+
+module Cardano.Address.Errors
+data ShelleyAddrError
+ShUnknownAddrType :: ShelleyAddrError
+ShWrongInputSize :: Int -> ShelleyAddrError
+ShPtrRetrieveError :: String -> ShelleyAddrError
+data ByronAddrError
+BrMissingExpectedDerivationPath :: ByronAddrError
+BrDeserialiseError :: e -> ByronAddrError
+data IcarusAddrError
+IcUnexpectedDerivationPath :: IcarusAddrError
+IcDeserialiseError :: e -> IcarusAddrError
+data JormungandrAddrError
+JoUnknownAddrType :: JormungandrAddrError
+JoWrongInputSize :: Int -> JormungandrAddrError
+prettyShError :: ShelleyAddrError -> String
+prettyBrError :: ByronAddrError -> String
+prettyIcError :: IcarusAddrError -> String
+prettyJoError :: JormungandrAddrError -> String
+instance GHC.Show.Show Cardano.Address.Errors.ShelleyAddrError
+instance GHC.Show.Show Cardano.Address.Errors.ByronAddrError
+instance GHC.Show.Show Cardano.Address.Errors.IcarusAddrError
+instance GHC.Show.Show Cardano.Address.Errors.JormungandrAddrError
+instance GHC.Exception.Type.Exception Cardano.Address.Errors.JormungandrAddrError
+instance GHC.Exception.Type.Exception Cardano.Address.Errors.IcarusAddrError
+instance GHC.Exception.Type.Exception Cardano.Address.Errors.ByronAddrError
+instance GHC.Exception.Type.Exception Cardano.Address.Errors.ShelleyAddrError
+
 module Cardano.Mnemonic
 
 -- | Ease the manipulation of <a>Mnemonic</a> by encapsulating the type
@@ -481,9 +509,10 @@ deriveStakingPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'StakingK
 -- | Analyze an <a>Address</a> to know whether it's a Jormungandr address
 --   or not.
 --   
---   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
---   ready-to-print string giving details about the <a>Jormungandr</a>.
-inspectJormungandrAddress :: Address -> Maybe Value
+--   Throws <a>JormungandrAddrError</a> if it's not a valid Shelley
+--   address, or a ready-to-print string giving details about the
+--   <a>Jormungandr</a>.
+inspectJormungandrAddress :: MonadThrow m => Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -570,9 +599,9 @@ deriveAccountPrivateKey :: Byron  'RootK XPrv -> Index  'WholeDomain  'AccountK 
 deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'AddressK -> Byron  'AddressK XPrv
 
 -- | Analyze an <a>Address</a> to know whether it's a Byron address or not.
---   Returns <a>Nothing</a> if the address isn't a byron address, or return
---   a structured JSON that gives information about an address.
-inspectByronAddress :: Address -> Maybe Value
+--   Throws <a>ByronAddrError</a> if the address isn't a byron address, or
+--   return a structured JSON that gives information about an address.
+inspectByronAddress :: MonadThrow m => Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -767,9 +796,9 @@ deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  '
 -- | Analyze an <a>Address</a> to know whether it's a Shelley address or
 --   not.
 --   
---   Returns <a>Nothing</a> if it's not a valid Shelley address, or a
+--   Throws <tt>AddrError</tt> if it's not a valid Shelley address, or a
 --   ready-to-print string giving details about the <a>Address</a>.
-inspectShelleyAddress :: Address -> Maybe Value
+inspectShelleyAddress :: (Alternative m, MonadThrow m) => Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.

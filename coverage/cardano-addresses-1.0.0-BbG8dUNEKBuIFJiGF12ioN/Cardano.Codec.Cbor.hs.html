@@ -66,22 +66,22 @@ span.spaces    { background: white }
 <span class="lineno">   47 </span>    ( ChainCode (..), XPub (..) )
 <span class="lineno">   48 </span>import Control.Monad
 <span class="lineno">   49 </span>    ( replicateM, when )
-<span class="lineno">   50 </span>import Control.Monad.Fail
-<span class="lineno">   51 </span>    ( MonadFail )
-<span class="lineno">   52 </span>import Crypto.Error
-<span class="lineno">   53 </span>    ( CryptoError (..), CryptoFailable (..) )
-<span class="lineno">   54 </span>import Crypto.Hash
-<span class="lineno">   55 </span>    ( hash )
-<span class="lineno">   56 </span>import Crypto.Hash.Algorithms
-<span class="lineno">   57 </span>    ( Blake2b_224, SHA3_256 )
-<span class="lineno">   58 </span>import Data.ByteArray
-<span class="lineno">   59 </span>    ( ScrubbedBytes )
-<span class="lineno">   60 </span>import Data.ByteString
-<span class="lineno">   61 </span>    ( ByteString )
-<span class="lineno">   62 </span>import Data.Digest.CRC32
-<span class="lineno">   63 </span>    ( crc32 )
-<span class="lineno">   64 </span>import Data.Either.Extra
-<span class="lineno">   65 </span>    ( eitherToMaybe )
+<span class="lineno">   50 </span>import Control.Monad.Catch
+<span class="lineno">   51 </span>    ( MonadThrow, throwM )
+<span class="lineno">   52 </span>import Control.Monad.Fail
+<span class="lineno">   53 </span>    ( MonadFail )
+<span class="lineno">   54 </span>import Crypto.Error
+<span class="lineno">   55 </span>    ( CryptoError (..), CryptoFailable (..) )
+<span class="lineno">   56 </span>import Crypto.Hash
+<span class="lineno">   57 </span>    ( hash )
+<span class="lineno">   58 </span>import Crypto.Hash.Algorithms
+<span class="lineno">   59 </span>    ( Blake2b_224, SHA3_256 )
+<span class="lineno">   60 </span>import Data.ByteArray
+<span class="lineno">   61 </span>    ( ScrubbedBytes )
+<span class="lineno">   62 </span>import Data.ByteString
+<span class="lineno">   63 </span>    ( ByteString )
+<span class="lineno">   64 </span>import Data.Digest.CRC32
+<span class="lineno">   65 </span>    ( crc32 )
 <span class="lineno">   66 </span>import Data.List
 <span class="lineno">   67 </span>    ( find )
 <span class="lineno">   68 </span>import Data.Word
@@ -418,22 +418,24 @@ span.spaces    { background: white }
 <span class="lineno">  399 </span>
 <span class="lineno">  400 </span>-- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.
 <span class="lineno">  401 </span>deserialiseCbor
-<span class="lineno">  402 </span>    :: (forall s. CBOR.Decoder s a)
-<span class="lineno">  403 </span>    -&gt; ByteString
-<span class="lineno">  404 </span>    -&gt; Maybe a
-<span class="lineno">  405 </span><span class="decl"><span class="istickedoff">deserialiseCbor dec =</span>
-<span class="lineno">  406 </span><span class="spaces">    </span><span class="istickedoff">fmap snd . eitherToMaybe . CBOR.deserialiseFromBytes dec . BL.fromStrict</span></span>
-<span class="lineno">  407 </span>
-<span class="lineno">  408 </span>-- | CBOR deserialise without error handling - handy for prototypes or testing.
-<span class="lineno">  409 </span>unsafeDeserialiseCbor
-<span class="lineno">  410 </span>    :: HasCallStack
-<span class="lineno">  411 </span>    =&gt; (forall s. CBOR.Decoder s a)
-<span class="lineno">  412 </span>    -&gt; BL.ByteString
-<span class="lineno">  413 </span>    -&gt; a
-<span class="lineno">  414 </span><span class="decl"><span class="istickedoff">unsafeDeserialiseCbor decoder bytes = either</span>
-<span class="lineno">  415 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">(\e -&gt; error $ &quot;unsafeSerializeCbor: &quot; &lt;&gt; show e)</span></span>
-<span class="lineno">  416 </span><span class="spaces">    </span><span class="istickedoff">snd</span>
-<span class="lineno">  417 </span><span class="spaces">    </span><span class="istickedoff">(CBOR.deserialiseFromBytes decoder bytes)</span></span>
+<span class="lineno">  402 </span>    :: MonadThrow m
+<span class="lineno">  403 </span>    =&gt; (forall s. CBOR.Decoder s a)
+<span class="lineno">  404 </span>    -&gt; ByteString
+<span class="lineno">  405 </span>    -&gt; m a
+<span class="lineno">  406 </span><span class="decl"><span class="istickedoff">deserialiseCbor dec =</span>
+<span class="lineno">  407 </span><span class="spaces">  </span><span class="istickedoff">fmap snd . either throwM pure . CBOR.deserialiseFromBytes dec . BL.fromStrict</span></span>
+<span class="lineno">  408 </span>
+<span class="lineno">  409 </span>-- | CBOR deserialise without error handling - handy for prototypes or testing.
+<span class="lineno">  410 </span>unsafeDeserialiseCbor
+<span class="lineno">  411 </span>    :: HasCallStack
+<span class="lineno">  412 </span>    =&gt; (forall s. CBOR.Decoder s a)
+<span class="lineno">  413 </span>    -&gt; BL.ByteString
+<span class="lineno">  414 </span>    -&gt; a
+<span class="lineno">  415 </span><span class="decl"><span class="istickedoff">unsafeDeserialiseCbor decoder bytes = either</span>
+<span class="lineno">  416 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">(\e -&gt; error $ &quot;unsafeSerializeCbor: &quot; &lt;&gt; show e)</span></span>
+<span class="lineno">  417 </span><span class="spaces">    </span><span class="istickedoff">snd</span>
+<span class="lineno">  418 </span><span class="spaces">    </span><span class="istickedoff">(CBOR.deserialiseFromBytes decoder bytes)</span></span>
+<span class="lineno">  419 </span>
 
 </pre>
 </body>
