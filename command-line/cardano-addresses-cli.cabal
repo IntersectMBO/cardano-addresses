@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23602f11d7fb1ac8c8333e3d2d3c95385ea53972cbde55027a9b540b975d71c2
+-- hash: 137f6ee00d870a85ba847ab7061528566b677fe8338c0b737f3f8f1e193dcb6c
 
 name:           cardano-addresses-cli
 version:        1.0.0
@@ -69,7 +69,6 @@ library
     , cardano-addresses
     , cardano-crypto
     , code-page
-    , exceptions
     , extra
     , fmt
     , optparse-applicative

@@ -17,7 +17,7 @@ spec = describeCmd [ "address", "stake" ] $ do
         "stake_test1ura3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tcsfhtt2"
 
     specShelley defaultPhrase "1852H/1815H/0H/2/0" 3
-        "addr1u0a3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tc3kzy0t"
+        "stake1u0a3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tchw5z0e"
 
     specMalformedNetwork "💩"
 

@@ -42,7 +42,6 @@ library:
   - cardano-addresses
   - cardano-crypto
   - code-page
-  - exceptions
   - extra
   - fmt
   - optparse-applicative

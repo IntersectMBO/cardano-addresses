@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -15,11 +16,9 @@ import Prelude hiding
 import Cardano.Address
     ( NetworkTag (..), bech32With )
 import Cardano.Address.Style.Shelley
-    ( mkNetworkDiscriminant, shelleyMainnet, shelleyTestnet )
-import Codec.Binary.Bech32
-    ( humanReadablePartFromText )
-import Control.Monad.Catch
-    ( throwM )
+    ( mkNetworkDiscriminant, shelleyTestnet )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
 import Fmt
     ( build, fmt )
 import Options.Applicative
@@ -74,17 +73,11 @@ mod liftCmd = command "stake" $
 run :: Cmd -> IO ()
 run Cmd{networkTag} = do
     xpub <- hGetXPub stdin
-    hpr <- hprFromNetTag
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left e -> die (fmt $ build e)
         Right discriminant -> do
             let addr = Shelley.stakeAddress discriminant (Shelley.liftXPub xpub)
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hpr addr
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
-    hprFromText = either throwM pure . humanReadablePartFromText
-    hprFromNetTag
-        | shelleyMainnet == networkTag = hprFromText "stake"
-        | shelleyTestnet == networkTag = hprFromText "stake_test"
-        | otherwise = hprFromText "addr"
-
-
+    hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]
+        | otherwise = [humanReadablePart|stake|]
