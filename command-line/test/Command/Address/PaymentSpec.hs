@@ -14,7 +14,7 @@ import Test.Utils
 spec :: Spec
 spec = describeCmd [ "address", "payment" ] $ do
     specShelley defaultPhrase "1852H/1815H/0H/0/0" 0
-        "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
 
     specShelley defaultPhrase "1852H/1815H/0H/0/0" 3
         "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"

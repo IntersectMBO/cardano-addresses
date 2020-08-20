@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -14,9 +16,11 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( bech32 )
+    ( bech32With )
 import Cardano.Address.Style.Shelley
-    ( MkNetworkDiscriminantError (..), mkNetworkDiscriminant )
+    ( MkNetworkDiscriminantError (..), mkNetworkDiscriminant, shelleyTestnet )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Discrimination
@@ -69,5 +73,7 @@ run Cmd{networkTag} = do
             fail "Invalid network tag. Must be between [0, 15]"
         Right discriminant -> do
             let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
-
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
+  where
+    hrp | networkTag == shelleyTestnet = [humanReadablePart|addr_test|]
+        | otherwise = [humanReadablePart|addr|]
