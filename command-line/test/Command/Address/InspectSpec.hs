@@ -47,6 +47,20 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectAddress ["Shelley", "by value", "script_hash"]
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mrgdp5xscfm7jc"
 
+    -- cardano-cli generated --testnet-magic 42 addresses
+    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash"]
+        "addr_test1qpwr8l57ceql23ylyprl6qgct239lxph8clwxy5w8r4qdz8ct9uut5a\
+        \hmxqkgwy9ecn5carsv39frsgsq09u70wmqwhqjqcjqs"
+    specInspectAddress ["Shelley", "by value", "stake_key_hash"]
+        "stake_test1uru9j7w96wmanqty8zzuuf6vw3cxgj53cygq8j708hds8tsntl0j7"
+
+    -- cardano-cli generated --mainnet addresses
+    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash"]
+        "addr1q9777p2w2hqa3cl0ah97pdwyavjnpf0ex3muvqgttavjxhku2rp98h9drzkdf\
+        \va8ea775jszmd799k59aknpvqyn6wwqwll7uw"
+    specInspectAddress ["Shelley", "by value", "stake_key_hash"]
+        "stake1u8w9psjnmjk33tx5kwnu7l02fgpdklzjm2z7mfskqzfa88qsjpk8l"
+
     specInspectMalformed
         "💩"
 
