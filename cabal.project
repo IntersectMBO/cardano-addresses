@@ -9,3 +9,8 @@ source-repository-package
   location: https://github.com/input-output-hk/cardano-crypto
   tag: 2547ad1e80aeabca2899951601079408becbc92c
   --sha256: 1p2kg2w02q5w1cvqzhfhqmxviy4xrzada3mmb096j2n6hfr20kri
+
+package cryptonite
+  -- Using RDRAND instead of /dev/urandom as an entropy source for key
+  -- generation is dubious. Set the flag so we use /dev/urandom by default.
+  flags: -support_rdrand
