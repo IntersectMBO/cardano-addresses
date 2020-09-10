@@ -46,7 +46,9 @@ library:
   - fmt
   - mtl >= 2.2.2 && < 2.3
   - optparse-applicative
+  - process
   - safe
+  - template-haskell
   - text
 
 executables:

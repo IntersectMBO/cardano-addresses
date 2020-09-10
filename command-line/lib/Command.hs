@@ -31,6 +31,7 @@ import Options.Applicative
     , progDesc
     , showHelpOnEmpty
     , subparser
+    , (<|>)
     )
 import Options.Applicative.Help.Pretty
     ( bold, hsep, string, vsep )
@@ -54,12 +55,13 @@ import System.IO.Extra
 import qualified Command.Address as Address
 import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
-
+import qualified Command.Version as Version
 
 data CLI
     = RecoveryPhrase RecoveryPhrase.Cmd
     | Key Key.Cmd
     | Address Address.Cmd
+    | Version
     deriving (Show)
 
 cli :: ParserInfo CLI
@@ -72,7 +74,7 @@ cli = info (helper <*> parser) $ mempty
             [ string "  ↳"
             , bold $ string "source <("
             , bold $ string progName
-            , bold $ string $ "--bash-completion-script `which"<>progName<>"`)"
+            , bold $ string $ "--bash-completion-script `which "<>progName<>"`)"
             ]
         , string ""
         , string "Or alternatively --fish-completion-script / --zsh-completion-script."
@@ -81,11 +83,11 @@ cli = info (helper <*> parser) $ mempty
         , hsep [string "  ↳", bold $ string "/etc/bash_completion.d"]
         ])
   where
-    parser = subparser $ mconcat
+    parser = Version.opt Version <|> subparser (mconcat
         [ RecoveryPhrase.mod RecoveryPhrase
         , Key.mod Key
         , Address.mod Address
-        ]
+        ])
 
 -- | Run a given command
 run :: CLI -> IO ()
@@ -93,6 +95,7 @@ run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
     Address sub -> Address.run sub
+    Version -> Version.run
 
 -- | Parse command line options and arguments
 parse :: IO CLI
