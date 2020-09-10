@@ -1,3 +1,20 @@
+## [2.0.0] - 2020-09-10
+
+### Added 
+
+- Command-line interface `cardano-address` for managing recovery-phrases, keys and addresses.
+- Support for Shelley-specific address types.
+- Support for Jormungandr-specific address types.
+
+### Changed
+
+- Repository structure re-organized in two packages: core & command-line.
+
+### Removed
+
+N/A
+
+
 ## [1.0.0] - 2020-04-21
 
 ### Added
