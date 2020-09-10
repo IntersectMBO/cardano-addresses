@@ -14,14 +14,14 @@ import Test.Utils
 spec :: Spec
 spec = describeCmd [ "address", "delegation" ] $ do
     specShelley defaultPhrase "1852H/1815H/0H/2/0"
-        "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
-        "addr1qpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ewvxwdrt\
-        \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwmnp2v"
+        defaultAddrMainnet
+        "addr1q9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwvxwdrt\
+        \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qdqhgvu"
 
     specShelley defaultPhrase "1852H/1815H/0H/2/0"
-        "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
-        "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ewvxwdrt\
-        \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
+        defaultAddrTestnet
+        "addr_test1qptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwv\
+        \xwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwk2gqr"
 
     specMalformedAddress "💩"
 
@@ -67,16 +67,15 @@ specInvalidAddress addr = it ("invalid address " <> addr) $ do
 
 specMalformedXPub :: String -> SpecWith ()
 specMalformedXPub xpub = it ("malformed xpub " <> xpub) $ do
-    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddr
+    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddrMainnet
     out `shouldBe` ""
     err `shouldContain` "Couldn't detect input encoding?"
 
 specInvalidXPub :: String -> SpecWith ()
 specInvalidXPub xpub = it ("invalid xpub " <> xpub) $ do
-    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddr
+    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddrMainnet
     out `shouldBe` ""
     err `shouldContain` "Failed to convert bytes into a valid extended public key"
-
 
 defaultPhrase :: [String]
 defaultPhrase =
@@ -90,6 +89,10 @@ defaultXPub =
     "xpub1z0lq4d73l4xtk42s3364s2fpn4m5xtuacfkfj4dxxt9uhccvlg6p\
     \amdykgvcna3w4jf6zr3yqenuasug3gp22peqm6vduzrzw8uj6asghxwup"
 
-defaultAddr :: String
-defaultAddr =
-    "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
+defaultAddrMainnet :: String
+defaultAddrMainnet =
+    "addr1v9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgx2curq"
+
+defaultAddrTestnet :: String
+defaultAddrTestnet =
+    "addr_test1vptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgazvqv9"
