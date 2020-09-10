@@ -840,6 +840,11 @@ ErrWrongNetworkTag :: Integer -> MkNetworkDiscriminantError
 --   <a>MkNetworkDiscriminantError</a> is thrown.
 mkNetworkDiscriminant :: Integer -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 
+-- | Retrieve the network discriminant of a given <a>Address</a>. If the
+--   <a>Address</a> is malformed or, not a shelley address, returns
+--   Nothing.
+inspectNetworkDiscriminant :: Address -> Maybe (NetworkDiscriminant Shelley)
+
 -- | <tt>NetworkDicriminant</tt> for Cardano MainNet &amp; Shelley
 shelleyMainnet :: NetworkDiscriminant Shelley
 
