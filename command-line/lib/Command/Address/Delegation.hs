@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -14,11 +16,13 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( bech32, unsafeMkAddress )
+    ( bech32With, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( XPub )
 import Cardano.Address.Style.Shelley
-    ( ErrExtendAddress (..) )
+    ( ErrExtendAddress (..), inspectNetworkDiscriminant, shelleyTestnet )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Derivation
@@ -70,6 +74,15 @@ run :: Cmd -> IO ()
 run Cmd{xpub} = do
     bytes <- hGetBytes stdin
     case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.liftXPub xpub) of
-        Left (ErrInvalidAddressStyle msg) -> fail msg
-        Left (ErrInvalidAddressType  msg) -> fail msg
-        Right addr -> B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
+        Left (ErrInvalidAddressStyle msg) ->
+            fail msg
+        Left (ErrInvalidAddressType  msg) ->
+            fail msg
+        Right addr ->
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With (hrpFor addr) addr
+  where
+    hrpFor addr = case inspectNetworkDiscriminant addr of
+        Just networkTag | networkTag == shelleyTestnet ->
+            [humanReadablePart|addr_test|]
+        _ ->
+            [humanReadablePart|addr|]

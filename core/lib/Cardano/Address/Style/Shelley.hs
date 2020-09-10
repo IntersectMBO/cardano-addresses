@@ -46,6 +46,7 @@ module Cardano.Address.Style.Shelley
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
+    , inspectNetworkDiscriminant
     , shelleyMainnet
     , shelleyTestnet
 
@@ -706,6 +707,22 @@ mkNetworkDiscriminant
 mkNetworkDiscriminant nTag
     | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
+
+-- | Retrieve the network discriminant of a given 'Address'.
+-- If the 'Address' is malformed or, not a shelley address, returns Nothing.
+--
+-- @since 2.0.0
+inspectNetworkDiscriminant
+    :: Address
+    -> Maybe (NetworkDiscriminant Shelley)
+inspectNetworkDiscriminant addr =
+    inspectShelleyAddress addr $>
+        let
+            bytes = unAddress addr
+            (fstByte, _) = first BS.head $ BS.splitAt 1 bytes
+            network  = fstByte .&. 0b00001111
+        in
+            NetworkTag $ fromIntegral network
 
 -- | 'NetworkDicriminant' for Cardano MainNet & Shelley
 --

@@ -13,13 +13,19 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "address", "pointer" ] $ do
-    specShelley (1,2,3) defaultAddr
-        "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5egpqgpsjej5ck"
+    specShelley (1,2,3) defaultAddrMainnet
+        "addr1g9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgpqgpsyefcgl"
 
-    specShelley (24157,177,42) defaultAddr
-        "addr1gpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5evph3wczvf2jyfghp"
+    specShelley (1,2,3) defaultAddrTestnet
+        "addr_test1gptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgpqgpsa3x7je"
 
-    specMalformed ("💩","💩","💩") defaultAddr
+    specShelley (24157,177,42) defaultAddrMainnet
+        "addr1g9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qvph3wczvf2sg4yzx"
+
+    specShelley (24157,177,42) defaultAddrTestnet
+        "addr_test1gptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qvph3wczvf2lxgdw5"
+
+    specMalformed ("💩","💩","💩") defaultAddrMainnet
 
     specInvalidAddress
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
@@ -51,6 +57,10 @@ specInvalidAddress addr = it ("invalid address " <> addr) $ do
     out `shouldBe` ""
     err `shouldContain` "Only payment addresses can be extended"
 
-defaultAddr :: String
-defaultAddr =
-    "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
+defaultAddrMainnet :: String
+defaultAddrMainnet =
+    "addr1v9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgx2curq"
+
+defaultAddrTestnet :: String
+defaultAddrTestnet =
+    "addr_test1vptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qgazvqv9"
