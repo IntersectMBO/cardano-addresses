@@ -36,3 +36,17 @@ jobs:
     - name: 🔨 Build & Test
       run: |
         stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release
+        stack --no-terminal path --local-bin
+        stack --no-terminal install --haddock --no-haddock-deps --flag cardano-addresses:release
+
+    - name: 🏷️ Variables
+      id: variables
+      shell: bash
+      run: |
+        echo ::set-output name=stack_local_bin::$(stack path --local-bin)
+
+    - name: 📎 Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ matrix.os }}-exe
+        path: ${{ steps.variables.outputs.stack_local_bin }}
