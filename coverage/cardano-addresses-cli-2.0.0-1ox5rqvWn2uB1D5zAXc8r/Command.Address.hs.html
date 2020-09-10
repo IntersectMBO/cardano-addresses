@@ -63,7 +63,7 @@ span.spaces    { background: white }
 <span class="lineno">   44 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
 <span class="lineno">   45 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;address&quot; $</span>
 <span class="lineno">   46 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
-<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc <span class="nottickedoff">&quot;About addresses&quot;</span></span>
+<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;About addresses&quot;</span>
 <span class="lineno">   48 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc <span class="nottickedoff">(Just $ vsep</span></span>
 <span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ string &quot;Integrating with Byron?&quot;</span></span>
 <span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, hsep [ string &quot;  ↳ Look at&quot;, bold $ string &quot;'bootstrap'&quot;, string &quot;.&quot; ]</span></span>
