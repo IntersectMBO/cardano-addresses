@@ -6,6 +6,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
@@ -297,21 +298,31 @@ deriveAddressPrivateKey acctK =
 -- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
-inspectByronAddress :: MonadThrow m => Address -> m Json.Value
-inspectByronAddress addr = do
+inspectByronAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Json.Value
+inspectByronAddress mRootPub addr = do
     payload <- either (throwM . BrDeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+
     (root, attrs) <- either (throwM . BrDeserialiseError) pure
         $ CBOR.deserialiseCbor decodePayload payload
-    path  <- maybe (throwM BrMissingExpectedDerivationPath) pure
-        $ find ((== 1) . fst) attrs
+
+    path <- do
+        attr <- maybe (throwM BrMissingExpectedDerivationPath) pure
+            (find ((== 1) . fst) attrs)
+        case mRootPub of
+            Nothing ->
+                pure $ toJSON $ T.unpack $ T.decodeUtf8 $ encode EBase16 $ snd attr
+            Just rootPub ->
+                decryptPath rootPub attr
+
     ntwrk <- either (throwM . BrDeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+
     pure $ Json.object
         [ "address_style"   .= Json.String "Byron"
         , "stake_reference" .= Json.String "none"
         , "address_root"    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "derivation_path" .= T.unpack (T.decodeUtf8 $ encode EBase16 $ snd path)
+        , "derivation_path" .= path
         , "network_tag"     .= maybe Json.Null toJSON ntwrk
         ]
   where
@@ -323,6 +334,25 @@ inspectByronAddress addr = do
         _ <- CBOR.decodeListLenCanonicalOf 3
         root <- CBOR.decodeBytes
         (root,) <$> CBOR.decodeAllAttributes
+
+    decryptPath :: XPub -> (Word8, ByteString) -> m Json.Value
+    decryptPath rootPub attr = do
+        let pwd = hdPassphrase rootPub
+        path <- either (const (throwM BrFailedToDecryptPath)) pure
+            $ CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) mempty
+        case path of
+            Nothing -> throwM BrFailedToDecryptPath
+            Just (acctIx, addrIx) -> pure $ Json.object
+                [ "account_index" .= prettyIndex acctIx
+                , "address_index" .= prettyIndex addrIx
+                ]
+
+    prettyIndex :: Word32 -> String
+    prettyIndex ix
+        | ix >= firstHardened = show (ix - firstHardened) <> "H"
+        | otherwise = show ix
+      where
+        firstHardened = 0x80000000
 
 instance Internal.PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress

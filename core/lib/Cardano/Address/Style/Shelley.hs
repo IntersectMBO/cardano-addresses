@@ -448,8 +448,12 @@ instance Internal.PointerAddress Shelley where
 -- string giving details about the 'Address'.
 --
 -- @since 2.0.0
-inspectShelleyAddress :: (Alternative m, MonadThrow m) => Address -> m Json.Value
-inspectShelleyAddress addr
+inspectShelleyAddress
+    :: (Alternative m, MonadThrow m)
+    => Maybe XPub
+    -> Address
+    -> m Json.Value
+inspectShelleyAddress mRootPub addr
     | BS.length bytes < 1 + pubkeyHashSize = throwM (ShWrongInputSize (BS.length bytes))
     | otherwise =
         let
@@ -536,7 +540,7 @@ inspectShelleyAddress addr
                         ]
                -- 1000: byron address
                 0b10000000 ->
-                    inspectByronAddress addr <|> inspectIcarusAddress addr
+                    inspectIcarusAddress addr <|> inspectByronAddress mRootPub addr
                -- 1110: reward account: keyhash28
                 0b11100000 | BS.length rest == pubkeyHashSize ->
                     pure $ Json.object
@@ -596,7 +600,7 @@ extendAddress
     -> Either (Shelley 'StakingK XPub) ChainPointer
     -> Either ErrExtendAddress Address
 extendAddress addr stakeReference = do
-    when (isNothing (inspectShelleyAddress addr)) $
+    when (isNothing (inspectShelleyAddress Nothing addr)) $
         Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
 
     let bytes = unAddress addr
@@ -716,7 +720,7 @@ inspectNetworkDiscriminant
     :: Address
     -> Maybe (NetworkDiscriminant Shelley)
 inspectNetworkDiscriminant addr =
-    inspectShelleyAddress addr $>
+    inspectShelleyAddress Nothing addr $>
         let
             bytes = unAddress addr
             (fstByte, _) = first BS.head $ BS.splitAt 1 bytes
