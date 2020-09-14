@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c06b15003a9dc67aa2bfaf4a7282e11dcef42fa116a6eefbedaee3c26411c42e
+-- hash: 5761b494b53e45f780c6f575a3e55c1814eda8ee629de8707bdb67050904b093
 
 name:           cardano-addresses-cli
 version:        2.0.0
@@ -19,6 +19,8 @@ copyright:      2020 IOHK
 license:        Apache-2.0
 license-file:   LICENSE
 build-type:     Simple
+extra-source-files:
+    ../schemas/address-inspect.json
 
 source-repository head
   type: git
@@ -133,6 +135,7 @@ test-suite unit
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck
+    , aeson
     , base >=4.7 && <5
     , bech32
     , bech32-th
@@ -140,6 +143,7 @@ test-suite unit
     , cardano-addresses
     , cardano-addresses-cli
     , containers
+    , hjsonschema
     , hspec
     , memory
     , process

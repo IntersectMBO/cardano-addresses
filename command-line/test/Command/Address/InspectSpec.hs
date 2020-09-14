@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.Address.InspectSpec
     ( spec
@@ -9,9 +11,12 @@ import Prelude
 import Control.Monad
     ( forM_ )
 import Test.Hspec
-    ( Spec, SpecWith, it, shouldBe, shouldContain )
+    ( Spec, SpecWith, expectationFailure, it, shouldBe, shouldContain )
 import Test.Utils
-    ( cli, describeCmd )
+    ( SchemaRef, cli, describeCmd, validateJSON )
+
+import qualified Data.Aeson as Json
+import qualified Data.ByteString.Lazy.Char8 as BL8
 
 spec :: Spec
 spec = describeCmd [ "address", "inspect" ] $ do
@@ -92,20 +97,24 @@ spec = describeCmd [ "address", "inspect" ] $ do
 specInspectAddress :: [String] -> [String] -> String -> SpecWith ()
 specInspectAddress mustHave args addr = it addr $ do
     (out, err) <- cli ([ "address", "inspect" ] <> args) addr
-    err `shouldBe` ""
-    out `shouldContain` "address_style"
-    out `shouldContain` "stake_reference"
-    out `shouldContain` "network_tag"
-    forM_ mustHave (shouldContain out)
+    err `shouldBe` ("" :: String)
+    case Json.eitherDecode (BL8.pack out) of
+        Left e -> expectationFailure $ "malformed JSON: " <> show e
+        Right json -> validateJSON schema json >>= \case
+            [] -> forM_ mustHave (shouldContain out)
+            es -> expectationFailure $ "invalid JSON: " <> unlines (show <$> es)
+  where
+    schema :: SchemaRef
+    schema = "../schemas/address-inspect.json"
 
 specInspectMalformed :: String -> SpecWith ()
 specInspectMalformed str = it ("malformed: " <> str) $ do
     (out, err) <- cli [ "address", "inspect" ] str
-    out `shouldBe` ""
+    out `shouldBe` ("" :: String)
     err `shouldContain` "Couldn't detect input encoding?"
 
 specInspectInvalid :: String -> [String] -> String -> SpecWith ()
 specInspectInvalid errstr args str = it ("invalid: " <> str) $ do
     (out, err) <- cli ([ "address", "inspect" ] <> args) str
-    out `shouldBe` ""
+    out `shouldBe` ("" :: String)
     err `shouldContain` errstr
