@@ -31,6 +31,12 @@ jobs:
     - name: 📸 Build Snapshot
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
+        curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+        curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
+        stack --no-terminal exec -- pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+        stack --no-terminal exec -- pacman -Syu --no-confirm
+        stack --no-terminal exec -- pacman -S --noconfirm mingw-w64-x86_64-pcre
+        stack --no-terminal exec -- pacman -S --noconfirm mingw-w64-x86_64-pkg-config
         stack --no-terminal test --bench --only-snapshot
 
     - name: 🔨 Build & Test
