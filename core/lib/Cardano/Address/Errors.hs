@@ -53,6 +53,7 @@ prettyShError (ShPtrRetrieveError s) = format "Failed to retrieve pointer (under
 data ByronAddrError
     = BrMissingExpectedDerivationPath
     | forall e . (Exception e, Show e) => BrDeserialiseError e
+    | BrFailedToDecryptPath
 
 deriving instance Show ByronAddrError
 
@@ -62,6 +63,7 @@ instance Exception ByronAddrError where
 prettyBrError :: ByronAddrError -> String
 prettyBrError BrMissingExpectedDerivationPath = "Missing expected derivation path"
 prettyBrError (BrDeserialiseError e) = format "Deserialisation error (was: {})" (show e)
+prettyBrError BrFailedToDecryptPath = "Failed to decrypt derivation path"
 
 
 data IcarusAddrError

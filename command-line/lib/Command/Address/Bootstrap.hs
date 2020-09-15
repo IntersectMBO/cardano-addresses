@@ -31,7 +31,7 @@ import Options.Applicative
     , progDesc
     )
 import Options.Applicative.Derivation
-    ( DerivationPath, castDerivationPath, derivationPathOpt, xpubArg )
+    ( DerivationPath, castDerivationPath, derivationPathArg, xpubOpt )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
 import Options.Applicative.Help.Pretty
@@ -51,8 +51,8 @@ import qualified Data.Text.Encoding as T
 
 data Cmd = Cmd
     { rootXPub :: Maybe XPub
-    , derivationPath :: Maybe DerivationPath
     , networkTag :: NetworkTag
+    , derivationPath :: Maybe DerivationPath
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -68,15 +68,15 @@ mod liftCmd = command "bootstrap" $
             , indent 2 $ bold $ string "$ cat root.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key child 14H/42H > addr.prv"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap $(cat root.prv | "<>progName<>" key public) \\"
-            , indent 8 $ bold $ string "--network-tag 764824073 --path 14H/42H"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap --root $(cat root.prv | "<>progName<>" key public) \\"
+            , indent 8 $ bold $ string "--network-tag 764824073 14H/42H"
             , indent 2 $ string "DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM..."
             ])
   where
     parser = Cmd
-        <$> optional (xpubArg "A root public key. Needed for Byron addresses only.")
-        <*> optional derivationPathOpt
+        <$> optional (xpubOpt "root" "A root public key. Needed for Byron addresses only.")
         <*> networkTagOpt Byron
+        <*> optional derivationPathArg
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,rootXPub,derivationPath} = do

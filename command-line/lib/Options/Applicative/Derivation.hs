@@ -17,7 +17,6 @@ module Options.Applicative.Derivation
     , derivationPathFromString
     -- ** Applicative Parser
     , derivationPathArg
-    , derivationPathOpt
 
     -- * Derivation Index
     , DerivationIndex
@@ -32,6 +31,7 @@ module Options.Applicative.Derivation
     , derivationSchemeOpt
 
     -- * XPub / XPrv
+    , xpubOpt
     , xpubArg
     ) where
 
@@ -98,15 +98,6 @@ castDerivationPath (DerivationPath xs) = toEnum . fromEnum <$> xs
 derivationPathArg :: Parser DerivationPath
 derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
     <> metavar "DERIVATION-PATH"
-    <> help
-        "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (e.g. 1852H/1815H/0H/0)."
-    <> completer (listCompleter ["1852H/1815H/0H/", "44H/1815H/0H/"])
-
-derivationPathOpt :: Parser DerivationPath
-derivationPathOpt = option (eitherReader derivationPathFromString) $ mempty
-    <> metavar "DERIVATION-PATH"
-    <> long "path"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
         \'H' (e.g. 1852H/1815H/0H/0)."
@@ -203,22 +194,31 @@ derivationSchemeOpt :: Parser DerivationScheme
 derivationSchemeOpt =
     flag DerivationScheme2 DerivationScheme1 (long "legacy")
 
-xpubArg :: String -> Parser XPub
-xpubArg helpDoc =
-    argument (eitherReader reader) $ mempty
-        <> metavar "XPUB"
-        <> help helpDoc
+xpubReader :: String -> Either String XPub
+xpubReader str = do
+    bytes <- case detectEncoding str of
+        Just EBase16   -> fromBase16 (toBytes str)
+        Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
+        Just EBase58   -> fromBase58 (toBytes str)
+        Nothing        -> Left
+            "Couldn't detect input encoding? The key must be encoded as \
+            \base16, bech32 or base58."
+    case xpubFromBytes bytes of
+        Just xpub -> pure xpub
+        Nothing   -> Left
+            "Failed to convert bytes into a valid extended public key."
   where
     toBytes = T.encodeUtf8 . T.pack
-    reader str = do
-        bytes <- case detectEncoding str of
-            Just EBase16   -> fromBase16 (toBytes str)
-            Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
-            Just EBase58   -> fromBase58 (toBytes str)
-            Nothing        -> Left
-                "Couldn't detect input encoding? The key must be encoded as \
-                \base16, bech32 or base58."
-        case xpubFromBytes bytes of
-            Just xpub -> pure xpub
-            Nothing   -> Left
-                "Failed to convert bytes into a valid extended public key."
+
+xpubOpt :: String -> String -> Parser XPub
+xpubOpt name helpDoc =
+    option (eitherReader xpubReader) $ mempty
+        <> long name
+        <> metavar "XPUB"
+        <> help helpDoc
+
+xpubArg :: String -> Parser XPub
+xpubArg helpDoc =
+    argument (eitherReader xpubReader) $ mempty
+        <> metavar "XPUB"
+        <> help helpDoc

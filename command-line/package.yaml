@@ -11,6 +11,9 @@ category:            Cardano
 description: |
   Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 
+extra-source-files:
+  ../schemas/address-inspect.json
+
 dependencies:
 - base >= 4.7 && < 5
 
@@ -94,12 +97,14 @@ tests:
     - hspec-discover
     - cardano-address
     dependencies:
+    - aeson
     - bech32
     - bech32-th
     - bytestring
     - cardano-addresses
     - cardano-addresses-cli
     - containers
+    - hjsonschema
     - hspec
     - memory
     - process

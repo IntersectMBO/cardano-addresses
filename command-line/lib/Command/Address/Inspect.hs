@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -18,16 +19,14 @@ import Prelude hiding
 
 import Cardano.Address
     ( Address, unsafeMkAddress )
-import Cardano.Address.Style.Byron
-    ( inspectByronAddress )
-import Cardano.Address.Style.Icarus
-    ( inspectIcarusAddress )
+import Cardano.Address.Derivation
+    ( XPub )
 import Cardano.Address.Style.Jormungandr
     ( inspectJormungandrAddress )
 import Cardano.Address.Style.Shelley
     ( inspectShelleyAddress )
 import Control.Applicative
-    ( (<|>) )
+    ( optional, (<|>) )
 import Control.Exception
     ( SomeException, displayException )
 import Control.Monad.Error.Class
@@ -36,6 +35,8 @@ import Fmt
     ( format )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+import Options.Applicative.Derivation
+    ( xpubOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import System.Exit
@@ -49,9 +50,9 @@ import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.ByteString.Lazy.Char8 as BL8
 
-
-data Cmd = Inspect
-    deriving (Show)
+newtype Cmd = Inspect
+    { rootPublicKey :: Maybe XPub
+    } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "inspect" $
@@ -75,14 +76,17 @@ mod liftCmd = command "inspect" $
             , indent 2 $ string "}"
             ])
   where
-    parser = pure Inspect
-
+    parser = Inspect
+        <$> optional (xpubOpt "root" helpDoc)
+    helpDoc =
+        "A root public key. If specified, tries to decrypt the derivation path \
+        \of Byron addresses."
 
 -- used for 'inspect'
 instance Error SomeException
 
 run :: Cmd -> IO ()
-run Inspect = do
+run Inspect{rootPublicKey} = do
     bytes <- hGetBytes stdin
     case inspect (unsafeMkAddress bytes) of
       Right json -> BL8.hPutStrLn stdout (Json.encodePretty json)
@@ -95,8 +99,6 @@ run Inspect = do
     --   instance (Error e) => Alternative (Either e)
     inspect :: (e ~ SomeException) => Address -> Either e Json.Value
     inspect addr = do
-      foldr1 (<|>)
-        [inspectByronAddress       addr
-        ,inspectIcarusAddress      addr
-        ,inspectJormungandrAddress addr
-        ,inspectShelleyAddress     addr]
+        inspectJormungandrAddress addr
+        <|>
+        inspectShelleyAddress rootPublicKey addr

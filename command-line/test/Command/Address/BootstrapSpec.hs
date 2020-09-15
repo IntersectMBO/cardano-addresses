@@ -46,7 +46,7 @@ specByron phrase path networkTag want = it ("golden byron " <> path) $ do
     rootPub <- cli [ "key", "public" ] rootPrv
     out <- cli [ "key", "child", "--legacy", path ] rootPrv
        >>= cli [ "key", "public" ]
-       >>= cli [ "address", "bootstrap", rootPub, "--path", path, "--network-tag", show networkTag ]
+       >>= cli [ "address", "bootstrap", "--root", rootPub, "--network-tag", show networkTag, path ]
     out `shouldBe` want
 
 specInvalidNetwork :: String -> SpecWith ()
