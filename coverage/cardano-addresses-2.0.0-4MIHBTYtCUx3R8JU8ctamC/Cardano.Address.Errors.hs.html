@@ -72,44 +72,46 @@ span.spaces    { background: white }
 <span class="lineno">   53 </span>data ByronAddrError
 <span class="lineno">   54 </span>    = BrMissingExpectedDerivationPath
 <span class="lineno">   55 </span>    | forall e . (Exception e, Show e) =&gt; BrDeserialiseError e
-<span class="lineno">   56 </span>
-<span class="lineno">   57 </span><span class="decl"><span class="nottickedoff">deriving instance Show ByronAddrError</span></span>
-<span class="lineno">   58 </span>
-<span class="lineno">   59 </span>instance Exception ByronAddrError where
-<span class="lineno">   60 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyBrError</span></span>
-<span class="lineno">   61 </span>
-<span class="lineno">   62 </span>prettyBrError :: ByronAddrError -&gt; String
-<span class="lineno">   63 </span><span class="decl"><span class="nottickedoff">prettyBrError BrMissingExpectedDerivationPath = &quot;Missing expected derivation path&quot;</span>
-<span class="lineno">   64 </span><span class="spaces"></span><span class="nottickedoff">prettyBrError (BrDeserialiseError e) = format &quot;Deserialisation error (was: {})&quot; (show e)</span></span>
-<span class="lineno">   65 </span>
-<span class="lineno">   66 </span>
-<span class="lineno">   67 </span>data IcarusAddrError
-<span class="lineno">   68 </span>    = IcUnexpectedDerivationPath
-<span class="lineno">   69 </span>    | forall e . (Exception e, Show e) =&gt; IcDeserialiseError e
-<span class="lineno">   70 </span>
-<span class="lineno">   71 </span><span class="decl"><span class="nottickedoff">deriving instance Show IcarusAddrError</span></span>
+<span class="lineno">   56 </span>    | BrFailedToDecryptPath
+<span class="lineno">   57 </span>
+<span class="lineno">   58 </span><span class="decl"><span class="nottickedoff">deriving instance Show ByronAddrError</span></span>
+<span class="lineno">   59 </span>
+<span class="lineno">   60 </span>instance Exception ByronAddrError where
+<span class="lineno">   61 </span>  <span class="decl"><span class="istickedoff">displayException = prettyBrError</span></span>
+<span class="lineno">   62 </span>
+<span class="lineno">   63 </span>prettyBrError :: ByronAddrError -&gt; String
+<span class="lineno">   64 </span><span class="decl"><span class="istickedoff">prettyBrError BrMissingExpectedDerivationPath = <span class="nottickedoff">&quot;Missing expected derivation path&quot;</span></span>
+<span class="lineno">   65 </span><span class="spaces"></span><span class="istickedoff">prettyBrError (BrDeserialiseError e) = <span class="nottickedoff">format &quot;Deserialisation error (was: {})&quot; (show e)</span></span>
+<span class="lineno">   66 </span><span class="spaces"></span><span class="istickedoff">prettyBrError BrFailedToDecryptPath = &quot;Failed to decrypt derivation path&quot;</span></span>
+<span class="lineno">   67 </span>
+<span class="lineno">   68 </span>
+<span class="lineno">   69 </span>data IcarusAddrError
+<span class="lineno">   70 </span>    = IcUnexpectedDerivationPath
+<span class="lineno">   71 </span>    | forall e . (Exception e, Show e) =&gt; IcDeserialiseError e
 <span class="lineno">   72 </span>
-<span class="lineno">   73 </span>instance Exception IcarusAddrError where
-<span class="lineno">   74 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyIcError</span></span>
-<span class="lineno">   75 </span>
-<span class="lineno">   76 </span>prettyIcError :: IcarusAddrError -&gt; String
-<span class="lineno">   77 </span><span class="decl"><span class="nottickedoff">prettyIcError IcUnexpectedDerivationPath = &quot;Unexpected derivation path&quot;</span>
-<span class="lineno">   78 </span><span class="spaces"></span><span class="nottickedoff">prettyIcError (IcDeserialiseError e) = format &quot;Deserialisation error (was: {})&quot; (show e)</span></span>
-<span class="lineno">   79 </span>
-<span class="lineno">   80 </span>
-<span class="lineno">   81 </span>data JormungandrAddrError
-<span class="lineno">   82 </span>    = JoUnknownAddrType
-<span class="lineno">   83 </span>    | JoWrongInputSize Int -- the actual size
-<span class="lineno">   84 </span>
-<span class="lineno">   85 </span><span class="decl"><span class="nottickedoff">deriving instance Show JormungandrAddrError</span></span>
+<span class="lineno">   73 </span><span class="decl"><span class="nottickedoff">deriving instance Show IcarusAddrError</span></span>
+<span class="lineno">   74 </span>
+<span class="lineno">   75 </span>instance Exception IcarusAddrError where
+<span class="lineno">   76 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyIcError</span></span>
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>prettyIcError :: IcarusAddrError -&gt; String
+<span class="lineno">   79 </span><span class="decl"><span class="nottickedoff">prettyIcError IcUnexpectedDerivationPath = &quot;Unexpected derivation path&quot;</span>
+<span class="lineno">   80 </span><span class="spaces"></span><span class="nottickedoff">prettyIcError (IcDeserialiseError e) = format &quot;Deserialisation error (was: {})&quot; (show e)</span></span>
+<span class="lineno">   81 </span>
+<span class="lineno">   82 </span>
+<span class="lineno">   83 </span>data JormungandrAddrError
+<span class="lineno">   84 </span>    = JoUnknownAddrType
+<span class="lineno">   85 </span>    | JoWrongInputSize Int -- the actual size
 <span class="lineno">   86 </span>
-<span class="lineno">   87 </span>instance Exception JormungandrAddrError where
-<span class="lineno">   88 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyJoError</span></span>
-<span class="lineno">   89 </span>
-<span class="lineno">   90 </span>prettyJoError :: JormungandrAddrError -&gt; String
-<span class="lineno">   91 </span><span class="decl"><span class="nottickedoff">prettyJoError JoUnknownAddrType = &quot;Unknown address type&quot;</span>
-<span class="lineno">   92 </span><span class="spaces"></span><span class="nottickedoff">prettyJoError (JoWrongInputSize i) = format &quot;Wrong input size of {}&quot; i</span></span>
-<span class="lineno">   93 </span>
+<span class="lineno">   87 </span><span class="decl"><span class="nottickedoff">deriving instance Show JormungandrAddrError</span></span>
+<span class="lineno">   88 </span>
+<span class="lineno">   89 </span>instance Exception JormungandrAddrError where
+<span class="lineno">   90 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyJoError</span></span>
+<span class="lineno">   91 </span>
+<span class="lineno">   92 </span>prettyJoError :: JormungandrAddrError -&gt; String
+<span class="lineno">   93 </span><span class="decl"><span class="nottickedoff">prettyJoError JoUnknownAddrType = &quot;Unknown address type&quot;</span>
+<span class="lineno">   94 </span><span class="spaces"></span><span class="nottickedoff">prettyJoError (JoWrongInputSize i) = format &quot;Wrong input size of {}&quot; i</span></span>
+<span class="lineno">   95 </span>
 
 </pre>
 </body>

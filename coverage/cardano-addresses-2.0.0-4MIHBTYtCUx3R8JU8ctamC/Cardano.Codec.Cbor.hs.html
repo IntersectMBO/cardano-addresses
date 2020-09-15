@@ -423,7 +423,7 @@ span.spaces    { background: white }
 <span class="lineno">  404 </span>    -&gt; ByteString
 <span class="lineno">  405 </span>    -&gt; m a
 <span class="lineno">  406 </span><span class="decl"><span class="istickedoff">deserialiseCbor dec =</span>
-<span class="lineno">  407 </span><span class="spaces">  </span><span class="istickedoff">fmap snd . either throwM pure . CBOR.deserialiseFromBytes dec . BL.fromStrict</span></span>
+<span class="lineno">  407 </span><span class="spaces">  </span><span class="istickedoff">fmap snd . either <span class="nottickedoff">throwM</span> pure . CBOR.deserialiseFromBytes dec . BL.fromStrict</span></span>
 <span class="lineno">  408 </span>
 <span class="lineno">  409 </span>-- | CBOR deserialise without error handling - handy for prototypes or testing.
 <span class="lineno">  410 </span>unsafeDeserialiseCbor

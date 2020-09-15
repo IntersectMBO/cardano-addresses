@@ -18,6 +18,7 @@ ShPtrRetrieveError :: String -> ShelleyAddrError
 data ByronAddrError
 BrMissingExpectedDerivationPath :: ByronAddrError
 BrDeserialiseError :: e -> ByronAddrError
+BrFailedToDecryptPath :: ByronAddrError
 data IcarusAddrError
 IcUnexpectedDerivationPath :: IcarusAddrError
 IcDeserialiseError :: e -> IcarusAddrError
@@ -601,7 +602,7 @@ deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'Addres
 -- | Analyze an <a>Address</a> to know whether it's a Byron address or not.
 --   Throws <a>ByronAddrError</a> if the address isn't a byron address, or
 --   return a structured JSON that gives information about an address.
-inspectByronAddress :: MonadThrow m => Address -> m Value
+inspectByronAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -798,7 +799,7 @@ deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  '
 --   
 --   Throws <tt>AddrError</tt> if it's not a valid Shelley address, or a
 --   ready-to-print string giving details about the <a>Address</a>.
-inspectShelleyAddress :: (Alternative m, MonadThrow m) => Address -> m Value
+inspectShelleyAddress :: (Alternative m, MonadThrow m) => Maybe XPub -> Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.

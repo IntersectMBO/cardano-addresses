@@ -340,11 +340,11 @@ span.spaces    { background: white }
 <span class="lineno">  321 </span>-- @since 2.0.0
 <span class="lineno">  322 </span>inspectIcarusAddress :: MonadThrow m =&gt; Address -&gt; m Json.Value
 <span class="lineno">  323 </span><span class="decl"><span class="istickedoff">inspectIcarusAddress addr = do</span>
-<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- either (throwM . <span class="nottickedoff">IcDeserialiseError</span>) pure</span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- either <span class="nottickedoff">(throwM . IcDeserialiseError)</span> pure</span>
 <span class="lineno">  325 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
 <span class="lineno">  326 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- either <span class="nottickedoff">(throwM . IcDeserialiseError)</span> pure</span>
 <span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.deserialiseCbor decodePayload payload</span>
-<span class="lineno">  328 </span><span class="spaces">    </span><span class="istickedoff">when (elem <span class="nottickedoff">1</span> . fmap <span class="nottickedoff">fst</span> $ attrs) $ <span class="nottickedoff">throwM IcUnexpectedDerivationPath</span></span>
+<span class="lineno">  328 </span><span class="spaces">    </span><span class="istickedoff">when (elem 1 . fmap fst $ attrs) $ throwM <span class="nottickedoff">IcUnexpectedDerivationPath</span></span>
 <span class="lineno">  329 </span><span class="spaces">    </span><span class="istickedoff">ntwrk &lt;- either <span class="nottickedoff">(throwM . IcDeserialiseError)</span> pure</span>
 <span class="lineno">  330 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
 <span class="lineno">  331 </span><span class="spaces">    </span><span class="istickedoff">pure $ Json.object</span>

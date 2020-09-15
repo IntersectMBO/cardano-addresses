@@ -467,367 +467,371 @@ span.spaces    { background: white }
 <span class="lineno">  448 </span>-- string giving details about the 'Address'.
 <span class="lineno">  449 </span>--
 <span class="lineno">  450 </span>-- @since 2.0.0
-<span class="lineno">  451 </span>inspectShelleyAddress :: (Alternative m, MonadThrow m) =&gt; Address -&gt; m Json.Value
-<span class="lineno">  452 </span><span class="decl"><span class="istickedoff">inspectShelleyAddress addr</span>
-<span class="lineno">  453 </span><span class="spaces">    </span><span class="istickedoff">| BS.length bytes &lt; 1 + pubkeyHashSize = throwM (ShWrongInputSize (BS.length bytes))</span>
-<span class="lineno">  454 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
-<span class="lineno">  455 </span><span class="spaces">        </span><span class="istickedoff">let</span>
-<span class="lineno">  456 </span><span class="spaces">            </span><span class="istickedoff">(fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
-<span class="lineno">  457 </span><span class="spaces">            </span><span class="istickedoff">addrType = fstByte .&amp;. 0b11110000</span>
-<span class="lineno">  458 </span><span class="spaces">            </span><span class="istickedoff">network  = fstByte .&amp;. 0b00001111</span>
-<span class="lineno">  459 </span><span class="spaces">        </span><span class="istickedoff">in</span>
-<span class="lineno">  460 </span><span class="spaces">            </span><span class="istickedoff">case addrType of</span>
-<span class="lineno">  461 </span><span class="spaces">               </span><span class="istickedoff">-- 0000: base address: keyhash28,keyhash28</span>
-<span class="lineno">  462 </span><span class="spaces">                </span><span class="istickedoff">0b00000000 | <span class="tickonlytrue">BS.length rest == 2 * pubkeyHashSize</span> -&gt;</span>
-<span class="lineno">  463 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
-<span class="lineno">  464 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
-<span class="lineno">  465 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
-<span class="lineno">  466 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
-<span class="lineno">  467 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.drop pubkeyHashSize rest)</span>
-<span class="lineno">  468 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
-<span class="lineno">  469 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
-<span class="lineno">  470 </span><span class="spaces">               </span><span class="istickedoff">-- 0001: base address: scripthash32,keyhash28</span>
-<span class="lineno">  471 </span><span class="spaces">                </span><span class="istickedoff">0b00010000 | <span class="nottickedoff">BS.length rest == pubkeyHashSize + scriptHashSize</span> -&gt;</span>
-<span class="lineno">  472 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
-<span class="lineno">  473 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
-<span class="lineno">  474 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
-<span class="lineno">  475 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
-<span class="lineno">  476 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.drop scriptHashSize rest)</span></span>
-<span class="lineno">  477 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
-<span class="lineno">  478 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
-<span class="lineno">  479 </span><span class="spaces">               </span><span class="istickedoff">-- 0010: base address: keyhash28,scripthash32</span>
-<span class="lineno">  480 </span><span class="spaces">                </span><span class="istickedoff">0b00100000 | <span class="tickonlyfalse">BS.length rest == pubkeyHashSize + scriptHashSize</span> -&gt;</span>
-<span class="lineno">  481 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
-<span class="lineno">  482 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
-<span class="lineno">  483 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
-<span class="lineno">  484 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span></span>
-<span class="lineno">  485 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_script_hash&quot; .= base16 (BS.drop pubkeyHashSize rest)</span></span>
-<span class="lineno">  486 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
-<span class="lineno">  487 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
-<span class="lineno">  488 </span><span class="spaces">               </span><span class="istickedoff">-- 0011: base address: scripthash32,scripthash32</span>
-<span class="lineno">  489 </span><span class="spaces">                </span><span class="istickedoff">0b00110000 | <span class="nottickedoff">BS.length rest == 2 * scriptHashSize</span> -&gt;</span>
-<span class="lineno">  490 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
-<span class="lineno">  491 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
-<span class="lineno">  492 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
-<span class="lineno">  493 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
-<span class="lineno">  494 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_script_hash&quot; .= base16 (BS.drop scriptHashSize rest)</span></span>
-<span class="lineno">  495 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
-<span class="lineno">  496 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
-<span class="lineno">  497 </span><span class="spaces">               </span><span class="istickedoff">-- 0100: pointer address: keyhash28, 3 variable length uint</span>
-<span class="lineno">  498 </span><span class="spaces">               </span><span class="istickedoff">-- TODO Could fo something better for pointer and try decoding</span>
-<span class="lineno">  499 </span><span class="spaces">               </span><span class="istickedoff">--      the pointer</span>
-<span class="lineno">  500 </span><span class="spaces">                </span><span class="istickedoff">0b01000000 | <span class="tickonlytrue">BS.length rest &gt; pubkeyHashSize</span> -&gt; do</span>
-<span class="lineno">  501 </span><span class="spaces">                    </span><span class="istickedoff">ptr &lt;- getPtr (BS.drop pubkeyHashSize rest)</span>
-<span class="lineno">  502 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
-<span class="lineno">  503 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
-<span class="lineno">  504 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by pointer&quot;</span>
-<span class="lineno">  505 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
-<span class="lineno">  506 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;pointer&quot;           .= ptrToJSON ptr</span>
-<span class="lineno">  507 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
-<span class="lineno">  508 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
-<span class="lineno">  509 </span><span class="spaces">               </span><span class="istickedoff">-- 0101: pointer address: scripthash32, 3 variable length uint</span>
-<span class="lineno">  510 </span><span class="spaces">               </span><span class="istickedoff">-- TODO Could fo something better for pointer and try decoding</span>
-<span class="lineno">  511 </span><span class="spaces">               </span><span class="istickedoff">--      the pointer</span>
-<span class="lineno">  512 </span><span class="spaces">                </span><span class="istickedoff">0b01010000 | <span class="nottickedoff">BS.length rest &gt; scriptHashSize</span> -&gt; <span class="nottickedoff">do</span></span>
-<span class="lineno">  513 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">ptr &lt;- getPtr (BS.drop scriptHashSize rest)</span></span>
-<span class="lineno">  514 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
-<span class="lineno">  515 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
-<span class="lineno">  516 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by pointer&quot;</span></span>
-<span class="lineno">  517 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
-<span class="lineno">  518 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;pointer&quot;           .= ptrToJSON ptr</span></span>
-<span class="lineno">  519 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
-<span class="lineno">  520 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
-<span class="lineno">  521 </span><span class="spaces">               </span><span class="istickedoff">-- 0110: enterprise address: keyhash28</span>
-<span class="lineno">  522 </span><span class="spaces">                </span><span class="istickedoff">0b01100000 | <span class="tickonlytrue">BS.length rest == pubkeyHashSize</span> -&gt;</span>
-<span class="lineno">  523 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
-<span class="lineno">  524 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
-<span class="lineno">  525 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;none&quot;</span>
-<span class="lineno">  526 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
-<span class="lineno">  527 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
-<span class="lineno">  528 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
-<span class="lineno">  529 </span><span class="spaces">               </span><span class="istickedoff">-- 0111: enterprise address: scripthash32</span>
-<span class="lineno">  530 </span><span class="spaces">                </span><span class="istickedoff">0b01110000 | <span class="nottickedoff">BS.length rest == scriptHashSize</span> -&gt;</span>
-<span class="lineno">  531 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
-<span class="lineno">  532 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
-<span class="lineno">  533 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;none&quot;</span></span>
-<span class="lineno">  534 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
-<span class="lineno">  535 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
-<span class="lineno">  536 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
-<span class="lineno">  537 </span><span class="spaces">               </span><span class="istickedoff">-- 1000: byron address</span>
-<span class="lineno">  538 </span><span class="spaces">                </span><span class="istickedoff">0b10000000 -&gt;</span>
-<span class="lineno">  539 </span><span class="spaces">                    </span><span class="istickedoff">inspectByronAddress addr &lt;|&gt; inspectIcarusAddress addr</span>
-<span class="lineno">  540 </span><span class="spaces">               </span><span class="istickedoff">-- 1110: reward account: keyhash28</span>
-<span class="lineno">  541 </span><span class="spaces">                </span><span class="istickedoff">0b11100000 | <span class="tickonlytrue">BS.length rest == pubkeyHashSize</span> -&gt;</span>
-<span class="lineno">  542 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
-<span class="lineno">  543 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
-<span class="lineno">  544 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
-<span class="lineno">  545 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.take pubkeyHashSize rest)</span>
-<span class="lineno">  546 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
-<span class="lineno">  547 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
-<span class="lineno">  548 </span><span class="spaces">               </span><span class="istickedoff">-- 1111: reward account: scripthash32</span>
-<span class="lineno">  549 </span><span class="spaces">                </span><span class="istickedoff">0b11110000 | <span class="tickonlytrue">BS.length rest == scriptHashSize</span> -&gt;</span>
-<span class="lineno">  550 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
-<span class="lineno">  551 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
-<span class="lineno">  552 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
-<span class="lineno">  553 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span>
-<span class="lineno">  554 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
-<span class="lineno">  555 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
-<span class="lineno">  556 </span><span class="spaces">                </span><span class="istickedoff">_ -&gt; throwM ShUnknownAddrType</span>
-<span class="lineno">  557 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  558 </span><span class="spaces">    </span><span class="istickedoff">bytes  = unAddress addr</span>
-<span class="lineno">  559 </span><span class="spaces">    </span><span class="istickedoff">base16 = T.unpack . T.decodeUtf8 . encode EBase16</span>
-<span class="lineno">  560 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  561 </span><span class="spaces">    </span><span class="istickedoff">ptrToJSON :: ChainPointer -&gt; Json.Value</span>
-<span class="lineno">  562 </span><span class="spaces">    </span><span class="istickedoff">ptrToJSON ChainPointer{slotNum,transactionIndex,outputIndex} = Json.object</span>
-<span class="lineno">  563 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;slot_num&quot; .= slotNum</span>
-<span class="lineno">  564 </span><span class="spaces">        </span><span class="istickedoff">, &quot;transaction_index&quot; .= transactionIndex</span>
-<span class="lineno">  565 </span><span class="spaces">        </span><span class="istickedoff">, &quot;output_index&quot; .= outputIndex</span>
-<span class="lineno">  566 </span><span class="spaces">        </span><span class="istickedoff">]</span>
-<span class="lineno">  567 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  568 </span><span class="spaces">    </span><span class="istickedoff">getPtr :: (Alternative m, MonadThrow m) =&gt; ByteString -&gt; m ChainPointer</span>
-<span class="lineno">  569 </span><span class="spaces">    </span><span class="istickedoff">getPtr source = case runGetOrFail get (BL.fromStrict source) of</span>
-<span class="lineno">  570 </span><span class="spaces">        </span><span class="istickedoff">Left (_, _, e) -&gt; <span class="nottickedoff">throwM (ShPtrRetrieveError e)</span></span>
-<span class="lineno">  571 </span><span class="spaces">        </span><span class="istickedoff">Right (rest, _, a) -&gt; guard (BL.null rest) $&gt; a</span>
-<span class="lineno">  572 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  573 </span><span class="spaces">        </span><span class="istickedoff">get = ChainPointer</span>
-<span class="lineno">  574 </span><span class="spaces">            </span><span class="istickedoff">&lt;$&gt; getVariableLengthNat</span>
-<span class="lineno">  575 </span><span class="spaces">            </span><span class="istickedoff">&lt;*&gt; getVariableLengthNat</span>
-<span class="lineno">  576 </span><span class="spaces">            </span><span class="istickedoff">&lt;*&gt; getVariableLengthNat</span></span>
-<span class="lineno">  577 </span>
-<span class="lineno">  578 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
-<span class="lineno">  579 </span>--
-<span class="lineno">  580 </span>-- | Convert a public key to a payment 'Address' valid for the given
-<span class="lineno">  581 </span>-- network discrimination.
-<span class="lineno">  582 </span>--
-<span class="lineno">  583 </span>-- @since 2.0.0
-<span class="lineno">  584 </span>paymentAddress
-<span class="lineno">  585 </span>    :: NetworkDiscriminant Shelley
-<span class="lineno">  586 </span>    -&gt; Shelley 'AddressK XPub
-<span class="lineno">  587 </span>    -&gt; Address
-<span class="lineno">  588 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
-<span class="lineno">  589 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
-<span class="lineno">  590 </span>
-<span class="lineno">  591 </span>-- | Extend an existing payment 'Address' to make it a delegation address.
-<span class="lineno">  592 </span>--
-<span class="lineno">  593 </span>-- @since 2.0.0
-<span class="lineno">  594 </span>extendAddress
-<span class="lineno">  595 </span>    :: Address
-<span class="lineno">  596 </span>    -&gt; Either (Shelley 'StakingK XPub) ChainPointer
-<span class="lineno">  597 </span>    -&gt; Either ErrExtendAddress Address
-<span class="lineno">  598 </span><span class="decl"><span class="istickedoff">extendAddress addr stakeReference = do</span>
-<span class="lineno">  599 </span><span class="spaces">    </span><span class="istickedoff">when (isNothing (inspectShelleyAddress addr)) $</span>
-<span class="lineno">  600 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Left $ ErrInvalidAddressStyle &quot;Given address isn't a Shelley address&quot;</span></span>
-<span class="lineno">  601 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  602 </span><span class="spaces">    </span><span class="istickedoff">let bytes = unAddress addr</span>
-<span class="lineno">  603 </span><span class="spaces">    </span><span class="istickedoff">let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
-<span class="lineno">  604 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  605 </span><span class="spaces">    </span><span class="istickedoff">when ((fstByte .&amp;. 0b11110000) /= 0b01100000) $ do</span>
-<span class="lineno">  606 </span><span class="spaces">        </span><span class="istickedoff">Left $ ErrInvalidAddressType &quot;Only payment addresses can be extended&quot;</span>
-<span class="lineno">  607 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  608 </span><span class="spaces">    </span><span class="istickedoff">case stakeReference of</span>
-<span class="lineno">  609 </span><span class="spaces">        </span><span class="istickedoff">Left stakingKey -&gt; do</span>
-<span class="lineno">  610 </span><span class="spaces">            </span><span class="istickedoff">pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do</span>
-<span class="lineno">  611 </span><span class="spaces">                </span><span class="istickedoff">putWord8 $ fstByte .&amp;. 0b00001111</span>
-<span class="lineno">  612 </span><span class="spaces">                </span><span class="istickedoff">putByteString rest</span>
-<span class="lineno">  613 </span><span class="spaces">                </span><span class="istickedoff">putByteString . blake2b224 $ stakingKey</span>
-<span class="lineno">  614 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  615 </span><span class="spaces">        </span><span class="istickedoff">Right pointer -&gt; do</span>
-<span class="lineno">  616 </span><span class="spaces">            </span><span class="istickedoff">pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do</span>
-<span class="lineno">  617 </span><span class="spaces">                </span><span class="istickedoff">putWord8 $ fstByte .&amp;. 0b01001111</span>
-<span class="lineno">  618 </span><span class="spaces">                </span><span class="istickedoff">putByteString rest</span>
-<span class="lineno">  619 </span><span class="spaces">                </span><span class="istickedoff">putPointer pointer</span>
-<span class="lineno">  620 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  621 </span><span class="spaces">    </span><span class="istickedoff">putPointer (ChainPointer a b c) = do</span>
-<span class="lineno">  622 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat a</span>
-<span class="lineno">  623 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat b</span>
-<span class="lineno">  624 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat c</span></span>
-<span class="lineno">  625 </span>
-<span class="lineno">  626 </span>-- | Captures error occuring when trying to extend an invalid address.
-<span class="lineno">  627 </span>--
-<span class="lineno">  628 </span>-- @since 2.0.0
-<span class="lineno">  629 </span>data ErrExtendAddress
-<span class="lineno">  630 </span>    = ErrInvalidAddressStyle String
-<span class="lineno">  631 </span>    | ErrInvalidAddressType String
-<span class="lineno">  632 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
-<span class="lineno">  633 </span>
-<span class="lineno">  634 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
-<span class="lineno">  635 </span>--
-<span class="lineno">  636 </span>-- | Convert a public key and a staking key to a delegation 'Address' valid
-<span class="lineno">  637 </span>-- for the given network discrimination. Funds sent to this address will be
-<span class="lineno">  638 </span>-- delegated according to the delegation settings attached to the delegation
-<span class="lineno">  639 </span>-- key.
-<span class="lineno">  640 </span>--
-<span class="lineno">  641 </span>-- @since 2.0.0
-<span class="lineno">  642 </span>delegationAddress
-<span class="lineno">  643 </span>    :: NetworkDiscriminant Shelley
-<span class="lineno">  644 </span>    -&gt; Shelley 'AddressK XPub
-<span class="lineno">  645 </span>    -&gt; Shelley 'StakingK XPub
-<span class="lineno">  646 </span>    -&gt; Address
-<span class="lineno">  647 </span><span class="decl"><span class="istickedoff">delegationAddress =</span>
-<span class="lineno">  648 </span><span class="spaces">    </span><span class="istickedoff">Internal.delegationAddress</span></span>
-<span class="lineno">  649 </span>
-<span class="lineno">  650 </span>
-<span class="lineno">  651 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
-<span class="lineno">  652 </span>--
-<span class="lineno">  653 </span>-- | Convert a public key and pointer to staking certificate in blockchain to a
-<span class="lineno">  654 </span>-- pointer 'Address' valid for the given network discrimination.
-<span class="lineno">  655 </span>--
-<span class="lineno">  656 </span>-- @since 2.0.0
-<span class="lineno">  657 </span>pointerAddress
-<span class="lineno">  658 </span>    :: NetworkDiscriminant Shelley
-<span class="lineno">  659 </span>    -&gt; Shelley 'AddressK XPub
-<span class="lineno">  660 </span>    -&gt; ChainPointer
-<span class="lineno">  661 </span>    -&gt; Address
-<span class="lineno">  662 </span><span class="decl"><span class="nottickedoff">pointerAddress =</span>
-<span class="lineno">  663 </span><span class="spaces">    </span><span class="nottickedoff">Internal.pointerAddress</span></span>
-<span class="lineno">  664 </span>
-<span class="lineno">  665 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
-<span class="lineno">  666 </span>--
-<span class="lineno">  667 </span>-- | Convert a staking key to a stake Address (aka reward account address)
-<span class="lineno">  668 </span>-- for the given network discrimination.
-<span class="lineno">  669 </span>--
-<span class="lineno">  670 </span>-- @since 2.0.0
-<span class="lineno">  671 </span>stakeAddress
-<span class="lineno">  672 </span>    :: NetworkDiscriminant Shelley
-<span class="lineno">  673 </span>    -&gt; Shelley 'StakingK XPub
-<span class="lineno">  674 </span>    -&gt; Address
-<span class="lineno">  675 </span><span class="decl"><span class="istickedoff">stakeAddress =</span>
-<span class="lineno">  676 </span><span class="spaces">    </span><span class="istickedoff">Internal.stakeAddress</span></span>
-<span class="lineno">  677 </span>
-<span class="lineno">  678 </span>
-<span class="lineno">  679 </span>--
-<span class="lineno">  680 </span>-- Network Discriminant
-<span class="lineno">  681 </span>--
+<span class="lineno">  451 </span>inspectShelleyAddress
+<span class="lineno">  452 </span>    :: (Alternative m, MonadThrow m)
+<span class="lineno">  453 </span>    =&gt; Maybe XPub
+<span class="lineno">  454 </span>    -&gt; Address
+<span class="lineno">  455 </span>    -&gt; m Json.Value
+<span class="lineno">  456 </span><span class="decl"><span class="istickedoff">inspectShelleyAddress mRootPub addr</span>
+<span class="lineno">  457 </span><span class="spaces">    </span><span class="istickedoff">| BS.length bytes &lt; 1 + pubkeyHashSize = throwM (ShWrongInputSize (BS.length bytes))</span>
+<span class="lineno">  458 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  459 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  460 </span><span class="spaces">            </span><span class="istickedoff">(fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
+<span class="lineno">  461 </span><span class="spaces">            </span><span class="istickedoff">addrType = fstByte .&amp;. 0b11110000</span>
+<span class="lineno">  462 </span><span class="spaces">            </span><span class="istickedoff">network  = fstByte .&amp;. 0b00001111</span>
+<span class="lineno">  463 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  464 </span><span class="spaces">            </span><span class="istickedoff">case addrType of</span>
+<span class="lineno">  465 </span><span class="spaces">               </span><span class="istickedoff">-- 0000: base address: keyhash28,keyhash28</span>
+<span class="lineno">  466 </span><span class="spaces">                </span><span class="istickedoff">0b00000000 | <span class="tickonlytrue">BS.length rest == 2 * pubkeyHashSize</span> -&gt;</span>
+<span class="lineno">  467 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  468 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
+<span class="lineno">  469 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
+<span class="lineno">  470 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
+<span class="lineno">  471 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.drop pubkeyHashSize rest)</span>
+<span class="lineno">  472 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
+<span class="lineno">  473 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
+<span class="lineno">  474 </span><span class="spaces">               </span><span class="istickedoff">-- 0001: base address: scripthash32,keyhash28</span>
+<span class="lineno">  475 </span><span class="spaces">                </span><span class="istickedoff">0b00010000 | <span class="nottickedoff">BS.length rest == pubkeyHashSize + scriptHashSize</span> -&gt;</span>
+<span class="lineno">  476 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
+<span class="lineno">  477 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
+<span class="lineno">  478 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
+<span class="lineno">  479 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
+<span class="lineno">  480 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.drop scriptHashSize rest)</span></span>
+<span class="lineno">  481 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
+<span class="lineno">  482 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  483 </span><span class="spaces">               </span><span class="istickedoff">-- 0010: base address: keyhash28,scripthash32</span>
+<span class="lineno">  484 </span><span class="spaces">                </span><span class="istickedoff">0b00100000 | <span class="tickonlyfalse">BS.length rest == pubkeyHashSize + scriptHashSize</span> -&gt;</span>
+<span class="lineno">  485 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
+<span class="lineno">  486 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
+<span class="lineno">  487 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
+<span class="lineno">  488 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span></span>
+<span class="lineno">  489 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_script_hash&quot; .= base16 (BS.drop pubkeyHashSize rest)</span></span>
+<span class="lineno">  490 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
+<span class="lineno">  491 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  492 </span><span class="spaces">               </span><span class="istickedoff">-- 0011: base address: scripthash32,scripthash32</span>
+<span class="lineno">  493 </span><span class="spaces">                </span><span class="istickedoff">0b00110000 | <span class="nottickedoff">BS.length rest == 2 * scriptHashSize</span> -&gt;</span>
+<span class="lineno">  494 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
+<span class="lineno">  495 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
+<span class="lineno">  496 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span></span>
+<span class="lineno">  497 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
+<span class="lineno">  498 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_script_hash&quot; .= base16 (BS.drop scriptHashSize rest)</span></span>
+<span class="lineno">  499 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
+<span class="lineno">  500 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  501 </span><span class="spaces">               </span><span class="istickedoff">-- 0100: pointer address: keyhash28, 3 variable length uint</span>
+<span class="lineno">  502 </span><span class="spaces">               </span><span class="istickedoff">-- TODO Could fo something better for pointer and try decoding</span>
+<span class="lineno">  503 </span><span class="spaces">               </span><span class="istickedoff">--      the pointer</span>
+<span class="lineno">  504 </span><span class="spaces">                </span><span class="istickedoff">0b01000000 | <span class="tickonlytrue">BS.length rest &gt; pubkeyHashSize</span> -&gt; do</span>
+<span class="lineno">  505 </span><span class="spaces">                    </span><span class="istickedoff">ptr &lt;- getPtr (BS.drop pubkeyHashSize rest)</span>
+<span class="lineno">  506 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  507 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
+<span class="lineno">  508 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by pointer&quot;</span>
+<span class="lineno">  509 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
+<span class="lineno">  510 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;pointer&quot;           .= ptrToJSON ptr</span>
+<span class="lineno">  511 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
+<span class="lineno">  512 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
+<span class="lineno">  513 </span><span class="spaces">               </span><span class="istickedoff">-- 0101: pointer address: scripthash32, 3 variable length uint</span>
+<span class="lineno">  514 </span><span class="spaces">               </span><span class="istickedoff">-- TODO Could fo something better for pointer and try decoding</span>
+<span class="lineno">  515 </span><span class="spaces">               </span><span class="istickedoff">--      the pointer</span>
+<span class="lineno">  516 </span><span class="spaces">                </span><span class="istickedoff">0b01010000 | <span class="nottickedoff">BS.length rest &gt; scriptHashSize</span> -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">  517 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">ptr &lt;- getPtr (BS.drop scriptHashSize rest)</span></span>
+<span class="lineno">  518 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
+<span class="lineno">  519 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
+<span class="lineno">  520 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by pointer&quot;</span></span>
+<span class="lineno">  521 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
+<span class="lineno">  522 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;pointer&quot;           .= ptrToJSON ptr</span></span>
+<span class="lineno">  523 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
+<span class="lineno">  524 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  525 </span><span class="spaces">               </span><span class="istickedoff">-- 0110: enterprise address: keyhash28</span>
+<span class="lineno">  526 </span><span class="spaces">                </span><span class="istickedoff">0b01100000 | <span class="tickonlytrue">BS.length rest == pubkeyHashSize</span> -&gt;</span>
+<span class="lineno">  527 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  528 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
+<span class="lineno">  529 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;none&quot;</span>
+<span class="lineno">  530 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;spending_key_hash&quot; .= base16 (BS.take pubkeyHashSize rest)</span>
+<span class="lineno">  531 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
+<span class="lineno">  532 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
+<span class="lineno">  533 </span><span class="spaces">               </span><span class="istickedoff">-- 0111: enterprise address: scripthash32</span>
+<span class="lineno">  534 </span><span class="spaces">                </span><span class="istickedoff">0b01110000 | <span class="nottickedoff">BS.length rest == scriptHashSize</span> -&gt;</span>
+<span class="lineno">  535 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ Json.object</span></span>
+<span class="lineno">  536 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span></span>
+<span class="lineno">  537 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;none&quot;</span></span>
+<span class="lineno">  538 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span></span>
+<span class="lineno">  539 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">, &quot;network_tag&quot;       .= network</span></span>
+<span class="lineno">  540 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  541 </span><span class="spaces">               </span><span class="istickedoff">-- 1000: byron address</span>
+<span class="lineno">  542 </span><span class="spaces">                </span><span class="istickedoff">0b10000000 -&gt;</span>
+<span class="lineno">  543 </span><span class="spaces">                    </span><span class="istickedoff">inspectIcarusAddress addr &lt;|&gt; inspectByronAddress mRootPub addr</span>
+<span class="lineno">  544 </span><span class="spaces">               </span><span class="istickedoff">-- 1110: reward account: keyhash28</span>
+<span class="lineno">  545 </span><span class="spaces">                </span><span class="istickedoff">0b11100000 | <span class="tickonlytrue">BS.length rest == pubkeyHashSize</span> -&gt;</span>
+<span class="lineno">  546 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  547 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
+<span class="lineno">  548 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
+<span class="lineno">  549 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_key_hash&quot;    .= base16 (BS.take pubkeyHashSize rest)</span>
+<span class="lineno">  550 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
+<span class="lineno">  551 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
+<span class="lineno">  552 </span><span class="spaces">               </span><span class="istickedoff">-- 1111: reward account: scripthash32</span>
+<span class="lineno">  553 </span><span class="spaces">                </span><span class="istickedoff">0b11110000 | <span class="tickonlytrue">BS.length rest == scriptHashSize</span> -&gt;</span>
+<span class="lineno">  554 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Json.object</span>
+<span class="lineno">  555 </span><span class="spaces">                        </span><span class="istickedoff">[ &quot;address_style&quot;     .= Json.String &quot;Shelley&quot;</span>
+<span class="lineno">  556 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;stake_reference&quot;   .= Json.String &quot;by value&quot;</span>
+<span class="lineno">  557 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;script_hash&quot;       .= base16 (BS.take scriptHashSize rest)</span>
+<span class="lineno">  558 </span><span class="spaces">                        </span><span class="istickedoff">, &quot;network_tag&quot;       .= network</span>
+<span class="lineno">  559 </span><span class="spaces">                        </span><span class="istickedoff">]</span>
+<span class="lineno">  560 </span><span class="spaces">                </span><span class="istickedoff">_ -&gt; throwM ShUnknownAddrType</span>
+<span class="lineno">  561 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  562 </span><span class="spaces">    </span><span class="istickedoff">bytes  = unAddress addr</span>
+<span class="lineno">  563 </span><span class="spaces">    </span><span class="istickedoff">base16 = T.unpack . T.decodeUtf8 . encode EBase16</span>
+<span class="lineno">  564 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  565 </span><span class="spaces">    </span><span class="istickedoff">ptrToJSON :: ChainPointer -&gt; Json.Value</span>
+<span class="lineno">  566 </span><span class="spaces">    </span><span class="istickedoff">ptrToJSON ChainPointer{slotNum,transactionIndex,outputIndex} = Json.object</span>
+<span class="lineno">  567 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;slot_num&quot; .= slotNum</span>
+<span class="lineno">  568 </span><span class="spaces">        </span><span class="istickedoff">, &quot;transaction_index&quot; .= transactionIndex</span>
+<span class="lineno">  569 </span><span class="spaces">        </span><span class="istickedoff">, &quot;output_index&quot; .= outputIndex</span>
+<span class="lineno">  570 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  571 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  572 </span><span class="spaces">    </span><span class="istickedoff">getPtr :: (Alternative m, MonadThrow m) =&gt; ByteString -&gt; m ChainPointer</span>
+<span class="lineno">  573 </span><span class="spaces">    </span><span class="istickedoff">getPtr source = case runGetOrFail get (BL.fromStrict source) of</span>
+<span class="lineno">  574 </span><span class="spaces">        </span><span class="istickedoff">Left (_, _, e) -&gt; <span class="nottickedoff">throwM (ShPtrRetrieveError e)</span></span>
+<span class="lineno">  575 </span><span class="spaces">        </span><span class="istickedoff">Right (rest, _, a) -&gt; guard (BL.null rest) $&gt; a</span>
+<span class="lineno">  576 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  577 </span><span class="spaces">        </span><span class="istickedoff">get = ChainPointer</span>
+<span class="lineno">  578 </span><span class="spaces">            </span><span class="istickedoff">&lt;$&gt; getVariableLengthNat</span>
+<span class="lineno">  579 </span><span class="spaces">            </span><span class="istickedoff">&lt;*&gt; getVariableLengthNat</span>
+<span class="lineno">  580 </span><span class="spaces">            </span><span class="istickedoff">&lt;*&gt; getVariableLengthNat</span></span>
+<span class="lineno">  581 </span>
+<span class="lineno">  582 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  583 </span>--
+<span class="lineno">  584 </span>-- | Convert a public key to a payment 'Address' valid for the given
+<span class="lineno">  585 </span>-- network discrimination.
+<span class="lineno">  586 </span>--
+<span class="lineno">  587 </span>-- @since 2.0.0
+<span class="lineno">  588 </span>paymentAddress
+<span class="lineno">  589 </span>    :: NetworkDiscriminant Shelley
+<span class="lineno">  590 </span>    -&gt; Shelley 'AddressK XPub
+<span class="lineno">  591 </span>    -&gt; Address
+<span class="lineno">  592 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  593 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  594 </span>
+<span class="lineno">  595 </span>-- | Extend an existing payment 'Address' to make it a delegation address.
+<span class="lineno">  596 </span>--
+<span class="lineno">  597 </span>-- @since 2.0.0
+<span class="lineno">  598 </span>extendAddress
+<span class="lineno">  599 </span>    :: Address
+<span class="lineno">  600 </span>    -&gt; Either (Shelley 'StakingK XPub) ChainPointer
+<span class="lineno">  601 </span>    -&gt; Either ErrExtendAddress Address
+<span class="lineno">  602 </span><span class="decl"><span class="istickedoff">extendAddress addr stakeReference = do</span>
+<span class="lineno">  603 </span><span class="spaces">    </span><span class="istickedoff">when (isNothing (inspectShelleyAddress Nothing addr)) $</span>
+<span class="lineno">  604 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Left $ ErrInvalidAddressStyle &quot;Given address isn't a Shelley address&quot;</span></span>
+<span class="lineno">  605 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  606 </span><span class="spaces">    </span><span class="istickedoff">let bytes = unAddress addr</span>
+<span class="lineno">  607 </span><span class="spaces">    </span><span class="istickedoff">let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes</span>
+<span class="lineno">  608 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  609 </span><span class="spaces">    </span><span class="istickedoff">when ((fstByte .&amp;. 0b11110000) /= 0b01100000) $ do</span>
+<span class="lineno">  610 </span><span class="spaces">        </span><span class="istickedoff">Left $ ErrInvalidAddressType &quot;Only payment addresses can be extended&quot;</span>
+<span class="lineno">  611 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  612 </span><span class="spaces">    </span><span class="istickedoff">case stakeReference of</span>
+<span class="lineno">  613 </span><span class="spaces">        </span><span class="istickedoff">Left stakingKey -&gt; do</span>
+<span class="lineno">  614 </span><span class="spaces">            </span><span class="istickedoff">pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do</span>
+<span class="lineno">  615 </span><span class="spaces">                </span><span class="istickedoff">putWord8 $ fstByte .&amp;. 0b00001111</span>
+<span class="lineno">  616 </span><span class="spaces">                </span><span class="istickedoff">putByteString rest</span>
+<span class="lineno">  617 </span><span class="spaces">                </span><span class="istickedoff">putByteString . blake2b224 $ stakingKey</span>
+<span class="lineno">  618 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  619 </span><span class="spaces">        </span><span class="istickedoff">Right pointer -&gt; do</span>
+<span class="lineno">  620 </span><span class="spaces">            </span><span class="istickedoff">pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do</span>
+<span class="lineno">  621 </span><span class="spaces">                </span><span class="istickedoff">putWord8 $ fstByte .&amp;. 0b01001111</span>
+<span class="lineno">  622 </span><span class="spaces">                </span><span class="istickedoff">putByteString rest</span>
+<span class="lineno">  623 </span><span class="spaces">                </span><span class="istickedoff">putPointer pointer</span>
+<span class="lineno">  624 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  625 </span><span class="spaces">    </span><span class="istickedoff">putPointer (ChainPointer a b c) = do</span>
+<span class="lineno">  626 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat a</span>
+<span class="lineno">  627 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat b</span>
+<span class="lineno">  628 </span><span class="spaces">        </span><span class="istickedoff">putVariableLengthNat c</span></span>
+<span class="lineno">  629 </span>
+<span class="lineno">  630 </span>-- | Captures error occuring when trying to extend an invalid address.
+<span class="lineno">  631 </span>--
+<span class="lineno">  632 </span>-- @since 2.0.0
+<span class="lineno">  633 </span>data ErrExtendAddress
+<span class="lineno">  634 </span>    = ErrInvalidAddressStyle String
+<span class="lineno">  635 </span>    | ErrInvalidAddressType String
+<span class="lineno">  636 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">  637 </span>
+<span class="lineno">  638 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  639 </span>--
+<span class="lineno">  640 </span>-- | Convert a public key and a staking key to a delegation 'Address' valid
+<span class="lineno">  641 </span>-- for the given network discrimination. Funds sent to this address will be
+<span class="lineno">  642 </span>-- delegated according to the delegation settings attached to the delegation
+<span class="lineno">  643 </span>-- key.
+<span class="lineno">  644 </span>--
+<span class="lineno">  645 </span>-- @since 2.0.0
+<span class="lineno">  646 </span>delegationAddress
+<span class="lineno">  647 </span>    :: NetworkDiscriminant Shelley
+<span class="lineno">  648 </span>    -&gt; Shelley 'AddressK XPub
+<span class="lineno">  649 </span>    -&gt; Shelley 'StakingK XPub
+<span class="lineno">  650 </span>    -&gt; Address
+<span class="lineno">  651 </span><span class="decl"><span class="istickedoff">delegationAddress =</span>
+<span class="lineno">  652 </span><span class="spaces">    </span><span class="istickedoff">Internal.delegationAddress</span></span>
+<span class="lineno">  653 </span>
+<span class="lineno">  654 </span>
+<span class="lineno">  655 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  656 </span>--
+<span class="lineno">  657 </span>-- | Convert a public key and pointer to staking certificate in blockchain to a
+<span class="lineno">  658 </span>-- pointer 'Address' valid for the given network discrimination.
+<span class="lineno">  659 </span>--
+<span class="lineno">  660 </span>-- @since 2.0.0
+<span class="lineno">  661 </span>pointerAddress
+<span class="lineno">  662 </span>    :: NetworkDiscriminant Shelley
+<span class="lineno">  663 </span>    -&gt; Shelley 'AddressK XPub
+<span class="lineno">  664 </span>    -&gt; ChainPointer
+<span class="lineno">  665 </span>    -&gt; Address
+<span class="lineno">  666 </span><span class="decl"><span class="nottickedoff">pointerAddress =</span>
+<span class="lineno">  667 </span><span class="spaces">    </span><span class="nottickedoff">Internal.pointerAddress</span></span>
+<span class="lineno">  668 </span>
+<span class="lineno">  669 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  670 </span>--
+<span class="lineno">  671 </span>-- | Convert a staking key to a stake Address (aka reward account address)
+<span class="lineno">  672 </span>-- for the given network discrimination.
+<span class="lineno">  673 </span>--
+<span class="lineno">  674 </span>-- @since 2.0.0
+<span class="lineno">  675 </span>stakeAddress
+<span class="lineno">  676 </span>    :: NetworkDiscriminant Shelley
+<span class="lineno">  677 </span>    -&gt; Shelley 'StakingK XPub
+<span class="lineno">  678 </span>    -&gt; Address
+<span class="lineno">  679 </span><span class="decl"><span class="istickedoff">stakeAddress =</span>
+<span class="lineno">  680 </span><span class="spaces">    </span><span class="istickedoff">Internal.stakeAddress</span></span>
+<span class="lineno">  681 </span>
 <span class="lineno">  682 </span>
-<span class="lineno">  683 </span>instance HasNetworkDiscriminant Shelley where
-<span class="lineno">  684 </span>    type NetworkDiscriminant Shelley = NetworkTag
-<span class="lineno">  685 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination _ = RequiresNetworkTag</span></span>
-<span class="lineno">  686 </span>    <span class="decl"><span class="istickedoff">networkTag = id</span></span>
-<span class="lineno">  687 </span>
-<span class="lineno">  688 </span>-- | Error reported from trying to create a network discriminant from number
-<span class="lineno">  689 </span>--
-<span class="lineno">  690 </span>-- @since 2.0.0
-<span class="lineno">  691 </span>newtype MkNetworkDiscriminantError
-<span class="lineno">  692 </span>    = ErrWrongNetworkTag Integer
-<span class="lineno">  693 </span>      -- ^ Wrong network tag.
-<span class="lineno">  694 </span>    deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
-<span class="lineno">  695 </span>
-<span class="lineno">  696 </span>instance Buildable MkNetworkDiscriminantError where
-<span class="lineno">  697 </span>  <span class="decl"><span class="istickedoff">build (ErrWrongNetworkTag i) = &quot;Invalid network tag &quot;+|i|+&quot;. Must be between [0, 15]&quot;</span></span>
-<span class="lineno">  698 </span>
-<span class="lineno">  699 </span>-- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
-<span class="lineno">  700 </span>-- If the number is invalid, ie., not between 0 and 15, then
-<span class="lineno">  701 </span>-- 'MkNetworkDiscriminantError' is thrown.
-<span class="lineno">  702 </span>--
-<span class="lineno">  703 </span>-- @since 2.0.0
-<span class="lineno">  704 </span>mkNetworkDiscriminant
-<span class="lineno">  705 </span>    :: Integer
-<span class="lineno">  706 </span>    -&gt; Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
-<span class="lineno">  707 </span><span class="decl"><span class="istickedoff">mkNetworkDiscriminant nTag</span>
-<span class="lineno">  708 </span><span class="spaces">    </span><span class="istickedoff">| nTag &lt; 16 =  Right $ NetworkTag $ fromIntegral nTag</span>
-<span class="lineno">  709 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = Left $ ErrWrongNetworkTag nTag</span></span>
-<span class="lineno">  710 </span>
-<span class="lineno">  711 </span>-- | Retrieve the network discriminant of a given 'Address'.
-<span class="lineno">  712 </span>-- If the 'Address' is malformed or, not a shelley address, returns Nothing.
-<span class="lineno">  713 </span>--
-<span class="lineno">  714 </span>-- @since 2.0.0
-<span class="lineno">  715 </span>inspectNetworkDiscriminant
-<span class="lineno">  716 </span>    :: Address
-<span class="lineno">  717 </span>    -&gt; Maybe (NetworkDiscriminant Shelley)
-<span class="lineno">  718 </span><span class="decl"><span class="istickedoff">inspectNetworkDiscriminant addr =</span>
-<span class="lineno">  719 </span><span class="spaces">    </span><span class="istickedoff">inspectShelleyAddress addr $&gt;</span>
-<span class="lineno">  720 </span><span class="spaces">        </span><span class="istickedoff">let</span>
-<span class="lineno">  721 </span><span class="spaces">            </span><span class="istickedoff">bytes = unAddress addr</span>
-<span class="lineno">  722 </span><span class="spaces">            </span><span class="istickedoff">(fstByte, _) = first BS.head $ BS.splitAt 1 bytes</span>
-<span class="lineno">  723 </span><span class="spaces">            </span><span class="istickedoff">network  = fstByte .&amp;. 0b00001111</span>
-<span class="lineno">  724 </span><span class="spaces">        </span><span class="istickedoff">in</span>
-<span class="lineno">  725 </span><span class="spaces">            </span><span class="istickedoff">NetworkTag $ fromIntegral network</span></span>
-<span class="lineno">  726 </span>
-<span class="lineno">  727 </span>-- | 'NetworkDicriminant' for Cardano MainNet &amp; Shelley
-<span class="lineno">  728 </span>--
-<span class="lineno">  729 </span>-- @since 2.0.0
-<span class="lineno">  730 </span>shelleyMainnet :: NetworkDiscriminant Shelley
-<span class="lineno">  731 </span><span class="decl"><span class="istickedoff">shelleyMainnet = NetworkTag 1</span></span>
-<span class="lineno">  732 </span>
-<span class="lineno">  733 </span>-- | 'NetworkDicriminant' for Cardano Testnet &amp; Shelley
-<span class="lineno">  734 </span>--
-<span class="lineno">  735 </span>-- @since 2.0.0
-<span class="lineno">  736 </span>shelleyTestnet :: NetworkDiscriminant Shelley
-<span class="lineno">  737 </span><span class="decl"><span class="istickedoff">shelleyTestnet = NetworkTag 0</span></span>
-<span class="lineno">  738 </span>
-<span class="lineno">  739 </span>--
-<span class="lineno">  740 </span>-- Unsafe
-<span class="lineno">  741 </span>--
+<span class="lineno">  683 </span>--
+<span class="lineno">  684 </span>-- Network Discriminant
+<span class="lineno">  685 </span>--
+<span class="lineno">  686 </span>
+<span class="lineno">  687 </span>instance HasNetworkDiscriminant Shelley where
+<span class="lineno">  688 </span>    type NetworkDiscriminant Shelley = NetworkTag
+<span class="lineno">  689 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination _ = RequiresNetworkTag</span></span>
+<span class="lineno">  690 </span>    <span class="decl"><span class="istickedoff">networkTag = id</span></span>
+<span class="lineno">  691 </span>
+<span class="lineno">  692 </span>-- | Error reported from trying to create a network discriminant from number
+<span class="lineno">  693 </span>--
+<span class="lineno">  694 </span>-- @since 2.0.0
+<span class="lineno">  695 </span>newtype MkNetworkDiscriminantError
+<span class="lineno">  696 </span>    = ErrWrongNetworkTag Integer
+<span class="lineno">  697 </span>      -- ^ Wrong network tag.
+<span class="lineno">  698 </span>    deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">  699 </span>
+<span class="lineno">  700 </span>instance Buildable MkNetworkDiscriminantError where
+<span class="lineno">  701 </span>  <span class="decl"><span class="istickedoff">build (ErrWrongNetworkTag i) = &quot;Invalid network tag &quot;+|i|+&quot;. Must be between [0, 15]&quot;</span></span>
+<span class="lineno">  702 </span>
+<span class="lineno">  703 </span>-- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
+<span class="lineno">  704 </span>-- If the number is invalid, ie., not between 0 and 15, then
+<span class="lineno">  705 </span>-- 'MkNetworkDiscriminantError' is thrown.
+<span class="lineno">  706 </span>--
+<span class="lineno">  707 </span>-- @since 2.0.0
+<span class="lineno">  708 </span>mkNetworkDiscriminant
+<span class="lineno">  709 </span>    :: Integer
+<span class="lineno">  710 </span>    -&gt; Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
+<span class="lineno">  711 </span><span class="decl"><span class="istickedoff">mkNetworkDiscriminant nTag</span>
+<span class="lineno">  712 </span><span class="spaces">    </span><span class="istickedoff">| nTag &lt; 16 =  Right $ NetworkTag $ fromIntegral nTag</span>
+<span class="lineno">  713 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = Left $ ErrWrongNetworkTag nTag</span></span>
+<span class="lineno">  714 </span>
+<span class="lineno">  715 </span>-- | Retrieve the network discriminant of a given 'Address'.
+<span class="lineno">  716 </span>-- If the 'Address' is malformed or, not a shelley address, returns Nothing.
+<span class="lineno">  717 </span>--
+<span class="lineno">  718 </span>-- @since 2.0.0
+<span class="lineno">  719 </span>inspectNetworkDiscriminant
+<span class="lineno">  720 </span>    :: Address
+<span class="lineno">  721 </span>    -&gt; Maybe (NetworkDiscriminant Shelley)
+<span class="lineno">  722 </span><span class="decl"><span class="istickedoff">inspectNetworkDiscriminant addr =</span>
+<span class="lineno">  723 </span><span class="spaces">    </span><span class="istickedoff">inspectShelleyAddress <span class="nottickedoff">Nothing</span> addr $&gt;</span>
+<span class="lineno">  724 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  725 </span><span class="spaces">            </span><span class="istickedoff">bytes = unAddress addr</span>
+<span class="lineno">  726 </span><span class="spaces">            </span><span class="istickedoff">(fstByte, _) = first BS.head $ BS.splitAt 1 bytes</span>
+<span class="lineno">  727 </span><span class="spaces">            </span><span class="istickedoff">network  = fstByte .&amp;. 0b00001111</span>
+<span class="lineno">  728 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  729 </span><span class="spaces">            </span><span class="istickedoff">NetworkTag $ fromIntegral network</span></span>
+<span class="lineno">  730 </span>
+<span class="lineno">  731 </span>-- | 'NetworkDicriminant' for Cardano MainNet &amp; Shelley
+<span class="lineno">  732 </span>--
+<span class="lineno">  733 </span>-- @since 2.0.0
+<span class="lineno">  734 </span>shelleyMainnet :: NetworkDiscriminant Shelley
+<span class="lineno">  735 </span><span class="decl"><span class="istickedoff">shelleyMainnet = NetworkTag 1</span></span>
+<span class="lineno">  736 </span>
+<span class="lineno">  737 </span>-- | 'NetworkDicriminant' for Cardano Testnet &amp; Shelley
+<span class="lineno">  738 </span>--
+<span class="lineno">  739 </span>-- @since 2.0.0
+<span class="lineno">  740 </span>shelleyTestnet :: NetworkDiscriminant Shelley
+<span class="lineno">  741 </span><span class="decl"><span class="istickedoff">shelleyTestnet = NetworkTag 0</span></span>
 <span class="lineno">  742 </span>
-<span class="lineno">  743 </span>-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPrv'. this is
-<span class="lineno">  744 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
+<span class="lineno">  743 </span>--
+<span class="lineno">  744 </span>-- Unsafe
 <span class="lineno">  745 </span>--
-<span class="lineno">  746 </span>-- This can be useful however when serializing / deserializing such a type, or to
-<span class="lineno">  747 </span>-- speed up test code (and avoid having to do needless derivations from a master
-<span class="lineno">  748 </span>-- key down to an address key for instance).
+<span class="lineno">  746 </span>
+<span class="lineno">  747 </span>-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPrv'. this is
+<span class="lineno">  748 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
 <span class="lineno">  749 </span>--
-<span class="lineno">  750 </span>-- @since 2.0.0
-<span class="lineno">  751 </span>liftXPrv :: XPrv -&gt; Shelley depth XPrv
-<span class="lineno">  752 </span><span class="decl"><span class="nottickedoff">liftXPrv = Shelley</span></span>
-<span class="lineno">  753 </span>
-<span class="lineno">  754 </span>-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPub'. this is
-<span class="lineno">  755 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
-<span class="lineno">  756 </span>--
-<span class="lineno">  757 </span>-- This can be useful however when serializing / deserializing such a type, or to
-<span class="lineno">  758 </span>-- speed up test code (and avoid having to do needless derivations from a master
-<span class="lineno">  759 </span>-- key down to an address key for instance).
+<span class="lineno">  750 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  751 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  752 </span>-- key down to an address key for instance).
+<span class="lineno">  753 </span>--
+<span class="lineno">  754 </span>-- @since 2.0.0
+<span class="lineno">  755 </span>liftXPrv :: XPrv -&gt; Shelley depth XPrv
+<span class="lineno">  756 </span><span class="decl"><span class="nottickedoff">liftXPrv = Shelley</span></span>
+<span class="lineno">  757 </span>
+<span class="lineno">  758 </span>-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'XPub'. this is
+<span class="lineno">  759 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
 <span class="lineno">  760 </span>--
-<span class="lineno">  761 </span>-- @since 2.0.0
-<span class="lineno">  762 </span>liftXPub :: XPub -&gt; Shelley depth XPub
-<span class="lineno">  763 </span><span class="decl"><span class="istickedoff">liftXPub = Shelley</span></span>
-<span class="lineno">  764 </span>
-<span class="lineno">  765 </span>--
-<span class="lineno">  766 </span>-- Internal
-<span class="lineno">  767 </span>--
+<span class="lineno">  761 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  762 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  763 </span>-- key down to an address key for instance).
+<span class="lineno">  764 </span>--
+<span class="lineno">  765 </span>-- @since 2.0.0
+<span class="lineno">  766 </span>liftXPub :: XPub -&gt; Shelley depth XPub
+<span class="lineno">  767 </span><span class="decl"><span class="istickedoff">liftXPub = Shelley</span></span>
 <span class="lineno">  768 </span>
-<span class="lineno">  769 </span>-- Hash a public key
-<span class="lineno">  770 </span>blake2b224 :: Shelley depth XPub -&gt; ByteString
-<span class="lineno">  771 </span><span class="decl"><span class="istickedoff">blake2b224 =</span>
-<span class="lineno">  772 </span><span class="spaces">    </span><span class="istickedoff">BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey</span></span>
-<span class="lineno">  773 </span>
-<span class="lineno">  774 </span>-- Size, in bytes, of a hash of public key (without the corresponding chain code)
-<span class="lineno">  775 </span>pubkeyHashSize :: Int
-<span class="lineno">  776 </span><span class="decl"><span class="istickedoff">pubkeyHashSize = hashDigestSize <span class="nottickedoff">Blake2b_224</span></span></span>
+<span class="lineno">  769 </span>--
+<span class="lineno">  770 </span>-- Internal
+<span class="lineno">  771 </span>--
+<span class="lineno">  772 </span>
+<span class="lineno">  773 </span>-- Hash a public key
+<span class="lineno">  774 </span>blake2b224 :: Shelley depth XPub -&gt; ByteString
+<span class="lineno">  775 </span><span class="decl"><span class="istickedoff">blake2b224 =</span>
+<span class="lineno">  776 </span><span class="spaces">    </span><span class="istickedoff">BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey</span></span>
 <span class="lineno">  777 </span>
-<span class="lineno">  778 </span>-- Size, in bytes, of a hash of a script.
-<span class="lineno">  779 </span>scriptHashSize :: Int
-<span class="lineno">  780 </span><span class="decl"><span class="istickedoff">scriptHashSize = hashDigestSize <span class="nottickedoff">Blake2b_256</span></span></span>
+<span class="lineno">  778 </span>-- Size, in bytes, of a hash of public key (without the corresponding chain code)
+<span class="lineno">  779 </span>pubkeyHashSize :: Int
+<span class="lineno">  780 </span><span class="decl"><span class="istickedoff">pubkeyHashSize = hashDigestSize <span class="nottickedoff">Blake2b_224</span></span></span>
 <span class="lineno">  781 </span>
-<span class="lineno">  782 </span>-- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
-<span class="lineno">  783 </span>-- extension for Cardano:
-<span class="lineno">  784 </span>--
-<span class="lineno">  785 </span>-- https://github.com/input-output-hk/implementation-decisions/blob/e2d1bed5e617f0907bc5e12cf1c3f3302a4a7c42/text/1852-hd-chimeric.md
-<span class="lineno">  786 </span>--
-<span class="lineno">  787 </span>-- It indicates that the subtree of this node is used according to this
-<span class="lineno">  788 </span>-- specification.
-<span class="lineno">  789 </span>--
-<span class="lineno">  790 </span>-- Hardened derivation is used at this level.
-<span class="lineno">  791 </span>purposeIndex :: Word32
-<span class="lineno">  792 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000073c</span></span>
-<span class="lineno">  793 </span>
-<span class="lineno">  794 </span>-- One master node (seed) can be used for unlimited number of independent
-<span class="lineno">  795 </span>-- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
-<span class="lineno">  796 </span>-- same space for various cryptocoins has some disadvantages.
-<span class="lineno">  797 </span>--
-<span class="lineno">  798 </span>-- This level creates a separate subtree for every cryptocoin, avoiding reusing
-<span class="lineno">  799 </span>-- addresses across cryptocoins and improving privacy issues.
-<span class="lineno">  800 </span>--
-<span class="lineno">  801 </span>-- Coin type is a constant, set for each cryptocoin. For Cardano this constant
-<span class="lineno">  802 </span>-- is set to 1815' (or 0x80000717). 1815 is the birthyear of our beloved Ada
-<span class="lineno">  803 </span>-- Lovelace.
+<span class="lineno">  782 </span>-- Size, in bytes, of a hash of a script.
+<span class="lineno">  783 </span>scriptHashSize :: Int
+<span class="lineno">  784 </span><span class="decl"><span class="istickedoff">scriptHashSize = hashDigestSize <span class="nottickedoff">Blake2b_256</span></span></span>
+<span class="lineno">  785 </span>
+<span class="lineno">  786 </span>-- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
+<span class="lineno">  787 </span>-- extension for Cardano:
+<span class="lineno">  788 </span>--
+<span class="lineno">  789 </span>-- https://github.com/input-output-hk/implementation-decisions/blob/e2d1bed5e617f0907bc5e12cf1c3f3302a4a7c42/text/1852-hd-chimeric.md
+<span class="lineno">  790 </span>--
+<span class="lineno">  791 </span>-- It indicates that the subtree of this node is used according to this
+<span class="lineno">  792 </span>-- specification.
+<span class="lineno">  793 </span>--
+<span class="lineno">  794 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  795 </span>purposeIndex :: Word32
+<span class="lineno">  796 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000073c</span></span>
+<span class="lineno">  797 </span>
+<span class="lineno">  798 </span>-- One master node (seed) can be used for unlimited number of independent
+<span class="lineno">  799 </span>-- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
+<span class="lineno">  800 </span>-- same space for various cryptocoins has some disadvantages.
+<span class="lineno">  801 </span>--
+<span class="lineno">  802 </span>-- This level creates a separate subtree for every cryptocoin, avoiding reusing
+<span class="lineno">  803 </span>-- addresses across cryptocoins and improving privacy issues.
 <span class="lineno">  804 </span>--
-<span class="lineno">  805 </span>-- Hardened derivation is used at this level.
-<span class="lineno">  806 </span>coinTypeIndex :: Word32
-<span class="lineno">  807 </span><span class="decl"><span class="istickedoff">coinTypeIndex = 0x80000717</span></span>
-<span class="lineno">  808 </span>
-<span class="lineno">  809 </span>-- The minimum seed length for 'genMasterKeyFromMnemonic'.
-<span class="lineno">  810 </span>minSeedLengthBytes :: Int
-<span class="lineno">  811 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
+<span class="lineno">  805 </span>-- Coin type is a constant, set for each cryptocoin. For Cardano this constant
+<span class="lineno">  806 </span>-- is set to 1815' (or 0x80000717). 1815 is the birthyear of our beloved Ada
+<span class="lineno">  807 </span>-- Lovelace.
+<span class="lineno">  808 </span>--
+<span class="lineno">  809 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  810 </span>coinTypeIndex :: Word32
+<span class="lineno">  811 </span><span class="decl"><span class="istickedoff">coinTypeIndex = 0x80000717</span></span>
+<span class="lineno">  812 </span>
+<span class="lineno">  813 </span>-- The minimum seed length for 'genMasterKeyFromMnemonic'.
+<span class="lineno">  814 </span>minSeedLengthBytes :: Int
+<span class="lineno">  815 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
 
 </pre>
 </body>
