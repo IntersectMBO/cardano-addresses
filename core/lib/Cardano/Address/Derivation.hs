@@ -26,7 +26,6 @@ module Cardano.Address.Derivation
     , HardDerivation (..)
     , SoftDerivation (..)
     , StakingDerivation (..)
-    , MultisigDerivation (..)
 
     -- * Low-Level Cryptography Primitives
     -- ** XPrv
@@ -298,9 +297,11 @@ data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
 --     targets of a given transaction
 -- (b) internal change is for addresses used to handle the change of a
 --     the transaction within a given wallet
+-- (c) multisig keys
 data AccountingStyle
     = UTxOExternal
     | UTxOInternal
+    | Multisig
     deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
 
 instance NFData AccountingStyle
@@ -312,10 +313,12 @@ instance Enum AccountingStyle where
     toEnum = \case
         0 -> UTxOExternal
         1 -> UTxOInternal
+        3 -> Multisig
         _ -> error "AccountingStyle.toEnum: bad argument"
     fromEnum = \case
         UTxOExternal -> 0
         UTxOInternal -> 1
+        Multisig -> 3
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --
@@ -443,24 +446,6 @@ class StakingDerivation (key :: Depth -> * -> *) where
     deriveStakingPrivateKey
         :: key 'AccountK XPrv
         -> key 'StakingK XPrv
-
--- | An interface for doing multisig derivations from the account private key.
---
--- @since 3.0.0
-class MultisigDerivation (key :: Depth -> * -> *) where
-    -- | Derive a multisig key for a corresponding 'AccountK'. Note that wallet
-    -- software are by convention only using one multisig key per account, and always
-    -- the first account (with index 0'). This will change when multi-account support
-    -- comes soon.
-    --
-    -- Deriving multisig keys for something else than the initial account is not
-    -- recommended and can lead to incompatibility with existing wallet softwares
-    -- (Daedalus, Yoroi, Adalite...).
-    --
-    -- @since 3.0.0
-    deriveMultisigPrivateKey
-        :: key 'AccountK XPrv
-        -> key 'MultisigK XPrv
 
 -- | Abstract interface for constructing a /Master Key/.
 --

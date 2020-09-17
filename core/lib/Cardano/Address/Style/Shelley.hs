@@ -198,8 +198,6 @@ instance (NFData key) => NFData (Shelley depth key)
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > import Cardano.Address.Derivation ( AccountingStyle(..) )
--- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
@@ -240,10 +238,10 @@ instance Internal.HardDerivation Shelley where
         in
             Shelley acctXPrv
 
-    deriveAddressPrivateKey (Shelley accXPrv) accountingStyle addrIx =
+    deriveAddressPrivateKey (Shelley accXPrv) role addrIx =
         let
             changeCode =
-                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+                toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
                 deriveXPrv DerivationScheme2 accXPrv changeCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
@@ -252,9 +250,9 @@ instance Internal.HardDerivation Shelley where
             Shelley addrXPrv
 
 instance Internal.SoftDerivation Shelley where
-    deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
+    deriveAddressPublicKey (Shelley accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            let changeCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
                 deriveXPub DerivationScheme2 accXPub changeCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
@@ -276,6 +274,7 @@ instance Internal.StakingDerivation Shelley where
                 deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
         in
             Shelley stakeXPrv
+
 
 -- | Generate a root key from a corresponding mnemonic.
 --
@@ -352,6 +351,7 @@ deriveStakingPrivateKey
 deriveStakingPrivateKey =
     Internal.deriveStakingPrivateKey
 
+
 --
 -- Addresses
 --
@@ -359,7 +359,7 @@ deriveStakingPrivateKey =
 -- === Generating a 'PaymentAddress'
 --
 -- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub )
+-- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > bech32 $ paymentAddress tag (toXPub <$> addrK)
