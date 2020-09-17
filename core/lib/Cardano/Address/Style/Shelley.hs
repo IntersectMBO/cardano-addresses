@@ -32,6 +32,8 @@ module Cardano.Address.Style.Shelley
     , deriveAddressPrivateKey
     , deriveStakingPrivateKey
     , deriveAddressPublicKey
+    , deriveMultisigPrivateKey
+    , deriveMultisigPublicKey
 
       -- * Addresses
       -- $addresses
@@ -351,6 +353,32 @@ deriveStakingPrivateKey
 deriveStakingPrivateKey =
     Internal.deriveStakingPrivateKey
 
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives a multisig private key from the given account private key.
+--
+-- @since 3.0.0
+deriveMultisigPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Index 'Soft 'AddressK
+    -> Shelley 'MultisigK XPrv
+deriveMultisigPrivateKey accPrv addrIx =
+    let (Shelley xprv) = Internal.deriveAddressPrivateKey accPrv Internal.Multisig addrIx
+    in Shelley xprv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derives a multisig public key from the given account public key.
+--
+-- @since 3.0.0
+deriveMultisigPublicKey
+    :: Shelley 'AccountK XPub
+    -> Index 'Soft 'AddressK
+    -> Shelley 'MultisigK XPub
+deriveMultisigPublicKey accPub addrIx =
+    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Internal.Multisig addrIx
+    in Shelley xprv
 
 --
 -- Addresses
