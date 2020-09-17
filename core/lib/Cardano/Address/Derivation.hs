@@ -26,6 +26,7 @@ module Cardano.Address.Derivation
     , HardDerivation (..)
     , SoftDerivation (..)
     , StakingDerivation (..)
+    , MultisigDerivation (..)
 
     -- * Low-Level Cryptography Primitives
     -- ** XPrv
@@ -288,7 +289,7 @@ generateNew seed sndFactor =
 -- are no constructors for these.
 --
 -- @since 1.0.0
-data Depth = RootK | AccountK | AddressK | StakingK
+data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
 
 -- | Marker for addresses type engaged. We want to handle three cases here.
 -- The first two are pertinent to UTxO accounting
@@ -431,7 +432,8 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
 class StakingDerivation (key :: Depth -> * -> *) where
     -- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
     -- software are by convention only using one staking key per account, and always
-    -- the first account (with index 0').
+    -- the first account (with index 0'). This will change when multi-account support
+    -- comes soon.
     --
     -- Deriving staking keys for something else than the initial account is not
     -- recommended and can lead to incompatibility with existing wallet softwares
@@ -442,6 +444,23 @@ class StakingDerivation (key :: Depth -> * -> *) where
         :: key 'AccountK XPrv
         -> key 'StakingK XPrv
 
+-- | An interface for doing multisig derivations from the account private key.
+--
+-- @since 3.0.0
+class MultisigDerivation (key :: Depth -> * -> *) where
+    -- | Derive a multisig key for a corresponding 'AccountK'. Note that wallet
+    -- software are by convention only using one multisig key per account, and always
+    -- the first account (with index 0'). This will change when multi-account support
+    -- comes soon.
+    --
+    -- Deriving multisig keys for something else than the initial account is not
+    -- recommended and can lead to incompatibility with existing wallet softwares
+    -- (Daedalus, Yoroi, Adalite...).
+    --
+    -- @since 3.0.0
+    deriveMultisigPrivateKey
+        :: key 'AccountK XPrv
+        -> key 'MultisigK XPrv
 
 -- | Abstract interface for constructing a /Master Key/.
 --
