@@ -5,6 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -23,6 +24,7 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
     , getKey
+    , Role (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -76,8 +78,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
     , Index
@@ -132,6 +133,8 @@ import Data.Functor
     ( ($>) )
 import Data.Maybe
     ( fromMaybe, isNothing )
+import Data.Typeable
+    ( Typeable )
 import Data.Word
     ( Word32 )
 import Data.Word7
@@ -181,6 +184,31 @@ newtype Shelley (depth :: Depth) key = Shelley
 deriving instance (Functor (Shelley depth))
 instance (NFData key) => NFData (Shelley depth key)
 
+data Role
+    = UTxOExternal
+    | UTxOInternal
+    | Stake
+    | Multisig
+    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+
+instance NFData Role
+
+-- Not deriving 'Enum' because this could have a dramatic impact if we were
+-- to assign the wrong index to the corresponding constructor (by swapping
+-- around the constructor above for instance).
+instance Enum Role where
+    toEnum = \case
+        0 -> UTxOExternal
+        1 -> UTxOInternal
+        2 -> Stake
+        3 -> Multisig
+        _ -> error "Role.toEnum: bad argument"
+    fromEnum = \case
+        UTxOExternal -> 0
+        UTxOInternal -> 1
+        Stake -> 2
+        Multisig -> 3
+
 --
 -- Key Derivation
 --
@@ -223,7 +251,7 @@ instance Internal.GenMasterKey Shelley where
 instance Internal.HardDerivation Shelley where
     type AccountIndexDerivationType Shelley = 'Hardened
     type AddressIndexDerivationType Shelley = 'Soft
-    type WithAccountStyle Shelley = AccountingStyle
+    type WithAccountStyle Shelley = Role
 
     deriveAccountPrivateKey (Shelley rootXPrv) accIx =
         let
@@ -317,7 +345,7 @@ deriveAccountPrivateKey =
 -- @since 2.0.0
 deriveAddressPrivateKey
     :: Shelley 'AccountK XPrv
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Shelley 'AddressK XPrv
 deriveAddressPrivateKey =
@@ -330,7 +358,7 @@ deriveAddressPrivateKey =
 -- @since 2.0.0
 deriveAddressPublicKey
     :: Shelley 'AccountK XPub
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Shelley 'AddressK XPub
 deriveAddressPublicKey =
@@ -364,7 +392,7 @@ deriveMultisigPrivateKey
     -> Index 'Soft 'AddressK
     -> Shelley 'MultisigK XPrv
 deriveMultisigPrivateKey accPrv addrIx =
-    let (Shelley xprv) = Internal.deriveAddressPrivateKey accPrv Internal.Multisig addrIx
+    let (Shelley xprv) = Internal.deriveAddressPrivateKey accPrv Multisig addrIx
     in Shelley xprv
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
@@ -377,7 +405,7 @@ deriveMultisigPublicKey
     -> Index 'Soft 'AddressK
     -> Shelley 'MultisigK XPub
 deriveMultisigPublicKey accPub addrIx =
-    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Internal.Multisig addrIx
+    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Multisig addrIx
     in Shelley xprv
 
 --

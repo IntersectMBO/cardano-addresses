@@ -11,6 +11,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Cardano.Address.Style.ShelleySpec
     ( spec
     ) where
@@ -28,8 +30,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( AccountingStyle (..)
-    , Depth (..)
+    ( Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
@@ -44,7 +45,7 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Shelley (..), liftXPub, mkNetworkDiscriminant )
+    ( Role (..), Shelley (..), liftXPub, mkNetworkDiscriminant )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -64,6 +65,7 @@ import Test.Hspec
 import Test.QuickCheck
     ( Arbitrary (..)
     , Property
+    , arbitraryBoundedEnum
     , choose
     , expectFailure
     , property
@@ -87,11 +89,11 @@ spec = do
             property prop_publicChildKeyDerivation
 
     describe "Bounded / Enum relationship" $ do
-        it "Calling toEnum for invalid value gives a runtime err (AccountingStyle)"
-            (property prop_toEnumAccountingStyle)
+        it "Calling toEnum for invalid value gives a runtime err (Role)"
+            (property prop_toEnumRole)
 
     describe "Enum Roundtrip" $ do
-        it "AccountingStyle" (property prop_roundtripEnumAccountingStyle)
+        it "Role" (property prop_roundtripEnumRole)
 
     describe "Proper pointer addresses construction" $ do
         it "Using different numbers in StakingPointerAddress does not fail"
@@ -815,7 +817,7 @@ spec = do
 
 prop_publicChildKeyDerivation
     :: (SomeMnemonic, SndFactor)
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Property
 prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
@@ -836,18 +838,18 @@ prop_accountKeyDerivation (mw, (SndFactor sndFactor)) ix =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
 
-prop_toEnumAccountingStyle :: Int -> Property
-prop_toEnumAccountingStyle n =
+prop_toEnumRole :: Int -> Property
+prop_toEnumRole n =
     n > fromEnum UTxOInternal ==> expectFailure $ property $
-        (toEnum n :: AccountingStyle) `seq` ()
+        (toEnum n :: Role) `seq` ()
 
-prop_roundtripEnumAccountingStyle :: AccountingStyle -> Property
-prop_roundtripEnumAccountingStyle ix =
+prop_roundtripEnumRole :: Role -> Property
+prop_roundtripEnumRole ix =
     (toEnum . fromEnum) ix === ix
 
 prop_pointerAddressConstruction
     :: (SomeMnemonic, SndFactor)
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> NetworkDiscriminant Shelley
     -> ChainPointer
@@ -1125,3 +1127,7 @@ b16encode = encode EBase16 . T.encodeUtf8
 
 b16decode :: Text -> Either String ByteString
 b16decode = fromBase16 . T.encodeUtf8
+
+instance Arbitrary Role where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum

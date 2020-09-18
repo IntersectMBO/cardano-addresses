@@ -269,15 +269,7 @@ instance Internal.StakingDerivation Jormungandr where
         let (Jormungandr stakeXPrv) =
                 deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
         in Jormungandr stakeXPrv
-        {--
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
-            stakeXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
-        in
-            Jormungandr stakeXPrv
---}
+
 -- | Generate a root key from a corresponding mnemonic.
 --
 -- @since 2.0.0
