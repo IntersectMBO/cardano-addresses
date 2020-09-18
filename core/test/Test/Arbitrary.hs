@@ -82,7 +82,6 @@ import Test.QuickCheck
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
-
 --
 -- Arbitrary Instances
 --
@@ -169,7 +168,7 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen =  oneof [pure UTxOExternal, pure UTxOInternal]
+        let roleGen =  arbitraryBoundedEnum
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 

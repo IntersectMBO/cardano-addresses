@@ -74,7 +74,6 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , generateNew
-    , invariantAccountingStyle
     , xpubPublicKey
     )
 import Cardano.Address.Errors
@@ -219,7 +218,7 @@ instance Internal.HardDerivation Jormungandr where
     deriveAddressPrivateKey (Jormungandr accXPrv) accountingStyle addrIx =
         let
             changeCode = toEnum @(Index 'Soft _) $
-                fromEnum (invariantAccountingStyle accountingStyle)
+                fromEnum accountingStyle
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
                 deriveXPrv DerivationScheme2 accXPrv changeCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
@@ -231,7 +230,7 @@ instance Internal.SoftDerivation Jormungandr where
     deriveAddressPublicKey (Jormungandr accXPub) accountingStyle addrIx =
         fromMaybe errWrongIndex $ do
             let changeCode = toEnum @(Index 'Soft _) $
-                    fromEnum (invariantAccountingStyle accountingStyle)
+                    fromEnum accountingStyle
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
                 deriveXPub DerivationScheme2 accXPub changeCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
