@@ -264,12 +264,6 @@ instance Internal.SoftDerivation Jormungandr where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance Internal.StakingDerivation Jormungandr where
-    deriveStakingPrivateKey accXPrv =
-        let (Jormungandr stakeXPrv) =
-                deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
-        in Jormungandr stakeXPrv
-
 -- | Generate a root key from a corresponding mnemonic.
 --
 -- @since 2.0.0
@@ -342,8 +336,10 @@ deriveAddressPublicKey =
 deriveStakingPrivateKey
     :: Jormungandr 'AccountK XPrv
     -> Jormungandr 'StakingK XPrv
-deriveStakingPrivateKey =
-    Internal.deriveStakingPrivateKey
+deriveStakingPrivateKey accXPrv =
+    let (Jormungandr stakeXPrv) =
+            deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
+    in Jormungandr stakeXPrv
 
 --
 -- Addresses

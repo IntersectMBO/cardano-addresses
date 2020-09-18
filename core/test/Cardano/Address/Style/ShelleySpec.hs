@@ -36,7 +36,6 @@ import Cardano.Address.Derivation
     , HardDerivation (..)
     , Index
     , SoftDerivation (..)
-    , StakingDerivation (..)
     , XPrv
     , XPub
     , toXPub
@@ -45,7 +44,12 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Role (..), Shelley (..), liftXPub, mkNetworkDiscriminant )
+    ( Role (..)
+    , Shelley (..)
+    , deriveStakingPrivateKey
+    , liftXPub
+    , mkNetworkDiscriminant
+    )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding

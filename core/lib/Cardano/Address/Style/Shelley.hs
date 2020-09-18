@@ -295,12 +295,6 @@ instance Internal.SoftDerivation Shelley where
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
 
-instance Internal.StakingDerivation Shelley where
-    deriveStakingPrivateKey accXPrv =
-        let (Shelley stakeXPrv) =
-                deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
-        in Shelley stakeXPrv
-
 -- | Generate a root key from a corresponding mnemonic.
 --
 -- @since 2.0.0
@@ -373,8 +367,10 @@ deriveAddressPublicKey =
 deriveStakingPrivateKey
     :: Shelley 'AccountK XPrv
     -> Shelley 'StakingK XPrv
-deriveStakingPrivateKey =
-    Internal.deriveStakingPrivateKey
+deriveStakingPrivateKey accXPrv =
+    let (Shelley stakeXPrv) =
+            deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
+    in Shelley stakeXPrv
 
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.

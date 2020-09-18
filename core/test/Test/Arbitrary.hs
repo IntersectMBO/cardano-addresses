@@ -27,7 +27,6 @@ import Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index
-    , StakingDerivation (..)
     , XPrv
     , XPub
     , generate
@@ -78,9 +77,12 @@ import Numeric.Natural
 import Test.QuickCheck
     ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
+import qualified Cardano.Address.Style.Jormungandr as Jormungandr
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
+
 --
 -- Arbitrary Instances
 --
@@ -196,7 +198,7 @@ instance Arbitrary (Shelley 'StakingK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = deriveStakingPrivateKey acctK
+        let stakingK = Shelley.deriveStakingPrivateKey acctK
         pure $ toXPub <$> stakingK
 
 instance Arbitrary (Jormungandr 'StakingK XPub) where
@@ -206,7 +208,7 @@ instance Arbitrary (Jormungandr 'StakingK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = deriveStakingPrivateKey acctK
+        let stakingK = Jormungandr.deriveStakingPrivateKey acctK
         pure $ toXPub <$> stakingK
 
 instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
