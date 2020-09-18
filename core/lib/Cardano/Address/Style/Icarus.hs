@@ -219,7 +219,7 @@ instance Internal.GenMasterKey Icarus where
 instance Internal.HardDerivation Icarus where
     type AccountIndexDerivationType Icarus = 'Hardened
     type AddressIndexDerivationType Icarus = 'Soft
-    type WithAccountStyle Icarus = Role
+    type WithRole Icarus = Role
 
     deriveAccountPrivateKey (Icarus rootXPrv) accIx =
         let
@@ -238,9 +238,9 @@ instance Internal.HardDerivation Icarus where
 
     deriveAddressPrivateKey (Icarus accXPrv) role addrIx =
         let
-            changeCode = toEnum @(Index 'Soft _) $ fromEnum role
+            roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv changeCode
+                deriveXPrv DerivationScheme2 accXPrv roleCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
@@ -249,9 +249,9 @@ instance Internal.HardDerivation Icarus where
 instance Internal.SoftDerivation Icarus where
     deriveAddressPublicKey (Icarus accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $ fromEnum role
+            let roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub changeCode
+                deriveXPub DerivationScheme2 accXPub roleCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Icarus addrXPub

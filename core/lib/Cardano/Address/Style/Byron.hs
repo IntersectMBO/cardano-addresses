@@ -220,7 +220,7 @@ instance Internal.GenMasterKey Byron where
 instance Internal.HardDerivation Byron where
     type AddressIndexDerivationType Byron = 'WholeDomain
     type AccountIndexDerivationType Byron = 'WholeDomain
-    type WithAccountStyle Byron = ()
+    type WithRole Byron = ()
 
     deriveAccountPrivateKey rootXPrv accIx = Byron
         { getKey = deriveXPrv DerivationScheme1 (getKey rootXPrv) accIx

@@ -356,7 +356,7 @@ data DerivationType = Hardened | Soft | WholeDomain
 class HardDerivation (key :: Depth -> * -> *) where
     type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
-    type WithAccountStyle key :: *
+    type WithRole key :: *
 
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
@@ -375,7 +375,7 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- @since 1.0.0
     deriveAddressPrivateKey
         :: key 'AccountK XPrv
-        -> WithAccountStyle key
+        -> WithRole key
         -> Index (AddressIndexDerivationType key) 'AddressK
         -> key 'AddressK XPrv
 
@@ -390,7 +390,7 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
     -- @since 1.0.0
     deriveAddressPublicKey
         :: key 'AccountK XPub
-        -> WithAccountStyle key
+        -> WithRole key
         -> Index 'Soft 'AddressK
         -> key 'AddressK XPub
 
