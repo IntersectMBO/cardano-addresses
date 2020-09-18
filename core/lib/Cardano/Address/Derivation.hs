@@ -3,7 +3,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -19,7 +18,6 @@ module Cardano.Address.Derivation
       Index
     , Depth (..)
     , DerivationType (..)
-    , AccountingStyle (..)
 
     -- * Abstractions
     , GenMasterKey (..)
@@ -75,8 +73,6 @@ import Data.Either.Extra
     ( eitherToMaybe )
 import Data.String
     ( fromString )
-import Data.Typeable
-    ( Typeable )
 import Data.Word
     ( Word32 )
 import Fmt
@@ -289,36 +285,6 @@ generateNew seed sndFactor =
 --
 -- @since 1.0.0
 data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
-
--- | Marker for addresses type engaged. We want to handle three cases here.
--- The first two are pertinent to UTxO accounting
--- and the last one handles rewards from participation in staking.
--- (a) external chain is used for addresses that are part of the 'advertised'
---     targets of a given transaction
--- (b) internal change is for addresses used to handle the change of a
---     the transaction within a given wallet
--- (c) multisig keys
-data AccountingStyle
-    = UTxOExternal
-    | UTxOInternal
-    | Multisig
-    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
-
-instance NFData AccountingStyle
-
--- Not deriving 'Enum' because this could have a dramatic impact if we were
--- to assign the wrong index to the corresponding constructor (by swapping
--- around the constructor above for instance).
-instance Enum AccountingStyle where
-    toEnum = \case
-        0 -> UTxOExternal
-        1 -> UTxOInternal
-        3 -> Multisig
-        _ -> error "AccountingStyle.toEnum: bad argument"
-    fromEnum = \case
-        UTxOExternal -> 0
-        UTxOInternal -> 1
-        Multisig -> 3
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --
