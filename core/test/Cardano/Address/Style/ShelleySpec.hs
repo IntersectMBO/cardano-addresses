@@ -46,6 +46,8 @@ import Cardano.Address.Derivation
 import Cardano.Address.Style.Shelley
     ( Role (..)
     , Shelley (..)
+    , deriveMultisigPrivateKey
+    , deriveMultisigPublicKey
     , deriveStakingPrivateKey
     , liftXPub
     , mkNetworkDiscriminant
@@ -89,8 +91,10 @@ spec = do
     describe "BIP-0044 Derivation Properties" $ do
         it "deriveAccountPrivateKey works for various indexes" $
             property prop_accountKeyDerivation
-        it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i)" $
+        it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for any key" $
             property prop_publicChildKeyDerivation
+        it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for multisig" $
+            property prop_publicMultisigDerivation
 
     describe "Bounded / Enum relationship" $ do
         it "Calling toEnum for invalid value gives a runtime err (Role)"
@@ -831,6 +835,18 @@ prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
     addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
+
+prop_publicMultisigDerivation
+    :: (SomeMnemonic, SndFactor)
+    -> Index 'Soft 'AddressK
+    -> Property
+prop_publicMultisigDerivation (mw, (SndFactor sndFactor)) ix =
+    multisigXPub1 === multisigXPub2
+  where
+    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
+    multisigXPub1 = toXPub <$> deriveMultisigPrivateKey accXPrv ix
+    multisigXPub2 = deriveMultisigPublicKey (toXPub <$> accXPrv) ix
 
 prop_accountKeyDerivation
     :: (SomeMnemonic, SndFactor)
