@@ -20,6 +20,7 @@ module Cardano.Address.Derivation
     , Depth (..)
     , DerivationType (..)
     , AccountingStyle (..)
+    , invariantAccountingStyle
 
     -- * Abstractions
     , GenMasterKey (..)
@@ -319,6 +320,14 @@ instance Enum AccountingStyle where
         UTxOExternal -> 0
         UTxOInternal -> 1
         Multisig -> 3
+
+invariantAccountingStyle :: HasCallStack => AccountingStyle -> AccountingStyle
+invariantAccountingStyle role
+    | role == UTxOExternal || role ==  UTxOInternal = role
+    | otherwise = error
+      $ "accounting style "
+      ++ show role
+      ++ " was chosen, but expected either UTxOExternal or UTxOInternal"
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --

@@ -48,7 +48,7 @@ import Test.Arbitrary
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
-    ( Property, property, (===) )
+    ( Property, property, (===), (==>) )
 
 import qualified Data.Text as T
 
@@ -170,7 +170,7 @@ prop_publicChildKeyDerivation
     -> Index 'Soft 'AddressK
     -> Property
 prop_publicChildKeyDerivation mw cc ix =
-    addrXPub1 === addrXPub2
+    (cc == UTxOExternal || cc ==  UTxOInternal) ==> addrXPub1 === addrXPub2
   where
     rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound

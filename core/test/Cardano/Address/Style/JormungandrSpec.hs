@@ -74,7 +74,7 @@ prop_publicChildKeyDerivation
     -> Index 'Soft 'AddressK
     -> Property
 prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
-    addrXPub1 === addrXPub2
+    (cc == UTxOExternal || cc ==  UTxOInternal) ==> addrXPub1 === addrXPub2
   where
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound

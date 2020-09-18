@@ -22,7 +22,7 @@ import Prelude
 import Cardano.Address
     ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
 import Cardano.Address.Derivation
-    ( AccountingStyle
+    ( AccountingStyle (..)
     , Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
@@ -151,7 +151,7 @@ instance Arbitrary XPub where
 
 instance Arbitrary AccountingStyle where
     shrink _ = []
-    arbitrary = arbitraryBoundedEnum
+    arbitrary = oneof [pure UTxOExternal, pure UTxOInternal, pure Multisig]
 
 instance Arbitrary (Byron 'AddressK XPub) where
     shrink _ = []
@@ -169,7 +169,8 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        let roleGen =  oneof [pure UTxOExternal, pure UTxOInternal]
+        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'AddressK XPub) where
@@ -189,7 +190,8 @@ instance Arbitrary (Jormungandr 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        let roleGen =  oneof [pure UTxOExternal, pure UTxOInternal]
+        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'StakingK XPub) where
