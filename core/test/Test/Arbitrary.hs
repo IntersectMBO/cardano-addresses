@@ -189,7 +189,7 @@ instance Arbitrary (Jormungandr 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen =  oneof [pure UTxOExternal, pure UTxOInternal]
+        let roleGen = arbitraryBoundedEnum
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 

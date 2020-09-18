@@ -8,6 +8,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Cardano.Address.Style.JormungandrSpec
     ( spec
     ) where
@@ -15,8 +17,7 @@ module Cardano.Address.Style.JormungandrSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( AccountingStyle (..)
-    , Depth (..)
+    ( Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
@@ -26,7 +27,7 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Style.Jormungandr
-    ( Jormungandr (..) )
+    ( Jormungandr (..), Role (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic )
 import Data.ByteArray
@@ -38,6 +39,7 @@ import Test.Hspec
 import Test.QuickCheck
     ( Arbitrary (..)
     , Property
+    , arbitraryBoundedEnum
     , choose
     , expectFailure
     , property
@@ -58,11 +60,11 @@ spec = do
             property prop_publicChildKeyDerivation
 
     describe "Bounded / Enum relationship" $ do
-        it "Calling toEnum for invalid value gives a runtime err (AccountingStyle)"
-            (property prop_toEnumAccountingStyle)
+        it "Calling toEnum for invalid value gives a runtime err (Role)"
+            (property prop_toEnumRole)
 
     describe "Enum Roundtrip" $ do
-        it "AccountingStyle" (property prop_roundtripEnumAccountingStyle)
+        it "Role" (property prop_roundtripEnumRole)
 
 {-------------------------------------------------------------------------------
                                  Properties
@@ -70,11 +72,11 @@ spec = do
 
 prop_publicChildKeyDerivation
     :: (SomeMnemonic, SndFactor)
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Property
 prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
-    (cc == UTxOExternal || cc ==  UTxOInternal) ==> addrXPub1 === addrXPub2
+    addrXPub1 === addrXPub2
   where
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
@@ -91,13 +93,13 @@ prop_accountKeyDerivation (mw, (SndFactor sndFactor)) ix =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Jormungandr 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
 
-prop_toEnumAccountingStyle :: Int -> Property
-prop_toEnumAccountingStyle n =
+prop_toEnumRole :: Int -> Property
+prop_toEnumRole n =
     n > fromEnum UTxOInternal ==> expectFailure $ property $
-        (toEnum n :: AccountingStyle) `seq` ()
+        (toEnum n :: Role) `seq` ()
 
-prop_roundtripEnumAccountingStyle :: AccountingStyle -> Property
-prop_roundtripEnumAccountingStyle ix =
+prop_roundtripEnumRole :: Role -> Property
+prop_roundtripEnumRole ix =
     (toEnum . fromEnum) ix === ix
 
 {-------------------------------------------------------------------------------
@@ -113,3 +115,7 @@ instance Arbitrary SndFactor  where
         n <- choose (0, 64)
         bytes <- BS.pack <$> vector n
         return $ SndFactor $ BA.convert bytes
+
+instance Arbitrary Role where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum

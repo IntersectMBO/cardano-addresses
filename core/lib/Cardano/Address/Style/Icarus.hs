@@ -202,7 +202,7 @@ instance Enum Role where
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
 -- > let addIx = toEnum 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK External addIx
+-- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 
 instance Internal.GenMasterKey Icarus where
     type SecondFactor Icarus = ScrubbedBytes

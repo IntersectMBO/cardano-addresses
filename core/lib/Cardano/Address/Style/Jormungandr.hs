@@ -5,6 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -22,6 +23,7 @@ module Cardano.Address.Style.Jormungandr
       -- * Jormungandr
       Jormungandr
     , getKey
+    , Role (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -64,8 +66,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
     , Index
@@ -100,6 +101,8 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.Maybe
     ( fromMaybe )
+import Data.Typeable
+    ( Typeable )
 import Data.Word
     ( Word32 )
 import GHC.Generics
@@ -154,6 +157,28 @@ newtype Jormungandr (depth :: Depth) key = Jormungandr
 deriving instance (Functor (Jormungandr depth))
 instance (NFData key) => NFData (Jormungandr depth key)
 
+data Role
+    = UTxOExternal
+    | UTxOInternal
+    | Stake
+    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+
+instance NFData Role
+
+-- Not deriving 'Enum' because this could have a dramatic impact if we were
+-- to assign the wrong index to the corresponding constructor (by swapping
+-- around the constructor above for instance).
+instance Enum Role where
+    toEnum = \case
+        0 -> UTxOExternal
+        1 -> UTxOInternal
+        2 -> Stake
+        _ -> error "Role.toEnum: bad argument"
+    fromEnum = \case
+        UTxOExternal -> 0
+        UTxOInternal -> 1
+        Stake -> 2
+
 --
 -- Key Derivation
 --
@@ -173,8 +198,6 @@ instance (NFData key) => NFData (Jormungandr depth key)
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > import Cardano.Address.Derivation ( AccountingStyle(..) )
--- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
@@ -198,7 +221,7 @@ instance Internal.GenMasterKey Jormungandr where
 instance Internal.HardDerivation Jormungandr where
     type AccountIndexDerivationType Jormungandr = 'Hardened
     type AddressIndexDerivationType Jormungandr = 'Soft
-    type WithAccountStyle Jormungandr = AccountingStyle
+    type WithAccountStyle Jormungandr = Role
 
     deriveAccountPrivateKey (Jormungandr rootXPrv) accIx =
         let
@@ -215,10 +238,9 @@ instance Internal.HardDerivation Jormungandr where
         in
             Jormungandr acctXPrv
 
-    deriveAddressPrivateKey (Jormungandr accXPrv) accountingStyle addrIx =
+    deriveAddressPrivateKey (Jormungandr accXPrv) role addrIx =
         let
-            changeCode = toEnum @(Index 'Soft _) $
-                fromEnum accountingStyle
+            changeCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
                 deriveXPrv DerivationScheme2 accXPrv changeCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
@@ -227,10 +249,9 @@ instance Internal.HardDerivation Jormungandr where
             Jormungandr addrXPrv
 
 instance Internal.SoftDerivation Jormungandr where
-    deriveAddressPublicKey (Jormungandr accXPub) accountingStyle addrIx =
+    deriveAddressPublicKey (Jormungandr accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $
-                    fromEnum accountingStyle
+            let changeCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
                 deriveXPub DerivationScheme2 accXPub changeCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
@@ -244,7 +265,11 @@ instance Internal.SoftDerivation Jormungandr where
             \number of addresses for a given wallet."
 
 instance Internal.StakingDerivation Jormungandr where
-    deriveStakingPrivateKey (Jormungandr accXPrv) =
+    deriveStakingPrivateKey accXPrv =
+        let (Jormungandr stakeXPrv) =
+                deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
+        in Jormungandr stakeXPrv
+        {--
         let
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
                 deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
@@ -252,7 +277,7 @@ instance Internal.StakingDerivation Jormungandr where
                 deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
         in
             Jormungandr stakeXPrv
-
+--}
 -- | Generate a root key from a corresponding mnemonic.
 --
 -- @since 2.0.0
@@ -292,7 +317,7 @@ deriveAccountPrivateKey =
 -- @since 2.0.0
 deriveAddressPrivateKey
     :: Jormungandr 'AccountK XPrv
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Jormungandr 'AddressK XPrv
 deriveAddressPrivateKey =
@@ -305,7 +330,7 @@ deriveAddressPrivateKey =
 -- @since 2.0.0
 deriveAddressPublicKey
     :: Jormungandr 'AccountK XPub
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Jormungandr 'AddressK XPub
 deriveAddressPublicKey =
@@ -335,7 +360,7 @@ deriveStakingPrivateKey =
 -- === Generating a 'PaymentAddress'
 --
 -- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- > import Cardano.Address.Derivation ( toXPub(..) )
 -- >
 -- > bech32 $ paymentAddress incentivizedTestnet (toXPub <$> addrK)
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
