@@ -296,15 +296,10 @@ instance Internal.SoftDerivation Shelley where
             \number of addresses for a given wallet."
 
 instance Internal.StakingDerivation Shelley where
-    deriveStakingPrivateKey (Shelley accXPrv) =
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
-            stakeXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
-        in
-            Shelley stakeXPrv
-
+    deriveStakingPrivateKey accXPrv =
+        let (Shelley stakeXPrv) =
+                deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
+        in Shelley stakeXPrv
 
 -- | Generate a root key from a corresponding mnemonic.
 --
