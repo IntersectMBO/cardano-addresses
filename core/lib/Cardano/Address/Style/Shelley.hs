@@ -394,8 +394,8 @@ deriveMultisigPublicKey
     -> Index 'Soft 'AddressK
     -> Shelley 'MultisigK XPub
 deriveMultisigPublicKey accPub addrIx =
-    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Multisig addrIx
-    in Shelley xprv
+    let (Shelley xpub) = Internal.deriveAddressPublicKey accPub Multisig addrIx
+    in Shelley xpub
 
 --
 -- Addresses
