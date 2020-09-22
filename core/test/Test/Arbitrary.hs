@@ -22,13 +22,11 @@ import Prelude
 import Cardano.Address
     ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index
-    , StakingDerivation (..)
     , XPrv
     , XPub
     , generate
@@ -79,6 +77,8 @@ import Numeric.Natural
 import Test.QuickCheck
     ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
+import qualified Cardano.Address.Style.Jormungandr as Jormungandr
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
@@ -149,10 +149,6 @@ instance Arbitrary XPub where
     arbitrary =
         toXPub <$> arbitrary
 
-instance Arbitrary AccountingStyle where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
 instance Arbitrary (Byron 'AddressK XPub) where
     shrink _ = []
     arbitrary = do
@@ -169,7 +165,8 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        let roleGen =  arbitraryBoundedEnum
+        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'AddressK XPub) where
@@ -179,7 +176,8 @@ instance Arbitrary (Shelley 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        let roleGen = arbitraryBoundedEnum
+        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Jormungandr 'AddressK XPub) where
@@ -189,7 +187,8 @@ instance Arbitrary (Jormungandr 'AddressK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
+        let roleGen = arbitraryBoundedEnum
+        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'StakingK XPub) where
@@ -199,7 +198,7 @@ instance Arbitrary (Shelley 'StakingK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = deriveStakingPrivateKey acctK
+        let stakingK = Shelley.deriveStakingPrivateKey acctK
         pure $ toXPub <$> stakingK
 
 instance Arbitrary (Jormungandr 'StakingK XPub) where
@@ -209,7 +208,7 @@ instance Arbitrary (Jormungandr 'StakingK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = deriveStakingPrivateKey acctK
+        let stakingK = Jormungandr.deriveStakingPrivateKey acctK
         pure $ toXPub <$> stakingK
 
 instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where

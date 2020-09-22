@@ -3,7 +3,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -19,13 +18,11 @@ module Cardano.Address.Derivation
       Index
     , Depth (..)
     , DerivationType (..)
-    , AccountingStyle (..)
 
     -- * Abstractions
     , GenMasterKey (..)
     , HardDerivation (..)
     , SoftDerivation (..)
-    , StakingDerivation (..)
 
     -- * Low-Level Cryptography Primitives
     -- ** XPrv
@@ -75,8 +72,6 @@ import Data.Either.Extra
     ( eitherToMaybe )
 import Data.String
     ( fromString )
-import Data.Typeable
-    ( Typeable )
 import Data.Word
     ( Word32 )
 import Fmt
@@ -288,33 +283,7 @@ generateNew seed sndFactor =
 -- are no constructors for these.
 --
 -- @since 1.0.0
-data Depth = RootK | AccountK | AddressK | StakingK
-
--- | Marker for addresses type engaged. We want to handle three cases here.
--- The first two are pertinent to UTxO accounting
--- and the last one handles rewards from participation in staking.
--- (a) external chain is used for addresses that are part of the 'advertised'
---     targets of a given transaction
--- (b) internal change is for addresses used to handle the change of a
---     the transaction within a given wallet
-data AccountingStyle
-    = UTxOExternal
-    | UTxOInternal
-    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
-
-instance NFData AccountingStyle
-
--- Not deriving 'Enum' because this could have a dramatic impact if we were
--- to assign the wrong index to the corresponding constructor (by swapping
--- around the constructor above for instance).
-instance Enum AccountingStyle where
-    toEnum = \case
-        0 -> UTxOExternal
-        1 -> UTxOInternal
-        _ -> error "AccountingStyle.toEnum: bad argument"
-    fromEnum = \case
-        UTxOExternal -> 0
-        UTxOInternal -> 1
+data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --
@@ -387,7 +356,7 @@ data DerivationType = Hardened | Soft | WholeDomain
 class HardDerivation (key :: Depth -> * -> *) where
     type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
-    type WithAccountStyle key :: *
+    type WithRole key :: *
 
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
@@ -406,7 +375,7 @@ class HardDerivation (key :: Depth -> * -> *) where
     -- @since 1.0.0
     deriveAddressPrivateKey
         :: key 'AccountK XPrv
-        -> WithAccountStyle key
+        -> WithRole key
         -> Index (AddressIndexDerivationType key) 'AddressK
         -> key 'AddressK XPrv
 
@@ -421,26 +390,9 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
     -- @since 1.0.0
     deriveAddressPublicKey
         :: key 'AccountK XPub
-        -> AccountingStyle
+        -> WithRole key
         -> Index 'Soft 'AddressK
         -> key 'AddressK XPub
-
--- | An interface for doing staking derivations from the account private key.
---
--- @since 2.0.0
-class StakingDerivation (key :: Depth -> * -> *) where
-    -- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
-    -- software are by convention only using one staking key per account, and always
-    -- the first account (with index 0').
-    --
-    -- Deriving staking keys for something else than the initial account is not
-    -- recommended and can lead to incompatibility with existing wallet softwares
-    -- (Daedalus, Yoroi, Adalite...).
-    --
-    -- @since 2.0.0
-    deriveStakingPrivateKey
-        :: key 'AccountK XPrv
-        -> key 'StakingK XPrv
 
 
 -- | Abstract interface for constructing a /Master Key/.

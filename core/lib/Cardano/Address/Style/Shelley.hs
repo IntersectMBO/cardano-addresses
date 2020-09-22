@@ -5,6 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -23,6 +24,7 @@ module Cardano.Address.Style.Shelley
       -- * Shelley
       Shelley
     , getKey
+    , Role (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -32,6 +34,8 @@ module Cardano.Address.Style.Shelley
     , deriveAddressPrivateKey
     , deriveStakingPrivateKey
     , deriveAddressPublicKey
+    , deriveMultisigPrivateKey
+    , deriveMultisigPublicKey
 
       -- * Addresses
       -- $addresses
@@ -74,8 +78,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
     , Index
@@ -130,6 +133,8 @@ import Data.Functor
     ( ($>) )
 import Data.Maybe
     ( fromMaybe, isNothing )
+import Data.Typeable
+    ( Typeable )
 import Data.Word
     ( Word32 )
 import Data.Word7
@@ -179,6 +184,31 @@ newtype Shelley (depth :: Depth) key = Shelley
 deriving instance (Functor (Shelley depth))
 instance (NFData key) => NFData (Shelley depth key)
 
+data Role
+    = UTxOExternal
+    | UTxOInternal
+    | Stake
+    | Multisig
+    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+
+instance NFData Role
+
+-- Not deriving 'Enum' because this could have a dramatic impact if we were
+-- to assign the wrong index to the corresponding constructor (by swapping
+-- around the constructor above for instance).
+instance Enum Role where
+    toEnum = \case
+        0 -> UTxOExternal
+        1 -> UTxOInternal
+        2 -> Stake
+        3 -> Multisig
+        _ -> error "Role.toEnum: bad argument"
+    fromEnum = \case
+        UTxOExternal -> 0
+        UTxOInternal -> 1
+        Stake -> 2
+        Multisig -> 3
+
 --
 -- Key Derivation
 --
@@ -198,8 +228,6 @@ instance (NFData key) => NFData (Shelley depth key)
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > import Cardano.Address.Derivation ( AccountingStyle(..) )
--- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
@@ -223,7 +251,7 @@ instance Internal.GenMasterKey Shelley where
 instance Internal.HardDerivation Shelley where
     type AccountIndexDerivationType Shelley = 'Hardened
     type AddressIndexDerivationType Shelley = 'Soft
-    type WithAccountStyle Shelley = AccountingStyle
+    type WithRole Shelley = Role
 
     deriveAccountPrivateKey (Shelley rootXPrv) accIx =
         let
@@ -240,23 +268,22 @@ instance Internal.HardDerivation Shelley where
         in
             Shelley acctXPrv
 
-    deriveAddressPrivateKey (Shelley accXPrv) accountingStyle addrIx =
+    deriveAddressPrivateKey (Shelley accXPrv) role addrIx =
         let
-            changeCode =
-                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv changeCode
+                deriveXPrv DerivationScheme2 accXPrv roleCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
             Shelley addrXPrv
 
 instance Internal.SoftDerivation Shelley where
-    deriveAddressPublicKey (Shelley accXPub) accountingStyle addrIx =
+    deriveAddressPublicKey (Shelley accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            let roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub changeCode
+                deriveXPub DerivationScheme2 accXPub roleCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Shelley addrXPub
@@ -266,16 +293,6 @@ instance Internal.SoftDerivation Shelley where
             \index for soft path derivation ( " ++ show addrIx ++ "). This is \
             \either a programmer error, or, we may have reached the maximum \
             \number of addresses for a given wallet."
-
-instance Internal.StakingDerivation Shelley where
-    deriveStakingPrivateKey (Shelley accXPrv) =
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (toEnum @(Index 'Soft _) 2)
-            stakeXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv (minBound @(Index 'Soft _))
-        in
-            Shelley stakeXPrv
 
 -- | Generate a root key from a corresponding mnemonic.
 --
@@ -316,7 +333,7 @@ deriveAccountPrivateKey =
 -- @since 2.0.0
 deriveAddressPrivateKey
     :: Shelley 'AccountK XPrv
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Shelley 'AddressK XPrv
 deriveAddressPrivateKey =
@@ -329,7 +346,7 @@ deriveAddressPrivateKey =
 -- @since 2.0.0
 deriveAddressPublicKey
     :: Shelley 'AccountK XPub
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Shelley 'AddressK XPub
 deriveAddressPublicKey =
@@ -349,8 +366,37 @@ deriveAddressPublicKey =
 deriveStakingPrivateKey
     :: Shelley 'AccountK XPrv
     -> Shelley 'StakingK XPrv
-deriveStakingPrivateKey =
-    Internal.deriveStakingPrivateKey
+deriveStakingPrivateKey accXPrv =
+    let (Shelley stakeXPrv) =
+            deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
+    in Shelley stakeXPrv
+
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives a multisig private key from the given account private key.
+--
+-- @since 3.0.0
+deriveMultisigPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Index 'Soft 'AddressK
+    -> Shelley 'MultisigK XPrv
+deriveMultisigPrivateKey accPrv addrIx =
+    let (Shelley xprv) = Internal.deriveAddressPrivateKey accPrv Multisig addrIx
+    in Shelley xprv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derives a multisig public key from the given account public key.
+--
+-- @since 3.0.0
+deriveMultisigPublicKey
+    :: Shelley 'AccountK XPub
+    -> Index 'Soft 'AddressK
+    -> Shelley 'MultisigK XPub
+deriveMultisigPublicKey accPub addrIx =
+    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Multisig addrIx
+    in Shelley xprv
 
 --
 -- Addresses
@@ -359,7 +405,7 @@ deriveStakingPrivateKey =
 -- === Generating a 'PaymentAddress'
 --
 -- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub )
+-- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > bech32 $ paymentAddress tag (toXPub <$> addrK)

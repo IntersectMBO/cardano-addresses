@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -22,6 +23,7 @@ module Cardano.Address.Style.Icarus
       -- * Icarus
       Icarus
     , getKey
+    , Role (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -61,8 +63,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
-    ( AccountingStyle
-    , Depth (..)
+    ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
     , Index
@@ -107,6 +108,8 @@ import Data.Function
     ( (&) )
 import Data.Maybe
     ( fromMaybe )
+import Data.Typeable
+    ( Typeable )
 import Data.Word
     ( Word32, Word8 )
 import GHC.Generics
@@ -157,6 +160,25 @@ newtype Icarus (depth :: Depth) key = Icarus
 deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
+data Role
+    = UTxOExternal
+    | UTxOInternal
+    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+
+instance NFData Role
+
+-- Not deriving 'Enum' because this could have a dramatic impact if we were
+-- to assign the wrong index to the corresponding constructor (by swapping
+-- around the constructor above for instance).
+instance Enum Role where
+    toEnum = \case
+        0 -> UTxOExternal
+        1 -> UTxOInternal
+        _ -> error "Role.toEnum: bad argument"
+    fromEnum = \case
+        UTxOExternal -> 0
+        UTxOInternal -> 1
+
 --
 -- Key Derivation
 --
@@ -176,8 +198,6 @@ instance (NFData key) => NFData (Icarus depth key)
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > import Cardano.Address.Derivation ( AccountingStyle(..) )
--- >
 -- > let accIx = toEnum 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
@@ -199,7 +219,7 @@ instance Internal.GenMasterKey Icarus where
 instance Internal.HardDerivation Icarus where
     type AccountIndexDerivationType Icarus = 'Hardened
     type AddressIndexDerivationType Icarus = 'Soft
-    type WithAccountStyle Icarus = AccountingStyle
+    type WithRole Icarus = Role
 
     deriveAccountPrivateKey (Icarus rootXPrv) accIx =
         let
@@ -216,23 +236,22 @@ instance Internal.HardDerivation Icarus where
         in
             Icarus acctXPrv
 
-    deriveAddressPrivateKey (Icarus accXPrv) accountingStyle addrIx =
+    deriveAddressPrivateKey (Icarus accXPrv) role addrIx =
         let
-            changeCode =
-                toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv changeCode
+                deriveXPrv DerivationScheme2 accXPrv roleCode
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
             Icarus addrXPrv
 
 instance Internal.SoftDerivation Icarus where
-    deriveAddressPublicKey (Icarus accXPub) accountingStyle addrIx =
+    deriveAddressPublicKey (Icarus accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let changeCode = toEnum @(Index 'Soft _) $ fromEnum accountingStyle
+            let roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub changeCode
+                deriveXPub DerivationScheme2 accXPub roleCode
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Icarus addrXPub
@@ -283,7 +302,7 @@ deriveAccountPrivateKey =
 -- @since 1.0.0
 deriveAddressPrivateKey
     :: Icarus 'AccountK XPrv
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Icarus 'AddressK XPrv
 deriveAddressPrivateKey =
@@ -296,7 +315,7 @@ deriveAddressPrivateKey =
 -- @since 1.0.0
 deriveAddressPublicKey
     :: Icarus 'AccountK XPub
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Icarus 'AddressK XPub
 deriveAddressPublicKey =
@@ -309,7 +328,7 @@ deriveAddressPublicKey =
 -- === Generating a 'PaymentAddress'
 --
 -- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( AccountingStyle(..), toXPub(..) )
+-- > import Cardano.Address.Derivation ( toXPub(..) )
 -- >
 -- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"

@@ -9,6 +9,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Cardano.Address.Style.IcarusSpec
     ( spec
     ) where
@@ -18,8 +20,7 @@ import Prelude
 import Cardano.Address
     ( PaymentAddress (..), base58 )
 import Cardano.Address.Derivation
-    ( AccountingStyle (..)
-    , Depth (..)
+    ( Depth (..)
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
@@ -29,7 +30,11 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Style.Icarus
-    ( Icarus (..), icarusMainnet, unsafeGenerateKeyFromHardwareLedger )
+    ( Icarus (..)
+    , Role (..)
+    , icarusMainnet
+    , unsafeGenerateKeyFromHardwareLedger
+    )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
@@ -48,7 +53,7 @@ import Test.Arbitrary
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
-    ( Property, property, (===) )
+    ( Arbitrary (..), Property, arbitraryBoundedEnum, property, (===) )
 
 import qualified Data.Text as T
 
@@ -166,18 +171,18 @@ spec = do
 -- For details see <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#private-parent-key--public-child-key bip-0039>
 prop_publicChildKeyDerivation
     :: SomeMnemonic
-    -> AccountingStyle
+    -> Role
     -> Index 'Soft 'AddressK
     -> Property
-prop_publicChildKeyDerivation mw cc ix =
+prop_publicChildKeyDerivation mw role ix =
     addrXPub1 === addrXPub2
   where
     rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     -- N(CKDpriv((kpar, cpar), i))
-    addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
+    addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv role ix
     -- CKDpub(N(kpar, cpar), i)
-    addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
+    addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) role ix
 
 prop_accountKeyDerivation
     :: SomeMnemonic
@@ -196,7 +201,7 @@ prop_accountKeyDerivation mw ix =
 data GoldenAddressGeneration = GoldenAddressGeneration
     { goldSeed :: SomeMnemonic
     , goldAcctIx :: Index 'Hardened 'AccountK
-    , goldAcctStyle :: AccountingStyle
+    , goldAcctStyle :: Role
     , goldAddrIx :: Index 'Soft 'AddressK
     , goldAddr :: Text
     }
@@ -262,3 +267,7 @@ goldenHardwareLedger sentence addrs =
     title = T.unpack
         $ T.unwords
         $ take 3 sentence ++ [ "..." ] ++ drop (length sentence - 3) sentence
+
+instance Arbitrary Role where
+    shrink _ = []
+    arbitrary = arbitraryBoundedEnum
