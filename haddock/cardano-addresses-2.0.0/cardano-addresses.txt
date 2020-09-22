@@ -201,6 +201,7 @@ RootK :: Depth
 AccountK :: Depth
 AddressK :: Depth
 StakingK :: Depth
+MultisigK :: Depth
 
 -- | Type of derivation that should be used with the given indexes.
 --   
@@ -215,16 +216,6 @@ data DerivationType
 Hardened :: DerivationType
 Soft :: DerivationType
 WholeDomain :: DerivationType
-
--- | Marker for addresses type engaged. We want to handle three cases here.
---   The first two are pertinent to UTxO accounting and the last one
---   handles rewards from participation in staking. (a) external chain is
---   used for addresses that are part of the <tt>advertised</tt> targets of
---   a given transaction (b) internal change is for addresses used to
---   handle the change of a the transaction within a given wallet
-data AccountingStyle
-UTxOExternal :: AccountingStyle
-UTxOInternal :: AccountingStyle
 
 -- | Abstract interface for constructing a <i>Master Key</i>.
 class GenMasterKey (key :: Depth -> * -> *) where {
@@ -242,7 +233,7 @@ genMasterKeyFromXPrv :: GenMasterKey key => XPrv -> key  'RootK XPrv
 class HardDerivation (key :: Depth -> * -> *) where {
     type family AccountIndexDerivationType key :: DerivationType;
     type family AddressIndexDerivationType key :: DerivationType;
-    type family WithAccountStyle key :: *;
+    type family WithRole key :: *;
 }
 
 -- | Derives account private key from the given root private key, using
@@ -253,7 +244,7 @@ deriveAccountPrivateKey :: HardDerivation key => key  'RootK XPrv -> Index (Acco
 -- | Derives address private key from the given account private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> WithAccountStyle key -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
+deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> WithRole key -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
 
 -- | An interface for doing soft derivations from an account public key
 class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
@@ -264,20 +255,7 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
 --   
 --   This is the preferred way of deriving new sequential address public
 --   keys.
-deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> key  'AddressK XPub
-
--- | An interface for doing staking derivations from the account private
---   key.
-class StakingDerivation (key :: Depth -> * -> *)
-
--- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one staking key per
---   account, and always the first account (with index 0').
---   
---   Deriving staking keys for something else than the initial account is
---   not recommended and can lead to incompatibility with existing wallet
---   softwares (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey :: StakingDerivation key => key  'AccountK XPrv -> key  'StakingK XPrv
+deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> WithRole key -> Index  'Soft  'AddressK -> key  'AddressK XPub
 
 -- | An opaque type representing an extended private key.
 --   
@@ -357,11 +335,6 @@ instance GHC.Classes.Ord (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Classes.Eq (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Show.Show (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Generics.Generic (Cardano.Address.Derivation.Index derivationType depth)
-instance GHC.Enum.Bounded Cardano.Address.Derivation.AccountingStyle
-instance GHC.Classes.Ord Cardano.Address.Derivation.AccountingStyle
-instance GHC.Classes.Eq Cardano.Address.Derivation.AccountingStyle
-instance GHC.Show.Show Cardano.Address.Derivation.AccountingStyle
-instance GHC.Generics.Generic Cardano.Address.Derivation.AccountingStyle
 instance Control.DeepSeq.NFData (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Hardened depth)
 instance GHC.Enum.Bounded (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft depth)
@@ -370,8 +343,6 @@ instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Deriva
 instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.Soft depth)
 instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain depth)
 instance Formatting.Buildable.Buildable (Cardano.Address.Derivation.Index derivationType depth)
-instance Control.DeepSeq.NFData Cardano.Address.Derivation.AccountingStyle
-instance GHC.Enum.Enum Cardano.Address.Derivation.AccountingStyle
 
 module Cardano.Address
 
@@ -493,10 +464,10 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Jormungandr  'RootK
 deriveAccountPrivateKey :: Jormungandr  'RootK XPrv -> Index  'Hardened  'AccountK -> Jormungandr  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPrv
+deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPub
+deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPub
 
 -- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
 --   wallet software are by convention only using one staking key per
@@ -537,15 +508,21 @@ incentivizedTestnet :: NetworkDiscriminant Jormungandr
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPrv :: XPrv -> Jormungandr depth XPrv
+instance GHC.Enum.Bounded Cardano.Address.Style.Jormungandr.Role
+instance GHC.Classes.Ord Cardano.Address.Style.Jormungandr.Role
+instance GHC.Classes.Eq Cardano.Address.Style.Jormungandr.Role
+instance GHC.Show.Show Cardano.Address.Style.Jormungandr.Role
+instance GHC.Generics.Generic Cardano.Address.Style.Jormungandr.Role
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Jormungandr.Jormungandr depth)
+instance Control.DeepSeq.NFData Cardano.Address.Style.Jormungandr.Role
+instance GHC.Enum.Enum Cardano.Address.Style.Jormungandr.Role
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Jormungandr.Jormungandr
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Jormungandr.Jormungandr
 instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Jormungandr.Jormungandr
@@ -694,10 +671,10 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
 deriveAccountPrivateKey :: Icarus  'RootK XPrv -> Index  'Hardened  'AccountK -> Icarus  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Icarus  'AddressK XPrv
+deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Icarus  'AddressK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Icarus  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Icarus  'AddressK XPub
+deriveAddressPublicKey :: Icarus  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Icarus  'AddressK XPub
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
@@ -729,13 +706,20 @@ liftXPrv :: XPrv -> Icarus depth XPrv
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPub :: XPub -> Icarus depth XPub
+instance GHC.Enum.Bounded Cardano.Address.Style.Icarus.Role
+instance GHC.Classes.Ord Cardano.Address.Style.Icarus.Role
+instance GHC.Classes.Eq Cardano.Address.Style.Icarus.Role
+instance GHC.Show.Show Cardano.Address.Style.Icarus.Role
+instance GHC.Generics.Generic Cardano.Address.Style.Icarus.Role
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Icarus.Icarus depth)
+instance Control.DeepSeq.NFData Cardano.Address.Style.Icarus.Role
+instance GHC.Enum.Enum Cardano.Address.Style.Icarus.Role
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Icarus.Icarus depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Icarus.Icarus
-instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Icarus.Icarus
 instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Icarus.Icarus
@@ -780,7 +764,7 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPr
 deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
+deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
 
 -- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
 --   wallet software are by convention only using one staking key per
@@ -792,7 +776,13 @@ deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> AccountingStyle -> Index  
 deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Shelley  'AccountK XPub -> AccountingStyle -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
+deriveAddressPublicKey :: Shelley  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
+
+-- | Derives a multisig private key from the given account private key.
+deriveMultisigPrivateKey :: Shelley  'AccountK XPrv -> Index  'Soft  'AddressK -> Shelley  'MultisigK XPrv
+
+-- | Derives a multisig public key from the given account public key.
+deriveMultisigPublicKey :: Shelley  'AccountK XPub -> Index  'Soft  'AddressK -> Shelley  'MultisigK XPub
 
 -- | Analyze an <a>Address</a> to know whether it's a Shelley address or
 --   not.
@@ -872,16 +862,22 @@ liftXPub :: XPub -> Shelley depth XPub
 instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrExtendAddress
+instance GHC.Enum.Bounded Cardano.Address.Style.Shelley.Role
+instance GHC.Classes.Ord Cardano.Address.Style.Shelley.Role
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.Role
+instance GHC.Show.Show Cardano.Address.Style.Shelley.Role
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.Role
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
 instance Formatting.Buildable.Buildable Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance Control.DeepSeq.NFData Cardano.Address.Style.Shelley.Role
+instance GHC.Enum.Enum Cardano.Address.Style.Shelley.Role
+instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
 instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Shelley.Shelley depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Shelley.Shelley
-instance Cardano.Address.Derivation.StakingDerivation Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.StakeAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
