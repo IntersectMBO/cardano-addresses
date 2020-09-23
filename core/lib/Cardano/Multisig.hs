@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -25,6 +26,8 @@ import Control.DeepSeq
     ( NFData )
 import Data.ByteString
     ( ByteString )
+import Data.Foldable
+    ( foldl' )
 import Data.Word
     ( Word8 )
 import GHC.Generics
@@ -67,3 +70,15 @@ toCBOR (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
             <> CBOR.encodeBytes verKeyHash
     in CBOR.toStrictByteString encoding
 toCBOR _ = undefined
+
+encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
+encodeFoldable encode xs = wrapArray len contents
+  where
+    (len, contents) = foldl' go (0, mempty) xs
+    go (!l, !enc) next = (l + 1, enc <> encode next)
+
+    wrapArray :: Word -> CBOR.Encoding -> CBOR.Encoding
+    wrapArray l content =
+        if l <= 23
+        then CBOR.encodeListLen l <> content
+        else CBOR.encodeListLenIndef <> content <> CBOR.encodeBreak
