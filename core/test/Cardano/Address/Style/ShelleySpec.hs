@@ -54,6 +54,12 @@ import Cardano.Address.Style.Shelley
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
+import Cardano.Multisig
+    ( MultisigScript (..)
+    , VerificationKeyHash (..)
+    , fromVerificationKey
+    , toCBOR
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Data.ByteArray
@@ -95,6 +101,20 @@ spec = do
             property prop_publicChildKeyDerivation
         it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for multisig" $
             property prop_publicMultisigDerivation
+        it "multisig script hashes - golden tests" $ do
+            let mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
+                           , "company", "walk", "dog" ]
+            let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
+            let sndFactor = mempty
+            let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+            let accXPrv = deriveAccountPrivateKey rootK minBound
+            let multisigXPub = toXPub <$> deriveMultisigPrivateKey accXPrv minBound
+            let verKeyHash@(VerificationKeyHash payload) = fromVerificationKey multisigXPub
+            (T.decodeUtf8 $ encode EBase16 payload) `shouldBe`
+                "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
+            let script = RequireSignatureOf verKeyHash
+            (T.decodeUtf8 $ encode EBase16 (toCBOR script) ) `shouldBe`
+                "82008200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
 
     describe "Bounded / Enum relationship" $ do
         it "Calling toEnum for invalid value gives a runtime err (Role)"

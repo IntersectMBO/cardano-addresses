@@ -10,6 +10,7 @@ module Cardano.Multisig
     , VerificationKeyHash (..)
     , fromVerificationKey
     , unsafeVerificationKeyHash
+    , toCBOR
     ) where
 
 import Prelude
@@ -28,6 +29,10 @@ import Data.Word
     ( Word8 )
 import GHC.Generics
     ( Generic )
+
+import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.CBOR.Encoding as CBOR
+
 
 -- | A 'MultisigScript' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -52,3 +57,13 @@ fromVerificationKey = VerificationKeyHash . blake2b224
 
 unsafeVerificationKeyHash :: ByteString -> VerificationKeyHash
 unsafeVerificationKeyHash = VerificationKeyHash . invariantSize pubkeyHashSize
+
+toCBOR :: MultisigScript -> ByteString
+toCBOR (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
+    let encoding = CBOR.encodeListLen 2
+            <> CBOR.encodeWord8 0
+            <> CBOR.encodeListLen 2
+            <> CBOR.encodeWord 0
+            <> CBOR.encodeBytes verKeyHash
+    in CBOR.toStrictByteString encoding
+toCBOR _ = undefined
