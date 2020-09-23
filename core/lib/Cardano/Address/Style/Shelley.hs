@@ -61,6 +61,7 @@ module Cardano.Address.Style.Shelley
       -- Internals
     , minSeedLengthBytes
     , hashSize
+    , blake2b224
     ) where
 
 import Prelude
