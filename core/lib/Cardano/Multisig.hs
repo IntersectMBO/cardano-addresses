@@ -70,21 +70,24 @@ unsafeVerificationKeyHash = VerificationKeyHash . invariantSize pubkeyHashSize
 
 toCBOR' :: MultisigScript -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
-    encodeMultiscriptCtr 0 <> CBOR.encodeBytes verKeyHash
+    encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
 toCBOR' (RequireAllOf contents) =
-    encodeMultiscriptCtr 1 <> encodeFoldable toCBOR' contents
+    encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR' contents
 toCBOR' (RequireAnyOf contents) =
-    encodeMultiscriptCtr 2 <> encodeFoldable toCBOR' contents
+    encodeMultiscriptCtr 2 2 <> encodeFoldable toCBOR' contents
 toCBOR' (RequireMOf m contents) =
-    encodeMultiscriptCtr 3 <> CBOR.encodeInt (fromInteger $ toInteger m) <> encodeFoldable toCBOR' contents
+    encodeMultiscriptCtr 3 3 <> CBOR.encodeInt (fromInteger $ toInteger m)
+    <> encodeFoldable toCBOR' contents
 
 toCBOR :: MultisigScript -> ByteString
-toCBOR = CBOR.toStrictByteString . toCBOR'
+toCBOR script = CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
 
-encodeMultiscriptCtr :: Word -> CBOR.Encoding
-encodeMultiscriptCtr num =
-    CBOR.encodeListLen 2 <> CBOR.encodeWord8 0 <> CBOR.encodeListLen 2
-            <> CBOR.encodeWord num
+encodeMultisigBeginning :: CBOR.Encoding
+encodeMultisigBeginning = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0
+
+encodeMultiscriptCtr :: Word -> Word -> CBOR.Encoding
+encodeMultiscriptCtr ctrIndex listLen =
+    CBOR.encodeListLen listLen <> CBOR.encodeWord ctrIndex
 
 encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
 encodeFoldable encode xs = wrapArray len contents
