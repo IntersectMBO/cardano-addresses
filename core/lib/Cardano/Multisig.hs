@@ -68,15 +68,23 @@ fromVerificationKey = VerificationKeyHash . blake2b224
 unsafeVerificationKeyHash :: ByteString -> VerificationKeyHash
 unsafeVerificationKeyHash = VerificationKeyHash . invariantSize pubkeyHashSize
 
+toCBOR' :: MultisigScript -> CBOR.Encoding
+toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
+    encodeMultiscriptCtr 0 <> CBOR.encodeBytes verKeyHash
+toCBOR' (RequireAllOf contents) =
+    encodeMultiscriptCtr 1 <> encodeFoldable toCBOR' contents
+toCBOR' (RequireAnyOf contents) =
+    encodeMultiscriptCtr 2 <> encodeFoldable toCBOR' contents
+toCBOR' (RequireMOf m contents) =
+    encodeMultiscriptCtr 3 <> CBOR.encodeInt (fromInteger $ toInteger m) <> encodeFoldable toCBOR' contents
+
 toCBOR :: MultisigScript -> ByteString
-toCBOR (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
-    let encoding = CBOR.encodeListLen 2
-            <> CBOR.encodeWord8 0
-            <> CBOR.encodeListLen 2
-            <> CBOR.encodeWord 0
-            <> CBOR.encodeBytes verKeyHash
-    in CBOR.toStrictByteString encoding
-toCBOR _ = undefined
+toCBOR = CBOR.toStrictByteString . toCBOR'
+
+encodeMultiscriptCtr :: Word -> CBOR.Encoding
+encodeMultiscriptCtr num =
+    CBOR.encodeListLen 2 <> CBOR.encodeWord8 0 <> CBOR.encodeListLen 2
+            <> CBOR.encodeWord num
 
 encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
 encodeFoldable encode xs = wrapArray len contents
@@ -85,10 +93,10 @@ encodeFoldable encode xs = wrapArray len contents
     go (!l, !enc) next = (l + 1, enc <> encode next)
 
     wrapArray :: Word -> CBOR.Encoding -> CBOR.Encoding
-    wrapArray l content =
-        if l <= 23
-        then CBOR.encodeListLen l <> content
-        else CBOR.encodeListLenIndef <> content <> CBOR.encodeBreak
+    wrapArray len' contents' =
+        if len' <= 23
+        then CBOR.encodeListLen len' <> contents'
+        else CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
 
 toScriptHash :: MultisigScript -> ByteString
 toScriptHash script = digest $ nativeMultiSigTag <> toCBOR script
