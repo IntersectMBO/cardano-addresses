@@ -119,5 +119,34 @@ spec = do
                 \00581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb723\
                 \93215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca063ce9c32d\
                 \fae6bc6a3e47f8da07ee4fb8e1a3901559"
+
+        it "nested 1" $ do
+            let nested = RequireAllOf [verKeyHash3, verKeyHash4]
+            let script = RequireMOf 2 [verKeyHash1, verKeyHash2, nested]
+            (toHexText (toCBOR script) ) `shouldBe`
+                "8200830302838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
+                \200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8201828200581c\
+                \ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca0\
+                \63ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
+
+        it "nested 2" $ do
+            let nested = RequireAnyOf [verKeyHash2, verKeyHash3, verKeyHash4]
+            let script = RequireAllOf [verKeyHash1, nested]
+            (toHexText (toCBOR script) ) `shouldBe`
+                "82008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82\
+                \02838200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581c\
+                \ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca\
+                \063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
+
+        it "nested 3" $ do
+            let nested' = RequireAnyOf [verKeyHash3, verKeyHash4]
+            let nested = RequireAllOf [verKeyHash1, nested']
+            let script = RequireMOf 1 [verKeyHash1, nested]
+            (toHexText (toCBOR script) ) `shouldBe`
+                "8200830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
+                \201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82028282\
+                \00581cffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c9683402\
+                \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
+
   where
     toHexText = T.decodeUtf8 . encode EBase16
