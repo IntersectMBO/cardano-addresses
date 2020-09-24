@@ -26,12 +26,7 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Multisig
-    ( MultisigScript (..)
-    , VerificationKeyHash (..)
-    , fromVerificationKey
-    , toCBOR
-    , toScriptHash
-    )
+    ( MultisigScript (..), fromVerificationKey, toCBOR, toScriptHash )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Test.Hspec
@@ -105,13 +100,24 @@ spec = do
             (toHexText (toCBOR script) ) `shouldBe`
                 "82008202828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a50437\
                 \9cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-
-        it "RequireAllOf for index=0 and index=1 keys" $ do
+        it "RequireAllOf for index=0, index=1 and index=2 keys" $ do
             let script = RequireAnyOf [verKeyHash1, verKeyHash2, verKeyHash3]
             (toHexText (toCBOR script) ) `shouldBe`
                 "82008202838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8200\
                 \581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb72393\
                 \215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
 
+        it "RequireMOf 1 out of index=0 and index=1 keys" $ do
+            let script = RequireMOf 1 [verKeyHash1, verKeyHash2]
+            (toHexText (toCBOR script) ) `shouldBe`
+                "8200830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504\
+                \379cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
+        it "RequireAllOf 2 out of index=0, index=1, index=2 and index=3 keys" $ do
+            let script = RequireMOf 2 [verKeyHash1, verKeyHash2, verKeyHash3, verKeyHash4]
+            (toHexText (toCBOR script) ) `shouldBe`
+                "8200830302848200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82\
+                \00581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb723\
+                \93215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca063ce9c32d\
+                \fae6bc6a3e47f8da07ee4fb8e1a3901559"
   where
     toHexText = T.decodeUtf8 . encode EBase16
