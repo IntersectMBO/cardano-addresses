@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3a04ec03b953233f256abe8da1a2bef34c96f45cb8711f761711d6f5ec5a167c
+-- hash: 6fa0bf9ad42c06cbc027a80bd3319dbe33816ffffbe116c1a16ff5e73af0feaf
 
 name:           cardano-addresses
 version:        2.1.0
@@ -84,6 +84,7 @@ test-suite unit
       Cardano.AddressSpec
       Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
+      Cardano.MultisigSpec
       Codec.Binary.EncodingSpec
       Data.Word7Spec
       Test.Arbitrary

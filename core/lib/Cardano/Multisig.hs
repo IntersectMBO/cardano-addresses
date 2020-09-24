@@ -4,6 +4,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Cardano.Multisig
     (
@@ -12,6 +13,7 @@ module Cardano.Multisig
     , fromVerificationKey
     , unsafeVerificationKeyHash
     , toCBOR
+    , toScriptHash
     ) where
 
 import Prelude
@@ -24,6 +26,10 @@ import Cardano.Address.Style.Shelley
     ( Shelley, blake2b224, pubkeyHashSize )
 import Control.DeepSeq
     ( NFData )
+import Crypto.Hash
+    ( hash )
+import Crypto.Hash.Algorithms
+    ( Blake2b_224 )
 import Data.ByteString
     ( ByteString )
 import Data.Foldable
@@ -35,6 +41,7 @@ import GHC.Generics
 
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
+import qualified Data.ByteArray as BA
 
 
 -- | A 'MultisigScript' type represents multi signature script. The script embodies conditions
@@ -82,3 +89,11 @@ encodeFoldable encode xs = wrapArray len contents
         if l <= 23
         then CBOR.encodeListLen l <> content
         else CBOR.encodeListLenIndef <> content <> CBOR.encodeBreak
+
+toScriptHash :: MultisigScript -> ByteString
+toScriptHash script = digest $ nativeMultiSigTag <> toCBOR script
+  where
+      nativeMultiSigTag :: ByteString
+      nativeMultiSigTag = "\00"
+
+      digest = BA.convert . hash @_ @Blake2b_224
