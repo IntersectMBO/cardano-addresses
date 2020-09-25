@@ -11,9 +11,11 @@ module Cardano.Multisig
       MultisigScript (..)
     , VerificationKeyHash (..)
     , fromVerificationKey
-    , unsafeVerificationKeyHash
-    , toCBOR
+    , verificationKeyHashFromBytes
     , toScriptHash
+
+    -- * Internal
+    , toCBOR
     ) where
 
 import Prelude
@@ -57,6 +59,11 @@ data MultisigScript =
 
 instance NFData MultisigScript
 
+-- | A 'VerificationKeyHash' type represents verification key hash
+-- that participate in building MultisigScript. The hash is expected to have size of
+-- 28-byte.
+--
+-- @since 3.0.0
 newtype VerificationKeyHash = VerificationKeyHash ByteString
     deriving (Generic, Show, Eq)
 
@@ -65,8 +72,8 @@ instance NFData VerificationKeyHash
 fromVerificationKey :: Shelley 'MultisigK XPub -> VerificationKeyHash
 fromVerificationKey = VerificationKeyHash . blake2b224
 
-unsafeVerificationKeyHash :: ByteString -> VerificationKeyHash
-unsafeVerificationKeyHash = VerificationKeyHash . invariantSize pubkeyHashSize
+verificationKeyHashFromBytes :: ByteString -> VerificationKeyHash
+verificationKeyHashFromBytes = VerificationKeyHash . invariantSize pubkeyHashSize
 
 toCBOR' :: MultisigScript -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
@@ -79,12 +86,12 @@ toCBOR' (RequireMOf m contents) =
     encodeMultiscriptCtr 3 3 <> CBOR.encodeInt (fromInteger $ toInteger m)
     <> encodeFoldable toCBOR' contents
 
+-- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
+-- This is basically doing the symbolically following:
+-- toCBOR [0,multisigScript]
 toCBOR :: MultisigScript -> ByteString
 toCBOR script =
     CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
-
-toCBOR'' :: MultisigScript -> ByteString
-toCBOR'' script = CBOR.toStrictByteString $ toCBOR' script
 
 encodeMultisigBeginning :: CBOR.Encoding
 encodeMultisigBeginning = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0
@@ -105,6 +112,10 @@ encodeFoldable encode xs = wrapArray len contents
         then CBOR.encodeListLen len' <> contents'
         else CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
 
+-- | This function realizes what cardano-node's
+-- `Api.serialiseToRawBytes $ Api.scriptHash script` realizes
+-- This is basically doing the symbolically the following (using symbols from toCBOR):
+-- digest $ (nativeMultisigTag <> toCBOR multisigScript )
 toScriptHash :: MultisigScript -> ByteString
 toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
   where
@@ -112,3 +123,6 @@ toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
       nativeMultiSigTag = "\00"
 
       digest = BA.convert . hash @_ @Blake2b_224
+
+      toCBOR'' :: MultisigScript -> ByteString
+      toCBOR'' script' = CBOR.toStrictByteString $ toCBOR' script'
