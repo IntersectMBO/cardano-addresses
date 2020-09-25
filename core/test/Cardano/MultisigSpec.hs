@@ -34,8 +34,6 @@ import Test.Hspec
 
 import qualified Data.Text.Encoding as T
 
-import qualified Debug.Trace as TR
-
 spec :: Spec
 spec = do
     describe "Multisig CBOR and hashes - golden tests" $ do
@@ -49,7 +47,6 @@ spec = do
 
         let index1 = minBound
         let multisigXPub1 = toXPub <$> deriveMultisigPrivateKey accXPrv index1
-        -- let (VerificationKeyHash payload) = multisigXPub1
         -- "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
         let verKeyHash1 = RequireSignatureOf $ fromVerificationKey multisigXPub1
 
@@ -69,7 +66,7 @@ spec = do
         let verKeyHash4 = RequireSignatureOf $ fromVerificationKey multisigXPub4
 
         it "RequireSignatureOf index=0" $ do
-            TR.trace ("script raw bytes:"<>show (toScriptHash verKeyHash1)) $ (toHexText (toCBOR verKeyHash1) ) `shouldBe`
+            (toHexText (toCBOR verKeyHash1) ) `shouldBe`
                 "82008200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
             (toHexText (toScriptHash verKeyHash1) )  `shouldBe`
                 "59fd497a34ac3e5abf2c8a703e3aaf3a2750e207b139d65d08d2c1b3"

@@ -80,7 +80,11 @@ toCBOR' (RequireMOf m contents) =
     <> encodeFoldable toCBOR' contents
 
 toCBOR :: MultisigScript -> ByteString
-toCBOR script = CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
+toCBOR script =
+    CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
+
+toCBOR'' :: MultisigScript -> ByteString
+toCBOR'' script = CBOR.toStrictByteString $ toCBOR' script
 
 encodeMultisigBeginning :: CBOR.Encoding
 encodeMultisigBeginning = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0
@@ -102,7 +106,7 @@ encodeFoldable encode xs = wrapArray len contents
         else CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
 
 toScriptHash :: MultisigScript -> ByteString
-toScriptHash script = digest $ nativeMultiSigTag <> toCBOR script
+toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
   where
       nativeMultiSigTag :: ByteString
       nativeMultiSigTag = "\00"
