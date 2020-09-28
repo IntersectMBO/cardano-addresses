@@ -56,9 +56,9 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectAddress ["Shelley", "by value", "stake_key_hash"] []
         "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
 
-    -- reward account: scripthash32
+    -- reward account: scripthash28
     specInspectAddress ["Shelley", "by value", "script_hash"] []
-        "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mrgdp5xscfm7jc"
+        "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
 
     -- cardano-cli generated --testnet-magic 42 addresses
     specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash"] []
@@ -80,10 +80,9 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectInvalid "Wrong input size of 28" []
         "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65"
 
-    -- 28-byte long script hash
+    -- 32-byte long script hash
     specInspectInvalid "Unknown address type" []
-        "addr1y9xup4n8cyckl7zw2u33pcn9ake3xvzy3vmtw9u79rw5r8ky\
-        \6pru7d6jgn4t89vy3n3d68sx5uej906uwpp83dtefn6qv4hscd"
+        "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mrgdp5xscfm7jc"
 
     -- Provided key is not the root key.
     specInspectInvalid "Failed to decrypt derivation path"
