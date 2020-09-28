@@ -83,7 +83,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 
   $ cat addr.prv \
   | cardano-address key public \
-  | cardano-address address payment --network-tag 0
+  | cardano-address address payment --network-tag testnet
 
   addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek
 ```
@@ -101,7 +101,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 
   $ cat addr.prv \
   | cardano-address key public \
-  | cardano-address address payment --network-tag 0 \
+  | cardano-address address payment --network-tag testnet \
   | cardano-address address delegation $(cat stake.prv | cardano-address key public)
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
 ```

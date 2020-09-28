@@ -64,7 +64,7 @@ mod liftCmd = command "inspect" $
             , string "Example:"
             , indent 2 $ bold $ string "$ cat addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag 0 \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address delegation $(cat stake.prv | "<>progName<>" key public) \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address inspect"
             , indent 2 $ string "{"
