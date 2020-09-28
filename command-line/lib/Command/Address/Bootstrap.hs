@@ -66,7 +66,7 @@ mod liftCmd = command "bootstrap" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Byron > root.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 14H/42H > addr.prv"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child --legacy 14H/42H | tee addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap --root $(cat root.prv | "<>progName<>" key public) \\"
             , indent 8 $ bold $ string "--network-tag 764824073 14H/42H"
