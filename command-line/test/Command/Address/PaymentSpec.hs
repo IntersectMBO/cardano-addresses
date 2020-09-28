@@ -13,22 +13,29 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "address", "payment" ] $ do
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" 0
+    specShelley defaultPhrase "1852H/1815H/0H/0/0" "0"
         "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
 
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" 3
+    specShelley defaultPhrase "1852H/1815H/0H/0/0" "3"
         "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
+
+    specShelley defaultPhrase "1852H/1815H/0H/0/0" "testnet"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+
+    specShelley defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
+        "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
 
     specMalformedNetwork "💩"
 
     specInvalidNetwork "42"
+    specInvalidNetwork "staging"
 
-specShelley :: [String] -> String -> Int -> String -> SpecWith ()
+specShelley :: [String] -> String -> String -> String -> SpecWith ()
 specShelley phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
     out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public" ]
-       >>= cli [ "address", "payment", "--network-tag", show networkTag ]
+       >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` want
 
 specMalformedNetwork :: String -> SpecWith ()
@@ -37,7 +44,7 @@ specMalformedNetwork networkTag = it ("malformed network " <> networkTag) $ do
         >>= cli [ "key", "public" ]
         >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` ""
-    err `shouldContain` "Invalid network tag. Must be a integer value."
+    err `shouldContain` "Invalid network tag. Must be an integer value or one of the allowed keywords:"
     err `shouldContain` "Usage"
 
 specInvalidNetwork :: String -> SpecWith ()
@@ -46,7 +53,7 @@ specInvalidNetwork networkTag = it ("invalid network " <> networkTag) $ do
         >>= cli [ "key", "public" ]
         >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` ""
-    err `shouldContain` "Invalid network tag. Must be between"
+    err `shouldContain` "Invalid network tag."
 
 defaultPhrase :: [String]
 defaultPhrase =

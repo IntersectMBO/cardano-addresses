@@ -16,6 +16,8 @@ import Prelude
 
 import Cardano.Address
     ( NetworkTag (..) )
+import Data.List
+    ( intercalate )
 import Options.Applicative
     ( Parser
     , completer
@@ -25,6 +27,7 @@ import Options.Applicative
     , long
     , metavar
     , option
+    , (<|>)
     )
 import Options.Applicative.Help.Pretty
     ( string, vsep )
@@ -52,24 +55,25 @@ networkTagOpt style = option (eitherReader reader) $ mempty
     doc style' =
         [ "A tag which identifies a Cardano network."
         , ""
-        ] ++ case style' of
-        Byron ->
-            [ "┌ Byron / Icarus ──────────"
-            , "│ mainnet: " <> show (unNetworkTag (snd Byron.byronMainnet))
-            , "│ staging: " <> show (unNetworkTag (snd Byron.byronStaging))
-            , "│ testnet: " <> show (unNetworkTag (snd Byron.byronTestnet))
-            ]
-        Icarus ->
-            doc Byron
-        Jormungandr ->
-            [ "┌ Jormungandr ─────────────"
-            , "│ testnet: " <> show (unNetworkTag Jormungandr.incentivizedTestnet)
-            ]
-        Shelley ->
-            [ "┌ Shelley ─────────────────"
-            , "│ mainnet: " <> show (unNetworkTag Shelley.shelleyMainnet)
-            , "│ testnet: " <> show (unNetworkTag Shelley.shelleyTestnet)
-            ]
+        , header
+        ]
+        ++ (fmtAllowedKeyword <$> ("" : allowedKeywords style'))
+        ++
+        [ ""
+        , "...or alternatively, an explicit network tag as an integer."
+        ]
+      where
+        header = case style' of
+            Byron ->
+                "┌ Byron / Icarus ──────────"
+            Icarus ->
+                "┌ Byron / Icarus ──────────"
+            Jormungandr ->
+                "┌ Jormungandr ─────────────"
+            Shelley ->
+                "┌ Shelley ─────────────────"
+        fmtAllowedKeyword network =
+            "│ " <> network
 
     tagsFor = \case
         Byron ->
@@ -87,8 +91,25 @@ networkTagOpt style = option (eitherReader reader) $ mempty
             , unNetworkTag Shelley.shelleyTestnet
             ]
 
-    reader =
-        maybe
-            (Left "Invalid network tag. Must be a integer value.")
-            (Right . NetworkTag)
-            . readMaybe
+    reader str = maybe (Left err) Right
+        ((NetworkTag <$> readMaybe str) <|> (readKeywordMaybe str style))
+      where
+        err =
+            "Invalid network tag. Must be an integer value or one of the \
+            \allowed keywords: " <> intercalate ", " (allowedKeywords style)
+
+    readKeywordMaybe str = \case
+        Byron | str == "mainnet" -> pure (snd Byron.byronMainnet)
+        Byron | str == "staging" -> pure (snd Byron.byronStaging)
+        Byron | str == "testnet" -> pure (snd Byron.byronTestnet)
+        Icarus -> readKeywordMaybe str Byron
+        Shelley | str == "mainnet" -> pure Shelley.shelleyMainnet
+        Shelley | str == "testnet" -> pure Shelley.shelleyTestnet
+        Jormungandr | str == "testnet" -> pure Jormungandr.incentivizedTestnet
+        _ -> Nothing
+
+    allowedKeywords = \case
+        Byron -> ["mainnet", "staging", "testnet"]
+        Icarus -> allowedKeywords Byron
+        Shelley -> ["mainnet", "testnet"]
+        Jormungandr -> ["testnet"]

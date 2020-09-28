@@ -58,7 +58,7 @@ mod liftCmd = command "payment" $
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag 0"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet"
             , indent 2 $ string "addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek"
             ])
   where

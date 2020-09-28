@@ -63,7 +63,7 @@ mod liftCmd = command "stake" $
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat stake.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address stake --network-tag 0"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address stake --network-tag testnet"
             , indent 2 $ string "stake_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35"
             ])
   where
