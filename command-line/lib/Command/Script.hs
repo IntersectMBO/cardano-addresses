@@ -13,6 +13,7 @@ module Command.Script
     -- * Internal
     , requireSignatureOfParser
     , requireAllOfParser
+    , requireAnyOfParser
     ) where
 
 import Cardano.Multisig
@@ -86,7 +87,9 @@ scriptParser = do
 
 multisigScriptParser :: ReadP MultisigScript
 multisigScriptParser =
-    requireSignatureOfParser <++ requireAllOfParser
+    requireAllOfParser <++
+    requireAnyOfParser <++
+    requireSignatureOfParser
 
 requireSignatureOfParser :: ReadP MultisigScript
 requireSignatureOfParser = do
@@ -104,6 +107,18 @@ requireAllOfParser :: ReadP MultisigScript
 requireAllOfParser = do
     P.skipSpaces
     _identifier <- P.string "all"
+    content <- commonPart
+    return $ RequireAllOf content
+
+requireAnyOfParser :: ReadP MultisigScript
+requireAnyOfParser = do
+    P.skipSpaces
+    _identifier <- P.string "any"
+    content <- commonPart
+    return $ RequireAnyOf content
+
+commonPart :: ReadP [MultisigScript]
+commonPart = do
     P.skipSpaces
     _open <- P.string "["
     P.skipSpaces
@@ -111,4 +126,4 @@ requireAllOfParser = do
     P.skipSpaces
     _close <- P.string "]"
     P.skipSpaces
-    return $ RequireAllOf content
+    return content

@@ -12,7 +12,7 @@ import Cardano.Multisig
 import Codec.Binary.Encoding
     ( fromBase16 )
 import Command.Script
-    ( requireAllOfParser, requireSignatureOfParser )
+    ( requireAllOfParser, requireAnyOfParser, requireSignatureOfParser )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -64,6 +64,37 @@ spec = do
                 , RequireSignatureOf $ VerificationKeyHash bytes2
                 , RequireSignatureOf $ VerificationKeyHash bytes3 ]
         valuesParserUnitTest requireAllOfParser script4 expected3
+
+    describe "requireAnyOfParser : unit tests" $ do
+        let script1 = "any ["<>verKeyH1<>"]"
+        let expected1 = RequireAnyOf
+                [ RequireSignatureOf $ VerificationKeyHash bytes1 ]
+        valuesParserUnitTest requireAnyOfParser script1 expected1
+
+        let script2 = " any   [ "<>verKeyH1<>"  ] "
+        valuesParserUnitTest requireAnyOfParser script2 expected1
+
+        let script3 = "any ["<>verKeyH1<>", "<>verKeyH2<>"]"
+        let expected2 = RequireAnyOf
+                [ RequireSignatureOf $ VerificationKeyHash bytes1
+                , RequireSignatureOf $ VerificationKeyHash bytes2 ]
+        valuesParserUnitTest requireAnyOfParser script3 expected2
+
+        let script4 = "any ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
+        let expected3 = RequireAnyOf
+                [ RequireSignatureOf $ VerificationKeyHash bytes1
+                , RequireSignatureOf $ VerificationKeyHash bytes2
+                , RequireSignatureOf $ VerificationKeyHash bytes3 ]
+        valuesParserUnitTest requireAnyOfParser script4 expected3
+
+        let script5 = "any ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
+        let expected4 = RequireAnyOf
+                [ RequireSignatureOf $ VerificationKeyHash bytes1
+                , RequireAllOf
+                  [ RequireSignatureOf $ VerificationKeyHash bytes2
+                  , RequireSignatureOf $ VerificationKeyHash bytes3 ]
+                ]
+        valuesParserUnitTest requireAnyOfParser script5 expected4
 
 
 valuesParserUnitTest
