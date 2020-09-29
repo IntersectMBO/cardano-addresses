@@ -55,12 +55,14 @@ import System.IO.Extra
 import qualified Command.Address as Address
 import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
+import qualified Command.Script as Script
 import qualified Command.Version as Version
 
 data CLI
     = RecoveryPhrase RecoveryPhrase.Cmd
     | Key Key.Cmd
     | Address Address.Cmd
+    | Script Script.Cmd
     | Version
     deriving (Show)
 
@@ -87,6 +89,7 @@ cli = info (helper <*> parser) $ mempty
         [ RecoveryPhrase.mod RecoveryPhrase
         , Key.mod Key
         , Address.mod Address
+        , Script.mod Script
         ])
 
 -- | Run a given command
@@ -95,6 +98,7 @@ run = handle prettyIOException . \case
     RecoveryPhrase sub -> RecoveryPhrase.run sub
     Key sub -> Key.run sub
     Address sub -> Address.run sub
+    Script sub -> Script.run sub
     Version -> Version.run
 
 -- | Parse command line options and arguments
