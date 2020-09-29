@@ -1,5 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 
+{-# OPTIONS_HADDOCK hide #-}
+
 module System.Git.TH
     ( gitRevParseHEAD
     ) where
