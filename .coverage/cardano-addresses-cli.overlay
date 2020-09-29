@@ -8,7 +8,7 @@ module "Command.RecoveryPhrase" {
 
 module "Command.RecoveryPhrase.Generate" {
   tick function "showsPrec" [Show instance];
-  tick "size" [Record Accessor"];
+  tick "size" [Record Accessor];
 }
 
 module "Command.Key" {
@@ -17,15 +17,15 @@ module "Command.Key" {
 
 module "Command.Key.FromRecoveryPhrase" {
   tick function "showsPrec" [Show instance];
-  tick "encoding" [Record Accessor"];
-  tick "style" [Record Accessor"];
+  tick "encoding" [Record Accessor];
+  tick "style" [Record Accessor];
 }
 
 module "Command.Key.Child" {
   tick function "showsPrec" [Show instance];
-  tick "encoding" [Record Accessor"];
-  tick "scheme" [Record Accessor"];
-  tick "path" [Record Accessor"];
+  tick "encoding" [Record Accessor];
+  tick "scheme" [Record Accessor];
+  tick "path" [Record Accessor];
 }
 
 module "Command.Key.Public" {
@@ -43,30 +43,36 @@ module "Command.Address" {
 
 module "Command.Address.Bootstrap" {
   tick function "showsPrec" [Show instance];
-  tick "rootXPub" [Record Accessor"];
-  tick "derivationPath" [Record Accessor"];
-  tick "networkTag" [Record Accessor"];
+  tick "rootXPub" [Record Accessor];
+  tick "derivationPath" [Record Accessor];
+  tick "networkTag" [Record Accessor];
 }
 
 module "Command.Address.Payment" {
   tick function "showsPrec" [Show instance];
-  tick "networkTag" [Record Accessor"];
+  tick "networkTag" [Record Accessor];
 }
 
 module "Command.Address.Delegation" {
   tick function "showsPrec" [Show instance];
-  tick "xpub" [Record Accessor"];
+  tick "xpub" [Record Accessor];
 }
 
 module "Command.Address.Pointer" {
   tick function "showsPrec" [Show instance];
-  tick "_slotNum" [Record Accessor"];
-  tick "_transactionIndex" [Record Accessor"];
-  tick "_outputIndex" [Record Accessor"];
+  tick "_slotNum" [Record Accessor];
+  tick "_transactionIndex" [Record Accessor];
+  tick "_outputIndex" [Record Accessor];
 }
 
 module "Command.Address.Inspect" {
   tick function "showsPrec" [Show instance];
+}
+
+module "Command.Address.Reward" {
+  tick function "showsPrec" [Show instance];
+  tick "networkTag" [Record Accessor];
+
 }
 
 module "Options.Applicative.Derivation" {
@@ -86,4 +92,8 @@ module "Options.Applicative.Style" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
   tick function "succ" [Enum instance];
+}
+
+module "Paths_cardano_addresses_cli" {
+  tick;
 }

@@ -20,6 +20,10 @@ module "Cardano.Address.Derivation" {
   tick "getIndex" [Record Accessor];
 }
 
+module "Cardano.Address.Errors" {
+  tick function "showsPrec" [Show instance];
+}
+
 module "Cardano.Address.Style.Byron" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
@@ -37,6 +41,7 @@ module "Cardano.Address.Style.Byron" {
 module "Cardano.Address.Style.Icarus" {
   tick function "showsPrec" [Show instance];
   tick function "=="  [Eq instance];
+  tick function "compare" [Ord instance];
 
   tick function "paymentAddress" [Re-Export];
   tick function "deriveAddressPrivateKey" [Re-export];
@@ -57,6 +62,7 @@ module "Cardano.Address.Style.Icarus" {
 module "Cardano.Address.Style.Shelley" {
   tick function "showsPrec" [Show instance];
   tick function "=="  [Eq instance];
+  tick function "compare" [Ord instance];
 
   tick function "paymentAddress" [Re-Export];
   tick function "delegationAddress" [Re-Export];
@@ -67,7 +73,7 @@ module "Cardano.Address.Style.Shelley" {
   tick function "genMasterKeyFromXPrv" [Re-export];
   tick function "genMasterKeyFromMnemonic" [Re-export];
 
-  inside "publicKeyHashSize" {
+  inside "hashSize" {
     tick "Blake2b_224" [Never evaluated];
   }
 }
@@ -75,6 +81,7 @@ module "Cardano.Address.Style.Shelley" {
 module "Cardano.Address.Style.Jormungandr" {
   tick function "showsPrec" [Show instance];
   tick function "=="  [Eq instance];
+  tick function "compare" [Ord instance];
 
   tick function "paymentAddress" [Re-Export];
   tick function "delegationAddress" [Re-Export];
@@ -96,7 +103,7 @@ module "Cardano.Mnemonic" {
   tick "(Proxy :: Proxy (mw ': rest))" [Never evaluated];
 
   inside "genEntropy" {
-    tick "(throwM . UnexpectedEntropyError)" on line 208 [Invariant];
+    tick "(throwM . UnexpectedEntropyError)" [Invariant];
   }
 }
 
@@ -108,4 +115,10 @@ module "Codec.Binary.Encoding" {
 module "Data.Word7" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
+}
+
+module "Cardano.Codec.Cbor" {
+  inside "encryptDerivationPath" {
+    tick "error" [Invariant];
+  }
 }
