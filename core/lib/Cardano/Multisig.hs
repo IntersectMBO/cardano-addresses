@@ -25,7 +25,7 @@ import Cardano.Address
 import Cardano.Address.Derivation
     ( Depth (..), XPub )
 import Cardano.Address.Style.Shelley
-    ( Shelley, blake2b224, pubkeyHashSize )
+    ( Shelley, blake2b224, hashSize )
 import Control.DeepSeq
     ( NFData )
 import Crypto.Hash
@@ -73,7 +73,7 @@ fromVerificationKey :: Shelley 'MultisigK XPub -> VerificationKeyHash
 fromVerificationKey = VerificationKeyHash . blake2b224
 
 verificationKeyHashFromBytes :: ByteString -> VerificationKeyHash
-verificationKeyHashFromBytes = VerificationKeyHash . invariantSize pubkeyHashSize
+verificationKeyHashFromBytes = VerificationKeyHash . invariantSize hashSize
 
 toCBOR' :: MultisigScript -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =

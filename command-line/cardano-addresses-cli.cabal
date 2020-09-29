@@ -120,6 +120,7 @@ test-suite unit
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
+      Command.ScriptSpec
       CommandSpec
       Options.Applicative.DerivationSpec
       System.IO.ExtraSpec

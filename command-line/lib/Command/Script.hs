@@ -9,12 +9,19 @@ module Command.Script
     ( Cmd
     , mod
     , run
+
+    -- * Internal
+    , requireSignatureOfParser
     ) where
 
 import Cardano.Multisig
     ( MultisigScript (..), toScriptHash, verificationKeyHashFromBytes )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( fromBase16 )
+import Data.Char
+    ( isDigit, isLetter )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Encoding
@@ -31,7 +38,10 @@ import Text.ParserCombinators.ReadP
     ( readP_to_S )
 
 import qualified Data.ByteString.Char8 as B8
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Text.ParserCombinators.ReadP as P
+
 
 newtype Cmd = Cmd
     { encoding :: Encoding
@@ -77,9 +87,11 @@ multisigScriptParser =
 
 requireSignatureOfParser :: P.ReadP MultisigScript
 requireSignatureOfParser = do
-    verKeyH <- P.munch1 (\c -> c /= ' ' && c /= ',' && c /= ']')
+    verKeyH <- P.munch1 (\c -> isDigit c || isLetter c)
     case length verKeyH of
-        56 ->
-            return (RequireSignatureOf $ verificationKeyHashFromBytes (B8.pack verKeyH))
-        _ ->
-            P.pfail
+        56 -> do
+            let (Right bytes) = fromBase16 $ T.encodeUtf8 $ T.pack verKeyH
+            return (RequireSignatureOf $ verificationKeyHashFromBytes bytes)
+        len ->
+            error $ "Verification key hash should be 28 bytes, but received "
+            <> show len <> " bytes."
