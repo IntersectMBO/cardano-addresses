@@ -8,7 +8,7 @@ module Command.ScriptSpec
 import Prelude
 
 import Cardano.Multisig
-    ( MultisigScript (..), VerificationKeyHash (..) )
+    ( Script (..), VerificationKeyHash (..) )
 import Codec.Binary.Encoding
     ( fromBase16 )
 import Command.Script

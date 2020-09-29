@@ -19,7 +19,7 @@ module Command.Script
     ) where
 
 import Cardano.Multisig
-    ( MultisigScript (..), toScriptHash, verificationKeyHashFromBytes )
+    ( Script (..), toScriptHash, verificationKeyHashFromBytes )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Codec.Binary.Encoding
@@ -65,7 +65,7 @@ mod liftCmd = command "scripthash" $
             , string "Example:"
             , indent 2 $ bold $ string "$ cat script.txt \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" scripthash \\"
-            , indent 2 $ string "script_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35"
+            , indent 2 $ string "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
             ])
   where
     parser = Cmd
@@ -80,14 +80,14 @@ run Cmd{encoding} = do
          _ ->
              error "parsing the script failed"
 
-scriptParser :: ReadP MultisigScript
+scriptParser :: ReadP Script
 scriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
     requireAtLeastOfParser <++
     requireSignatureOfParser
 
-requireSignatureOfParser :: ReadP MultisigScript
+requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
     P.skipSpaces
     verKeyH <- P.munch1 (\c -> isDigit c || isLetter c)
@@ -99,19 +99,19 @@ requireSignatureOfParser = do
             error $ "Verification key hash should be 28 bytes, but received "
             <> show len <> " bytes."
 
-requireAllOfParser :: ReadP MultisigScript
+requireAllOfParser :: ReadP Script
 requireAllOfParser = do
     P.skipSpaces
     _identifier <- P.string "all"
     RequireAllOf <$> commonPart
 
-requireAnyOfParser :: ReadP MultisigScript
+requireAnyOfParser :: ReadP Script
 requireAnyOfParser = do
     P.skipSpaces
     _identifier <- P.string "any"
     RequireAnyOf <$> commonPart
 
-requireAtLeastOfParser :: ReadP MultisigScript
+requireAtLeastOfParser :: ReadP Script
 requireAtLeastOfParser = do
     P.skipSpaces
     _identifier <- P.string "at_least"
@@ -122,7 +122,7 @@ naturalParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit
 
-commonPart :: ReadP [MultisigScript]
+commonPart :: ReadP [Script]
 commonPart = do
     P.skipSpaces
     _open <- P.string "["

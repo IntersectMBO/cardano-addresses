@@ -8,7 +8,7 @@
 
 module Cardano.Multisig
     (
-      MultisigScript (..)
+      Script (..)
     , VerificationKeyHash (..)
     , fromVerificationKey
     , verificationKeyHashFromBytes
@@ -46,18 +46,18 @@ import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.ByteArray as BA
 
 
--- | A 'MultisigScript' type represents multi signature script. The script embodies conditions
+-- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
 --
 -- @since 3.0.0
-data MultisigScript =
+data Script =
       RequireSignatureOf VerificationKeyHash
-    | RequireAllOf [MultisigScript]
-    | RequireAnyOf [MultisigScript]
-    | RequireMOf Word8 [MultisigScript]
+    | RequireAllOf [Script]
+    | RequireAnyOf [Script]
+    | RequireMOf Word8 [Script]
     deriving stock (Generic, Show, Eq)
 
-instance NFData MultisigScript
+instance NFData Script
 
 -- | A 'VerificationKeyHash' type represents verification key hash
 -- that participate in building MultisigScript. The hash is expected to have size of
@@ -75,7 +75,7 @@ fromVerificationKey = VerificationKeyHash . blake2b224
 verificationKeyHashFromBytes :: ByteString -> VerificationKeyHash
 verificationKeyHashFromBytes = VerificationKeyHash . invariantSize hashSize
 
-toCBOR' :: MultisigScript -> CBOR.Encoding
+toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
     encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
 toCBOR' (RequireAllOf contents) =
@@ -89,7 +89,7 @@ toCBOR' (RequireMOf m contents) =
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
 -- This is basically doing the symbolically following:
 -- toCBOR [0,multisigScript]
-toCBOR :: MultisigScript -> ByteString
+toCBOR :: Script -> ByteString
 toCBOR script =
     CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
 
@@ -116,7 +116,7 @@ encodeFoldable encode xs = wrapArray len contents
 -- `Api.serialiseToRawBytes $ Api.scriptHash script` realizes
 -- This is basically doing the symbolically the following (using symbols from toCBOR):
 -- digest $ (nativeMultisigTag <> toCBOR multisigScript )
-toScriptHash :: MultisigScript -> ByteString
+toScriptHash :: Script -> ByteString
 toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
   where
       nativeMultiSigTag :: ByteString
@@ -124,5 +124,5 @@ toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
 
       digest = BA.convert . hash @_ @Blake2b_224
 
-      toCBOR'' :: MultisigScript -> ByteString
+      toCBOR'' :: Script -> ByteString
       toCBOR'' script' = CBOR.toStrictByteString $ toCBOR' script'

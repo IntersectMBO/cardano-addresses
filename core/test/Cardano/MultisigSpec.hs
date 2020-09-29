@@ -21,7 +21,7 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Multisig
-    ( MultisigScript (..), fromVerificationKey, toCBOR, toScriptHash )
+    ( Script (..), fromVerificationKey, toCBOR, toScriptHash )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Test.Hspec
