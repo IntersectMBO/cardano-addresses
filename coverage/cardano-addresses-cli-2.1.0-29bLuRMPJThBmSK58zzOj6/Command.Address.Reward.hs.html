@@ -1,0 +1,106 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    2 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    3 </span>{-# LANGUAGE QuasiQuotes #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Command.Address.Reward
+<span class="lineno">    8 </span>    ( Cmd
+<span class="lineno">    9 </span>    , mod
+<span class="lineno">   10 </span>    , run
+<span class="lineno">   11 </span>    ) where
+<span class="lineno">   12 </span>
+<span class="lineno">   13 </span>import Prelude hiding
+<span class="lineno">   14 </span>    ( mod )
+<span class="lineno">   15 </span>
+<span class="lineno">   16 </span>import Cardano.Address
+<span class="lineno">   17 </span>    ( NetworkTag (..), bech32With )
+<span class="lineno">   18 </span>import Cardano.Address.Style.Shelley
+<span class="lineno">   19 </span>    ( mkNetworkDiscriminant, shelleyTestnet )
+<span class="lineno">   20 </span>import Codec.Binary.Bech32.TH
+<span class="lineno">   21 </span>    ( humanReadablePart )
+<span class="lineno">   22 </span>import Fmt
+<span class="lineno">   23 </span>    ( build, fmt )
+<span class="lineno">   24 </span>import Options.Applicative
+<span class="lineno">   25 </span>    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+<span class="lineno">   26 </span>import Options.Applicative.Discrimination
+<span class="lineno">   27 </span>    ( networkTagOpt )
+<span class="lineno">   28 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   29 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   30 </span>import Options.Applicative.Style
+<span class="lineno">   31 </span>    ( Style (..) )
+<span class="lineno">   32 </span>import System.Exit
+<span class="lineno">   33 </span>    ( die )
+<span class="lineno">   34 </span>import System.IO
+<span class="lineno">   35 </span>    ( stdin, stdout )
+<span class="lineno">   36 </span>import System.IO.Extra
+<span class="lineno">   37 </span>    ( hGetXPub, progName )
+<span class="lineno">   38 </span>
+<span class="lineno">   39 </span>import qualified Cardano.Address.Style.Shelley as Shelley
+<span class="lineno">   40 </span>import qualified Data.ByteString.Char8 as B8
+<span class="lineno">   41 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   42 </span>
+<span class="lineno">   43 </span>
+<span class="lineno">   44 </span>newtype Cmd = Cmd
+<span class="lineno">   45 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">networkTag</span></span></span> :: NetworkTag
+<span class="lineno">   46 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   47 </span>
+<span class="lineno">   48 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   49 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;stake&quot; $</span>
+<span class="lineno">   50 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   51 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a stake address&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Create a stake address \</span>
+<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">\that references a staking key (1-1).&quot;</span>
+<span class="lineno">   54 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   55 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The public key is read from stdin.&quot;</span>
+<span class="lineno">   56 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/2/0 &gt; stake.prv&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat stake.prv \\&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public \\&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address stake --network-tag testnet&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;stake_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   69 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   71 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; networkTagOpt Shelley</span></span>
+<span class="lineno">   72 </span>
+<span class="lineno">   73 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   74 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag} = do</span>
+<span class="lineno">   75 </span><span class="spaces">    </span><span class="istickedoff">xpub &lt;- hGetXPub stdin</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of</span>
+<span class="lineno">   77 </span><span class="spaces">        </span><span class="istickedoff">Left e -&gt; die (fmt $ build e)</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">Right discriminant -&gt; do</span>
+<span class="lineno">   79 </span><span class="spaces">            </span><span class="istickedoff">let addr = Shelley.stakeAddress discriminant (Shelley.liftXPub xpub)</span>
+<span class="lineno">   80 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr</span>
+<span class="lineno">   81 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]</span>
+<span class="lineno">   83 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = [humanReadablePart|stake|]</span></span>
+
+</pre>
+</body>
+</html>
