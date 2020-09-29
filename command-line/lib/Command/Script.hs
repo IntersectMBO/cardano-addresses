@@ -12,6 +12,7 @@ module Command.Script
 
     -- * Internal
     , requireSignatureOfParser
+    , requireAllOfParser
     ) where
 
 import Cardano.Multisig
@@ -36,6 +37,8 @@ import System.IO.Extra
     ( hPutBytes, noNewline, progName )
 import Text.ParserCombinators.ReadP
     ( readP_to_S )
+import Text.ParserCombinators.ReadP
+    ( ReadP, (<++) )
 
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
@@ -74,19 +77,20 @@ run Cmd{encoding} = do
          _ ->
              error "parsing the script failed"
 
-scriptParser :: P.ReadP MultisigScript
+scriptParser :: ReadP MultisigScript
 scriptParser = do
     P.skipSpaces
     script <- multisigScriptParser
     P.skipSpaces
     return script
 
-multisigScriptParser :: P.ReadP MultisigScript
+multisigScriptParser :: ReadP MultisigScript
 multisigScriptParser =
-    requireSignatureOfParser
+    requireSignatureOfParser <++ requireAllOfParser
 
-requireSignatureOfParser :: P.ReadP MultisigScript
+requireSignatureOfParser :: ReadP MultisigScript
 requireSignatureOfParser = do
+    P.skipSpaces
     verKeyH <- P.munch1 (\c -> isDigit c || isLetter c)
     case length verKeyH of
         56 -> do
@@ -95,3 +99,16 @@ requireSignatureOfParser = do
         len ->
             error $ "Verification key hash should be 28 bytes, but received "
             <> show len <> " bytes."
+
+requireAllOfParser :: ReadP MultisigScript
+requireAllOfParser = do
+    P.skipSpaces
+    _identifier <- P.string "all"
+    P.skipSpaces
+    _open <- P.string "["
+    P.skipSpaces
+    content <- P.sepBy1 multisigScriptParser (P.string ",")
+    P.skipSpaces
+    _close <- P.string "]"
+    P.skipSpaces
+    return $ RequireAllOf content
