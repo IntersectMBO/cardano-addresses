@@ -16,6 +16,7 @@ import Command.Script
     , requireAnyOfParser
     , requireAtLeastOfParser
     , requireSignatureOfParser
+    , scriptParser
     )
 import Data.Text
     ( Text )
@@ -52,15 +53,18 @@ spec = do
         let expected1 = RequireAllOf
                 [ RequireSignatureOf $ VerificationKeyHash bytes1 ]
         valuesParserUnitTest requireAllOfParser script1 expected1
+        valuesParserUnitTest scriptParser script1 expected1
 
         let script2 = " all   [ "<>verKeyH1<>"  ] "
         valuesParserUnitTest requireAllOfParser script2 expected1
+        valuesParserUnitTest scriptParser script2 expected1
 
         let script3 = "all ["<>verKeyH1<>", "<>verKeyH2<>"]"
         let expected2 = RequireAllOf
                 [ RequireSignatureOf $ VerificationKeyHash bytes1
                 , RequireSignatureOf $ VerificationKeyHash bytes2 ]
         valuesParserUnitTest requireAllOfParser script3 expected2
+        valuesParserUnitTest scriptParser script3 expected2
 
         let script4 = "all ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
         let expected3 = RequireAllOf
@@ -68,21 +72,25 @@ spec = do
                 , RequireSignatureOf $ VerificationKeyHash bytes2
                 , RequireSignatureOf $ VerificationKeyHash bytes3 ]
         valuesParserUnitTest requireAllOfParser script4 expected3
+        valuesParserUnitTest scriptParser script4 expected3
 
     describe "requireAnyOfParser : unit tests" $ do
         let script1 = "any ["<>verKeyH1<>"]"
         let expected1 = RequireAnyOf
                 [ RequireSignatureOf $ VerificationKeyHash bytes1 ]
         valuesParserUnitTest requireAnyOfParser script1 expected1
+        valuesParserUnitTest scriptParser script1 expected1
 
         let script2 = " any   [ "<>verKeyH1<>"  ] "
         valuesParserUnitTest requireAnyOfParser script2 expected1
+        valuesParserUnitTest scriptParser script2 expected1
 
         let script3 = "any ["<>verKeyH1<>", "<>verKeyH2<>"]"
         let expected2 = RequireAnyOf
                 [ RequireSignatureOf $ VerificationKeyHash bytes1
                 , RequireSignatureOf $ VerificationKeyHash bytes2 ]
         valuesParserUnitTest requireAnyOfParser script3 expected2
+        valuesParserUnitTest scriptParser script3 expected2
 
         let script4 = "any ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
         let expected3 = RequireAnyOf
@@ -90,6 +98,7 @@ spec = do
                 , RequireSignatureOf $ VerificationKeyHash bytes2
                 , RequireSignatureOf $ VerificationKeyHash bytes3 ]
         valuesParserUnitTest requireAnyOfParser script4 expected3
+        valuesParserUnitTest scriptParser script4 expected3
 
         let script5 = "any ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
         let expected4 = RequireAnyOf
@@ -99,6 +108,7 @@ spec = do
                   , RequireSignatureOf $ VerificationKeyHash bytes3 ]
                 ]
         valuesParserUnitTest requireAnyOfParser script5 expected4
+        valuesParserUnitTest scriptParser script5 expected4
 
     describe "requireAtLeastOfParser : unit tests" $ do
         let script1 = "at_least 1 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
@@ -107,6 +117,7 @@ spec = do
                 , RequireSignatureOf $ VerificationKeyHash bytes2
                 , RequireSignatureOf $ VerificationKeyHash bytes3 ]
         valuesParserUnitTest requireAtLeastOfParser script1 expected1
+        valuesParserUnitTest scriptParser script1 expected1
 
         let script2 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
         let expected2 = RequireMOf 1
@@ -116,6 +127,7 @@ spec = do
                   , RequireSignatureOf $ VerificationKeyHash bytes3 ]
                 ]
         valuesParserUnitTest requireAtLeastOfParser script2 expected2
+        valuesParserUnitTest scriptParser script2 expected2
 
 valuesParserUnitTest
     :: (Eq s, Show s)

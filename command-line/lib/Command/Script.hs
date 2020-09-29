@@ -15,6 +15,7 @@ module Command.Script
     , requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
+    , scriptParser
     ) where
 
 import Cardano.Multisig
@@ -80,14 +81,7 @@ run Cmd{encoding} = do
              error "parsing the script failed"
 
 scriptParser :: ReadP MultisigScript
-scriptParser = do
-    P.skipSpaces
-    script <- multisigScriptParser
-    P.skipSpaces
-    return script
-
-multisigScriptParser :: ReadP MultisigScript
-multisigScriptParser =
+scriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
     requireAtLeastOfParser <++
@@ -133,7 +127,7 @@ commonPart = do
     P.skipSpaces
     _open <- P.string "["
     P.skipSpaces
-    content <- P.sepBy1 multisigScriptParser (P.string ",")
+    content <- P.sepBy1 scriptParser (P.string ",")
     P.skipSpaces
     _close <- P.string "]"
     P.skipSpaces
