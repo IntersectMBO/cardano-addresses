@@ -12,7 +12,11 @@ import Cardano.Multisig
 import Codec.Binary.Encoding
     ( fromBase16 )
 import Command.Script
-    ( requireAllOfParser, requireAnyOfParser, requireSignatureOfParser )
+    ( requireAllOfParser
+    , requireAnyOfParser
+    , requireAtLeastOfParser
+    , requireSignatureOfParser
+    )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -96,6 +100,22 @@ spec = do
                 ]
         valuesParserUnitTest requireAnyOfParser script5 expected4
 
+    describe "requireAtLeastOfParser : unit tests" $ do
+        let script1 = "at_least 1 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
+        let expected1 = RequireMOf 1
+                [ RequireSignatureOf $ VerificationKeyHash bytes1
+                , RequireSignatureOf $ VerificationKeyHash bytes2
+                , RequireSignatureOf $ VerificationKeyHash bytes3 ]
+        valuesParserUnitTest requireAtLeastOfParser script1 expected1
+
+        let script2 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
+        let expected2 = RequireMOf 1
+                [ RequireSignatureOf $ VerificationKeyHash bytes1
+                , RequireAllOf
+                  [ RequireSignatureOf $ VerificationKeyHash bytes2
+                  , RequireSignatureOf $ VerificationKeyHash bytes3 ]
+                ]
+        valuesParserUnitTest requireAtLeastOfParser script2 expected2
 
 valuesParserUnitTest
     :: (Eq s, Show s)

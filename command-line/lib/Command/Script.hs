@@ -14,6 +14,7 @@ module Command.Script
     , requireSignatureOfParser
     , requireAllOfParser
     , requireAnyOfParser
+    , requireAtLeastOfParser
     ) where
 
 import Cardano.Multisig
@@ -24,6 +25,8 @@ import Codec.Binary.Encoding
     ( fromBase16 )
 import Data.Char
     ( isDigit, isLetter )
+import Data.Word
+    ( Word8 )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Encoding
@@ -37,9 +40,7 @@ import System.IO
 import System.IO.Extra
     ( hPutBytes, noNewline, progName )
 import Text.ParserCombinators.ReadP
-    ( readP_to_S )
-import Text.ParserCombinators.ReadP
-    ( ReadP, (<++) )
+    ( ReadP, readP_to_S, (<++) )
 
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
@@ -89,6 +90,7 @@ multisigScriptParser :: ReadP MultisigScript
 multisigScriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
+    requireAtLeastOfParser <++
     requireSignatureOfParser
 
 requireSignatureOfParser :: ReadP MultisigScript
@@ -107,15 +109,24 @@ requireAllOfParser :: ReadP MultisigScript
 requireAllOfParser = do
     P.skipSpaces
     _identifier <- P.string "all"
-    content <- commonPart
-    return $ RequireAllOf content
+    RequireAllOf <$> commonPart
 
 requireAnyOfParser :: ReadP MultisigScript
 requireAnyOfParser = do
     P.skipSpaces
     _identifier <- P.string "any"
-    content <- commonPart
-    return $ RequireAnyOf content
+    RequireAnyOf <$> commonPart
+
+requireAtLeastOfParser :: ReadP MultisigScript
+requireAtLeastOfParser = do
+    P.skipSpaces
+    _identifier <- P.string "at_least"
+    RequireMOf <$> naturalParser <*> commonPart
+
+naturalParser :: ReadP Word8
+naturalParser = do
+    P.skipSpaces
+    fromInteger . read <$> P.munch1 isDigit
 
 commonPart :: ReadP [MultisigScript]
 commonPart = do
