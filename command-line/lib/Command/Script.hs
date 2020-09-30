@@ -78,8 +78,30 @@ run Cmd{encoding} = do
          [(multisig,_rest)] ->
              hPutBytes stdout (toScriptHash multisig) encoding
          _ ->
-             error "parsing the script failed"
+             fail "parsing the script failed"
 
+-- | A 'Script' type represents multi signature script. The script embodies conditions
+-- that need to be satisfied to make it valid. We assume here that the script could
+-- delivered from standard input. The examples below are self-explanatory:
+--
+-- 1. just requiring signature for
+-- 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
+--
+-- 2. 'any' for signature required
+-- any [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+--
+-- 3. 'all' signatures required
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+--
+-- 4. 'at_least' N signatures required
+-- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+--
+-- 5. Nested script are supported
+-- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
+--
+-- Parser is insensitive to whitespaces.
+--
+-- @since 3.0.0
 scriptParser :: ReadP Script
 scriptParser =
     requireAllOfParser <++
@@ -96,7 +118,7 @@ requireSignatureOfParser = do
             let (Right bytes) = fromBase16 $ T.encodeUtf8 $ T.pack verKeyH
             return (RequireSignatureOf $ verificationKeyHashFromBytes bytes)
         len ->
-            error $ "Verification key hash should be 28 bytes, but received "
+            fail $ "Verification key hash should be 28 bytes, but received "
             <> show len <> " bytes."
 
 requireAllOfParser :: ReadP Script
