@@ -9,9 +9,9 @@
 module Cardano.Multisig
     (
       Script (..)
-    , VerificationKeyHash (..)
-    , fromVerificationKey
-    , verificationKeyHashFromBytes
+    , KeyHash (..)
+    , hashKey
+    , keyHashFromBytes
     , toScriptHash
 
     -- * Internal
@@ -20,10 +20,8 @@ module Cardano.Multisig
 
 import Prelude
 
-import Cardano.Address
-    ( invariantSize )
 import Cardano.Address.Derivation
-    ( Depth (..), XPub )
+    ( XPub )
 import Cardano.Address.Style.Shelley
     ( Shelley, blake2b224, hashSize )
 import Control.DeepSeq
@@ -44,6 +42,7 @@ import GHC.Generics
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString as BS
 
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
@@ -51,7 +50,7 @@ import qualified Data.ByteArray as BA
 --
 -- @since 3.0.0
 data Script =
-      RequireSignatureOf VerificationKeyHash
+      RequireSignatureOf KeyHash
     | RequireAllOf [Script]
     | RequireAnyOf [Script]
     | RequireMOf Word8 [Script]
@@ -59,24 +58,33 @@ data Script =
 
 instance NFData Script
 
--- | A 'VerificationKeyHash' type represents verification key hash
+-- | A 'KeyHash' type represents verification key hash
 -- that participate in building MultisigScript. The hash is expected to have size of
 -- 28-byte.
 --
 -- @since 3.0.0
-newtype VerificationKeyHash = VerificationKeyHash ByteString
+newtype KeyHash = KeyHash ByteString
     deriving (Generic, Show, Eq)
 
-instance NFData VerificationKeyHash
+instance NFData KeyHash
 
-fromVerificationKey :: Shelley 'MultisigK XPub -> VerificationKeyHash
-fromVerificationKey = VerificationKeyHash . blake2b224
+-- | Apply Blake2b224 hashing on Shelley 'XPub'.
+-- This results in 28-byte hash.
+--
+-- @since 3.0.0
+hashKey :: Shelley key XPub -> KeyHash
+hashKey = KeyHash . blake2b224
 
-verificationKeyHashFromBytes :: ByteString -> VerificationKeyHash
-verificationKeyHashFromBytes = VerificationKeyHash . invariantSize hashSize
+-- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
+--
+-- @since 3.0.0
+keyHashFromBytes :: ByteString -> Maybe KeyHash
+keyHashFromBytes bytes
+    | BS.length bytes /= hashSize = Nothing
+    | otherwise = Just $ KeyHash bytes
 
 toCBOR' :: Script -> CBOR.Encoding
-toCBOR' (RequireSignatureOf (VerificationKeyHash verKeyHash)) =
+toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =
     encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
 toCBOR' (RequireAllOf contents) =
     encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR' contents

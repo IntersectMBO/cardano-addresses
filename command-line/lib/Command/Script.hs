@@ -19,7 +19,7 @@ module Command.Script
     ) where
 
 import Cardano.Multisig
-    ( Script (..), toScriptHash, verificationKeyHashFromBytes )
+    ( Script (..), keyHashFromBytes, toScriptHash )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Codec.Binary.Encoding
@@ -80,11 +80,11 @@ run Cmd{encoding} = do
          _ ->
              fail "parsing the script failed"
 
--- | A 'Script' type represents multi signature script. The script embodies conditions
--- that need to be satisfied to make it valid. We assume here that the script could
+-- | The script embodies combination of signing keys that need to be met to make
+-- it valid. We assume here that the script could
 -- delivered from standard input. The examples below are self-explanatory:
 --
--- 1. just requiring signature for
+-- 1. requiring signature
 -- 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
 --
 -- 2. 'any' for signature required
@@ -93,7 +93,7 @@ run Cmd{encoding} = do
 -- 3. 'all' signatures required
 -- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
 --
--- 4. 'at_least' N signatures required
+-- 4. 'at_least' 1 signature required
 -- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
 --
 -- 5. Nested script are supported
@@ -116,7 +116,8 @@ requireSignatureOfParser = do
     case length verKeyH of
         56 -> do
             let (Right bytes) = fromBase16 $ T.encodeUtf8 $ T.pack verKeyH
-            return (RequireSignatureOf $ verificationKeyHashFromBytes bytes)
+            let (Just keyHash) = keyHashFromBytes bytes
+            return $ RequireSignatureOf keyHash
         len ->
             fail $ "Verification key hash should be 28 bytes, but received "
             <> show len <> " bytes."
