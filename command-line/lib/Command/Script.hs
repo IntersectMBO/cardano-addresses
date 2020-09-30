@@ -19,7 +19,7 @@ module Command.Script
     ) where
 
 import Cardano.Multisig
-    ( Script (..), keyHashFromBytes, toScriptHash )
+    ( Script (..), keyHashFromBytes, toScriptHash, validateScript )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Codec.Binary.Encoding
@@ -63,9 +63,11 @@ mod liftCmd = command "scripthash" $
             [ string "The script is read from stdin."
             , string ""
             , string "Example:"
+            , indent 2 $ bold $ string "$ cat script.txt"
+            , indent 2 $ bold $ string "$ all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333]"
             , indent 2 $ bold $ string "$ cat script.txt \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" scripthash \\"
-            , indent 2 $ string "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
+            , indent 4 $ bold $ string $ "| "<>progName<>" scripthash --base16 \\"
+            , indent 2 $ string "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
             ])
   where
     parser = Cmd
@@ -76,7 +78,10 @@ run Cmd{encoding} = do
     bytes <- B8.filter noNewline <$> B8.hGetContents stdin
     case readP_to_S scriptParser (B8.unpack bytes) of
          [(multisig,_rest)] ->
-             hPutBytes stdout (toScriptHash multisig) encoding
+             if (validateScript multisig) then
+                 hPutBytes stdout (toScriptHash multisig) encoding
+             else
+                 fail "The script is invalid."
          _ ->
              fail "Parsing of the script failed."
 

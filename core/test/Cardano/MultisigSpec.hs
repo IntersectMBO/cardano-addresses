@@ -21,7 +21,7 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Multisig
-    ( Script (..), hashKey, toCBOR, toScriptHash )
+    ( Script (..), hashKey, toCBOR, toScriptHash, validateScript )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Test.Hspec
@@ -31,35 +31,34 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
+    let mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
+                   , "company", "walk", "dog" ]
+    let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
+    let sndFactor = mempty
+    let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    let accXPrv = deriveAccountPrivateKey rootK minBound
+
+    let index1 = minBound
+    let multisigXPub1 = toXPub <$> deriveMultisigPrivateKey accXPrv index1
+    -- "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
+    let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
+
+    let index2 = toEnum 0x00000001
+    let multisigXPub2 = toXPub <$> deriveMultisigPrivateKey accXPrv index2
+    -- "60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
+    let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
+
+    let index3 = toEnum 0x00000002
+    let multisigXPub3 = toXPub <$> deriveMultisigPrivateKey accXPrv index3
+    -- "ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
+    let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
+
+    let index4 = toEnum 0x00000003
+    let multisigXPub4 = toXPub <$> deriveMultisigPrivateKey accXPrv index4
+    -- "96834025cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
+    let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4
+
     describe "Multisig CBOR and hashes - golden tests" $ do
-
-        let mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
-                       , "company", "walk", "dog" ]
-        let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
-        let sndFactor = mempty
-        let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-        let accXPrv = deriveAccountPrivateKey rootK minBound
-
-        let index1 = minBound
-        let multisigXPub1 = toXPub <$> deriveMultisigPrivateKey accXPrv index1
-        -- "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
-        let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
-
-        let index2 = toEnum 0x00000001
-        let multisigXPub2 = toXPub <$> deriveMultisigPrivateKey accXPrv index2
-        -- "60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-        let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
-
-        let index3 = toEnum 0x00000002
-        let multisigXPub3 = toXPub <$> deriveMultisigPrivateKey accXPrv index3
-        -- "ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
-        let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
-
-        let index4 = toEnum 0x00000003
-        let multisigXPub4 = toXPub <$> deriveMultisigPrivateKey accXPrv index4
-        -- "96834025cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-        let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4
-
         let checkCBORandScriptHash script cbor hash = do
                 (toHexText (toCBOR script) ) `shouldBe` cbor
                 (toHexText (toScriptHash script) ) `shouldBe` hash
@@ -155,5 +154,38 @@ spec = do
                 \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
                 "8aa7af44362310140ff3d32ac7d1a2ecbe26da65f3d146c64b90e9e1"
 
+    describe "validateScript" $ do
+        it "no content in RequireAnyOf" $ do
+            let script = RequireAnyOf []
+            validateScript script `shouldBe` False
+        it "no content in RequireAllOf" $ do
+            let script = RequireAllOf []
+            validateScript script `shouldBe` False
+        it "no content in RequireMOf" $ do
+            let script = RequireMOf 1 []
+            validateScript script `shouldBe` False
+        it "too high m in RequireMOf" $ do
+            let script = RequireMOf 3 [verKeyHash3, verKeyHash4]
+            validateScript script `shouldBe` False
+        it "m=0 in RequireMOf" $ do
+            let script = RequireMOf 0 [verKeyHash3, verKeyHash4]
+            validateScript script `shouldBe` False
+        it "wrong in nested 1" $ do
+            let script = RequireMOf 1 [verKeyHash1, RequireAnyOf [] ]
+            validateScript script `shouldBe` False
+        it "wrong in nested 2" $ do
+            let script = RequireMOf 1
+                    [ verKeyHash1
+                    , RequireAnyOf [verKeyHash2, RequireAllOf [] ]
+                    ]
+            validateScript script `shouldBe` False
+        it "wrong in nested 3" $ do
+            let script = RequireMOf 1
+                    [ verKeyHash1
+                    , RequireAnyOf [ verKeyHash2
+                                   , RequireMOf 3 [verKeyHash3, verKeyHash4]
+                                   ]
+                    ]
+            validateScript script `shouldBe` False
   where
     toHexText = T.decodeUtf8 . encode EBase16

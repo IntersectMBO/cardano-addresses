@@ -13,6 +13,7 @@ module Cardano.Multisig
     , hashKey
     , keyHashFromBytes
     , toScriptHash
+    , validateScript
 
     -- * Internal
     , toCBOR
@@ -43,7 +44,7 @@ import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
-
+import qualified Data.List as L
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -82,6 +83,19 @@ keyHashFromBytes :: ByteString -> Maybe KeyHash
 keyHashFromBytes bytes
     | BS.length bytes /= hashSize = Nothing
     | otherwise = Just $ KeyHash bytes
+
+-- | Validate 'Script'
+--
+-- @since 3.0.0
+validateScript :: Script -> Bool
+validateScript (RequireSignatureOf _) = True
+validateScript (RequireAllOf content) =
+    not (L.null content) && L.all ((== True) . validateScript) content
+validateScript (RequireAnyOf content) =
+    not (L.null content) && L.all ((== True) . validateScript) content
+validateScript (RequireMOf m content) =
+    m > 0 && L.length content >= fromIntegral (toInteger m) &&
+    L.all ((== True) . validateScript) content
 
 toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =
