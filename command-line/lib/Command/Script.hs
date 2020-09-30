@@ -78,7 +78,7 @@ run Cmd{encoding} = do
          [(multisig,_rest)] ->
              hPutBytes stdout (toScriptHash multisig) encoding
          _ ->
-             fail "parsing the script failed"
+             fail "Parsing of the script failed."
 
 -- | The script embodies combination of signing keys that need to be met to make
 -- it valid. We assume here that the script could

@@ -21,7 +21,7 @@ import Command.Script
 import Data.Text
     ( Text )
 import Test.Hspec
-    ( Spec, SpecWith, describe, it, shouldBe )
+    ( Spec, SpecWith, describe, it, shouldBe, shouldContain )
 import Test.Utils
     ( cli, describeCmd )
 import Text.ParserCombinators.ReadP
@@ -156,10 +156,26 @@ spec = do
         specScriptHashProper (T.unpack script11)
             "6f7ff5aee204c2d7e93cb0752ac1ead3a1370c692d9ff22c487de72d"
 
+        let verKeyWrong = "3c07030e36bfffe67e2e2ec09e5293d384637cd2" :: Text
+        specScriptHashWrongScript (T.unpack verKeyWrong)
+
+        let scriptWrong1 = "wrong ["<>verKeyH1<>"]"
+        specScriptHashWrongScript (T.unpack scriptWrong1)
+
+        let scriptWrong2 = " any   [ "<>verKeyH1<>",  ] "
+        specScriptHashWrongScript (T.unpack scriptWrong1)
+
+
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do
     out <- cli ["scripthash", "--base16"] script
     out `shouldBe` expected
+
+specScriptHashWrongScript :: String -> SpecWith ()
+specScriptHashWrongScript script = it "fails if wrong hash in a script" $ do
+    (out, err) <- cli ["scripthash", "--base16"] script
+    out `shouldBe` ("" :: String)
+    err `shouldContain` ("Parsing of the script failed." :: String)
 
 valuesParserUnitTest
     :: (Eq s, Show s)
