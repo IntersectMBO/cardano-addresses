@@ -22,6 +22,8 @@ import Data.Text
     ( Text )
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
+import Test.Utils
+    ( cli, describeCmd )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S )
 
@@ -128,6 +130,16 @@ spec = do
                 ]
         valuesParserUnitTest requireAtLeastOfParser script2 expected2
         valuesParserUnitTest scriptParser script2 expected2
+
+    describeCmd [ "scripthash" ] $ do
+        let script = "any ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
+        specScriptHashProper (T.unpack script)
+            "999bc2ba46ef5f4767686a4128191217757ec97c4d1a81563c87daf5"
+
+specScriptHashProper :: String -> String -> SpecWith ()
+specScriptHashProper script expected = it "script hash working as expected" $ do
+    out <- cli ["scripthash", "--base16"] script
+    out `shouldBe` expected
 
 valuesParserUnitTest
     :: (Eq s, Show s)
