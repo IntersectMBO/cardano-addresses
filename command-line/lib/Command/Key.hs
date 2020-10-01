@@ -29,6 +29,7 @@ import System.IO.Extra
 
 import qualified Command.Key.Child as Child
 import qualified Command.Key.FromRecoveryPhrase as FromRecoveryPhrase
+import qualified Command.Key.Hash as Hash
 import qualified Command.Key.Inspect as Inspect
 import qualified Command.Key.Public as Public
 
@@ -37,6 +38,7 @@ data Cmd
     | Child Child.Cmd
     | Public Public.Cmd
     | Inspect Inspect.Cmd
+    | Hash Hash.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -73,6 +75,7 @@ mod liftCmd = command "key" $
         , Child.mod Child
         , Public.mod Public
         , Inspect.mod Inspect
+        , Hash.mod Hash
         ]
 
 run :: Cmd -> IO ()
@@ -81,3 +84,4 @@ run = \case
     Child sub -> Child.run sub
     Public sub -> Public.run sub
     Inspect sub -> Inspect.run sub
+    Hash sub -> Hash.run sub

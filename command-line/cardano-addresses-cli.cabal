@@ -44,6 +44,7 @@ library
       Command.Key
       Command.Key.Child
       Command.Key.FromRecoveryPhrase
+      Command.Key.Hash
       Command.Key.Inspect
       Command.Key.Public
       Command.RecoveryPhrase
