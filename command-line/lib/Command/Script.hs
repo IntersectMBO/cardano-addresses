@@ -29,7 +29,7 @@ import System.IO.Extra
 
 import qualified Command.Script.Hash as Hash
 
-data Cmd
+newtype Cmd
     = Hash Hash.Cmd
     deriving (Show)
 

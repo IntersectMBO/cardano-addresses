@@ -142,7 +142,7 @@ all [de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea,aca52d7d28ce353f47
  Having a script constructed we can get its script hash that could go to payment or staking credential
 
 ```
-$ cat script.txt | cardano-address scripthash
+$ cat script.txt | cardano-address script hash
 xpub15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465ude9sd4
 ```
 </details>
