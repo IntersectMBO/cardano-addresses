@@ -116,6 +116,7 @@ test-suite unit
       Command.Address.RewardSpec
       Command.Key.ChildSpec
       Command.Key.FromRecoveryPhraseSpec
+      Command.Key.HashSpec
       Command.Key.InspectSpec
       Command.Key.PublicSpec
       Command.KeySpec
