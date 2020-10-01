@@ -50,6 +50,7 @@ library
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
       Command.Script
+      Command.Script.Hash
       Command.Version
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
@@ -122,6 +123,7 @@ test-suite unit
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
+      Command.Script.HashSpec
       Command.ScriptSpec
       CommandSpec
       Options.Applicative.DerivationSpec
