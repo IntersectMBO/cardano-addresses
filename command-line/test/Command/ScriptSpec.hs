@@ -77,17 +77,17 @@ spec = do
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do
-    out <- cli ["script", "hash", "--base16"] script
+    out <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` expected
 
 specScriptParsingWrong :: String -> SpecWith ()
 specScriptParsingWrong script = it "fails if wrong hash in a script" $ do
-    (out, err) <- cli ["script", "hash", "--base16"] script
+    (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
     err `shouldContain` ("Parsing of the script failed." :: String)
 
 specScriptInvalid :: String -> SpecWith ()
 specScriptInvalid script = it "fails if a correctly parsed script is invalid" $ do
-    (out, err) <- cli ["script", "hash", "--base16"] script
+    (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
     err `shouldContain` ("The script is invalid." :: String)

@@ -54,7 +54,7 @@ mod liftCmd = command "script" $
             , indent 2 $ bold $ string "$ cat signingKey2.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash --base16 > verKeyHash2"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" hash \"all [$(cat verKeyHash1),$(cat verKeyHash2)]\""
+            , indent 2 $ bold $ string $ "$ "<>progName<>" script hash --base16 \"all [$(cat verKeyHash1),$(cat verKeyHash2)]\""
             ])
   where
     parser = subparser $ mconcat

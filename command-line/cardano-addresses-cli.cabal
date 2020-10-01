@@ -56,6 +56,7 @@ library
       Options.Applicative.Discrimination
       Options.Applicative.Encoding
       Options.Applicative.MnemonicSize
+      Options.Applicative.Script
       Options.Applicative.Style
       System.Git.TH
       System.IO.Extra
@@ -123,10 +124,10 @@ test-suite unit
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
-      Command.Script.HashSpec
       Command.ScriptSpec
       CommandSpec
       Options.Applicative.DerivationSpec
+      Options.Applicative.ScriptSpec
       System.IO.ExtraSpec
       Test.Arbitrary
       Test.Utils

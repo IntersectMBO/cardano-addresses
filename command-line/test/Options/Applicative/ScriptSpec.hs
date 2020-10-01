@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Command.Script.HashSpec
+module Options.Applicative.ScriptSpec
     ( spec
     ) where
 
@@ -11,15 +11,15 @@ import Cardano.Multisig
     ( KeyHash (..), Script (..) )
 import Codec.Binary.Encoding
     ( fromBase16 )
-import Command.Script.Hash
+import Data.Text
+    ( Text )
+import Options.Applicative.Script
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
     , requireSignatureOfParser
     , scriptParser
     )
-import Data.Text
-    ( Text )
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
 import Text.ParserCombinators.ReadP
