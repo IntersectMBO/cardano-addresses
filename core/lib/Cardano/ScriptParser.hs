@@ -106,7 +106,7 @@ commonPart = do
     P.skipSpaces
     _open <- P.string "["
     P.skipSpaces
-    content <- P.sepBy1 scriptParser (P.string ",")
+    content <- P.sepBy scriptParser (P.string ",")
     P.skipSpaces
     _close <- P.string "]"
     P.skipSpaces

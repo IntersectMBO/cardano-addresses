@@ -49,6 +49,8 @@ spec = do
     let script9 = "any ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
     let script10 = "at_least 1 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
     let script11 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
+    let script12 = "all []"
+    let script13 = "any ["<>verKeyH1<>", all [   ]]"
 
     describe "requireSignatureOfParser : unit tests" $ do
         valuesParserUnitTest requireSignatureOfParser verKeyH1
@@ -82,6 +84,10 @@ spec = do
         valuesParserUnitTest requireAllOfParser script4 expected3
         valuesParserUnitTest scriptParser script4 expected3
 
+        let expected4 = RequireAllOf []
+        valuesParserUnitTest requireAllOfParser script12 expected4
+        valuesParserUnitTest scriptParser script12 expected4
+
     describe "requireAnyOfParser : unit tests" $ do
         let expected1 = RequireAnyOf
                 [ RequireSignatureOf $ KeyHash bytes1 ]
@@ -112,6 +118,13 @@ spec = do
                 ]
         valuesParserUnitTest requireAnyOfParser script9 expected4
         valuesParserUnitTest scriptParser script9 expected4
+
+        let expected5 = RequireAnyOf
+                [ RequireSignatureOf $ KeyHash bytes1
+                , RequireAllOf []
+                ]
+        valuesParserUnitTest requireAnyOfParser script13 expected5
+        valuesParserUnitTest scriptParser script13 expected5
 
     describe "requireAtLeastOfParser : unit tests" $ do
         let expected1 = RequireMOf 1

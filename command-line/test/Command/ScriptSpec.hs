@@ -68,12 +68,17 @@ spec = do
         let scriptWrong2 = " any   [ "<>verKeyH1<>",  ] "
         specScriptParsingWrong (T.unpack scriptWrong2)
 
-        let scriptInvalid5 = "at_least 4 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
-        specScriptInvalid (T.unpack scriptInvalid5)
+        let scriptInvalid1 = "at_least 4 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
+        specScriptInvalid (T.unpack scriptInvalid1)
 
-        let scriptInvalid6 = "at_least 1 ["<>verKeyH1<>", at_least 2 ["<>verKeyH2<>"]]"
-        specScriptInvalid (T.unpack scriptInvalid6)
+        let scriptInvalid2 = "at_least 1 ["<>verKeyH1<>", at_least 2 ["<>verKeyH2<>"]]"
+        specScriptInvalid (T.unpack scriptInvalid2)
 
+        let scriptInvalid3 = "all []"
+        specScriptInvalid (T.unpack scriptInvalid3)
+
+        let scriptInvalid4 = "any ["<>verKeyH1<>", all [   ]]"
+        specScriptInvalid (T.unpack scriptInvalid4)
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do
