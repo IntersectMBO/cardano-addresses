@@ -20,6 +20,7 @@ module System.IO.Extra
     , prettyIOException
     , progName
     , markCharsRedAtIndices
+    , noNewline
     ) where
 
 import Prelude

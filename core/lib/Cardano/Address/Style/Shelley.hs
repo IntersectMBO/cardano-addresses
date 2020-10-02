@@ -61,6 +61,7 @@ module Cardano.Address.Style.Shelley
       -- Internals
     , minSeedLengthBytes
     , hashSize
+    , blake2b224
     ) where
 
 import Prelude
@@ -394,8 +395,8 @@ deriveMultisigPublicKey
     -> Index 'Soft 'AddressK
     -> Shelley 'MultisigK XPub
 deriveMultisigPublicKey accPub addrIx =
-    let (Shelley xprv) = Internal.deriveAddressPublicKey accPub Multisig addrIx
-    in Shelley xprv
+    let (Shelley xpub) = Internal.deriveAddressPublicKey accPub Multisig addrIx
+    in Shelley xpub
 
 --
 -- Addresses
