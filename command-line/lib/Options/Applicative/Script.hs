@@ -14,7 +14,7 @@ module Options.Applicative.Script
 import Prelude
 
 import Cardano.Script
-    ( Script (..) )
+    ( Script (..), ScriptError (..) )
 import Cardano.ScriptParser
     ( scriptParser )
 import Options.Applicative
@@ -29,7 +29,7 @@ scriptFromString str =
          [(multisig,_rest)] ->
                  Right multisig
          _ ->
-             Left "Parsing of the script failed."
+             Left $ show MalformedScript
 
 scriptArg :: Parser Script
 scriptArg = argument (eitherReader scriptFromString) $ mempty

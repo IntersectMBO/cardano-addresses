@@ -9,6 +9,7 @@
 module Cardano.Script
     (
       Script (..)
+    , ScriptError (..)
     , KeyHash (..)
     , hashKey
     , keyHashFromBytes
@@ -96,6 +97,16 @@ validateScript (RequireAnyOf content) =
 validateScript (RequireMOf m content) =
     m > 0 && L.length content >= fromIntegral (toInteger m) &&
     L.all ((== True) . validateScript) content
+
+-- | Errors when handling 'Script'
+--
+-- @since 3.0.0
+data ScriptError = MalformedScript | InvalidScript
+    deriving Eq
+
+instance Show ScriptError where
+    show MalformedScript = "Parsing of the script failed."
+    show InvalidScript = "The script is invalid."
 
 toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =

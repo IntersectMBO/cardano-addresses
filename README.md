@@ -134,7 +134,7 @@ de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea
 $ cat signingKey2.xprv | cardano-address key public | cardano-address key hash --base16 > verKey2.hash
 aca52d7d28ce353f4766e4e2c8cc2208c7113d794e776eafb8c07a80
 ```
-Also notice the default hrp (in bech32) for the hashes of verification key - *xpub_hash*
+Also notice the default hrp (in bech32) for the hashes of verification key - **xpub_hash**
 ```
 $ cat signingKey1.xprv | cardano-address key public | cardano-address key hash
 xpub_hash1mevxrng9axvctvk9s64nsduscesqnyyqjgr0sn5katdw5egajw2
@@ -145,7 +145,7 @@ $ echo "all [$(cat verKey1.hash),$(cat verKey2.hash)]" > script.txt
 all [de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea,aca52d7d28ce353f4766e4e2c8cc2208c7113d794e776eafb8c07a80]
 ```
  Having a script constructed we can get its script hash that could go to payment or staking credential
- when creating the address. The default hrp (in bech32) is *script_hash*
+ when creating the address. The default hrp (in bech32) is **script_hash**
 
 ```
 $ cardano-address script hash "$(cat script.txt)"

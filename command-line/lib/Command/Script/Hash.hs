@@ -13,7 +13,7 @@ module Command.Script.Hash
     ) where
 
 import Cardano.Script
-    ( Script (..), toScriptHash, validateScript )
+    ( Script (..), ScriptError (..), toScriptHash, validateScript )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
@@ -63,4 +63,4 @@ run Cmd{encoding, script} =
     if (validateScript script) then
         hPutBytes stdout (toScriptHash script) encoding
     else
-        fail "The script is invalid."
+        fail $ show InvalidScript
