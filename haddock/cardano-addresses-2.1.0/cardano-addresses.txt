@@ -883,3 +883,48 @@ instance Cardano.Address.PaymentAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.DelegationAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.PointerAddress Cardano.Address.Style.Shelley.Shelley
 instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Shelley.Shelley
+
+module Cardano.Script
+
+-- | A <a>Script</a> type represents multi signature script. The script
+--   embodies conditions that need to be satisfied to make it valid.
+data Script
+RequireSignatureOf :: KeyHash -> Script
+RequireAllOf :: [Script] -> Script
+RequireAnyOf :: [Script] -> Script
+RequireMOf :: Word8 -> [Script] -> Script
+
+-- | A <a>KeyHash</a> type represents verification key hash that
+--   participate in building MultisigScript. The hash is expected to have
+--   size of 28-byte.
+newtype KeyHash
+KeyHash :: ByteString -> KeyHash
+
+-- | Apply Blake2b224 hashing on Shelley <a>XPub</a>. This results in
+--   28-byte hash.
+hashKey :: Shelley key XPub -> KeyHash
+
+-- | Construct an <a>KeyHash</a> from raw <a>ByteString</a> (28 bytes).
+keyHashFromBytes :: ByteString -> Maybe KeyHash
+
+-- | This function realizes what cardano-node's `Api.serialiseToRawBytes $
+--   Api.scriptHash script` realizes This is basically doing the
+--   symbolically the following (using symbols from toCBOR): digest $
+--   (nativeMultisigTag &lt;&gt; toCBOR multisigScript )
+toScriptHash :: Script -> ByteString
+
+-- | Validate <a>Script</a>
+validateScript :: Script -> Bool
+
+-- | This function realizes what cardano-node's `Api.serialiseToCBOR
+--   script` realizes This is basically doing the symbolically following:
+--   toCBOR [0,multisigScript]
+toCBOR :: Script -> ByteString
+instance GHC.Classes.Eq Cardano.Script.Script
+instance GHC.Show.Show Cardano.Script.Script
+instance GHC.Generics.Generic Cardano.Script.Script
+instance GHC.Classes.Eq Cardano.Script.KeyHash
+instance GHC.Show.Show Cardano.Script.KeyHash
+instance GHC.Generics.Generic Cardano.Script.KeyHash
+instance Control.DeepSeq.NFData Cardano.Script.Script
+instance Control.DeepSeq.NFData Cardano.Script.KeyHash
