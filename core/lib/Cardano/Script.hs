@@ -6,7 +6,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Cardano.Multisig
+module Cardano.Script
     (
       Script (..)
     , KeyHash (..)

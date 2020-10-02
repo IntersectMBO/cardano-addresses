@@ -1,25 +1,25 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Options.Applicative.ScriptSpec
+module Cardano.ScriptParserSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.Multisig
+import Cardano.Script
     ( KeyHash (..), Script (..) )
-import Codec.Binary.Encoding
-    ( fromBase16 )
-import Data.Text
-    ( Text )
-import Options.Applicative.Script
+import Cardano.ScriptParser
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
     , requireSignatureOfParser
     , scriptParser
     )
+import Codec.Binary.Encoding
+    ( fromBase16 )
+import Data.Text
+    ( Text )
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
 import Text.ParserCombinators.ReadP

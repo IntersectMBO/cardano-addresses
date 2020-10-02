@@ -8,7 +8,7 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.MultisigSpec
+module Cardano.ScriptSpec
     ( spec
     ) where
 
@@ -20,7 +20,7 @@ import Cardano.Address.Style.Shelley
     ( Shelley (..), deriveMultisigPrivateKey )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
-import Cardano.Multisig
+import Cardano.Script
     ( Script (..), hashKey, toCBOR, toScriptHash, validateScript )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )

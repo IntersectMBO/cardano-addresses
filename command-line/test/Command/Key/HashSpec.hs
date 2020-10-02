@@ -31,4 +31,4 @@ specKeyPublic = it "succeds if key is public" $ do
            >>= cli [ "key", "from-recovery-phrase", "icarus" ]
            >>= cli [ "key", "public" ]
            >>= cli [ "key", "hash" ]
-    out `shouldContain` "xpub1"
+    out `shouldContain` "xpub_hash"

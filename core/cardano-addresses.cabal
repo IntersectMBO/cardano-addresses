@@ -40,7 +40,8 @@ library
       Cardano.Address.Style.Shelley
       Cardano.Codec.Cbor
       Cardano.Mnemonic
-      Cardano.Multisig
+      Cardano.Script
+      Cardano.ScriptParser
       Codec.Binary.Encoding
       Data.Word7
   other-modules:
@@ -84,7 +85,8 @@ test-suite unit
       Cardano.AddressSpec
       Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
-      Cardano.MultisigSpec
+      Cardano.ScriptParserSpec
+      Cardano.ScriptSpec
       Codec.Binary.EncodingSpec
       Data.Word7Spec
       Test.Arbitrary

@@ -12,7 +12,7 @@ module Command.Script.Hash
 
     ) where
 
-import Cardano.Multisig
+import Cardano.Script
     ( Script (..), toScriptHash, validateScript )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
@@ -44,7 +44,7 @@ mod liftCmd = command "hash" $
         <> header "Create a script hash \
             \that can be used in stake or payment address."
         <> footerDoc (Just $ vsep
-            [ string "The script is read from stdin."
+            [ string "The script is taken as argument."
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string "$ cat script.txt"
@@ -55,7 +55,7 @@ mod liftCmd = command "hash" $
             ])
   where
     parser = Cmd
-        <$> encodingOpt [humanReadablePart|xpub|]
+        <$> encodingOpt [humanReadablePart|script_hash|]
         <*> scriptArg
 
 run :: Cmd -> IO ()

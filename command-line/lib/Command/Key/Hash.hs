@@ -16,7 +16,7 @@ import Prelude hiding
 
 import Cardano.Address.Style.Shelley
     ( liftXPub )
-import Cardano.Multisig
+import Cardano.Script
     ( KeyHash (..), hashKey )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
@@ -44,7 +44,7 @@ mod liftCmd = command "hash" $
             ])
   where
     parser = Hash
-        <$> encodingOpt [humanReadablePart|xpub|]
+        <$> encodingOpt [humanReadablePart|xpub_hash|]
 
 run :: Cmd -> IO ()
 run Hash{encoding} = do

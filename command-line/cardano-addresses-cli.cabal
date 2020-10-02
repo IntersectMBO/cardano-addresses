@@ -127,7 +127,6 @@ test-suite unit
       Command.ScriptSpec
       CommandSpec
       Options.Applicative.DerivationSpec
-      Options.Applicative.ScriptSpec
       System.IO.ExtraSpec
       Test.Arbitrary
       Test.Utils

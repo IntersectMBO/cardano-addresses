@@ -36,25 +36,25 @@ newtype Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "script" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About script"
+        <> progDesc "About scripts"
         <> footerDoc (Just $ vsep
             [ string "Example:"
             , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.xprv"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/3/0 > signingKey1.prv"
+            , indent 2 $ bold $ string "$ cat root.xprv \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/3/0 > signingKey1.xprv"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat signingKey1.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash --base16 > verKeyHash1"
+            , indent 2 $ bold $ string "$ cat signingKey1.xprv \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash --base16 > verKey1.hash"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/3/1 > signingKey2.prv"
+            , indent 2 $ bold $ string "$ cat root.xprv \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/3/1 > signingKey2.xprv"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat signingKey2.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash --base16 > verKeyHash2"
+            , indent 2 $ bold $ string "$ cat signingKey2.xprv \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash --base16 > verKey2.hash"
             , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" script hash --base16 \"all [$(cat verKeyHash1),$(cat verKeyHash2)]\""
+            , indent 2 $ bold $ string $ "$ "<>progName<>" script hash --base16 \"all [$(cat verKey1.hash),$(cat verKey2.hash)]\""
             ])
   where
     parser = subparser $ mconcat
