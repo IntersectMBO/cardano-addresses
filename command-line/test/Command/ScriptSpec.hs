@@ -85,6 +85,9 @@ spec = do
         let scriptInvalid5 = "at_least 0 ["<>verKeyH1<>"," <>verKeyH2<>"]"
         specScriptInvalid (T.unpack scriptInvalid5) (InvalidScript MZero)
 
+        let scriptInvalid6 = "any ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH1<>"]"
+        specScriptInvalid (T.unpack scriptInvalid6) (InvalidScript DuplicateSignatures)
+
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do

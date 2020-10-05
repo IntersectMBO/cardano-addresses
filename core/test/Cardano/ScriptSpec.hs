@@ -193,6 +193,23 @@ spec = do
                                    ]
                     ]
             validateScript script `shouldBe` (Left ListTooSmall)
+        it "duplicate content in RequireAllOf" $ do
+            let script = RequireAllOf [verKeyHash1, verKeyHash2, verKeyHash1]
+            validateScript script `shouldBe` (Left DuplicateSignatures)
+        it "duplicate content in RequireAnyOf" $ do
+            let script = RequireAnyOf [verKeyHash1, verKeyHash2, verKeyHash1]
+            validateScript script `shouldBe` (Left DuplicateSignatures)
+        it "duplicate content in RequireMOf" $ do
+            let script = RequireMOf 1 [verKeyHash1, verKeyHash2, verKeyHash1]
+            validateScript script `shouldBe` (Left DuplicateSignatures)
+        it "duplicate in nested" $ do
+            let script = RequireMOf 1
+                    [ verKeyHash1
+                    , RequireAnyOf [ verKeyHash2
+                                   , RequireMOf 2 [verKeyHash3, verKeyHash3, verKeyHash4]
+                                   ]
+                    ]
+            validateScript script `shouldBe` (Left DuplicateSignatures)
 
     describe "validateScript - correct" $ do
         it "content in RequireAllOf - 1" $ do

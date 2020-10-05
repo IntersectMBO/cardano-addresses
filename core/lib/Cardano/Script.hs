@@ -106,15 +106,21 @@ validateScript (RequireAnyOf content) = do
 validateScript (RequireMOf m content) = do
     when (m == 0) $
         Left MZero
-    when (length content < (fromInteger $ toInteger m) ) $
+    when (length content < fromInteger (toInteger m) ) $
         Left ListTooSmall
     scanContent content
 
 scanContent :: [Script] -> Either InvalidScriptError ()
 scanContent content = do
     let lefts = filter isLeft $ map validateScript content
-    if length lefts == 0 then
-        Right ()
+    if null lefts then do
+        let isSignature (RequireSignatureOf _) = True
+            isSignature _ = False
+        let sigs = filter isSignature content
+        if length sigs == length (L.nub sigs) then
+            Right ()
+        else
+            Left DuplicateSignatures
     else
         head lefts
 
@@ -124,7 +130,7 @@ scanContent content = do
 data ScriptError = MalformedScript | InvalidScript InvalidScriptError
     deriving Eq
 
-data InvalidScriptError = EmptyList | ListTooSmall | MZero
+data InvalidScriptError = EmptyList | ListTooSmall | MZero | DuplicateSignatures
     deriving (Eq, Show)
 
 instance Show ScriptError where
@@ -132,6 +138,7 @@ instance Show ScriptError where
     show (InvalidScript EmptyList) = "The list inside a script is empty."
     show (InvalidScript MZero) = "The M in at_least inside cannot be 0."
     show (InvalidScript ListTooSmall) = "The list inside at_least cannot be less than M."
+    show (InvalidScript DuplicateSignatures) = "The list inside a script has duplicate keys."
 
 toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =
