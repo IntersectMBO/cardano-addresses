@@ -23,6 +23,7 @@ import Cardano.Mnemonic
 import Cardano.Script
     ( InvalidScriptError (..)
     , Script (..)
+    , ScriptHash (..)
     , hashKey
     , toCBOR
     , toScriptHash
@@ -67,7 +68,7 @@ spec = do
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
                 (toHexText (toCBOR script) ) `shouldBe` cbor
-                (toHexText (toScriptHash script) ) `shouldBe` hash
+                (toHexText' (toScriptHash script) ) `shouldBe` hash
 
         it "RequireSignatureOf index=0" $
             checkCBORandScriptHash verKeyHash1
@@ -230,3 +231,4 @@ spec = do
 
   where
     toHexText = T.decodeUtf8 . encode EBase16
+    toHexText' (ScriptHash bytes) = toHextText bytes

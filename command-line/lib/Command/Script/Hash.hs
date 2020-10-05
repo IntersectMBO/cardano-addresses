@@ -13,7 +13,12 @@ module Command.Script.Hash
     ) where
 
 import Cardano.Script
-    ( Script (..), ScriptError (..), toScriptHash, validateScript )
+    ( Script (..)
+    , ScriptError (..)
+    , ScriptHash (..)
+    , toScriptHash
+    , validateScript
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
@@ -62,5 +67,6 @@ run Cmd{encoding, script} =
     case (validateScript script) of
         Left err ->
             fail $ show $ InvalidScript err
-        Right () ->
-            hPutBytes stdout (toScriptHash script) encoding
+        Right () -> do
+            let (ScriptHash bytes) = toScriptHash script
+            hPutBytes stdout bytes encoding

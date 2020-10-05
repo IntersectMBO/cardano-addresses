@@ -9,6 +9,7 @@
 module Cardano.Script
     (
       Script (..)
+    , ScriptHash (..)
     , ScriptError (..)
     , InvalidScriptError (..)
     , KeyHash (..)
@@ -57,7 +58,7 @@ import qualified Data.List as L
 --
 -- @since 3.0.0
 data Script =
-      RequireSignatureOf KeyHash
+      RequireSignatureOf !KeyHash
     | RequireAllOf ![Script]
     | RequireAnyOf ![Script]
     | RequireMOf Word8 ![Script]
@@ -65,15 +66,23 @@ data Script =
 
 instance NFData Script
 
--- | A 'KeyHash' type represents verification key hash
--- that participate in building MultisigScript. The hash is expected to have size of
--- 28-byte.
+-- | A 'KeyHash' type represents verification key hash that participate in building
+-- multi-signature script. The hash is expected to have size of 28-byte.
 --
 -- @since 3.0.0
 newtype KeyHash = KeyHash ByteString
     deriving (Generic, Show, Eq)
 
 instance NFData KeyHash
+
+-- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
+-- 28-byte.
+--
+-- @since 3.0.0
+newtype ScriptHash = ScriptHash ByteString
+    deriving (Generic, Show, Eq)
+
+instance NFData ScriptHash
 
 -- | Apply Blake2b224 hashing on Shelley 'XPub'.
 -- This results in 28-byte hash.
@@ -141,7 +150,7 @@ instance Show ScriptError where
         "Parsing of the script failed. The script should be composed of nested lists, and \
         \ the verification keys should be either base16 or base58 or bech32 encoded."
     show (InvalidScript EmptyList) = "The list inside a script is empty."
-    show (InvalidScript MZero) = "The M in at_least inside cannot be 0."
+    show (InvalidScript MZero) = "The M in at_least cannot be 0."
     show (InvalidScript ListTooSmall) = "The list inside at_least cannot be less than M."
     show (InvalidScript DuplicateSignatures) = "The list inside a script has duplicate keys."
     show (InvalidScript WrongKeyHash) =
@@ -188,8 +197,8 @@ encodeFoldable encode xs = wrapArray len contents
 -- `Api.serialiseToRawBytes $ Api.scriptHash script` realizes
 -- This is basically doing the symbolically the following (using symbols from toCBOR):
 -- digest $ (nativeMultisigTag <> toCBOR multisigScript )
-toScriptHash :: Script -> ByteString
-toScriptHash script = digest $ nativeMultiSigTag <> toCBOR'' script
+toScriptHash :: Script -> ScriptHash
+toScriptHash script = ScriptHash $ digest $ nativeMultiSigTag <> toCBOR'' script
   where
       nativeMultiSigTag :: ByteString
       nativeMultiSigTag = "\00"
