@@ -10,6 +10,7 @@ module Cardano.Script
     (
       Script (..)
     , ScriptError (..)
+    , InvalidScriptError (..)
     , KeyHash (..)
     , hashKey
     , keyHashFromBytes
@@ -28,12 +29,16 @@ import Cardano.Address.Style.Shelley
     ( Shelley, blake2b224, hashSize )
 import Control.DeepSeq
     ( NFData )
+import Control.Monad
+    ( when )
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
     ( Blake2b_224 )
 import Data.ByteString
     ( ByteString )
+import Data.Either.Combinators
+    ( isLeft )
 import Data.Foldable
     ( foldl' )
 import Data.Word
@@ -53,9 +58,9 @@ import qualified Data.List as L
 -- @since 3.0.0
 data Script =
       RequireSignatureOf KeyHash
-    | RequireAllOf [Script]
-    | RequireAnyOf [Script]
-    | RequireMOf Word8 [Script]
+    | RequireAllOf ![Script]
+    | RequireAnyOf ![Script]
+    | RequireMOf Word8 ![Script]
     deriving stock (Generic, Show, Eq)
 
 instance NFData Script
@@ -88,25 +93,45 @@ keyHashFromBytes bytes
 -- | Validate 'Script'
 --
 -- @since 3.0.0
-validateScript :: Script -> Bool
-validateScript (RequireSignatureOf _) = True
-validateScript (RequireAllOf content) =
-    not (L.null content) && L.all ((== True) . validateScript) content
-validateScript (RequireAnyOf content) =
-    not (L.null content) && L.all ((== True) . validateScript) content
-validateScript (RequireMOf m content) =
-    m > 0 && L.length content >= fromIntegral (toInteger m) &&
-    L.all ((== True) . validateScript) content
+validateScript :: Script -> Either InvalidScriptError ()
+validateScript (RequireSignatureOf _) = Right ()
+validateScript (RequireAllOf content) = do
+    when (L.null content) $
+        Left EmptyList
+    scanContent content
+validateScript (RequireAnyOf content) = do
+    when (L.null content) $
+        Left EmptyList
+    scanContent content
+validateScript (RequireMOf m content) = do
+    when (m == 0) $
+        Left MZero
+    when (length content < (fromInteger $ toInteger m) ) $
+        Left ListTooSmall
+    scanContent content
+
+scanContent :: [Script] -> Either InvalidScriptError ()
+scanContent content = do
+    let lefts = filter isLeft $ map validateScript content
+    if length lefts == 0 then
+        Right ()
+    else
+        head lefts
 
 -- | Errors when handling 'Script'
 --
 -- @since 3.0.0
-data ScriptError = MalformedScript | InvalidScript
+data ScriptError = MalformedScript | InvalidScript InvalidScriptError
     deriving Eq
+
+data InvalidScriptError = EmptyList | ListTooSmall | MZero
+    deriving (Eq, Show)
 
 instance Show ScriptError where
     show MalformedScript = "Parsing of the script failed."
-    show InvalidScript = "The script is invalid."
+    show (InvalidScript EmptyList) = "The list inside a script is empty."
+    show (InvalidScript MZero) = "The M in at_least inside cannot be 0."
+    show (InvalidScript ListTooSmall) = "The list inside at_least cannot be less than M."
 
 toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =

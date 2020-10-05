@@ -21,7 +21,13 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Script
-    ( Script (..), hashKey, toCBOR, toScriptHash, validateScript )
+    ( InvalidScriptError (..)
+    , Script (..)
+    , hashKey
+    , toCBOR
+    , toScriptHash
+    , validateScript
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Test.Hspec
@@ -154,31 +160,31 @@ spec = do
                 \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
                 "8aa7af44362310140ff3d32ac7d1a2ecbe26da65f3d146c64b90e9e1"
 
-    describe "validateScript" $ do
-        it "no content in RequireAnyOf" $ do
-            let script = RequireAnyOf []
-            validateScript script `shouldBe` False
+    describe "validateScript - errors" $ do
         it "no content in RequireAllOf" $ do
             let script = RequireAllOf []
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left EmptyList)
+        it "no content in RequireAnyOf" $ do
+            let script = RequireAnyOf []
+            validateScript script `shouldBe` (Left EmptyList)
         it "no content in RequireMOf" $ do
             let script = RequireMOf 1 []
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left ListTooSmall)
         it "too high m in RequireMOf" $ do
             let script = RequireMOf 3 [verKeyHash3, verKeyHash4]
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left ListTooSmall)
         it "m=0 in RequireMOf" $ do
             let script = RequireMOf 0 [verKeyHash3, verKeyHash4]
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe`(Left MZero)
         it "wrong in nested 1" $ do
             let script = RequireMOf 1 [verKeyHash1, RequireAnyOf [] ]
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left EmptyList)
         it "wrong in nested 2" $ do
             let script = RequireMOf 1
                     [ verKeyHash1
                     , RequireAnyOf [verKeyHash2, RequireAllOf [] ]
                     ]
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left EmptyList)
         it "wrong in nested 3" $ do
             let script = RequireMOf 1
                     [ verKeyHash1
@@ -186,6 +192,24 @@ spec = do
                                    , RequireMOf 3 [verKeyHash3, verKeyHash4]
                                    ]
                     ]
-            validateScript script `shouldBe` False
+            validateScript script `shouldBe` (Left ListTooSmall)
+
+    describe "validateScript - correct" $ do
+        it "content in RequireAllOf - 1" $ do
+            let script = RequireAllOf [verKeyHash1]
+            validateScript script `shouldBe` (Right ())
+        it "content in RequireAllOf - 2" $ do
+            let script = RequireAllOf [verKeyHash1, verKeyHash2]
+            validateScript script `shouldBe` (Right ())
+        it "nested 1" $ do
+            let script = RequireMOf 1
+                    [ verKeyHash1
+                    , RequireAnyOf [ verKeyHash2
+                                   , RequireMOf 1 [verKeyHash3, verKeyHash4]
+                                   ]
+                    ]
+            validateScript script `shouldBe` (Right ())
+
+
   where
     toHexText = T.decodeUtf8 . encode EBase16

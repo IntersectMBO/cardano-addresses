@@ -60,7 +60,8 @@ mod liftCmd = command "hash" $
 
 run :: Cmd -> IO ()
 run Cmd{encoding, script} =
-    if (validateScript script) then
-        hPutBytes stdout (toScriptHash script) encoding
-    else
-        fail $ show InvalidScript
+    case (validateScript script) of
+        Left err ->
+            fail $ show $ InvalidScript err
+        Right () ->
+            hPutBytes stdout (toScriptHash script) encoding

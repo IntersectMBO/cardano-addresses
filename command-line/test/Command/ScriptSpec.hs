@@ -7,6 +7,8 @@ module Command.ScriptSpec
 
 import Prelude
 
+import Cardano.Script
+    ( InvalidScriptError (..), ScriptError (..) )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -69,16 +71,20 @@ spec = do
         specScriptParsingWrong (T.unpack scriptWrong2)
 
         let scriptInvalid1 = "at_least 4 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
-        specScriptInvalid (T.unpack scriptInvalid1)
+        specScriptInvalid (T.unpack scriptInvalid1) (InvalidScript ListTooSmall)
 
         let scriptInvalid2 = "at_least 1 ["<>verKeyH1<>", at_least 2 ["<>verKeyH2<>"]]"
-        specScriptInvalid (T.unpack scriptInvalid2)
+        specScriptInvalid (T.unpack scriptInvalid2) (InvalidScript ListTooSmall)
 
         let scriptInvalid3 = "all []"
-        specScriptInvalid (T.unpack scriptInvalid3)
+        specScriptInvalid (T.unpack scriptInvalid3) (InvalidScript EmptyList)
 
         let scriptInvalid4 = "any ["<>verKeyH1<>", all [   ]]"
-        specScriptInvalid (T.unpack scriptInvalid4)
+        specScriptInvalid (T.unpack scriptInvalid4) (InvalidScript EmptyList)
+
+        let scriptInvalid5 = "at_least 0 ["<>verKeyH1<>"," <>verKeyH2<>"]"
+        specScriptInvalid (T.unpack scriptInvalid5) (InvalidScript MZero)
+
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do
@@ -91,8 +97,8 @@ specScriptParsingWrong script = it "fails if wrong hash in a script" $ do
     out `shouldBe` ("" :: String)
     err `shouldContain` ("Parsing of the script failed." :: String)
 
-specScriptInvalid :: String -> SpecWith ()
-specScriptInvalid script = it "fails if a correctly parsed script is invalid" $ do
+specScriptInvalid :: String -> ScriptError -> SpecWith ()
+specScriptInvalid script errMsg = it "fails if a correctly parsed script is invalid" $ do
     (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
-    err `shouldContain` ("The script is invalid." :: String)
+    err `shouldContain` (show errMsg)
