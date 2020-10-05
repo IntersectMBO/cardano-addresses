@@ -9,6 +9,10 @@ import Prelude
 
 import Cardano.Script
     ( InvalidScriptError (..), ScriptError (..) )
+import Codec.Binary.Encoding
+    ( fromBase16 )
+import Data.ByteString.Base58
+    ( bitcoinAlphabet, encodeBase58 )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -16,7 +20,9 @@ import Test.Hspec
 import Test.Utils
     ( cli, describeCmd )
 
+import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
@@ -37,13 +43,16 @@ spec = do
     let script10 = "at_least 1 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
     let script11 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
 
+    let hash1 =
+            "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac" :: String
+    let hash2 =
+            "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f" :: String
+
     describeCmd [ "script", "hash" ] $ do
-        specScriptHashProper (T.unpack script1)
-            "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
+        specScriptHashProper (T.unpack script1) hash1
         specScriptHashProper (T.unpack script2)
             "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
-        specScriptHashProper (T.unpack script3)
-            "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
+        specScriptHashProper (T.unpack script3) hash2
         specScriptHashProper (T.unpack script4)
             "5e26af6e6e0342b6f1360192f5c27a07a615af74d1146b46d15d859b"
         specScriptHashProper (T.unpack script5)
@@ -61,14 +70,11 @@ spec = do
         specScriptHashProper (T.unpack script11)
             "6f7ff5aee204c2d7e93cb0752ac1ead3a1370c692d9ff22c487de72d"
 
-        let verKeyWrong = "3c07030e36bfffe67e2e2ec09e5293d384637cd2" :: Text
-        specScriptParsingWrong (T.unpack verKeyWrong)
+        let scriptMaformed1 = "wrong ["<>verKeyH1<>"]"
+        specScriptParsingWrong (T.unpack scriptMaformed1)
 
-        let scriptWrong1 = "wrong ["<>verKeyH1<>"]"
-        specScriptParsingWrong (T.unpack scriptWrong1)
-
-        let scriptWrong2 = " any   [ "<>verKeyH1<>",  ] "
-        specScriptParsingWrong (T.unpack scriptWrong2)
+        let scriptMaformed2 = " any   [ "<>verKeyH1<>",  ] "
+        specScriptParsingWrong (T.unpack scriptMaformed2)
 
         let scriptInvalid1 = "at_least 4 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
         specScriptInvalid (T.unpack scriptInvalid1) (InvalidScript ListTooSmall)
@@ -88,6 +94,24 @@ spec = do
         let scriptInvalid6 = "any ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH1<>"]"
         specScriptInvalid (T.unpack scriptInvalid6) (InvalidScript DuplicateSignatures)
 
+        let verKeyWrong = "3c07030e36bfffe67e2e2ec09e5293d384637cd2" :: Text
+        specScriptInvalid (T.unpack verKeyWrong) (InvalidScript WrongKeyHash)
+
+        -- we can get to the same script hash from different encoding of the same payload
+        let (Right bytes1) = fromBase16 $ T.encodeUtf8 verKeyH1
+        let (Right hrp) = Bech32.humanReadablePartFromText "addr_test"
+        let verKeyBech32 = Bech32.encodeLenient hrp (Bech32.dataPartFromBytes bytes1)
+        let script12 = "all ["<>verKeyBech32<>"]"
+        specScriptHashProper (T.unpack script12) hash1
+        let verKeyBase58 = T.decodeUtf8 $ encodeBase58 bitcoinAlphabet bytes1
+        let script13 = "all ["<>verKeyBase58<>"]"
+        specScriptHashProper (T.unpack script13) hash1
+
+        -- we can get the same script even when each verification key has different encoding
+        let script14 = "all ["<>verKeyBech32<>", "<>verKeyH2<>"]"
+        specScriptHashProper (T.unpack script14) hash2
+        let script15 = "all ["<>verKeyBase58<>", "<>verKeyH2<>"]"
+        specScriptHashProper (T.unpack script15) hash2
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper script expected = it "script hash working as expected" $ do
@@ -95,10 +119,10 @@ specScriptHashProper script expected = it "script hash working as expected" $ do
     out `shouldBe` expected
 
 specScriptParsingWrong :: String -> SpecWith ()
-specScriptParsingWrong script = it "fails if wrong hash in a script" $ do
+specScriptParsingWrong script = it "fails if a script is malformed" $ do
     (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
-    err `shouldContain` ("Parsing of the script failed." :: String)
+    err `shouldContain` (show MalformedScript)
 
 specScriptInvalid :: String -> ScriptError -> SpecWith ()
 specScriptInvalid script errMsg = it "fails if a correctly parsed script is invalid" $ do

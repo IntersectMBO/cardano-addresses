@@ -31,7 +31,6 @@ import System.IO
 import System.IO.Extra
     ( hPutBytes, progName )
 
-
 data Cmd = Cmd
     { encoding :: Encoding
     , script :: Script

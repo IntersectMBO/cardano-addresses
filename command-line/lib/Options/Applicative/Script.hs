@@ -27,7 +27,7 @@ scriptFromString :: String -> Either String Script
 scriptFromString str =
     case readP_to_S scriptParser str of
          [(multisig,_rest)] ->
-                 Right multisig
+             Right multisig
          _ ->
              Left $ show MalformedScript
 

@@ -21,9 +21,9 @@ module Cardano.ScriptParser
 import Prelude
 
 import Cardano.Script
-    ( Script (..), keyHashFromBytes )
+    ( KeyHash (..), Script (..) )
 import Codec.Binary.Encoding
-    ( fromBase16 )
+    ( AbstractEncoding (..), detectEncoding, fromBase16, fromBase58 )
 import Data.Char
     ( isDigit, isLetter )
 import Data.Word
@@ -31,6 +31,7 @@ import Data.Word
 import Text.ParserCombinators.ReadP
     ( ReadP, (<++) )
 
+import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Text.ParserCombinators.ReadP as P
@@ -68,15 +69,26 @@ scriptParser =
 requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
     P.skipSpaces
-    verKeyH <- P.munch1 (\c -> isDigit c || isLetter c)
-    case length verKeyH of
-        56 -> do
-            let (Right bytes) = fromBase16 $ T.encodeUtf8 $ T.pack verKeyH
-            let (Just keyHash) = keyHashFromBytes bytes
-            return $ RequireSignatureOf keyHash
-        len ->
-            fail $ "Verification key hash should be 28 bytes, but received "
-            <> show len <> " bytes."
+    verKeyStr <- P.munch1 (\c -> isDigit c || isLetter c || c == '_')
+    case detectEncoding verKeyStr of
+        Just EBase16 -> case fromBase16 (toBytes verKeyStr) of
+            Left _ -> fail "Invalid Base16-encoded string."
+            Right keyHash -> return $ toSignature keyHash
+        Just EBech32{} -> case fromBech32 (T.pack verKeyStr) of
+            Nothing -> fail "Invalid Bech32-encoded string.."
+            Just keyHash -> return $ toSignature keyHash
+        Just EBase58 -> case fromBase58 (toBytes verKeyStr) of
+            Left err -> fail err
+            Right keyHash -> return $ toSignature keyHash
+        Nothing ->
+            fail "Verification key hash must be must be encoded as \
+                   \base16, bech32 or base58."
+ where
+    toBytes = T.encodeUtf8 . T.pack
+    fromBech32 txt = do
+        (_, dp) <- either (const Nothing) Just (Bech32.decodeLenient txt)
+        Bech32.dataPartToBytes dp
+    toSignature = RequireSignatureOf . KeyHash
 
 requireAllOfParser :: ReadP Script
 requireAllOfParser = do
