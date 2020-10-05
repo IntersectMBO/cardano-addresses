@@ -13,10 +13,9 @@ module Cardano.Script
     , ScriptError (..)
     , InvalidScriptError (..)
     , KeyHash (..)
-    , hashKey
-    , keyHashFromBytes
     , toScriptHash
     , validateScript
+    , keyHashFromBytes
 
     -- * Internal
     , toCBOR
@@ -24,10 +23,6 @@ module Cardano.Script
 
 import Prelude
 
-import Cardano.Address.Derivation
-    ( XPub )
-import Cardano.Address.Style.Shelley
-    ( Shelley, blake2b224, hashSize )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
@@ -35,7 +30,9 @@ import Control.Monad
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
-    ( Blake2b_224 )
+    ( Blake2b_224 (..) )
+import Crypto.Hash.IO
+    ( HashAlgorithm (hashDigestSize) )
 import Data.ByteString
     ( ByteString )
 import Data.Either.Combinators
@@ -63,17 +60,7 @@ data Script =
     | RequireAnyOf ![Script]
     | RequireMOf Word8 ![Script]
     deriving stock (Generic, Show, Eq)
-
 instance NFData Script
-
--- | A 'KeyHash' type represents verification key hash that participate in building
--- multi-signature script. The hash is expected to have size of 28-byte.
---
--- @since 3.0.0
-newtype KeyHash = KeyHash ByteString
-    deriving (Generic, Show, Eq)
-
-instance NFData KeyHash
 
 -- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
 -- 28-byte.
@@ -81,15 +68,15 @@ instance NFData KeyHash
 -- @since 3.0.0
 newtype ScriptHash = ScriptHash ByteString
     deriving (Generic, Show, Eq)
-
 instance NFData ScriptHash
 
--- | Apply Blake2b224 hashing on Shelley 'XPub'.
--- This results in 28-byte hash.
+-- | A 'KeyHash' type represents verification key hash that participate in building
+-- multi-signature script. The hash is expected to have size of 28-byte.
 --
 -- @since 3.0.0
-hashKey :: Shelley key XPub -> KeyHash
-hashKey = KeyHash . blake2b224
+newtype KeyHash = KeyHash ByteString
+    deriving (Generic, Show, Eq)
+instance NFData KeyHash
 
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
 --
@@ -207,3 +194,7 @@ toScriptHash script = ScriptHash $ digest $ nativeMultiSigTag <> toCBOR'' script
 
       toCBOR'' :: Script -> ByteString
       toCBOR'' script' = CBOR.toStrictByteString $ toCBOR' script'
+
+-- Size, in bytes, of a hash of public key (without the corresponding chain code)
+hashSize :: Int
+hashSize = hashDigestSize Blake2b_224

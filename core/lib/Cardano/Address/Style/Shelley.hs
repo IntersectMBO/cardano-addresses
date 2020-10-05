@@ -25,6 +25,8 @@ module Cardano.Address.Style.Shelley
       Shelley
     , getKey
     , Role (..)
+    , PaymentCredential (..)
+    , StakeCredential (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -36,6 +38,7 @@ module Cardano.Address.Style.Shelley
     , deriveAddressPublicKey
     , deriveMultisigPrivateKey
     , deriveMultisigPublicKey
+    , hashKey
 
       -- * Addresses
       -- $addresses
@@ -97,6 +100,8 @@ import Cardano.Address.Style.Icarus
     ( inspectIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Cardano.Script
+    ( KeyHash (..), ScriptHash )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
@@ -625,6 +630,23 @@ inspectShelleyAddress mRootPub addr
             <*> getVariableLengthNat
             <*> getVariableLengthNat
 
+-- | In Shelley payment credential can originate from key or stake.
+--
+-- @since 3.0.0
+data PaymentCredential =
+      PaymentFromKeyHash (Shelley 'AddressK XPub)
+    | PaymentFromScriptHash ScriptHash
+    deriving (Show, Eq)
+
+-- | In Shelley stake credential can originate from key or stake.
+--
+-- @since 3.0.0
+data StakeCredential =
+      StakeFromKeyHash (Shelley 'StakingK XPub)
+    | StakeFromScriptHash ScriptHash
+    deriving (Show, Eq)
+
+
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
 -- | Convert a public key to a payment 'Address' valid for the given
@@ -811,6 +833,13 @@ liftXPrv = Shelley
 -- @since 2.0.0
 liftXPub :: XPub -> Shelley depth XPub
 liftXPub = Shelley
+
+-- | Apply Blake2b224 hashing on Shelley 'XPub'.
+-- This results in 28-byte hash.
+--
+-- @since 3.0.0
+hashKey :: Shelley key XPub -> KeyHash
+hashKey = KeyHash . blake2b224
 
 --
 -- Internal

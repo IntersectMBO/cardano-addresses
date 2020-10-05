@@ -17,14 +17,13 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, toXPub )
 import Cardano.Address.Style.Shelley
-    ( Shelley (..), deriveMultisigPrivateKey )
+    ( Shelley (..), deriveMultisigPrivateKey, hashKey )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Script
     ( InvalidScriptError (..)
     , Script (..)
     , ScriptHash (..)
-    , hashKey
     , toCBOR
     , toScriptHash
     , validateScript
@@ -231,4 +230,4 @@ spec = do
 
   where
     toHexText = T.decodeUtf8 . encode EBase16
-    toHexText' (ScriptHash bytes) = toHextText bytes
+    toHexText' (ScriptHash bytes) = toHexText bytes
