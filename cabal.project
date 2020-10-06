@@ -1,4 +1,4 @@
-index-state: 2020-04-01T00:00:00Z
+index-state: 2020-10-01T00:00:00Z
 
 packages:
   core
@@ -14,3 +14,10 @@ package cryptonite
   -- Using RDRAND instead of /dev/urandom as an entropy source for key
   -- generation is dubious. Set the flag so we use /dev/urandom by default.
   flags: -support_rdrand
+
+constraints:
+  hjsonpointer >= 1.5.0,
+  hjsonschema >= 1.10.0
+
+-- fixme: this shouldn't be required - not sure why it is
+allow-newer: *
