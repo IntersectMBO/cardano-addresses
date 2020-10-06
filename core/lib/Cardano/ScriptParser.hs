@@ -8,7 +8,8 @@
 module Cardano.ScriptParser
     (
     -- ** Script Parser
-      scriptParser
+      scriptFromString
+    , scriptParser
 
     -- * Internal
     , requireSignatureOfParser
@@ -29,13 +30,19 @@ import Data.Char
 import Data.Word
     ( Word8 )
 import Text.ParserCombinators.ReadP
-    ( ReadP, (<++) )
+    ( ReadP, (<++), readP_to_S )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Text.ParserCombinators.ReadP as P
 
+-- | Run 'scriptParser' on string input.
+scriptFromString :: String -> Maybe Script
+scriptFromString str =
+    case readP_to_S scriptParser str of
+         [(multisig, "")] -> Just multisig
+         _ -> Nothing
 
 -- | The script embodies combination of signing keys that need to be met to make
 -- it valid. We assume here that the script could

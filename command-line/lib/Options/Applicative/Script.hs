@@ -16,23 +16,17 @@ import Prelude
 import Cardano.Script
     ( Script (..), ScriptError (..) )
 import Cardano.ScriptParser
-    ( scriptParser )
+    ( scriptFromString )
 import Options.Applicative
     ( Parser, argument, eitherReader, help, metavar )
-import Text.ParserCombinators.ReadP
-    ( readP_to_S )
-
-
-scriptFromString :: String -> Either String Script
-scriptFromString str =
-    case readP_to_S scriptParser str of
-         [(multisig,_rest)] ->
-             Right multisig
-         _ ->
-             Left $ show MalformedScript
 
 scriptArg :: Parser Script
-scriptArg = argument (eitherReader scriptFromString) $ mempty
+scriptArg = argument (eitherReader scriptFromString') $ mempty
     <> metavar "SCRIPT"
     <> help
         "Script string."
+
+scriptFromString' :: String -> Either String Script
+scriptFromString' = maybe (Left errMsg) Right . scriptFromString
+  where
+    errMsg = show MalformedScript
