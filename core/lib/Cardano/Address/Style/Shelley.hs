@@ -457,10 +457,10 @@ instance Internal.PaymentAddress Shelley where
         constructPayload 96 discrimination (blake2b224 k)
 
 instance Internal.DelegationAddress Shelley where
-    delegationAddress discrimination paymentKey =
-        unsafeFromRight
-        . extendAddress (paymentAddress discrimination (PaymentFromKey paymentKey))
-        . Left
+    delegationAddress discrimination paymentKey stakingKey =
+        unsafeFromRight $ extendAddress
+        (paymentAddress discrimination (PaymentFromKey paymentKey))
+        (Left $ StakeFromKey stakingKey)
       where
         unsafeFromRight = either
             (error "impossible: interally generated invalid address")
@@ -671,7 +671,7 @@ paymentAddress discrimination credential =
 -- @since 2.0.0
 extendAddress
     :: Address
-    -> Either (Shelley 'StakingK XPub) ChainPointer
+    -> Either StakeCredential ChainPointer
     -> Either ErrExtendAddress Address
 extendAddress addr stakeReference = do
     when (isNothing (inspectShelleyAddress Nothing addr)) $
@@ -680,19 +680,38 @@ extendAddress addr stakeReference = do
     let bytes = unAddress addr
     let (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
 
-    when ((fstByte .&. 0b11110000) /= 0b01100000) $ do
+    let paymentFirstByte = fstByte .&. 0b11110000
+    when (paymentFirstByte /= 0b01100000 && paymentFirstByte /= 0b01110000) $ do
         Left $ ErrInvalidAddressType "Only payment addresses can be extended"
 
     case stakeReference of
-        Left stakingKey -> do
+        -- base address: keyhash28,keyhash28    : 00000000
+        -- base address: scripthash32,keyhash28 : 00010000
+        Left (StakeFromKey stakingKey) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
-                putWord8 $ fstByte .&. 0b00001111
+                -- 0b01100000 .&. 0b00011111 = 0
+                -- 0b01110000 .&. 0b00011111 = 16
+                putWord8 $ fstByte .&. 0b00011111
                 putByteString rest
                 putByteString . blake2b224 $ stakingKey
 
+        -- base address: keyhash28,scripthash32    : 00100000
+        -- base address: scripthash32,scripthash32 : 00110000
+        Left (StakeFromScript (ScriptHash scriptBytes)) -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00111111 = 32
+                -- 0b01110000 .&. 0b00111111 = 48
+                putWord8 $ fstByte .&. 0b00111111
+                putByteString rest
+                putByteString scriptBytes
+
+        -- pointer address: keyhash28, 3 variable length uint    : 01000000
+        -- pointer address: scripthash32, 3 variable length uint : 01010000
         Right pointer -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
-                putWord8 $ fstByte .&. 0b01001111
+                -- 0b01100000 .&. 0b01011111 = 64
+                -- 0b01110000 .&. 0b01011111 = 80
+                putWord8 $ fstByte .&. 0b01011111
                 putByteString rest
                 putPointer pointer
   where
