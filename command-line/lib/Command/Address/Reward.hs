@@ -76,7 +76,7 @@ run Cmd{networkTag} = do
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left e -> die (fmt $ build e)
         Right discriminant -> do
-            let addr = Shelley.stakeAddress discriminant (Shelley.liftXPub xpub)
+            let addr = Shelley.stakeAddress discriminant (Shelley.StakeFromKey $ Shelley.liftXPub xpub)
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]

@@ -435,21 +435,9 @@ deriveMultisigPublicKey accPub addrIx =
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
 instance Internal.StakeAddress Shelley where
-    stakeAddress discrimination k = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString (blake2b224 k)
-      where
-          -- First 4 bits are `1110` for keyhash28 reward account address.
-          -- Next 4 bits are network discriminator.
-          -- `1110 0000` is 224 in decimal.
-          firstByte =
-            let addrType = 224
-                netTagLimit = 16
-            in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
-          expectedLength =
-              let headerSizeBytes = 1
-              in headerSizeBytes + hashSize
+    stakeAddress discrimination k =
+        -- reward account with keyhash: 11100000 -> 224
+        constructPayload 224 discrimination (blake2b224 k)
 
 instance Internal.PaymentAddress Shelley where
     paymentAddress discrimination k =
@@ -685,8 +673,8 @@ extendAddress addr stakeReference = do
         Left $ ErrInvalidAddressType "Only payment addresses can be extended"
 
     case stakeReference of
-        -- base address: keyhash28,keyhash28    : 00000000
-        -- base address: scripthash32,keyhash28 : 00010000
+        -- base address: keyhash28,keyhash28    : 00000000 -> 0
+        -- base address: scripthash32,keyhash28 : 00010000 -> 16
         Left (StakeFromKey stakingKey) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
@@ -695,8 +683,8 @@ extendAddress addr stakeReference = do
                 putByteString rest
                 putByteString . blake2b224 $ stakingKey
 
-        -- base address: keyhash28,scripthash32    : 00100000
-        -- base address: scripthash32,scripthash32 : 00110000
+        -- base address: keyhash28,scripthash32    : 00100000 -> 32
+        -- base address: scripthash32,scripthash32 : 00110000 -> 48
         Left (StakeFromScript (ScriptHash scriptBytes)) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
@@ -705,8 +693,8 @@ extendAddress addr stakeReference = do
                 putByteString rest
                 putByteString scriptBytes
 
-        -- pointer address: keyhash28, 3 variable length uint    : 01000000
-        -- pointer address: scripthash32, 3 variable length uint : 01010000
+        -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
+        -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
         Right pointer -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b01011111 = 64
@@ -767,11 +755,16 @@ pointerAddress =
 -- @since 2.0.0
 stakeAddress
     :: NetworkDiscriminant Shelley
-    -> Shelley 'StakingK XPub
+    -> StakeCredential
     -> Address
-stakeAddress =
-    Internal.stakeAddress
-
+stakeAddress discrimination credential =
+    case credential of
+        StakeFromKey keyPub ->
+            -- reward account with keyhash: 11100000 -> 224
+            Internal.stakeAddress discrimination keyPub
+        StakeFromScript (ScriptHash bytes) ->
+            -- reward account with scripthash: 11110000 -> 240
+            constructPayload 240 discrimination bytes
 
 --
 -- Network Discriminant
