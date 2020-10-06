@@ -31,6 +31,8 @@ import Options.Applicative.Script
     ( scriptArg )
 import Prelude hiding
     ( mod )
+import System.Exit
+    ( die )
 import System.IO
     ( stdout )
 import System.IO.Extra
@@ -66,7 +68,7 @@ run :: Cmd -> IO ()
 run Cmd{encoding, script} =
     case (validateScript script) of
         Left err ->
-            fail $ show $ InvalidScript err
+            die $ show $ InvalidScript err
         Right () -> do
             let (ScriptHash bytes) = toScriptHash script
             hPutBytes stdout bytes encoding
