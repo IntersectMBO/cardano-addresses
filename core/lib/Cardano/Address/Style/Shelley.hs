@@ -741,11 +741,23 @@ delegationAddress =
 -- @since 2.0.0
 pointerAddress
     :: NetworkDiscriminant Shelley
-    -> Shelley 'AddressK XPub
+    -> PaymentCredential
     -> ChainPointer
     -> Address
-pointerAddress =
-    Internal.pointerAddress
+pointerAddress discrimination credential pointer =
+    case credential of
+        PaymentFromKey keyPub ->
+            -- pointer address: keyhash28, 3 variable length uint : 01000000 -> 64
+            Internal.pointerAddress discrimination keyPub pointer
+        PaymentFromScript scriptHash ->
+           -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
+            unsafeFromRight $ extendAddress
+            (paymentAddress discrimination (PaymentFromScript scriptHash))
+            (Right pointer)
+  where
+      unsafeFromRight = either
+          (error "impossible: interally generated invalid address")
+          id
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
