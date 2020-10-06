@@ -446,23 +446,15 @@ instance Internal.PaymentAddress Shelley where
 
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey stakingKey =
-        unsafeFromRight $ extendAddress
-        (paymentAddress discrimination (PaymentFromKey paymentKey))
-        (Left $ StakeFromKey stakingKey)
-      where
-        unsafeFromRight = either
-            (error "impossible: interally generated invalid address")
-            id
+        delegationAddress discrimination
+        (PaymentFromKey paymentKey)
+        (StakeFromKey stakingKey)
 
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination paymentKey =
         unsafeFromRight
         . extendAddress (paymentAddress discrimination (PaymentFromKey paymentKey))
         . Right
-      where
-        unsafeFromRight = either
-            (error "impossible: interally generated invalid address")
-            id
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
 --
@@ -601,6 +593,10 @@ inspectShelleyAddress mRootPub addr
             <*> getVariableLengthNat
             <*> getVariableLengthNat
 
+unsafeFromRight :: Either a c -> c
+unsafeFromRight =
+    either (error "impossible: interally generated invalid address") id
+
 -- | In Shelley payment credential can originate from either key or script.
 --
 -- @since 3.0.0
@@ -637,8 +633,8 @@ constructPayload code discrimination bytes = unsafeMkAddress $
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
--- | Convert a public key to a payment 'Address' valid for the given
--- network discrimination.
+-- | Convert a payment credential (key or script) to a payment 'Address' valid
+-- for the given network discrimination.
 --
 -- @since 2.0.0
 paymentAddress
@@ -718,24 +714,26 @@ data ErrExtendAddress
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
--- | Convert a public key and a staking key to a delegation 'Address' valid
--- for the given network discrimination. Funds sent to this address will be
--- delegated according to the delegation settings attached to the delegation
--- key.
+-- | Convert a payment credential (key or script) and a staking credential (key or script)
+-- to a delegation 'Address' valid for the given network discrimination.
+-- Funds sent to this address will be delegated according to the delegation settings
+-- attached to the delegation key.
 --
 -- @since 2.0.0
 delegationAddress
     :: NetworkDiscriminant Shelley
-    -> Shelley 'AddressK XPub
-    -> Shelley 'StakingK XPub
+    -> PaymentCredential
+    -> StakeCredential
     -> Address
-delegationAddress =
-    Internal.delegationAddress
+delegationAddress discrimination paymentCredential stakeCredential =
+    unsafeFromRight $ extendAddress
+        (paymentAddress discrimination paymentCredential)
+        (Left stakeCredential)
 
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
--- | Convert a public key and pointer to staking certificate in blockchain to a
+-- | Convert a payment credential (key or script) and pointer to staking certificate in blockchain to a
 -- pointer 'Address' valid for the given network discrimination.
 --
 -- @since 2.0.0
@@ -754,14 +752,10 @@ pointerAddress discrimination credential pointer =
             unsafeFromRight $ extendAddress
             (paymentAddress discrimination (PaymentFromScript scriptHash))
             (Right pointer)
-  where
-      unsafeFromRight = either
-          (error "impossible: interally generated invalid address")
-          id
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
--- | Convert a staking key to a stake Address (aka reward account address)
+-- | Convert a staking credential (key or script) to a stake Address (aka reward account address)
 -- for the given network discrimination.
 --
 -- @since 2.0.0
