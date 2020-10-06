@@ -44,6 +44,7 @@ module Cardano.Address.Style.Shelley
       -- $addresses
     , inspectShelleyAddress
     , paymentAddress
+    , paymentAddress1
     , delegationAddress
     , pointerAddress
     , stakeAddress
@@ -101,7 +102,7 @@ import Cardano.Address.Style.Icarus
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Cardano.Script
-    ( KeyHash (..), ScriptHash )
+    ( KeyHash (..), ScriptHash (..) )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
@@ -141,7 +142,7 @@ import Data.Maybe
 import Data.Typeable
     ( Typeable )
 import Data.Word
-    ( Word32 )
+    ( Word32, Word8 )
 import Data.Word7
     ( getVariableLengthNat, putVariableLengthNat )
 import Fmt
@@ -452,26 +453,9 @@ instance Internal.StakeAddress Shelley where
               in headerSizeBytes + hashSize
 
 instance Internal.PaymentAddress Shelley where
-    paymentAddress discrimination k = unsafeMkAddress $
-        invariantSize expectedLength $ BL.toStrict $ runPut $ do
-            putWord8 firstByte
-            putByteString (blake2b224 k)
-      where
-          -- we use here the fact that payment address stands for what is named
-          -- as enterprise address, ie., address carrying no stake rights. For
-          -- rationale why we may need such addresses refer to delegation
-          -- specification - Section 3.2.3. What is important here is that the
-          -- address is composed of discrimination byte and 28 bytes hashed public key.
-          -- Moreover, it was decided that first 4 bits for enterprise address
-          -- will be `0110`. The next for 4 bits are reserved for network discriminator.
-          -- `0110 0000` is 96 in decimal.
-          firstByte =
-            let addrType = 96
-                netTagLimit = 16
-            in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
-          expectedLength =
-              let headerSizeBytes = 1
-              in headerSizeBytes + hashSize
+    paymentAddress discrimination k =
+        -- enterprise address for keyhash28: 0110 0000 - 96
+        constructPayload 96 discrimination (blake2b224 k)
 
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey =
@@ -645,6 +629,41 @@ data StakeCredential =
       StakeFromKey (Shelley 'StakingK XPub)
     | StakeFromScript ScriptHash
     deriving (Show, Eq)
+
+constructPayload
+    :: Word8
+    -> NetworkDiscriminant Shelley
+    -> ByteString
+    -> Address
+constructPayload code discrimination bytes = unsafeMkAddress $
+    invariantSize expectedLength $ BL.toStrict $ runPut $ do
+    putWord8 firstByte
+    putByteString bytes
+  where
+    firstByte =
+        let addrType = code
+            netTagLimit = 16
+        in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
+    expectedLength =
+        let headerSizeBytes = 1
+        in headerSizeBytes + hashSize
+
+-- | Convert a public key to a payment 'Address' valid for the given
+-- network discrimination.
+--
+-- @since 2.0.0
+paymentAddress1
+    :: NetworkDiscriminant Shelley
+    -> PaymentCredential
+    -> Address
+paymentAddress1 discrimination credential =
+    case credential of
+        PaymentFromKey keyPub ->
+            -- enterprise address with keyhash: 01100000 -> 96
+            Internal.paymentAddress discrimination keyPub
+        PaymentFromScript (ScriptHash bytes) ->
+            -- enterprise address with scripthash: 01110000 -> 112
+            constructPayload 112 discrimination bytes
 
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
