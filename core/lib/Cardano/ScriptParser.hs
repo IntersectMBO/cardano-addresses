@@ -30,7 +30,7 @@ import Data.Char
 import Data.Word
     ( Word8 )
 import Text.ParserCombinators.ReadP
-    ( ReadP, (<++), readP_to_S )
+    ( ReadP, readP_to_S, (<++) )
 
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T

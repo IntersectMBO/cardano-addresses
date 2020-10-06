@@ -630,20 +630,20 @@ inspectShelleyAddress mRootPub addr
             <*> getVariableLengthNat
             <*> getVariableLengthNat
 
--- | In Shelley payment credential can originate from key or stake.
+-- | In Shelley payment credential can originate from either key or script.
 --
 -- @since 3.0.0
 data PaymentCredential =
-      PaymentFromKeyHash (Shelley 'AddressK XPub)
-    | PaymentFromScriptHash ScriptHash
+      PaymentFromKey (Shelley 'AddressK XPub)
+    | PaymentFromScript ScriptHash
     deriving (Show, Eq)
 
--- | In Shelley stake credential can originate from key or stake.
+-- | In Shelley stake credential can originate from either key or script.
 --
 -- @since 3.0.0
 data StakeCredential =
-      StakeFromKeyHash (Shelley 'StakingK XPub)
-    | StakeFromScriptHash ScriptHash
+      StakeFromKey (Shelley 'StakingK XPub)
+    | StakeFromScript ScriptHash
     deriving (Show, Eq)
 
 

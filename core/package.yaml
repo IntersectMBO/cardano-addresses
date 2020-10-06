@@ -45,6 +45,7 @@ library:
   - cryptonite
   - deepseq
   - digest
+  - either
   - exceptions
   - extra
   - fmt

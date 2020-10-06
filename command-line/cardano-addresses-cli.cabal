@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d172a0629919a6e25f13d8b80d7e4e260cdfe22c57c648c9b103f8ccd4bacfd
+-- hash: 7d11d5c8f60de69c3652da6392d3690d15e167050e9075ec60ce457586857cf9
 
 name:           cardano-addresses-cli
 version:        2.1.0

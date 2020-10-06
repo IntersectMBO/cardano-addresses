@@ -6,8 +6,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
 module Cardano.ScriptSpec
     ( spec
     ) where
