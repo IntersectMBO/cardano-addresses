@@ -44,7 +44,6 @@ module Cardano.Address.Style.Shelley
       -- $addresses
     , inspectShelleyAddress
     , paymentAddress
-    , paymentAddress1
     , delegationAddress
     , pointerAddress
     , stakeAddress
@@ -460,7 +459,7 @@ instance Internal.PaymentAddress Shelley where
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey =
         unsafeFromRight
-        . extendAddress (paymentAddress discrimination paymentKey)
+        . extendAddress (paymentAddress discrimination (PaymentFromKey paymentKey))
         . Left
       where
         unsafeFromRight = either
@@ -470,7 +469,7 @@ instance Internal.DelegationAddress Shelley where
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination paymentKey =
         unsafeFromRight
-        . extendAddress (paymentAddress discrimination paymentKey)
+        . extendAddress (paymentAddress discrimination (PaymentFromKey paymentKey))
         . Right
       where
         unsafeFromRight = either
@@ -648,24 +647,6 @@ constructPayload code discrimination bytes = unsafeMkAddress $
         let headerSizeBytes = 1
         in headerSizeBytes + hashSize
 
--- | Convert a public key to a payment 'Address' valid for the given
--- network discrimination.
---
--- @since 2.0.0
-paymentAddress1
-    :: NetworkDiscriminant Shelley
-    -> PaymentCredential
-    -> Address
-paymentAddress1 discrimination credential =
-    case credential of
-        PaymentFromKey keyPub ->
-            -- enterprise address with keyhash: 01100000 -> 96
-            Internal.paymentAddress discrimination keyPub
-        PaymentFromScript (ScriptHash bytes) ->
-            -- enterprise address with scripthash: 01110000 -> 112
-            constructPayload 112 discrimination bytes
-
-
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
 -- | Convert a public key to a payment 'Address' valid for the given
@@ -674,10 +655,16 @@ paymentAddress1 discrimination credential =
 -- @since 2.0.0
 paymentAddress
     :: NetworkDiscriminant Shelley
-    -> Shelley 'AddressK XPub
+    -> PaymentCredential
     -> Address
-paymentAddress =
-    Internal.paymentAddress
+paymentAddress discrimination credential =
+    case credential of
+        PaymentFromKey keyPub ->
+            -- enterprise address with keyhash: 01100000 -> 96
+            Internal.paymentAddress discrimination keyPub
+        PaymentFromScript (ScriptHash bytes) ->
+            -- enterprise address with scripthash: 01110000 -> 112
+            constructPayload 112 discrimination bytes
 
 -- | Extend an existing payment 'Address' to make it a delegation address.
 --

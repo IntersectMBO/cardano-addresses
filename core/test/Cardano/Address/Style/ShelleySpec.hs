@@ -44,7 +44,8 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Role (..)
+    ( PaymentCredential (..)
+    , Role (..)
     , Shelley (..)
     , deriveMultisigPrivateKey
     , deriveMultisigPublicKey
@@ -80,6 +81,7 @@ import Test.QuickCheck
     , (==>)
     )
 
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -936,7 +938,7 @@ goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
         let (Right tag) = mkNetworkDiscriminant networkTag
-        let enterpriseAddr = paymentAddress tag addrXPub
+        let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromKey addrXPub)
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
 

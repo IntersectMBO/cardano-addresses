@@ -72,7 +72,7 @@ run Cmd{networkTag} = do
         Left ErrWrongNetworkTag{} -> do
             fail "Invalid network tag. Must be between [0, 15]"
         Right discriminant -> do
-            let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)
+            let addr = Shelley.paymentAddress discriminant (Shelley.PaymentFromKey $ Shelley.liftXPub xpub)
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|addr_test|]
