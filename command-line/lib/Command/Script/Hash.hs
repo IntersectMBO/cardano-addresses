@@ -16,6 +16,7 @@ import Cardano.Script
     ( Script (..)
     , ScriptError (..)
     , ScriptHash (..)
+    , scriptErrorToMsg
     , toScriptHash
     , validateScript
     )
@@ -68,7 +69,7 @@ run :: Cmd -> IO ()
 run Cmd{encoding, script} =
     case (validateScript script) of
         Left err ->
-            die $ show $ InvalidScript err
+            die $ scriptErrorToMsg $ InvalidScript err
         Right () -> do
             let (ScriptHash bytes) = toScriptHash script
             hPutBytes stdout bytes encoding

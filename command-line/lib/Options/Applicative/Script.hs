@@ -14,7 +14,7 @@ module Options.Applicative.Script
 import Prelude
 
 import Cardano.Script
-    ( Script (..), ScriptError (..) )
+    ( Script (..), ScriptError (..), scriptErrorToMsg )
 import Cardano.ScriptParser
     ( scriptFromString )
 import Options.Applicative
@@ -29,4 +29,4 @@ scriptArg = argument (eitherReader scriptFromString') $ mempty
 scriptFromString' :: String -> Either String Script
 scriptFromString' = maybe (Left errMsg) Right . scriptFromString
   where
-    errMsg = show MalformedScript
+    errMsg = scriptErrorToMsg MalformedScript

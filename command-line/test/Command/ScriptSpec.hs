@@ -8,7 +8,7 @@ module Command.ScriptSpec
 import Prelude
 
 import Cardano.Script
-    ( InvalidScriptError (..), ScriptError (..) )
+    ( InvalidScriptError (..), ScriptError (..), scriptErrorToMsg )
 import Codec.Binary.Encoding
     ( fromBase16 )
 import Data.ByteString.Base58
@@ -122,10 +122,10 @@ specScriptParsingWrong :: String -> SpecWith ()
 specScriptParsingWrong script = it "fails if a script is malformed" $ do
     (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
-    err `shouldContain` (show MalformedScript)
+    err `shouldContain` (scriptErrorToMsg MalformedScript)
 
 specScriptInvalid :: String -> ScriptError -> SpecWith ()
 specScriptInvalid script errMsg = it "fails if a correctly parsed script is invalid" $ do
     (out, err) <- cli ["script", "hash", "--base16", script] ""
     out `shouldBe` ("" :: String)
-    err `shouldContain` (show errMsg)
+    err `shouldContain` (scriptErrorToMsg errMsg)

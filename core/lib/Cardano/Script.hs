@@ -16,6 +16,7 @@ module Cardano.Script
     , toScriptHash
     , validateScript
     , keyHashFromBytes
+    , scriptErrorToMsg
 
     -- * Internal
     , toCBOR
@@ -127,21 +128,23 @@ scanContent content = do
 --
 -- @since 3.0.0
 data ScriptError = MalformedScript | InvalidScript InvalidScriptError
-    deriving Eq
+    deriving (Eq, Show)
 
 data InvalidScriptError = EmptyList | ListTooSmall | MZero | DuplicateSignatures | WrongKeyHash
     deriving (Eq, Show)
 
-instance Show ScriptError where
-    show MalformedScript =
-        "Parsing of the script failed. The script should be composed of nested lists, and \
-        \ the verification keys should be either base16 or base58 or bech32 encoded."
-    show (InvalidScript EmptyList) = "The list inside a script is empty."
-    show (InvalidScript MZero) = "The M in at_least cannot be 0."
-    show (InvalidScript ListTooSmall) = "The list inside at_least cannot be less than M."
-    show (InvalidScript DuplicateSignatures) = "The list inside a script has duplicate keys."
-    show (InvalidScript WrongKeyHash) =
-        "The hash of verification key is expected to have "<>show hashSize<>" bytes."
+scriptErrorToMsg :: ScriptError -> String
+scriptErrorToMsg MalformedScript =
+    "Parsing of the script failed. The script should be composed of nested lists\
+    \, and the verification keys should be either base16 or base58 or bech32 encoded."
+scriptErrorToMsg (InvalidScript EmptyList) = "The list inside a script is empty."
+scriptErrorToMsg (InvalidScript MZero) = "The M in at_least cannot be 0."
+scriptErrorToMsg (InvalidScript ListTooSmall) =
+    "The list inside at_least cannot be less than M."
+scriptErrorToMsg (InvalidScript DuplicateSignatures) =
+    "The list inside a script has duplicate keys."
+scriptErrorToMsg (InvalidScript WrongKeyHash) =
+    "The hash of verification key is expected to have "<>show hashSize<>" bytes."
 
 toCBOR' :: Script -> CBOR.Encoding
 toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =
