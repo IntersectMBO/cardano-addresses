@@ -140,7 +140,7 @@ import Data.Maybe
 import Data.Typeable
     ( Typeable )
 import Data.Word
-    ( Word32, Word8 )
+    ( Word32 )
 import Data.Word7
     ( getVariableLengthNat, putVariableLengthNat )
 import Fmt
@@ -148,7 +148,6 @@ import Fmt
 import GHC.Generics
     ( Generic )
 
-import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
@@ -433,28 +432,6 @@ deriveMultisigPublicKey accPub addrIx =
 -- > bech32 $ pointerAddress tag (toXPub <$> addrK) ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
-instance Internal.StakeAddress Shelley where
-    stakeAddress discrimination k =
-        -- reward account with keyhash: 11100000 -> 224
-        constructPayload 224 discrimination (blake2b224 k)
-
-instance Internal.PaymentAddress Shelley where
-    paymentAddress discrimination k =
-        -- enterprise address for keyhash28: 0110 0000 - 96
-        constructPayload 96 discrimination (blake2b224 k)
-
-instance Internal.DelegationAddress Shelley where
-    delegationAddress discrimination paymentKey stakingKey =
-        delegationAddress discrimination
-        (FromKey paymentKey)
-        (FromKey stakingKey)
-
-instance Internal.PointerAddress Shelley where
-    pointerAddress discrimination paymentKey =
-        unsafeFromRight
-        . extendAddress (paymentAddress discrimination (FromKey paymentKey))
-        . Right
-
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
 --
 -- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
@@ -603,23 +580,66 @@ data Credential (purpose :: Depth)
     = FromKey (Shelley purpose XPub)
     | FromScript ScriptHash
 
+data CredentialType = CredentialFromKey | CredentialFromScript
+    deriving (Show, Eq)
+
+data AddressType =
+      BaseAddress CredentialType CredentialType
+    | PointerAddress CredentialType
+    | EnterpriseAddress CredentialType
+    | RewardAccount CredentialType
+    | ByronAddress
+    deriving (Show, Eq)
+
 constructPayload
-    :: Word8
+    :: AddressType
     -> NetworkDiscriminant Shelley
     -> ByteString
     -> Address
-constructPayload code discrimination bytes = unsafeMkAddress $
+constructPayload addrType discrimination bytes = unsafeMkAddress $
     invariantSize expectedLength $ BL.toStrict $ runPut $ do
     putWord8 firstByte
     putByteString bytes
   where
     firstByte =
-        let addrType = code
-            netTagLimit = 16
-        in addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
+        let netTagLimit = 16
+        in code + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
     expectedLength =
         let headerSizeBytes = 1
         in headerSizeBytes + hashSize
+    code = case addrType of
+        -- byron address: 10000000 -> 128
+        ByronAddress -> 128
+
+        -- enterprise address with scripthash: 01110000 -> 112
+        EnterpriseAddress CredentialFromScript -> 112
+
+        -- enterprise address with keyhash: 01100000 -> 96
+        EnterpriseAddress CredentialFromKey -> 96
+
+        -- reward account with scripthash: 11110000 -> 240
+        RewardAccount CredentialFromScript -> 240
+
+        -- reward account with keyhash: 11100000 -> 224
+        RewardAccount CredentialFromKey -> 224
+
+        -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
+        PointerAddress CredentialFromScript -> 80
+
+        -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
+        PointerAddress CredentialFromKey -> 64
+
+        -- base address: scripthash32,keyhash28 : 00010000 -> 16
+        BaseAddress CredentialFromScript CredentialFromKey -> 16
+
+        -- base address: keyhash28,keyhash28    : 00000000 -> 0
+        BaseAddress CredentialFromKey CredentialFromKey -> 0
+
+        -- base address: scripthash32,scripthash32 : 00110000 -> 48
+        BaseAddress CredentialFromScript CredentialFromScript -> 48
+
+        -- base address: keyhash28,scripthash32    : 00100000 -> 32
+        BaseAddress CredentialFromKey CredentialFromScript -> 32
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
@@ -634,11 +654,9 @@ paymentAddress
 paymentAddress discrimination credential =
     case credential of
         FromKey keyPub ->
-            -- enterprise address with keyhash: 01100000 -> 96
-            Internal.paymentAddress discrimination keyPub
+            constructPayload (EnterpriseAddress CredentialFromKey) discrimination (blake2b224 keyPub)
         FromScript (ScriptHash bytes) ->
-            -- enterprise address with scripthash: 01110000 -> 112
-            constructPayload 112 discrimination bytes
+            constructPayload (EnterpriseAddress CredentialFromScript) discrimination bytes
 
 -- | Extend an existing payment 'Address' to make it a delegation address.
 --
@@ -735,10 +753,10 @@ pointerAddress
 pointerAddress discrimination credential pointer =
     case credential of
         FromKey keyPub ->
-            -- pointer address: keyhash28, 3 variable length uint : 01000000 -> 64
-            Internal.pointerAddress discrimination keyPub pointer
+            unsafeFromRight $ extendAddress
+            (paymentAddress discrimination (FromKey keyPub))
+            (Right pointer)
         FromScript scriptHash ->
-           -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
             unsafeFromRight $ extendAddress
             (paymentAddress discrimination (FromScript scriptHash))
             (Right pointer)
@@ -756,11 +774,9 @@ stakeAddress
 stakeAddress discrimination credential =
     case credential of
         FromKey keyPub ->
-            -- reward account with keyhash: 11100000 -> 224
-            Internal.stakeAddress discrimination keyPub
+            constructPayload (RewardAccount CredentialFromKey) discrimination (blake2b224 keyPub)
         FromScript (ScriptHash bytes) ->
-            -- reward account with scripthash: 11110000 -> 240
-            constructPayload 240 discrimination bytes
+            constructPayload (RewardAccount CredentialFromScript) discrimination bytes
 
 --
 -- Network Discriminant
