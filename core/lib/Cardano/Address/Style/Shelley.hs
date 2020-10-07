@@ -163,8 +163,10 @@ import qualified Data.Text.Encoding as T
 -- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shelley master keys from mnemonic sentences
 -- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
--- - 'Cardano.Address.PaymentAddress': for constructing payment addresses from a address public key
--- - 'Cardano.Address.DelegationAddress': for constructing delegation addresses from address and staking public keys
+-- - 'paymentAddress': for constructing payment addresses from a address public key or a script
+-- - 'delegationAddress': for constructing delegation addresses from payment credential (public key or script) and stake credential (public key or script)
+-- - 'pointerAddress': for constructing delegation addresses from payment credential (public key or script) and chain pointer
+-- - 'stakeAddress': for constructing reward accounts from stake credential (public key or script)
 
 -- | A cryptographic key for sequential-scheme address derivation, with
 -- phantom-types to disambiguate key types.
@@ -405,31 +407,50 @@ deriveMultisigPublicKey accPub addrIx =
 -- Addresses
 --
 -- $addresses
--- === Generating a 'PaymentAddress'
+-- === Generating a 'PaymentAddress' from public key credential
 --
 -- > import Cardano.Address ( bech32 )
 -- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > bech32 $ paymentAddress tag (toXPub <$> addrK)
+-- > let paymentCredential = FromKey $ (toXPub <$> addrK)
+-- > bech32 $ paymentAddress tag paymentCredential
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+--
+-- === Generating a 'PaymentAddress' from script credential
+--
+-- > import Cardano.ScriptParser ( scriptFromString )
+-- > import Cardano.Script ( toScriptHash )
+-- > import Codec.Binary.Encoding ( encode, )
+-- > import Data.Text.Encoding ( decodeUtf8 )
+-- >
+-- > let (Right tag) = mkNetworkDiscriminant 1
+-- > let verKey1 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
+-- > let verKey2 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+-- > let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
+-- > let (Just script) = scriptFromString scriptStr
+-- > let scriptHash@(ScriptHash bytes) = toScriptHash script
+-- > decodeUtf8 (encode EBase16 bytes)
+-- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
+-- > bech32 $ paymentAddress tag (FromScript scriptHash)
+-- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
 --
--- > import Cardano.Address ( DelegationAddress (..) )
--- > import Cardano.Address.Derivation ( StakingDerivation (..) )
--- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > bech32 $ delegationAddress tag (toXPub <$> addrK) (toXPub <$> stakeK)
+-- > let paymentCredential = FromKey $ (toXPub <$> addrK)
+-- > let stakingCredential = FromKey $ (toXPub <$> stakeK)
+-- > bech32 $ delegationAddress tag paymentCredential stakingCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
 -- === Generating a 'PointerAddress'
 --
--- > import Cardano.Address ( PointerAddress (..), ChainPointer (..) )
+-- > import Cardano.Address ( ChainPointer (..) )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let ptr = ChainPointer 123 1 2
--- > bech32 $ pointerAddress tag (toXPub <$> addrK) ptr
+-- > let paymentCredential = FromKey $ (toXPub <$> addrK)
+-- > bech32 $ pointerAddress tag paymentCredential ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
