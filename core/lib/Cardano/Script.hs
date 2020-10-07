@@ -16,6 +16,7 @@ module Cardano.Script
     , toScriptHash
     , validateScript
     , keyHashFromBytes
+    , scriptHashFromBytes
     , scriptErrorToMsg
 
     -- * Internal
@@ -86,6 +87,14 @@ keyHashFromBytes :: ByteString -> Maybe KeyHash
 keyHashFromBytes bytes
     | BS.length bytes /= hashSize = Nothing
     | otherwise = Just $ KeyHash bytes
+
+-- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
+--
+-- @since 3.0.0
+scriptHashFromBytes :: ByteString -> Maybe ScriptHash
+scriptHashFromBytes bytes
+    | BS.length bytes /= hashSize = Nothing
+    | otherwise = Just $ ScriptHash bytes
 
 -- | Validate 'Script'
 --
