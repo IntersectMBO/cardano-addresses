@@ -26,6 +26,7 @@ module Cardano.Address.Style.Shelley
     , getKey
     , Role (..)
     , Credential (..)
+    , CredentialType (..)
 
       -- * Key Derivation
       -- $keyDerivation
