@@ -25,8 +25,7 @@ module Cardano.Address.Style.Shelley
       Shelley
     , getKey
     , Role (..)
-    , PaymentCredential (..)
-    , StakeCredential (..)
+    , Credential (..)
 
       -- * Key Derivation
       -- $keyDerivation
@@ -447,13 +446,13 @@ instance Internal.PaymentAddress Shelley where
 instance Internal.DelegationAddress Shelley where
     delegationAddress discrimination paymentKey stakingKey =
         delegationAddress discrimination
-        (PaymentFromKey paymentKey)
-        (StakeFromKey stakingKey)
+        (FromKey paymentKey)
+        (FromKey stakingKey)
 
 instance Internal.PointerAddress Shelley where
     pointerAddress discrimination paymentKey =
         unsafeFromRight
-        . extendAddress (paymentAddress discrimination (PaymentFromKey paymentKey))
+        . extendAddress (paymentAddress discrimination (FromKey paymentKey))
         . Right
 
 -- | Analyze an 'Address' to know whether it's a Shelley address or not.
@@ -597,21 +596,12 @@ unsafeFromRight :: Either a c -> c
 unsafeFromRight =
     either (error "impossible: interally generated invalid address") id
 
--- | In Shelley payment credential can originate from either key or script.
+-- | In Shelley credential can originate from either key or script.
 --
 -- @since 3.0.0
-data PaymentCredential =
-      PaymentFromKey (Shelley 'AddressK XPub)
-    | PaymentFromScript ScriptHash
-    deriving (Show, Eq)
-
--- | In Shelley stake credential can originate from either key or script.
---
--- @since 3.0.0
-data StakeCredential =
-      StakeFromKey (Shelley 'StakingK XPub)
-    | StakeFromScript ScriptHash
-    deriving (Show, Eq)
+data Credential (purpose :: Depth)
+    = FromKey (Shelley purpose XPub)
+    | FromScript ScriptHash
 
 constructPayload
     :: Word8
@@ -639,14 +629,14 @@ constructPayload code discrimination bytes = unsafeMkAddress $
 -- @since 2.0.0
 paymentAddress
     :: NetworkDiscriminant Shelley
-    -> PaymentCredential
+    -> Credential 'AddressK
     -> Address
 paymentAddress discrimination credential =
     case credential of
-        PaymentFromKey keyPub ->
+        FromKey keyPub ->
             -- enterprise address with keyhash: 01100000 -> 96
             Internal.paymentAddress discrimination keyPub
-        PaymentFromScript (ScriptHash bytes) ->
+        FromScript (ScriptHash bytes) ->
             -- enterprise address with scripthash: 01110000 -> 112
             constructPayload 112 discrimination bytes
 
@@ -655,7 +645,7 @@ paymentAddress discrimination credential =
 -- @since 2.0.0
 extendAddress
     :: Address
-    -> Either StakeCredential ChainPointer
+    -> Either (Credential 'StakingK) ChainPointer
     -> Either ErrExtendAddress Address
 extendAddress addr stakeReference = do
     when (isNothing (inspectShelleyAddress Nothing addr)) $
@@ -671,7 +661,7 @@ extendAddress addr stakeReference = do
     case stakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
         -- base address: scripthash32,keyhash28 : 00010000 -> 16
-        Left (StakeFromKey stakingKey) -> do
+        Left (FromKey stakingKey) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
                 -- 0b01110000 .&. 0b00011111 = 16
@@ -681,7 +671,7 @@ extendAddress addr stakeReference = do
 
         -- base address: keyhash28,scripthash32    : 00100000 -> 32
         -- base address: scripthash32,scripthash32 : 00110000 -> 48
-        Left (StakeFromScript (ScriptHash scriptBytes)) -> do
+        Left (FromScript (ScriptHash scriptBytes)) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
                 -- 0b01110000 .&. 0b00111111 = 48
@@ -722,8 +712,8 @@ data ErrExtendAddress
 -- @since 2.0.0
 delegationAddress
     :: NetworkDiscriminant Shelley
-    -> PaymentCredential
-    -> StakeCredential
+    -> Credential 'AddressK
+    -> Credential 'StakingK
     -> Address
 delegationAddress discrimination paymentCredential stakeCredential =
     unsafeFromRight $ extendAddress
@@ -739,18 +729,18 @@ delegationAddress discrimination paymentCredential stakeCredential =
 -- @since 2.0.0
 pointerAddress
     :: NetworkDiscriminant Shelley
-    -> PaymentCredential
+    -> Credential 'AddressK
     -> ChainPointer
     -> Address
 pointerAddress discrimination credential pointer =
     case credential of
-        PaymentFromKey keyPub ->
+        FromKey keyPub ->
             -- pointer address: keyhash28, 3 variable length uint : 01000000 -> 64
             Internal.pointerAddress discrimination keyPub pointer
-        PaymentFromScript scriptHash ->
+        FromScript scriptHash ->
            -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
             unsafeFromRight $ extendAddress
-            (paymentAddress discrimination (PaymentFromScript scriptHash))
+            (paymentAddress discrimination (FromScript scriptHash))
             (Right pointer)
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
@@ -761,14 +751,14 @@ pointerAddress discrimination credential pointer =
 -- @since 2.0.0
 stakeAddress
     :: NetworkDiscriminant Shelley
-    -> StakeCredential
+    -> Credential 'StakingK
     -> Address
 stakeAddress discrimination credential =
     case credential of
-        StakeFromKey keyPub ->
+        FromKey keyPub ->
             -- reward account with keyhash: 11100000 -> 224
             Internal.stakeAddress discrimination keyPub
-        StakeFromScript (ScriptHash bytes) ->
+        FromScript (ScriptHash bytes) ->
             -- reward account with scripthash: 11110000 -> 240
             constructPayload 240 discrimination bytes
 

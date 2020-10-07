@@ -73,7 +73,7 @@ mod liftCmd = command "delegation" $
 run :: Cmd -> IO ()
 run Cmd{xpub} = do
     bytes <- hGetBytes stdin
-    case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.StakeFromKey $ Shelley.liftXPub xpub) of
+    case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.FromKey $ Shelley.liftXPub xpub) of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->
