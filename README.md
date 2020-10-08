@@ -72,7 +72,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 </details>
 
 <details>
-  <summary>How to generate a payment address</summary>
+  <summary>How to generate a payment address from key credential</summary>
 
 ```
   $ cardano-address recovery-phrase generate --size 15 \
@@ -83,14 +83,14 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 
   $ cat addr.prv \
   | cardano-address key public \
-  | cardano-address address payment --network-tag testnet
+  | cardano-address address payment --from-key --network-tag testnet
 
   addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek
 ```
 </details>
 
 <details>
-  <summary>How to generate a delegation address</summary>
+  <summary>How to generate a delegation address from stake key credentials</summary>
 
   Follow the steps from 'How to generate a payment address'. Then, simply extend
   an existing payment address with a stake key!
@@ -101,7 +101,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
 
   $ cat addr.prv \
   | cardano-address key public \
-  | cardano-address address payment --network-tag testnet \
+  | cardano-address address payment --from-key --network-tag testnet \
   | cardano-address address delegation $(cat stake.prv | cardano-address key public)
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
 ```
@@ -150,6 +150,34 @@ all [de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea,aca52d7d28ce353f47
 ```
 $ cardano-address script hash "$(cat script.txt)"
 script_hash15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465uz36435
+```
+</details>
+
+<details>
+  <summary>How to generate a payment address from script credential</summary>
+
+```
+  $ cardano-address script hash "$(cat script.txt)" \
+  | cardano-address address payment --from-script --network-tag testnet
+
+  addr_test1wzjucalgf9aq7mpjy545ye8fyzhu5lvsq93s2fg0adzh2nsxaqdy4
+```
+</details>
+
+<details>
+  <summary>How to generate a delegation address from script key credentials having key payment</summary>
+
+  Follow the steps from 'How to generate a payment address'. Then, simply extend
+  an existing payment address with a stake key!
+
+```
+  $ cat root.prv \
+  | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
+
+  $ cat addr.prv \
+  | cardano-address key public \
+  | cardano-address address payment --from-key --network-tag testnet \
+  | cardano-address address delegation $(cardano-address script hash "$(cat script.txt)")
 ```
 </details>
 

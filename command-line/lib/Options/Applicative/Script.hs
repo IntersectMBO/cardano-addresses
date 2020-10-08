@@ -78,8 +78,9 @@ scriptHashArg helpDoc =
         <> metavar "SCRIPT_HASH"
         <> help helpDoc
 
+
 data StakeCredential = FromKey XPub | FromScriptHash ScriptHash
     deriving (Show, Eq)
 
 stakeCredentialArg  :: String -> Parser StakeCredential
-stakeCredentialArg str = (FromScriptHash <$> scriptHashArg str) <|> (FromKey <$> xpubArg str)
+stakeCredentialArg str = (FromKey <$> xpubArg str) <|> (FromScriptHash <$> scriptHashArg str)
