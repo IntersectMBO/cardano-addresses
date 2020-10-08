@@ -102,7 +102,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
   $ cat addr.prv \
   | cardano-address key public \
   | cardano-address address payment --from-key --network-tag testnet \
-  | cardano-address address delegation $(cat stake.prv | cardano-address key public)
+  | cardano-address address delegation --from-key $(cat stake.prv | cardano-address key public)
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
 ```
 </details>
@@ -159,7 +159,6 @@ script_hash15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465uz36435
 ```
   $ cardano-address script hash "$(cat script.txt)" \
   | cardano-address address payment --from-script --network-tag testnet
-
   addr_test1wzjucalgf9aq7mpjy545ye8fyzhu5lvsq93s2fg0adzh2nsxaqdy4
 ```
 </details>
@@ -177,7 +176,8 @@ script_hash15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465uz36435
   $ cat addr.prv \
   | cardano-address key public \
   | cardano-address address payment --from-key --network-tag testnet \
-  | cardano-address address delegation $(cardano-address script hash "$(cat script.txt)")
+  | cardano-address address delegation --from-script $(cardano-address script hash "$(cat script.txt)")
+  addr_test1yqqc24zex4mqch3hp5q7da87mwufkl7hncg472phe74ea2...
 ```
 </details>
 

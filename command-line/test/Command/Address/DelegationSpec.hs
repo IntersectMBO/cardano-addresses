@@ -50,30 +50,30 @@ specShelley phrase path addr want = it ("golden shelley (delegation) " <> addr) 
     stakeKey <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public" ]
-    out <- cli [ "address", "delegation", stakeKey ] addr
+    out <- cli [ "address", "delegation", "--from-key", stakeKey ] addr
     out `shouldBe` want
 
 specMalformedAddress :: String -> SpecWith ()
 specMalformedAddress addr = it ("malformed address " <> addr) $ do
-    (out, err) <- cli [ "address", "delegation", defaultXPub ] addr
+    (out, err) <- cli [ "address", "delegation", "--from-key",defaultXPub ] addr
     out `shouldBe` ""
     err `shouldContain` "Couldn't detect input encoding?"
 
 specInvalidAddress :: String -> SpecWith ()
 specInvalidAddress addr = it ("invalid address " <> addr) $ do
-    (out, err) <- cli [ "address", "delegation", defaultXPub ] addr
+    (out, err) <- cli [ "address", "delegation", "--from-key", defaultXPub ] addr
     out `shouldBe` ""
     err `shouldContain` "Only payment addresses can be extended"
 
 specMalformedXPub :: String -> SpecWith ()
 specMalformedXPub xpub = it ("malformed xpub " <> xpub) $ do
-    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddrMainnet
+    (out, err) <- cli [ "address", "delegation", "--from-key", xpub ] defaultAddrMainnet
     out `shouldBe` ""
     err `shouldContain` "Couldn't detect input encoding?"
 
 specInvalidXPub :: String -> SpecWith ()
 specInvalidXPub xpub = it ("invalid xpub " <> xpub) $ do
-    (out, err) <- cli [ "address", "delegation", xpub ] defaultAddrMainnet
+    (out, err) <- cli [ "address", "delegation", "--from-key", xpub ] defaultAddrMainnet
     out `shouldBe` ""
     err `shouldContain` "Failed to convert bytes into a valid extended public key"
 

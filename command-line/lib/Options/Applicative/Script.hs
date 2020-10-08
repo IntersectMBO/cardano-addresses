@@ -36,9 +36,9 @@ import Codec.Binary.Encoding
 import Control.Applicative
     ( (<|>) )
 import Options.Applicative
-    ( Parser, argument, eitherReader, help, metavar )
+    ( Parser, argument, eitherReader, help, long, metavar, option )
 import Options.Applicative.Derivation
-    ( xpubArg )
+    ( xpubOpt )
 import System.IO.Extra
     ( markCharsRedAtIndices )
 
@@ -74,13 +74,14 @@ scriptHashReader str = do
 
 scriptHashArg :: String -> Parser ScriptHash
 scriptHashArg helpDoc =
-    argument (eitherReader scriptHashReader) $ mempty
+    option (eitherReader scriptHashReader) $ mempty
+        <> long "from-script"
         <> metavar "SCRIPT_HASH"
         <> help helpDoc
-
 
 data StakeCredential = FromKey XPub | FromScriptHash ScriptHash
     deriving (Show, Eq)
 
 stakeCredentialArg  :: String -> Parser StakeCredential
-stakeCredentialArg str = (FromKey <$> xpubArg str) <|> (FromScriptHash <$> scriptHashArg str)
+stakeCredentialArg str =
+    (FromKey <$> xpubOpt "from-key" str) <|> (FromScriptHash <$> scriptHashArg str)
