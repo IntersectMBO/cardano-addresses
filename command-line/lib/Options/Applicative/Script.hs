@@ -10,13 +10,15 @@ module Options.Applicative.Script
     -- ** Applicative Parser
       scriptArg
     , stakeCredentialArg
-    , StakeCredential (..)
+    , Credential (..)
     ) where
 
 import Prelude
 
 import Cardano.Address.Derivation
-    ( XPub )
+    ( Depth (..) )
+import Cardano.Address.Style.Shelley
+    ( Credential (..), liftXPub )
 import Cardano.Script
     ( Script (..)
     , ScriptError (..)
@@ -79,9 +81,6 @@ scriptHashArg helpDoc =
         <> metavar "SCRIPT_HASH"
         <> help helpDoc
 
-data StakeCredential = FromKey XPub | FromScriptHash ScriptHash
-    deriving (Show, Eq)
-
-stakeCredentialArg  :: String -> Parser StakeCredential
+stakeCredentialArg  :: String -> Parser (Credential 'StakingK)
 stakeCredentialArg str =
-    (FromKey <$> xpubOpt "from-key" str) <|> (FromScriptHash <$> scriptHashArg str)
+    ((FromKey . liftXPub ) <$> xpubOpt "from-key" str) <|> (FromScript <$> scriptHashArg str)

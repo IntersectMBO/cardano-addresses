@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -17,6 +18,8 @@ import Prelude hiding
 
 import Cardano.Address
     ( bech32With, unsafeMkAddress )
+import Cardano.Address.Derivation
+    ( Depth (..) )
 import Cardano.Address.Style.Shelley
     ( ErrExtendAddress (..), inspectNetworkDiscriminant, shelleyTestnet )
 import Codec.Binary.Bech32.TH
@@ -26,7 +29,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Script
-    ( StakeCredential (..), stakeCredentialArg )
+    ( Credential (..), stakeCredentialArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -38,8 +41,8 @@ import qualified Data.Text.Encoding as T
 
 
 newtype Cmd = Cmd
-    { credential :: StakeCredential
-    } deriving (Show)
+    { credential :: Credential 'StakingK
+    } deriving Show
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "delegation" $
@@ -73,8 +76,8 @@ run Cmd{credential} = do
     bytes <- hGetBytes stdin
     let stakeCredential = case credential of
             FromKey xpub ->
-                Left $ Shelley.FromKey $ Shelley.liftXPub xpub
-            FromScriptHash scriptHash -> do
+                Left $ Shelley.FromKey xpub
+            FromScript scriptHash -> do
                 Left $ Shelley.FromScript scriptHash
     case Shelley.extendAddress (unsafeMkAddress bytes) stakeCredential of
         Left (ErrInvalidAddressStyle msg) ->

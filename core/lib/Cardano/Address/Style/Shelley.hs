@@ -601,6 +601,7 @@ unsafeFromRight =
 data Credential (purpose :: Depth)
     = FromKey (Shelley purpose XPub)
     | FromScript ScriptHash
+    deriving (Show, Eq)
 
 data CredentialType = CredentialFromKey | CredentialFromScript
     deriving (Show, Eq)
