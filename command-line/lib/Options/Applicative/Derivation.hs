@@ -33,6 +33,9 @@ module Options.Applicative.Derivation
     -- * XPub / XPrv
     , xpubOpt
     , xpubArg
+
+    -- * Internal
+    , encodingReader
     ) where
 
 import Prelude
@@ -48,6 +51,8 @@ import Codec.Binary.Encoding
     )
 import Control.Arrow
     ( left )
+import Data.ByteString
+    ( ByteString )
 import Data.List
     ( intercalate, isSuffixOf )
 import Data.Word
@@ -194,21 +199,24 @@ derivationSchemeOpt :: Parser DerivationScheme
 derivationSchemeOpt =
     flag DerivationScheme2 DerivationScheme1 (long "legacy")
 
+encodingReader :: String -> Either String ByteString
+encodingReader str = case detectEncoding str of
+    Just EBase16   -> fromBase16 (toBytes str)
+    Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
+    Just EBase58   -> fromBase58 (toBytes str)
+    Nothing        -> Left
+        "Couldn't detect input encoding? The key must be encoded as \
+        \base16, bech32 or base58."
+  where
+    toBytes = T.encodeUtf8 . T.pack
+
 xpubReader :: String -> Either String XPub
 xpubReader str = do
-    bytes <- case detectEncoding str of
-        Just EBase16   -> fromBase16 (toBytes str)
-        Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
-        Just EBase58   -> fromBase58 (toBytes str)
-        Nothing        -> Left
-            "Couldn't detect input encoding? The key must be encoded as \
-            \base16, bech32 or base58."
+    bytes <- encodingReader str
     case xpubFromBytes bytes of
         Just xpub -> pure xpub
         Nothing   -> Left
             "Failed to convert bytes into a valid extended public key."
-  where
-    toBytes = T.encodeUtf8 . T.pack
 
 xpubOpt :: String -> String -> Parser XPub
 xpubOpt name helpDoc =
