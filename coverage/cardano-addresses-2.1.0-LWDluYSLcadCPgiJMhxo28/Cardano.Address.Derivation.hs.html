@@ -294,143 +294,148 @@ span.spaces    { background: white }
 <span class="lineno">  275 </span>-- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
 <span class="lineno">  276 </span>--
 <span class="lineno">  277 </span>-- @
-<span class="lineno">  278 </span>-- root | purpose' | cointype' | account' | change | address@
-<span class="lineno">  279 </span>-- 0th      1st         2nd        3rd        4th      5th
+<span class="lineno">  278 </span>-- root | purpose' | cointype' | account' | role | address@
+<span class="lineno">  279 </span>-- 0th      1st         2nd        3rd       4th     5th
 <span class="lineno">  280 </span>-- @
 <span class="lineno">  281 </span>--
 <span class="lineno">  282 </span>-- We do not manipulate purpose, cointype and change paths directly, so there
 <span class="lineno">  283 </span>-- are no constructors for these.
 <span class="lineno">  284 </span>--
-<span class="lineno">  285 </span>-- @since 1.0.0
-<span class="lineno">  286 </span>data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
-<span class="lineno">  287 </span>
-<span class="lineno">  288 </span>-- | A derivation index, with phantom-types to disambiguate derivation type.
+<span class="lineno">  285 </span>--
+<span class="lineno">  286 </span>-- TODO: rename 'StakingK' into 'DelegationK'.
+<span class="lineno">  287 </span>-- TODO: rename 'AddressK' into 'PaymentK'
+<span class="lineno">  288 </span>-- TODO: rename 'MultisigK' into 'ScriptK'
 <span class="lineno">  289 </span>--
-<span class="lineno">  290 </span>-- @
-<span class="lineno">  291 </span>-- let accountIx = Index 'Hardened 'AccountK
-<span class="lineno">  292 </span>-- let addressIx = Index 'Soft 'AddressK
-<span class="lineno">  293 </span>-- @
+<span class="lineno">  290 </span>-- @since 1.0.0
+<span class="lineno">  291 </span>data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
+<span class="lineno">  292 </span>
+<span class="lineno">  293 </span>-- | A derivation index, with phantom-types to disambiguate derivation type.
 <span class="lineno">  294 </span>--
-<span class="lineno">  295 </span>-- @since 1.0.0
-<span class="lineno">  296 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
-<span class="lineno">  297 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">getIndex</span></span></span> :: Word32 }
-<span class="lineno">  298 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
-<span class="lineno">  299 </span>
-<span class="lineno">  300 </span>instance NFData (Index derivationType depth)
-<span class="lineno">  301 </span>
-<span class="lineno">  302 </span>instance Bounded (Index 'Hardened depth) where
-<span class="lineno">  303 </span>    <span class="decl"><span class="istickedoff">minBound = Index 0x80000000</span></span>
-<span class="lineno">  304 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
-<span class="lineno">  305 </span>
-<span class="lineno">  306 </span>instance Bounded (Index 'Soft depth) where
-<span class="lineno">  307 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
-<span class="lineno">  308 </span>    <span class="decl"><span class="istickedoff">maxBound = let (Index ix) = minBound @(Index 'Hardened _) in Index (ix - 1)</span></span>
-<span class="lineno">  309 </span>
-<span class="lineno">  310 </span>instance Bounded (Index 'WholeDomain depth) where
-<span class="lineno">  311 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
-<span class="lineno">  312 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
-<span class="lineno">  313 </span>
-<span class="lineno">  314 </span>instance Enum (Index 'Hardened depth) where
-<span class="lineno">  315 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
-<span class="lineno">  316 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
-<span class="lineno">  317 </span><span class="spaces">        </span><span class="istickedoff">| Index (fromIntegral ix) &lt; minBound @(Index 'Hardened _) =</span>
-<span class="lineno">  318 </span><span class="spaces">            </span><span class="istickedoff">error &quot;Index@Hardened.toEnum: bad argument&quot;</span>
-<span class="lineno">  319 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
-<span class="lineno">  320 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
-<span class="lineno">  321 </span>
-<span class="lineno">  322 </span>instance Enum (Index 'Soft depth) where
-<span class="lineno">  323 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
-<span class="lineno">  324 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
-<span class="lineno">  325 </span><span class="spaces">        </span><span class="istickedoff">| Index (fromIntegral ix) &gt; maxBound @(Index 'Soft _) =</span>
-<span class="lineno">  326 </span><span class="spaces">            </span><span class="istickedoff">error &quot;Index@Soft.toEnum: bad argument&quot;</span>
-<span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
-<span class="lineno">  328 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
-<span class="lineno">  329 </span>
-<span class="lineno">  330 </span>instance Enum (Index 'WholeDomain depth) where
-<span class="lineno">  331 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
-<span class="lineno">  332 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
-<span class="lineno">  333 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">Index (fromIntegral ix) &gt; maxBound @(Index 'WholeDomain _)</span> =</span>
-<span class="lineno">  334 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">error &quot;Index@WholeDomain.toEnum: bad argument&quot;</span></span>
-<span class="lineno">  335 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
-<span class="lineno">  336 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
-<span class="lineno">  337 </span>
-<span class="lineno">  338 </span>instance Buildable (Index derivationType depth) where
-<span class="lineno">  339 </span>    <span class="decl"><span class="nottickedoff">build (Index ix) = fromString (show ix)</span></span>
-<span class="lineno">  340 </span>
-<span class="lineno">  341 </span>
-<span class="lineno">  342 </span>-- | Type of derivation that should be used with the given indexes.
-<span class="lineno">  343 </span>--
-<span class="lineno">  344 </span>-- In theory, we should only consider two derivation types: soft and hard.
-<span class="lineno">  345 </span>--
-<span class="lineno">  346 </span>-- However, historically, addresses in Cardano used to be generated across both
-<span class="lineno">  347 </span>-- the soft and the hard domain. We therefore introduce a 'WholeDomain' derivation
-<span class="lineno">  348 </span>-- type that is the exact union of `Hardened` and `Soft`.
-<span class="lineno">  349 </span>--
-<span class="lineno">  350 </span>-- @since 1.0.0
-<span class="lineno">  351 </span>data DerivationType = Hardened | Soft | WholeDomain
-<span class="lineno">  352 </span>
-<span class="lineno">  353 </span>-- | An interface for doing hard derivations from the root private key, /Master Key/
+<span class="lineno">  295 </span>-- @
+<span class="lineno">  296 </span>-- let accountIx = Index 'Hardened 'AccountK
+<span class="lineno">  297 </span>-- let addressIx = Index 'Soft 'AddressK
+<span class="lineno">  298 </span>-- @
+<span class="lineno">  299 </span>--
+<span class="lineno">  300 </span>-- @since 1.0.0
+<span class="lineno">  301 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
+<span class="lineno">  302 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">getIndex</span></span></span> :: Word32 }
+<span class="lineno">  303 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  304 </span>
+<span class="lineno">  305 </span>instance NFData (Index derivationType depth)
+<span class="lineno">  306 </span>
+<span class="lineno">  307 </span>instance Bounded (Index 'Hardened depth) where
+<span class="lineno">  308 </span>    <span class="decl"><span class="istickedoff">minBound = Index 0x80000000</span></span>
+<span class="lineno">  309 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
+<span class="lineno">  310 </span>
+<span class="lineno">  311 </span>instance Bounded (Index 'Soft depth) where
+<span class="lineno">  312 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
+<span class="lineno">  313 </span>    <span class="decl"><span class="istickedoff">maxBound = let (Index ix) = minBound @(Index 'Hardened _) in Index (ix - 1)</span></span>
+<span class="lineno">  314 </span>
+<span class="lineno">  315 </span>instance Bounded (Index 'WholeDomain depth) where
+<span class="lineno">  316 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
+<span class="lineno">  317 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
+<span class="lineno">  318 </span>
+<span class="lineno">  319 </span>instance Enum (Index 'Hardened depth) where
+<span class="lineno">  320 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
+<span class="lineno">  321 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
+<span class="lineno">  322 </span><span class="spaces">        </span><span class="istickedoff">| Index (fromIntegral ix) &lt; minBound @(Index 'Hardened _) =</span>
+<span class="lineno">  323 </span><span class="spaces">            </span><span class="istickedoff">error &quot;Index@Hardened.toEnum: bad argument&quot;</span>
+<span class="lineno">  324 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  325 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
+<span class="lineno">  326 </span>
+<span class="lineno">  327 </span>instance Enum (Index 'Soft depth) where
+<span class="lineno">  328 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
+<span class="lineno">  329 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
+<span class="lineno">  330 </span><span class="spaces">        </span><span class="istickedoff">| Index (fromIntegral ix) &gt; maxBound @(Index 'Soft _) =</span>
+<span class="lineno">  331 </span><span class="spaces">            </span><span class="istickedoff">error &quot;Index@Soft.toEnum: bad argument&quot;</span>
+<span class="lineno">  332 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  333 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
+<span class="lineno">  334 </span>
+<span class="lineno">  335 </span>instance Enum (Index 'WholeDomain depth) where
+<span class="lineno">  336 </span>    <span class="decl"><span class="istickedoff">fromEnum (Index ix) = fromIntegral ix</span></span>
+<span class="lineno">  337 </span>    <span class="decl"><span class="istickedoff">toEnum ix</span>
+<span class="lineno">  338 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">Index (fromIntegral ix) &gt; maxBound @(Index 'WholeDomain _)</span> =</span>
+<span class="lineno">  339 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">error &quot;Index@WholeDomain.toEnum: bad argument&quot;</span></span>
+<span class="lineno">  340 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  341 </span><span class="spaces">            </span><span class="istickedoff">Index (fromIntegral ix)</span></span>
+<span class="lineno">  342 </span>
+<span class="lineno">  343 </span>instance Buildable (Index derivationType depth) where
+<span class="lineno">  344 </span>    <span class="decl"><span class="nottickedoff">build (Index ix) = fromString (show ix)</span></span>
+<span class="lineno">  345 </span>
+<span class="lineno">  346 </span>
+<span class="lineno">  347 </span>-- | Type of derivation that should be used with the given indexes.
+<span class="lineno">  348 </span>--
+<span class="lineno">  349 </span>-- In theory, we should only consider two derivation types: soft and hard.
+<span class="lineno">  350 </span>--
+<span class="lineno">  351 </span>-- However, historically, addresses in Cardano used to be generated across both
+<span class="lineno">  352 </span>-- the soft and the hard domain. We therefore introduce a 'WholeDomain' derivation
+<span class="lineno">  353 </span>-- type that is the exact union of `Hardened` and `Soft`.
 <span class="lineno">  354 </span>--
 <span class="lineno">  355 </span>-- @since 1.0.0
-<span class="lineno">  356 </span>class HardDerivation (key :: Depth -&gt; * -&gt; *) where
-<span class="lineno">  357 </span>    type AccountIndexDerivationType key :: DerivationType
-<span class="lineno">  358 </span>    type AddressIndexDerivationType key :: DerivationType
-<span class="lineno">  359 </span>    type WithRole key :: *
-<span class="lineno">  360 </span>
-<span class="lineno">  361 </span>    -- | Derives account private key from the given root private key, using
-<span class="lineno">  362 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
-<span class="lineno">  363 </span>    -- package for more details).
-<span class="lineno">  364 </span>    --
-<span class="lineno">  365 </span>    -- @since 1.0.0
-<span class="lineno">  366 </span>    deriveAccountPrivateKey
-<span class="lineno">  367 </span>        :: key 'RootK XPrv
-<span class="lineno">  368 </span>        -&gt; Index (AccountIndexDerivationType key) 'AccountK
-<span class="lineno">  369 </span>        -&gt; key 'AccountK XPrv
-<span class="lineno">  370 </span>
-<span class="lineno">  371 </span>    -- | Derives address private key from the given account private key, using
-<span class="lineno">  372 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
-<span class="lineno">  373 </span>    -- package for more details).
-<span class="lineno">  374 </span>    --
-<span class="lineno">  375 </span>    -- @since 1.0.0
-<span class="lineno">  376 </span>    deriveAddressPrivateKey
-<span class="lineno">  377 </span>        :: key 'AccountK XPrv
-<span class="lineno">  378 </span>        -&gt; WithRole key
-<span class="lineno">  379 </span>        -&gt; Index (AddressIndexDerivationType key) 'AddressK
-<span class="lineno">  380 </span>        -&gt; key 'AddressK XPrv
-<span class="lineno">  381 </span>
-<span class="lineno">  382 </span>-- | An interface for doing soft derivations from an account public key
-<span class="lineno">  383 </span>class HardDerivation key =&gt; SoftDerivation (key :: Depth -&gt; * -&gt; *) where
-<span class="lineno">  384 </span>    -- | Derives address public key from the given account public key, using
-<span class="lineno">  385 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
-<span class="lineno">  386 </span>    -- package for more details).
-<span class="lineno">  387 </span>    --
-<span class="lineno">  388 </span>    -- This is the preferred way of deriving new sequential address public keys.
-<span class="lineno">  389 </span>    --
-<span class="lineno">  390 </span>    -- @since 1.0.0
-<span class="lineno">  391 </span>    deriveAddressPublicKey
-<span class="lineno">  392 </span>        :: key 'AccountK XPub
-<span class="lineno">  393 </span>        -&gt; WithRole key
-<span class="lineno">  394 </span>        -&gt; Index 'Soft 'AddressK
-<span class="lineno">  395 </span>        -&gt; key 'AddressK XPub
-<span class="lineno">  396 </span>
-<span class="lineno">  397 </span>
-<span class="lineno">  398 </span>-- | Abstract interface for constructing a /Master Key/.
-<span class="lineno">  399 </span>--
-<span class="lineno">  400 </span>-- @since 1.0.0
-<span class="lineno">  401 </span>class GenMasterKey (key :: Depth -&gt; * -&gt; *) where
-<span class="lineno">  402 </span>    type SecondFactor key :: *
-<span class="lineno">  403 </span>
-<span class="lineno">  404 </span>    -- | Generate a root key from a corresponding mnemonic.
-<span class="lineno">  405 </span>    --
-<span class="lineno">  406 </span>    -- @since 1.0.0
-<span class="lineno">  407 </span>    genMasterKeyFromMnemonic
-<span class="lineno">  408 </span>        :: SomeMnemonic -&gt; SecondFactor key -&gt; key 'RootK XPrv
-<span class="lineno">  409 </span>
-<span class="lineno">  410 </span>    -- | Generate a root key from a corresponding root 'XPrv'
-<span class="lineno">  411 </span>    --
-<span class="lineno">  412 </span>    -- @since 1.0.0
-<span class="lineno">  413 </span>    genMasterKeyFromXPrv
-<span class="lineno">  414 </span>        :: XPrv -&gt; key 'RootK XPrv
+<span class="lineno">  356 </span>data DerivationType = Hardened | Soft | WholeDomain
+<span class="lineno">  357 </span>
+<span class="lineno">  358 </span>-- | An interface for doing hard derivations from the root private key, /Master Key/
+<span class="lineno">  359 </span>--
+<span class="lineno">  360 </span>-- @since 1.0.0
+<span class="lineno">  361 </span>class HardDerivation (key :: Depth -&gt; * -&gt; *) where
+<span class="lineno">  362 </span>    type AccountIndexDerivationType key :: DerivationType
+<span class="lineno">  363 </span>    type AddressIndexDerivationType key :: DerivationType
+<span class="lineno">  364 </span>    type WithRole key :: *
+<span class="lineno">  365 </span>
+<span class="lineno">  366 </span>    -- | Derives account private key from the given root private key, using
+<span class="lineno">  367 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  368 </span>    -- package for more details).
+<span class="lineno">  369 </span>    --
+<span class="lineno">  370 </span>    -- @since 1.0.0
+<span class="lineno">  371 </span>    deriveAccountPrivateKey
+<span class="lineno">  372 </span>        :: key 'RootK XPrv
+<span class="lineno">  373 </span>        -&gt; Index (AccountIndexDerivationType key) 'AccountK
+<span class="lineno">  374 </span>        -&gt; key 'AccountK XPrv
+<span class="lineno">  375 </span>
+<span class="lineno">  376 </span>    -- | Derives address private key from the given account private key, using
+<span class="lineno">  377 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  378 </span>    -- package for more details).
+<span class="lineno">  379 </span>    --
+<span class="lineno">  380 </span>    -- @since 1.0.0
+<span class="lineno">  381 </span>    deriveAddressPrivateKey
+<span class="lineno">  382 </span>        :: key 'AccountK XPrv
+<span class="lineno">  383 </span>        -&gt; WithRole key
+<span class="lineno">  384 </span>        -&gt; Index (AddressIndexDerivationType key) 'AddressK
+<span class="lineno">  385 </span>        -&gt; key 'AddressK XPrv
+<span class="lineno">  386 </span>
+<span class="lineno">  387 </span>-- | An interface for doing soft derivations from an account public key
+<span class="lineno">  388 </span>class HardDerivation key =&gt; SoftDerivation (key :: Depth -&gt; * -&gt; *) where
+<span class="lineno">  389 </span>    -- | Derives address public key from the given account public key, using
+<span class="lineno">  390 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  391 </span>    -- package for more details).
+<span class="lineno">  392 </span>    --
+<span class="lineno">  393 </span>    -- This is the preferred way of deriving new sequential address public keys.
+<span class="lineno">  394 </span>    --
+<span class="lineno">  395 </span>    -- @since 1.0.0
+<span class="lineno">  396 </span>    deriveAddressPublicKey
+<span class="lineno">  397 </span>        :: key 'AccountK XPub
+<span class="lineno">  398 </span>        -&gt; WithRole key
+<span class="lineno">  399 </span>        -&gt; Index 'Soft 'AddressK
+<span class="lineno">  400 </span>        -&gt; key 'AddressK XPub
+<span class="lineno">  401 </span>
+<span class="lineno">  402 </span>
+<span class="lineno">  403 </span>-- | Abstract interface for constructing a /Master Key/.
+<span class="lineno">  404 </span>--
+<span class="lineno">  405 </span>-- @since 1.0.0
+<span class="lineno">  406 </span>class GenMasterKey (key :: Depth -&gt; * -&gt; *) where
+<span class="lineno">  407 </span>    type SecondFactor key :: *
+<span class="lineno">  408 </span>
+<span class="lineno">  409 </span>    -- | Generate a root key from a corresponding mnemonic.
+<span class="lineno">  410 </span>    --
+<span class="lineno">  411 </span>    -- @since 1.0.0
+<span class="lineno">  412 </span>    genMasterKeyFromMnemonic
+<span class="lineno">  413 </span>        :: SomeMnemonic -&gt; SecondFactor key -&gt; key 'RootK XPrv
+<span class="lineno">  414 </span>
+<span class="lineno">  415 </span>    -- | Generate a root key from a corresponding root 'XPrv'
+<span class="lineno">  416 </span>    --
+<span class="lineno">  417 </span>    -- @since 1.0.0
+<span class="lineno">  418 </span>    genMasterKeyFromXPrv
+<span class="lineno">  419 </span>        :: XPrv -&gt; key 'RootK XPrv
 
 </pre>
 </body>
