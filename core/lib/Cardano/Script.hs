@@ -3,24 +3,30 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Cardano.Script
     (
+    -- * Script
       Script (..)
-    , ScriptHash (..)
-    , ScriptError (..)
-    , InvalidScriptError (..)
-    , KeyHash (..)
-    , toScriptHash
     , validateScript
-    , keyHashFromBytes
+    , ErrValidateScript (..)
+    , prettyErrValidateScript
+
+    -- * Hashing
+    , serialize
+
+    , ScriptHash (..)
     , scriptHashFromBytes
-    , scriptErrorToMsg
+    , toScriptHash
+
+    , KeyHash (..)
+    , keyHashFromBytes
 
     -- * Internal
-    , toCBOR
+    , hashSize
     ) where
 
 import Prelude
@@ -37,10 +43,10 @@ import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.ByteString
     ( ByteString )
-import Data.Either.Combinators
-    ( isLeft )
 import Data.Foldable
-    ( foldl' )
+    ( foldl', traverse_ )
+import Data.Maybe
+    ( isNothing )
 import Data.Word
     ( Word8 )
 import GHC.Generics
@@ -56,13 +62,111 @@ import qualified Data.List as L
 -- that need to be satisfied to make it valid.
 --
 -- @since 3.0.0
-data Script =
-      RequireSignatureOf !KeyHash
+data Script
+    = RequireSignatureOf !KeyHash
     | RequireAllOf ![Script]
     | RequireAnyOf ![Script]
     | RequireMOf Word8 ![Script]
     deriving stock (Generic, Show, Eq)
 instance NFData Script
+
+-- | Validate 'Script'
+--
+-- @since 3.0.0
+validateScript :: Script -> Either ErrValidateScript ()
+validateScript = \case
+    RequireSignatureOf (KeyHash bytes) -> do
+        when (isNothing (keyHashFromBytes bytes)) $ Left WrongKeyHash
+
+    RequireAllOf script -> do
+        when (L.null script) $ Left EmptyList
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+
+    RequireAnyOf script -> do
+        when (L.null script) $ Left EmptyList
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+
+    RequireMOf m script -> do
+        when (m == 0) $ Left MZero
+        when (length script < fromIntegral m) $ Left ListTooSmall
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+  where
+    hasDuplicate xs = do
+        length sigs /= length (L.nub sigs)
+      where
+        sigs = [ sig | RequireSignatureOf sig <- xs ]
+
+-- | Possible validation errors when validating a script
+data ErrValidateScript
+    = EmptyList
+    | ListTooSmall
+    | MZero
+    | DuplicateSignatures
+    | WrongKeyHash
+    deriving (Eq, Show)
+
+prettyErrValidateScript
+    :: ErrValidateScript
+    -> String
+prettyErrValidateScript = \case
+    EmptyList ->
+        "The list inside a script is empty."
+    MZero ->
+        "The M in at_least cannot be 0."
+    ListTooSmall ->
+        "The list inside at_least cannot be less than M."
+    DuplicateSignatures ->
+        "The list inside a script has duplicate keys."
+    WrongKeyHash ->
+        "The hash of verification key is expected to have "<>show hashSize<>" bytes."
+
+-- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
+-- This is basically doing the symbolically following:
+-- toCBOR [0,multisigScript]
+serialize :: Script -> ByteString
+serialize script =
+    multisigTag <> CBOR.toStrictByteString (toCBOR script)
+  where
+    -- | Magic number representing the tag of the native multi-signature script
+    -- language. For each script language included, a new tag is chosen.
+    multisigTag :: ByteString
+    multisigTag = "\00"
+
+    toCBOR :: Script -> CBOR.Encoding
+    toCBOR = \case
+        RequireSignatureOf (KeyHash verKeyHash) ->
+            encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
+        RequireAllOf contents ->
+            encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR contents
+        RequireAnyOf contents ->
+            encodeMultiscriptCtr 2 2 <> encodeFoldable toCBOR contents
+        RequireMOf m contents -> mconcat
+            [ encodeMultiscriptCtr 3 3
+            , CBOR.encodeInt (fromInteger $ toInteger m)
+            , encodeFoldable toCBOR contents
+            ]
+
+    encodeMultiscriptCtr :: Word -> Word -> CBOR.Encoding
+    encodeMultiscriptCtr ctrIndex listLen =
+        CBOR.encodeListLen listLen <> CBOR.encodeWord ctrIndex
+
+    encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
+    encodeFoldable encode xs = wrapArray len contents
+      where
+        (len, contents) = foldl' go (0, mempty) xs
+        go (!l, !enc) next = (l + 1, enc <> encode next)
+
+        wrapArray :: Word -> CBOR.Encoding -> CBOR.Encoding
+        wrapArray len' contents'
+            | len' <= 23 = CBOR.encodeListLen len' <> contents'
+            | otherwise  = CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
+
+-- | Computes the hash of a given script, by first serializing it to CBOR.
+toScriptHash :: Script -> ScriptHash
+toScriptHash = ScriptHash . blake2b224 . serialize
 
 -- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
 -- 28-byte.
@@ -71,6 +175,14 @@ instance NFData Script
 newtype ScriptHash = ScriptHash ByteString
     deriving (Generic, Show, Eq)
 instance NFData ScriptHash
+
+-- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
+--
+-- @since 3.0.0
+scriptHashFromBytes :: ByteString -> Maybe ScriptHash
+scriptHashFromBytes bytes
+    | BS.length bytes /= hashSize = Nothing
+    | otherwise = Just $ ScriptHash bytes
 
 -- | A 'KeyHash' type represents verification key hash that participate in building
 -- multi-signature script. The hash is expected to have size of 28-byte.
@@ -88,124 +200,14 @@ keyHashFromBytes bytes
     | BS.length bytes /= hashSize = Nothing
     | otherwise = Just $ KeyHash bytes
 
--- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
 --
--- @since 3.0.0
-scriptHashFromBytes :: ByteString -> Maybe ScriptHash
-scriptHashFromBytes bytes
-    | BS.length bytes /= hashSize = Nothing
-    | otherwise = Just $ ScriptHash bytes
-
--- | Validate 'Script'
+-- Internal
 --
--- @since 3.0.0
-validateScript :: Script -> Either InvalidScriptError ()
-validateScript (RequireSignatureOf (KeyHash bytes)) =
-    case keyHashFromBytes bytes of
-        Just _ -> Right ()
-        Nothing -> Left WrongKeyHash
-validateScript (RequireAllOf content) = do
-    when (L.null content) $
-        Left EmptyList
-    scanContent content
-validateScript (RequireAnyOf content) = do
-    when (L.null content) $
-        Left EmptyList
-    scanContent content
-validateScript (RequireMOf m content) = do
-    when (m == 0) $
-        Left MZero
-    when (length content < fromInteger (toInteger m) ) $
-        Left ListTooSmall
-    scanContent content
 
-scanContent :: [Script] -> Either InvalidScriptError ()
-scanContent content = do
-    let lefts = filter isLeft $ map validateScript content
-    if null lefts then do
-        let isSignature (RequireSignatureOf _) = True
-            isSignature _ = False
-        let sigs = filter isSignature content
-        if length sigs == length (L.nub sigs) then
-            Right ()
-        else
-            Left DuplicateSignatures
-    else
-        head lefts
-
--- | Errors when handling 'Script'
---
--- @since 3.0.0
-data ScriptError = MalformedScript | InvalidScript InvalidScriptError
-    deriving (Eq, Show)
-
-data InvalidScriptError = EmptyList | ListTooSmall | MZero | DuplicateSignatures | WrongKeyHash
-    deriving (Eq, Show)
-
-scriptErrorToMsg :: ScriptError -> String
-scriptErrorToMsg MalformedScript =
-    "Parsing of the script failed. The script should be composed of nested lists\
-    \, and the verification keys should be either base16 or base58 or bech32 encoded."
-scriptErrorToMsg (InvalidScript EmptyList) = "The list inside a script is empty."
-scriptErrorToMsg (InvalidScript MZero) = "The M in at_least cannot be 0."
-scriptErrorToMsg (InvalidScript ListTooSmall) =
-    "The list inside at_least cannot be less than M."
-scriptErrorToMsg (InvalidScript DuplicateSignatures) =
-    "The list inside a script has duplicate keys."
-scriptErrorToMsg (InvalidScript WrongKeyHash) =
-    "The hash of verification key is expected to have "<>show hashSize<>" bytes."
-
-toCBOR' :: Script -> CBOR.Encoding
-toCBOR' (RequireSignatureOf (KeyHash verKeyHash)) =
-    encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
-toCBOR' (RequireAllOf contents) =
-    encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR' contents
-toCBOR' (RequireAnyOf contents) =
-    encodeMultiscriptCtr 2 2 <> encodeFoldable toCBOR' contents
-toCBOR' (RequireMOf m contents) =
-    encodeMultiscriptCtr 3 3 <> CBOR.encodeInt (fromInteger $ toInteger m)
-    <> encodeFoldable toCBOR' contents
-
--- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
--- This is basically doing the symbolically following:
--- toCBOR [0,multisigScript]
-toCBOR :: Script -> ByteString
-toCBOR script =
-    CBOR.toStrictByteString $ encodeMultisigBeginning <> toCBOR' script
-
-encodeMultisigBeginning :: CBOR.Encoding
-encodeMultisigBeginning = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0
-
-encodeMultiscriptCtr :: Word -> Word -> CBOR.Encoding
-encodeMultiscriptCtr ctrIndex listLen =
-    CBOR.encodeListLen listLen <> CBOR.encodeWord ctrIndex
-
-encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
-encodeFoldable encode xs = wrapArray len contents
-  where
-    (len, contents) = foldl' go (0, mempty) xs
-    go (!l, !enc) next = (l + 1, enc <> encode next)
-
-    wrapArray :: Word -> CBOR.Encoding -> CBOR.Encoding
-    wrapArray len' contents' =
-        if len' <= 23
-        then CBOR.encodeListLen len' <> contents'
-        else CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
-
--- | This function realizes what cardano-node's
--- `Api.serialiseToRawBytes $ Api.scriptHash script` realizes
--- This is basically doing the symbolically the following (using symbols from toCBOR):
--- digest $ (nativeMultisigTag <> toCBOR multisigScript )
-toScriptHash :: Script -> ScriptHash
-toScriptHash script = ScriptHash $ digest $ nativeMultiSigTag <> toCBOR'' script
-  where
-      nativeMultiSigTag :: ByteString
-      nativeMultiSigTag = "\00"
-
-      digest = BA.convert . hash @_ @Blake2b_224
-
-      toCBOR'' :: Script -> ByteString
-      toCBOR'' script' = CBOR.toStrictByteString $ toCBOR' script'
+-- Hash a public key
+blake2b224 :: ByteString -> ByteString
+blake2b224 =
+    BA.convert . hash @_ @Blake2b_224
 
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)
 hashSize :: Int

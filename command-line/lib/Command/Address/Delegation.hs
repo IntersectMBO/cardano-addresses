@@ -21,7 +21,11 @@ import Cardano.Address
 import Cardano.Address.Derivation
     ( Depth (..) )
 import Cardano.Address.Style.Shelley
-    ( ErrExtendAddress (..), inspectNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..)
+    , ErrExtendAddress (..)
+    , inspectNetworkDiscriminant
+    , shelleyTestnet
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
@@ -29,7 +33,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Script
-    ( Credential (..), stakeCredentialArg )
+    ( stakeCredentialArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra

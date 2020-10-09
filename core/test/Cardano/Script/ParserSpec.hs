@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Cardano.ScriptParserSpec
+module Cardano.Script.ParserSpec
     ( spec
     ) where
 
@@ -9,7 +9,7 @@ import Prelude
 
 import Cardano.Script
     ( KeyHash (..), Script (..) )
-import Cardano.ScriptParser
+import Cardano.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser

@@ -14,6 +14,7 @@ extra-deps:
 # dependencies for testing.
 - hjsonpointer-1.5.0
 - hjsonschema-1.10.0
+- string-interpolate-0.3.0.2
 
 allow-newer: true
 

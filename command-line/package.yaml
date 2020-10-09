@@ -110,5 +110,6 @@ tests:
     - memory
     - process
     - QuickCheck
+    - string-interpolate
     - temporary
     - text

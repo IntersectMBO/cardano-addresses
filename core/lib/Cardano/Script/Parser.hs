@@ -5,7 +5,7 @@
 
 {-# OPTIONS_HADDOCK hide #-}
 
-module Cardano.ScriptParser
+module Cardano.Script.Parser
     (
     -- ** Script Parser
       scriptFromString
