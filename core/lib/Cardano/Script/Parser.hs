@@ -5,10 +5,11 @@
 
 {-# OPTIONS_HADDOCK hide #-}
 
-module Cardano.ScriptParser
+module Cardano.Script.Parser
     (
     -- ** Script Parser
-      scriptParser
+      scriptFromString
+    , scriptParser
 
     -- * Internal
     , requireSignatureOfParser
@@ -21,20 +22,27 @@ module Cardano.ScriptParser
 import Prelude
 
 import Cardano.Script
-    ( Script (..), keyHashFromBytes )
+    ( KeyHash (..), Script (..) )
 import Codec.Binary.Encoding
-    ( fromBase16 )
+    ( AbstractEncoding (..), detectEncoding, fromBase16, fromBase58 )
 import Data.Char
     ( isDigit, isLetter )
 import Data.Word
     ( Word8 )
 import Text.ParserCombinators.ReadP
-    ( ReadP, (<++) )
+    ( ReadP, readP_to_S, (<++) )
 
+import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Text.ParserCombinators.ReadP as P
 
+-- | Run 'scriptParser' on string input.
+scriptFromString :: String -> Maybe Script
+scriptFromString str =
+    case readP_to_S scriptParser str of
+         [(multisig, "")] -> Just multisig
+         _ -> Nothing
 
 -- | The script embodies combination of signing keys that need to be met to make
 -- it valid. We assume here that the script could
@@ -68,15 +76,26 @@ scriptParser =
 requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
     P.skipSpaces
-    verKeyH <- P.munch1 (\c -> isDigit c || isLetter c)
-    case length verKeyH of
-        56 -> do
-            let (Right bytes) = fromBase16 $ T.encodeUtf8 $ T.pack verKeyH
-            let (Just keyHash) = keyHashFromBytes bytes
-            return $ RequireSignatureOf keyHash
-        len ->
-            fail $ "Verification key hash should be 28 bytes, but received "
-            <> show len <> " bytes."
+    verKeyStr <- P.munch1 (\c -> isDigit c || isLetter c || c == '_')
+    case detectEncoding verKeyStr of
+        Just EBase16 -> case fromBase16 (toBytes verKeyStr) of
+            Left _ -> fail "Invalid Base16-encoded string."
+            Right keyHash -> return $ toSignature keyHash
+        Just EBech32{} -> case fromBech32 (T.pack verKeyStr) of
+            Nothing -> fail "Invalid Bech32-encoded string.."
+            Just keyHash -> return $ toSignature keyHash
+        Just EBase58 -> case fromBase58 (toBytes verKeyStr) of
+            Left err -> fail err
+            Right keyHash -> return $ toSignature keyHash
+        Nothing ->
+            fail "Verification key hash must be must be encoded as \
+                   \base16, bech32 or base58."
+ where
+    toBytes = T.encodeUtf8 . T.pack
+    fromBech32 txt = do
+        (_, dp) <- either (const Nothing) Just (Bech32.decodeLenient txt)
+        Bech32.dataPartToBytes dp
+    toSignature = RequireSignatureOf . KeyHash
 
 requireAllOfParser :: ReadP Script
 requireAllOfParser = do
@@ -106,7 +125,7 @@ commonPart = do
     P.skipSpaces
     _open <- P.string "["
     P.skipSpaces
-    content <- P.sepBy1 scriptParser (P.string ",")
+    content <- P.sepBy scriptParser (P.string ",")
     P.skipSpaces
     _close <- P.string "]"
     P.skipSpaces

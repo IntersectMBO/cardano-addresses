@@ -18,11 +18,17 @@ import Prelude hiding
 import Cardano.Address
     ( bech32With )
 import Cardano.Address.Style.Shelley
-    ( MkNetworkDiscriminantError (..), mkNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..)
+    , MkNetworkDiscriminantError (..)
+    , mkNetworkDiscriminant
+    , shelleyTestnet
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+import Options.Applicative.Credential
+    ( CredentialType (..), credentialOpt )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
 import Options.Applicative.Help.Pretty
@@ -32,15 +38,16 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetXPub, progName )
+    ( hGetScriptHash, hGetXPub, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
 
-newtype Cmd = Cmd
-    { networkTag :: NetworkTag
+data Cmd = Cmd
+    {  credentialType :: CredentialType
+    ,  networkTag :: NetworkTag
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -58,21 +65,27 @@ mod liftCmd = command "payment" $
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --from-key --network-tag testnet"
             , indent 2 $ string "addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek"
             ])
   where
     parser = Cmd
-        <$> networkTagOpt Shelley
+        <$> credentialOpt
+        <*> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag} = do
-    xpub <- hGetXPub stdin
+run Cmd{networkTag,credentialType} = do
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left ErrWrongNetworkTag{} -> do
             fail "Invalid network tag. Must be between [0, 15]"
         Right discriminant -> do
-            let addr = Shelley.paymentAddress discriminant (Shelley.liftXPub xpub)
+            addr <- case credentialType of
+                CredentialFromKey -> do
+                    xpub <- hGetXPub stdin
+                    pure $ Shelley.paymentAddress discriminant (PaymentFromKey $ Shelley.liftXPub xpub)
+                CredentialFromScript -> do
+                    scriptHash <- hGetScriptHash stdin
+                    pure $ Shelley.paymentAddress discriminant (PaymentFromScript scriptHash)
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|addr_test|]

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -18,17 +19,21 @@ import Prelude hiding
 import Cardano.Address
     ( bech32With, unsafeMkAddress )
 import Cardano.Address.Derivation
-    ( XPub )
+    ( Depth (..) )
 import Cardano.Address.Style.Shelley
-    ( ErrExtendAddress (..), inspectNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..)
+    , ErrExtendAddress (..)
+    , inspectNetworkDiscriminant
+    , shelleyTestnet
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Derivation
-    ( xpubArg )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
+import Options.Applicative.Script
+    ( stakeCredentialArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -40,8 +45,8 @@ import qualified Data.Text.Encoding as T
 
 
 newtype Cmd = Cmd
-    { xpub :: XPub
-    } deriving (Show)
+    { credential :: Credential 'StakingK
+    } deriving Show
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "delegation" $
@@ -68,12 +73,12 @@ mod liftCmd = command "delegation" $
             ])
   where
     parser = Cmd
-        <$> xpubArg "An extended stake public key."
+        <$> stakeCredentialArg "An extended stake public key or a script hash."
 
 run :: Cmd -> IO ()
-run Cmd{xpub} = do
+run Cmd{credential} = do
     bytes <- hGetBytes stdin
-    case Shelley.extendAddress (unsafeMkAddress bytes) (Left $ Shelley.liftXPub xpub) of
+    case Shelley.extendAddress (unsafeMkAddress bytes) credential of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->

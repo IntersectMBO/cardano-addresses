@@ -1,38 +1,102 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
 module Options.Applicative.Script
     (
+    -- ** Data-Types
+      ScriptError (..)
+    , prettyScriptError
+
     -- ** Applicative Parser
-      scriptArg
+    , scriptArg
+    , scriptHashArg
+    , stakeCredentialArg
     ) where
 
 import Prelude
 
+import Cardano.Address.Derivation
+    ( Depth (..) )
+import Cardano.Address.Style.Shelley
+    ( Credential (..), liftXPub )
 import Cardano.Script
-    ( Script (..) )
-import Cardano.ScriptParser
-    ( scriptParser )
+    ( ErrValidateScript
+    , Script (..)
+    , ScriptHash
+    , prettyErrValidateScript
+    , scriptHashFromBytes
+    , validateScript
+    )
+import Cardano.Script.Parser
+    ( scriptFromString )
+import Control.Applicative
+    ( (<|>) )
+import Control.Arrow
+    ( left )
+import Data.Bifunctor
+    ( bimap )
 import Options.Applicative
-    ( Parser, argument, eitherReader, help, metavar )
-import Text.ParserCombinators.ReadP
-    ( readP_to_S )
+    ( Parser, argument, eitherReader, help, long, metavar, option )
+import Options.Applicative.Derivation
+    ( encodingReader, xpubOpt )
 
+--
+-- Data-Types
+--
 
-scriptFromString :: String -> Either String Script
-scriptFromString str =
-    case readP_to_S scriptParser str of
-         [(multisig,_rest)] ->
-                 Right multisig
-         _ ->
-             Left "Parsing of the script failed."
+data ScriptError
+    = MalformedScript
+    | InvalidScript ErrValidateScript
+    deriving (Eq, Show)
+
+prettyScriptError :: ScriptError -> String
+prettyScriptError = \case
+    MalformedScript ->
+        "Parsing of the script failed. The script should be composed of nested \
+        \lists, and the verification keys should be either encoded as base16, \
+        \bech32 or base58."
+    InvalidScript e ->
+        prettyErrValidateScript e
+
+--
+-- Applicative Parsers
+--
 
 scriptArg :: Parser Script
-scriptArg = argument (eitherReader scriptFromString) $ mempty
+scriptArg = argument (eitherReader reader) $ mempty
     <> metavar "SCRIPT"
     <> help
         "Script string."
+  where
+    reader :: String -> Either String Script
+    reader
+        = left prettyScriptError
+        . maybe (Left malformedScript) (\s -> bimap InvalidScript (const s) $ validateScript s)
+        . scriptFromString
+      where
+        malformedScript = MalformedScript
+
+stakeCredentialArg  :: String -> Parser (Credential 'StakingK)
+stakeCredentialArg str =
+    (StakingFromKey . liftXPub <$> xpubOpt "from-key" str)
+    <|>
+    (StakingFromScript <$> scriptHashArg str)
+
+scriptHashArg :: String -> Parser ScriptHash
+scriptHashArg helpDoc =
+    option (eitherReader reader) $ mempty
+        <> long "from-script"
+        <> metavar "SCRIPT_HASH"
+        <> help helpDoc
+  where
+    reader :: String -> Either String ScriptHash
+    reader str = do
+        bytes <- encodingReader str
+        case scriptHashFromBytes bytes of
+            Just scriptHash -> pure scriptHash
+            Nothing -> Left "Failed to convert bytes into a valid script hash."

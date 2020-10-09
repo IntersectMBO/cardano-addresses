@@ -20,13 +20,13 @@ module Cardano.Address.Style.ShelleySpec
 import Prelude
 
 import Cardano.Address
-    ( ChainPointer (..)
-    , DelegationAddress (..)
+    ( Address
+    , ChainPointer (..)
+    , HasNetworkDiscriminant (..)
     , HasNetworkDiscriminant (NetworkDiscriminant)
-    , PaymentAddress (..)
-    , PointerAddress (..)
     , bech32
     , bech32With
+    , fromBech32
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -44,13 +44,17 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Role (..)
+    ( Credential (..)
+    , Role (..)
     , Shelley (..)
+    , delegationAddress
     , deriveMultisigPrivateKey
     , deriveMultisigPublicKey
     , deriveStakingPrivateKey
     , liftXPub
     , mkNetworkDiscriminant
+    , paymentAddress
+    , pointerAddress
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
@@ -62,24 +66,31 @@ import Data.ByteString
     ( ByteString )
 import Data.Either
     ( rights )
+import Data.Function
+    ( (&) )
 import Data.Text
     ( Text )
 import Test.Arbitrary
     ()
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
+import Test.Hspec.QuickCheck
+    ( prop )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Property
     , arbitraryBoundedEnum
     , choose
+    , counterexample
     , expectFailure
+    , label
     , property
     , vector
     , (===)
     , (==>)
     )
 
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -107,11 +118,21 @@ spec = do
         it "Using different numbers in StakingPointerAddress does not fail"
             (property prop_pointerAddressConstruction)
 
+    describe "Text Encoding Roundtrips" $ do
+        prop "bech32 . fromBech32 - Shelley - payment address" $
+            prop_roundtripTextEncoding bech32 fromBech32
+
+        prop "bech32 . fromBech32 - Shelley - delegation address" $
+            prop_roundtripTextEncodingDelegation bech32 fromBech32
+
+        prop "bech32 . fromBech32 - Shelley - pointer address" $
+            prop_roundtripTextEncodingPointer bech32 fromBech32
+
     describe "Golden tests" $ do
         goldenTestPointerAddress GoldenTestPointerAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
             ,  stakePtr = ChainPointer 128 2 3
-            ,  networkTag = 0
+            ,  netTag = 0
             ,  expectedAddr =
                     "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
                     \81000203"
@@ -119,27 +140,27 @@ spec = do
         goldenTestPointerAddress GoldenTestPointerAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
             ,  stakePtr = ChainPointer 128 2 3
-            ,  networkTag = 1
+            ,  netTag = 1
             ,  expectedAddr =
                     "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
                     \81000203"
             }
         goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
-            ,  networkTag = 0
+            ,  netTag = 0
             ,  expectedAddr =
                     "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
             }
         goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
-            ,  networkTag = 1
+            ,  netTag = 1
             ,  expectedAddr =
                     "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
             }
         goldenTestBaseAddress GoldenTestBaseAddress
             {  verKeyPayment = "1a2a3a4a5a6a7a8a"
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
-            ,  networkTag = 0
+            ,  netTag = 0
             ,  expectedAddr =
                     "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
                     \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
@@ -147,7 +168,7 @@ spec = do
         goldenTestBaseAddress GoldenTestBaseAddress
             {  verKeyPayment = "1a2a3a4a5a6a7a8a"
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
-            ,  networkTag = 1
+            ,  netTag = 1
             ,  expectedAddr =
                     "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
                     \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
@@ -880,7 +901,7 @@ prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
-    pointerAddr = pointerAddress net addrXPub ptr
+    pointerAddr = pointerAddress net (PaymentFromKey addrXPub) ptr
 
 
 {-------------------------------------------------------------------------------
@@ -901,7 +922,7 @@ data GoldenTestPointerAddress = GoldenTestPointerAddress
     ,  stakePtr :: ChainPointer
 
       -- | Network tag
-    ,  networkTag :: Integer
+    ,  netTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
@@ -909,11 +930,11 @@ data GoldenTestPointerAddress = GoldenTestPointerAddress
 
 goldenTestPointerAddress :: GoldenTestPointerAddress -> SpecWith ()
 goldenTestPointerAddress GoldenTestPointerAddress{..} =
-    it ("pointer address for networkId " <> show networkTag) $ do
+    it ("pointer address for networkId " <> show netTag) $ do
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
-        let (Right tag) = mkNetworkDiscriminant networkTag
-        let ptrAddr = pointerAddress tag addrXPub stakePtr
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let ptrAddr = pointerAddress tag (PaymentFromKey addrXPub) stakePtr
         let (Right bytes) = b16decode expectedAddr
         ptrAddr `shouldBe` unsafeMkAddress bytes
 
@@ -924,7 +945,7 @@ data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
        verKey :: Text
 
       -- | Network tag
-    ,  networkTag :: Integer
+    ,  netTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
@@ -932,11 +953,11 @@ data GoldenTestEnterpriseAddress = GoldenTestEnterpriseAddress
 
 goldenTestEnterpriseAddress :: GoldenTestEnterpriseAddress -> SpecWith ()
 goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
-    it ("enterprise address for networkId " <> show networkTag) $ do
+    it ("enterprise address for networkId " <> show netTag) $ do
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
-        let (Right tag) = mkNetworkDiscriminant networkTag
-        let enterpriseAddr = paymentAddress tag addrXPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromKey addrXPub)
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -951,7 +972,7 @@ data GoldenTestBaseAddress = GoldenTestBaseAddress
     ,  verKeyStake :: Text
 
       -- | Network tag
-    ,  networkTag :: Integer
+    ,  netTag :: Integer
 
       -- | Expected address as encoded into base16 form
     ,  expectedAddr :: Text
@@ -959,15 +980,15 @@ data GoldenTestBaseAddress = GoldenTestBaseAddress
 
 goldenTestBaseAddress :: GoldenTestBaseAddress -> SpecWith ()
 goldenTestBaseAddress GoldenTestBaseAddress{..} =
-    it ("base address for networkId " <> show networkTag) $ do
+    it ("base address for networkId " <> show netTag) $ do
         let (Just xPub1) =
                 xpubFromBytes $ b16encode $ T.append verKeyPayment verKeyPayment
         let addrXPub = liftXPub xPub1 :: Shelley 'AddressK XPub
         let (Just xPub2) =
                 xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
         let stakeXPub = liftXPub xPub2 :: Shelley 'StakingK XPub
-        let (Right tag) = mkNetworkDiscriminant networkTag
-        let baseAddr = delegationAddress tag addrXPub stakeXPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let baseAddr = delegationAddress tag (PaymentFromKey addrXPub) (StakingFromKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -1107,26 +1128,93 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     pointerAddr0Slot2' `shouldBe` pointerAddr0Slot2
 
     let stakeKPub0 = toXPub <$> deriveStakingPrivateKey acctK0
-    let delegationAddr0Stake0' = getDelegationAddr addrK0prv stakeKPub0 <$> networkTags
+    let delegationAddr0Stake0' = getDelegationAddr addrK0prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr0Stake0' `shouldBe` delegationAddr0Stake0
-    let delegationAddr1Stake0' = getDelegationAddr addrK1prv stakeKPub0 <$> networkTags
+    let delegationAddr1Stake0' = getDelegationAddr addrK1prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr1Stake0' `shouldBe` delegationAddr1Stake0
-    let delegationAddr1442Stake0' = getDelegationAddr addrK1442prv stakeKPub0 <$> networkTags
+    let delegationAddr1442Stake0' = getDelegationAddr addrK1442prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr1442Stake0' `shouldBe` delegationAddr1442Stake0
     let stakeKPub1 = toXPub <$> deriveStakingPrivateKey acctK1
-    let delegationAddr0Stake1' = getDelegationAddr addrK0prv stakeKPub1 <$> networkTags
+    let delegationAddr0Stake1' = getDelegationAddr addrK0prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr0Stake1' `shouldBe` delegationAddr0Stake1
-    let delegationAddr1Stake1' = getDelegationAddr addrK1prv stakeKPub1 <$> networkTags
+    let delegationAddr1Stake1' = getDelegationAddr addrK1prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr1Stake1' `shouldBe` delegationAddr1Stake1
-    let delegationAddr1442Stake1' = getDelegationAddr addrK1442prv stakeKPub1 <$> networkTags
+    let delegationAddr1442Stake1' = getDelegationAddr addrK1442prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr1442Stake1' `shouldBe` delegationAddr1442Stake1
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
-    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (toXPub <$> addrKPrv)
-    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (toXPub <$> addrKPrv) ptr
+    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
+    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
-        bech32 $ delegationAddress net (toXPub <$> addrKPrv) stakeKPub
+        bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
+
+prop_roundtripTextEncoding
+    :: (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> Shelley 'AddressK XPub
+        -- ^ An arbitrary public key
+    -> NetworkDiscriminant Shelley
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncoding encode' decode addXPub discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode' address)
+            , "↳       " <> maybe "ø" (T.unpack . encode') result
+            ])
+        & label (show $ addressDiscrimination @Shelley discrimination)
+  where
+    address = paymentAddress discrimination (PaymentFromKey addXPub)
+    result  = decode (encode' address)
+
+prop_roundtripTextEncodingDelegation
+    :: (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> Shelley 'AddressK XPub
+        -- ^ An arbitrary address public key
+    -> Shelley 'StakingK XPub
+        -- ^ An arbitrary staking public key
+    -> NetworkDiscriminant Shelley
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncodingDelegation encode' decode addXPub stakingXPub discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode' address)
+            , "↳       " <> maybe "ø" (T.unpack . encode') result
+            ])
+        & label (show $ addressDiscrimination @Shelley discrimination)
+  where
+    address = delegationAddress discrimination (PaymentFromKey addXPub) (StakingFromKey stakingXPub)
+    result  = decode (encode' address)
+
+prop_roundtripTextEncodingPointer
+    :: (Address -> Text)
+        -- ^ encode to 'Text'
+    -> (Text -> Maybe Address)
+        -- ^ decode from 'Text'
+    -> Shelley 'AddressK XPub
+        -- ^ An arbitrary address public key
+    -> ChainPointer
+        -- ^ An arbitrary staking key locator
+    -> NetworkDiscriminant Shelley
+        -- ^ An arbitrary network discriminant
+    -> Property
+prop_roundtripTextEncodingPointer encode' decode addXPub ptr discrimination =
+    (result == pure address)
+        & counterexample (unlines
+            [ "Address " <> T.unpack (encode' address)
+            , "↳       " <> maybe "ø" (T.unpack . encode') result
+            ])
+        & label (show $ addressDiscrimination @Shelley discrimination)
+  where
+    address = pointerAddress discrimination (PaymentFromKey addXPub) ptr
+    result  = decode (encode' address)
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances

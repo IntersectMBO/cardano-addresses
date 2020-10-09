@@ -12,6 +12,7 @@ module System.IO.Extra
     , hGetXPrv
     , hGetXPub
     , hGetXP__
+    , hGetScriptHash
 
     -- ** Write
     , hPutBytes
@@ -29,6 +30,8 @@ import Cardano.Address.Derivation
     ( XPrv, XPub, xprvFromBytes, xpubFromBytes )
 import Cardano.Mnemonic
     ( MkSomeMnemonicError (..), SomeMnemonic, mkSomeMnemonic )
+import Cardano.Script
+    ( ScriptHash, scriptHashFromBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..)
     , Encoding
@@ -107,6 +110,14 @@ hGetXPub h = do
     case xpubFromBytes bytes of
         Nothing  -> fail "Couldn't convert bytes into extended public key."
         Just key -> pure key
+
+-- | Read a script hash from the console, or fail.
+hGetScriptHash :: Handle -> IO ScriptHash
+hGetScriptHash h = do
+    bytes <- hGetBytes h
+    case scriptHashFromBytes bytes of
+        Nothing  -> fail "Couldn't convert bytes into script hash."
+        Just scriptHash -> pure scriptHash
 
 -- | Read either an encoded public or private key from the console, or fail.
 hGetXP__ :: Handle -> IO (Either XPub XPrv)

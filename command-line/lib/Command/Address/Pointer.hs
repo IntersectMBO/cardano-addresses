@@ -18,7 +18,11 @@ import Prelude hiding
 import Cardano.Address
     ( ChainPointer (..), bech32With, unsafeMkAddress )
 import Cardano.Address.Style.Shelley
-    ( ErrExtendAddress (..), inspectNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..)
+    , ErrExtendAddress (..)
+    , inspectNetworkDiscriminant
+    , shelleyTestnet
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Numeric.Natural
@@ -91,7 +95,7 @@ run Cmd{_slotNum,_transactionIndex,_outputIndex} = do
             , transactionIndex = _transactionIndex
             , outputIndex = _outputIndex
             }
-    case Shelley.extendAddress (unsafeMkAddress bytes) (Right ptr) of
+    case Shelley.extendAddress (unsafeMkAddress bytes) (StakingFromPointer ptr) of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->

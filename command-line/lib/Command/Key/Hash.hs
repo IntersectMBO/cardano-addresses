@@ -15,9 +15,9 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Style.Shelley
-    ( liftXPub )
+    ( hashKey, liftXPub )
 import Cardano.Script
-    ( KeyHash (..), hashKey )
+    ( KeyHash (..) )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative

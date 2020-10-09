@@ -16,13 +16,15 @@ import Prelude hiding
 import Cardano.Address
     ( NetworkTag (..), bech32With )
 import Cardano.Address.Style.Shelley
-    ( mkNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..), mkNetworkDiscriminant, shelleyTestnet, unsafeFromRight )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Fmt
     ( build, fmt )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+import Options.Applicative.Credential
+    ( CredentialType (..), credentialOpt )
 import Options.Applicative.Discrimination
     ( networkTagOpt )
 import Options.Applicative.Help.Pretty
@@ -34,15 +36,15 @@ import System.Exit
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetXPub, progName )
+    ( hGetScriptHash, hGetXPub, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
-
-newtype Cmd = Cmd
-    { networkTag :: NetworkTag
+data Cmd = Cmd
+    {  credentialType :: CredentialType
+    ,  networkTag :: NetworkTag
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -68,15 +70,23 @@ mod liftCmd = command "stake" $
             ])
   where
     parser = Cmd
-        <$> networkTagOpt Shelley
+        <$> credentialOpt
+        <*> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag} = do
-    xpub <- hGetXPub stdin
+run Cmd{networkTag,credentialType} = do
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left e -> die (fmt $ build e)
         Right discriminant -> do
-            let addr = Shelley.stakeAddress discriminant (Shelley.liftXPub xpub)
+            addr <- case credentialType of
+                CredentialFromKey -> do
+                    xpub <- hGetXPub stdin
+                    let credential = StakingFromKey $ Shelley.liftXPub xpub
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+                CredentialFromScript -> do
+                    scriptHash <- hGetScriptHash stdin
+                    let credential = StakingFromScript scriptHash
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]

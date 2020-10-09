@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d172a0629919a6e25f13d8b80d7e4e260cdfe22c57c648c9b103f8ccd4bacfd
+-- hash: 2a001ee004d4504935dc58b6bc07e11d3aabbd85ee5d8952dee8a49705e3f313
 
 name:           cardano-addresses-cli
 version:        2.1.0
@@ -52,6 +52,7 @@ library
       Command.Script
       Command.Script.Hash
       Command.Version
+      Options.Applicative.Credential
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
       Options.Applicative.Encoding
@@ -143,6 +144,7 @@ test-suite unit
       QuickCheck
     , aeson
     , base >=4.7 && <5
+    , base58-bytestring
     , bech32
     , bech32-th
     , bytestring
@@ -153,6 +155,7 @@ test-suite unit
     , hspec
     , memory
     , process
+    , string-interpolate
     , temporary
     , text
   if flag(release)
