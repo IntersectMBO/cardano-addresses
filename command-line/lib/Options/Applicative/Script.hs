@@ -63,4 +63,6 @@ scriptHashArg helpDoc =
 
 stakeCredentialArg  :: String -> Parser (Credential 'StakingK)
 stakeCredentialArg str =
-    ((FromKey . liftXPub ) <$> xpubOpt "from-key" str) <|> (FromScript <$> scriptHashArg str)
+    (StakingFromKey . liftXPub <$> xpubOpt "from-key" str)
+    <|>
+    (StakingFromScript <$> scriptHashArg str)

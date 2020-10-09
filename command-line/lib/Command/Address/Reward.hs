@@ -16,7 +16,7 @@ import Prelude hiding
 import Cardano.Address
     ( NetworkTag (..), bech32With )
 import Cardano.Address.Style.Shelley
-    ( mkNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..), mkNetworkDiscriminant, shelleyTestnet, unsafeFromRight )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Fmt
@@ -43,7 +43,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
 data Cmd = Cmd
-    {  credential :: CredentialType
+    {  credentialType :: CredentialType
     ,  networkTag :: NetworkTag
     } deriving (Show)
 
@@ -74,17 +74,19 @@ mod liftCmd = command "stake" $
         <*> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag,credential} = do
+run Cmd{networkTag,credentialType} = do
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left e -> die (fmt $ build e)
         Right discriminant -> do
-            addr <- case credential of
-                    CredentialFromKey -> do
-                        xpub <- hGetXPub stdin
-                        pure $ Shelley.stakeAddress discriminant (Shelley.FromKey $ Shelley.liftXPub xpub)
-                    CredentialFromScript -> do
-                        scriptHash <- hGetScriptHash stdin
-                        pure $ Shelley.stakeAddress discriminant (Shelley.FromScript scriptHash)
+            addr <- case credentialType of
+                CredentialFromKey -> do
+                    xpub <- hGetXPub stdin
+                    let credential = StakingFromKey $ Shelley.liftXPub xpub
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+                CredentialFromScript -> do
+                    scriptHash <- hGetScriptHash stdin
+                    let credential = StakingFromScript scriptHash
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]

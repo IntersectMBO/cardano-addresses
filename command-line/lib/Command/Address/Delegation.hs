@@ -74,12 +74,7 @@ mod liftCmd = command "delegation" $
 run :: Cmd -> IO ()
 run Cmd{credential} = do
     bytes <- hGetBytes stdin
-    let stakeCredential = case credential of
-            FromKey xpub ->
-                Left $ Shelley.FromKey xpub
-            FromScript scriptHash -> do
-                Left $ Shelley.FromScript scriptHash
-    case Shelley.extendAddress (unsafeMkAddress bytes) stakeCredential of
+    case Shelley.extendAddress (unsafeMkAddress bytes) credential of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->

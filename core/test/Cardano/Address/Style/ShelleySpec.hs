@@ -901,7 +901,7 @@ prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
-    pointerAddr = pointerAddress net (FromKey addrXPub) ptr
+    pointerAddr = pointerAddress net (PaymentFromKey addrXPub) ptr
 
 
 {-------------------------------------------------------------------------------
@@ -934,7 +934,7 @@ goldenTestPointerAddress GoldenTestPointerAddress{..} =
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let ptrAddr = pointerAddress tag (FromKey addrXPub) stakePtr
+        let ptrAddr = pointerAddress tag (PaymentFromKey addrXPub) stakePtr
         let (Right bytes) = b16decode expectedAddr
         ptrAddr `shouldBe` unsafeMkAddress bytes
 
@@ -957,7 +957,7 @@ goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'AddressK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let enterpriseAddr = Shelley.paymentAddress tag (FromKey addrXPub)
+        let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromKey addrXPub)
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -988,7 +988,7 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
                 xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
         let stakeXPub = liftXPub xPub2 :: Shelley 'StakingK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let baseAddr = delegationAddress tag (FromKey addrXPub) (FromKey stakeXPub)
+        let baseAddr = delegationAddress tag (PaymentFromKey addrXPub) (StakingFromKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -1128,26 +1128,26 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     pointerAddr0Slot2' `shouldBe` pointerAddr0Slot2
 
     let stakeKPub0 = toXPub <$> deriveStakingPrivateKey acctK0
-    let delegationAddr0Stake0' = getDelegationAddr addrK0prv (FromKey stakeKPub0) <$> networkTags
+    let delegationAddr0Stake0' = getDelegationAddr addrK0prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr0Stake0' `shouldBe` delegationAddr0Stake0
-    let delegationAddr1Stake0' = getDelegationAddr addrK1prv (FromKey stakeKPub0) <$> networkTags
+    let delegationAddr1Stake0' = getDelegationAddr addrK1prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr1Stake0' `shouldBe` delegationAddr1Stake0
-    let delegationAddr1442Stake0' = getDelegationAddr addrK1442prv (FromKey stakeKPub0) <$> networkTags
+    let delegationAddr1442Stake0' = getDelegationAddr addrK1442prv (StakingFromKey stakeKPub0) <$> networkTags
     delegationAddr1442Stake0' `shouldBe` delegationAddr1442Stake0
     let stakeKPub1 = toXPub <$> deriveStakingPrivateKey acctK1
-    let delegationAddr0Stake1' = getDelegationAddr addrK0prv (FromKey stakeKPub1) <$> networkTags
+    let delegationAddr0Stake1' = getDelegationAddr addrK0prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr0Stake1' `shouldBe` delegationAddr0Stake1
-    let delegationAddr1Stake1' = getDelegationAddr addrK1prv (FromKey stakeKPub1) <$> networkTags
+    let delegationAddr1Stake1' = getDelegationAddr addrK1prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr1Stake1' `shouldBe` delegationAddr1Stake1
-    let delegationAddr1442Stake1' = getDelegationAddr addrK1442prv (FromKey stakeKPub1) <$> networkTags
+    let delegationAddr1442Stake1' = getDelegationAddr addrK1442prv (StakingFromKey stakeKPub1) <$> networkTags
     delegationAddr1442Stake1' `shouldBe` delegationAddr1442Stake1
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
-    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (FromKey (toXPub <$> addrKPrv))
-    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (FromKey (toXPub <$> addrKPrv)) ptr
+    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
+    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
-        bech32 $ delegationAddress net (FromKey (toXPub <$> addrKPrv)) stakeKPub
+        bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
 
 prop_roundtripTextEncoding
     :: (Address -> Text)
@@ -1167,7 +1167,7 @@ prop_roundtripTextEncoding encode' decode addXPub discrimination =
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = paymentAddress discrimination (FromKey addXPub)
+    address = paymentAddress discrimination (PaymentFromKey addXPub)
     result  = decode (encode' address)
 
 prop_roundtripTextEncodingDelegation
@@ -1190,7 +1190,7 @@ prop_roundtripTextEncodingDelegation encode' decode addXPub stakingXPub discrimi
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = delegationAddress discrimination (FromKey addXPub) (FromKey stakingXPub)
+    address = delegationAddress discrimination (PaymentFromKey addXPub) (StakingFromKey stakingXPub)
     result  = decode (encode' address)
 
 prop_roundtripTextEncodingPointer
@@ -1213,7 +1213,7 @@ prop_roundtripTextEncodingPointer encode' decode addXPub ptr discrimination =
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = pointerAddress discrimination (FromKey addXPub) ptr
+    address = pointerAddress discrimination (PaymentFromKey addXPub) ptr
     result  = decode (encode' address)
 
 {-------------------------------------------------------------------------------

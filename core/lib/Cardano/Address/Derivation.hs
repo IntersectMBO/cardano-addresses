@@ -275,12 +275,17 @@ generateNew seed sndFactor =
 -- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
 --
 -- @
--- root | purpose' | cointype' | account' | change | address@
--- 0th      1st         2nd        3rd        4th      5th
+-- root | purpose' | cointype' | account' | role | address@
+-- 0th      1st         2nd        3rd       4th     5th
 -- @
 --
 -- We do not manipulate purpose, cointype and change paths directly, so there
 -- are no constructors for these.
+--
+--
+-- TODO: rename 'StakingK' into 'DelegationK'.
+-- TODO: rename 'AddressK' into 'PaymentK'
+-- TODO: rename 'MultisigK' into 'ScriptK'
 --
 -- @since 1.0.0
 data Depth = RootK | AccountK | AddressK | StakingK | MultisigK

@@ -18,7 +18,11 @@ import Prelude hiding
 import Cardano.Address
     ( bech32With )
 import Cardano.Address.Style.Shelley
-    ( MkNetworkDiscriminantError (..), mkNetworkDiscriminant, shelleyTestnet )
+    ( Credential (..)
+    , MkNetworkDiscriminantError (..)
+    , mkNetworkDiscriminant
+    , shelleyTestnet
+    )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative
@@ -42,7 +46,7 @@ import qualified Data.Text.Encoding as T
 
 
 data Cmd = Cmd
-    {  credential :: CredentialType
+    {  credentialType :: CredentialType
     ,  networkTag :: NetworkTag
     } deriving (Show)
 
@@ -70,18 +74,18 @@ mod liftCmd = command "payment" $
         <*> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag,credential} = do
+run Cmd{networkTag,credentialType} = do
     case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
         Left ErrWrongNetworkTag{} -> do
             fail "Invalid network tag. Must be between [0, 15]"
         Right discriminant -> do
-            addr <- case credential of
-                    CredentialFromKey -> do
-                        xpub <- hGetXPub stdin
-                        pure $ Shelley.paymentAddress discriminant (Shelley.FromKey $ Shelley.liftXPub xpub)
-                    CredentialFromScript -> do
-                        scriptHash <- hGetScriptHash stdin
-                        pure $ Shelley.paymentAddress discriminant (Shelley.FromScript scriptHash)
+            addr <- case credentialType of
+                CredentialFromKey -> do
+                    xpub <- hGetXPub stdin
+                    pure $ Shelley.paymentAddress discriminant (PaymentFromKey $ Shelley.liftXPub xpub)
+                CredentialFromScript -> do
+                    scriptHash <- hGetScriptHash stdin
+                    pure $ Shelley.paymentAddress discriminant (PaymentFromScript scriptHash)
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
     hrp | networkTag == shelleyTestnet = [humanReadablePart|addr_test|]
