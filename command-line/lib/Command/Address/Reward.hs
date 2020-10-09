@@ -52,7 +52,7 @@ mod liftCmd = command "stake" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Create a stake address"
         <> header "Create a stake address \
-            \that references a staking key (1-1)."
+            \that references a delegation key (1-1)."
         <> footerDoc (Just $ vsep
             [ string "The public key is read from stdin."
             , string ""
@@ -81,11 +81,11 @@ run Cmd{networkTag,credentialType} = do
             addr <- case credentialType of
                 CredentialFromKey -> do
                     xpub <- hGetXPub stdin
-                    let credential = StakingFromKey $ Shelley.liftXPub xpub
+                    let credential = DelegationFromKey $ Shelley.liftXPub xpub
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
                 CredentialFromScript -> do
                     scriptHash <- hGetScriptHash stdin
-                    let credential = StakingFromScript scriptHash
+                    let credential = DelegationFromScript scriptHash
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where

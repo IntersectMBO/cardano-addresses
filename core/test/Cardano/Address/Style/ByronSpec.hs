@@ -67,7 +67,7 @@ spec = do
 prop_keyDerivationFromSeed
     :: SomeMnemonic
     -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
+    -> Index 'WholeDomain 'PaymentK
     -> Property
 prop_keyDerivationFromSeed mw accIx addrIx =
     addrXPrv `seq` property ()
@@ -79,7 +79,7 @@ prop_keyDerivationFromSeed mw accIx addrIx =
 prop_keyDerivationFromXPrv
     :: XPrv
     -> Index 'WholeDomain 'AccountK
-    -> Index 'WholeDomain 'AddressK
+    -> Index 'WholeDomain 'PaymentK
     -> Property
 prop_keyDerivationFromXPrv xprv accIx addrIx =
     addrXPrv `seq` property ()

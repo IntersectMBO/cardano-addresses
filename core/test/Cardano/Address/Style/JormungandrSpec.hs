@@ -73,7 +73,7 @@ spec = do
 prop_publicChildKeyDerivation
     :: (SomeMnemonic, SndFactor)
     -> Role
-    -> Index 'Soft 'AddressK
+    -> Index 'Soft 'PaymentK
     -> Property
 prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
     addrXPub1 === addrXPub2

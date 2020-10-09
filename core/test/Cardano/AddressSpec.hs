@@ -72,7 +72,7 @@ prop_roundtripTextEncoding
         -- ^ encode to 'Text'
     -> (Text -> Maybe Address)
         -- ^ decode from 'Text'
-    -> k 'AddressK XPub
+    -> k 'PaymentK XPub
         -- ^ An arbitrary public key
     -> NetworkDiscriminant k
         -- ^ An arbitrary network discriminant
@@ -94,14 +94,14 @@ prop_roundtripTextEncodingDelegation
         -- ^ encode to 'Text'
     -> (Text -> Maybe Address)
         -- ^ decode from 'Text'
-    -> k 'AddressK XPub
+    -> k 'PaymentK XPub
         -- ^ An arbitrary address public key
-    -> k 'StakingK XPub
-        -- ^ An arbitrary staking public key
+    -> k 'DelegationK XPub
+        -- ^ An arbitrary delegation public key
     -> NetworkDiscriminant k
         -- ^ An arbitrary network discriminant
     -> Property
-prop_roundtripTextEncodingDelegation encode decode addXPub stakingXPub discrimination =
+prop_roundtripTextEncodingDelegation encode decode addXPub delegXPub discrimination =
     (result == pure address)
         & counterexample (unlines
             [ "Address " <> T.unpack (encode address)
@@ -109,5 +109,5 @@ prop_roundtripTextEncodingDelegation encode decode addXPub stakingXPub discrimin
             ])
         & label (show $ addressDiscrimination @k discrimination)
   where
-    address = delegationAddress discrimination addXPub stakingXPub
+    address = delegationAddress discrimination addXPub delegXPub
     result  = decode (encode address)

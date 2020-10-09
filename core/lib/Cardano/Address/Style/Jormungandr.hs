@@ -32,7 +32,7 @@ module Cardano.Address.Style.Jormungandr
     , deriveAccountPrivateKey
     , deriveAddressPrivateKey
     , deriveAddressPublicKey
-    , deriveStakingPrivateKey
+    , deriveDelegationPrivateKey
 
       -- * Addresses
       -- $addresses
@@ -142,7 +142,7 @@ import qualified Data.Text.Encoding as T
 -- @
 -- let rootPrivateKey = Jormungandr 'RootK XPrv
 -- let accountPubKey  = Jormungandr 'AccountK XPub
--- let addressPubKey  = Jormungandr 'AddressK XPub
+-- let addressPubKey  = Jormungandr 'PaymentK XPub
 -- @
 --
 -- @since 2.0.0
@@ -204,7 +204,7 @@ instance Enum Role where
 -- > let addIx = toEnum 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
--- > let stakeK = deriveStakingPrivateKey acctK
+-- > let stakeK = deriveDelegationPrivateKey acctK
 
 instance Internal.GenMasterKey Jormungandr where
     type SecondFactor Jormungandr = ScrubbedBytes
@@ -304,8 +304,8 @@ deriveAccountPrivateKey =
 deriveAddressPrivateKey
     :: Jormungandr 'AccountK XPrv
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Jormungandr 'AddressK XPrv
+    -> Index 'Soft 'PaymentK
+    -> Jormungandr 'PaymentK XPrv
 deriveAddressPrivateKey =
     Internal.deriveAddressPrivateKey
 
@@ -317,26 +317,26 @@ deriveAddressPrivateKey =
 deriveAddressPublicKey
     :: Jormungandr 'AccountK XPub
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Jormungandr 'AddressK XPub
+    -> Index 'Soft 'PaymentK
+    -> Jormungandr 'PaymentK XPub
 deriveAddressPublicKey =
     Internal.deriveAddressPublicKey
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 --
--- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
--- software are by convention only using one staking key per account, and always
+-- | Derive a delegation key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one delegation key per account, and always
 -- the first account (with index 0').
 --
--- Deriving staking keys for something else than the initial account is not
+-- Deriving delegation keys for something else than the initial account is not
 -- recommended and can lead to incompatibility with existing wallet softwares
 -- (Daedalus, Yoroi, Adalite...).
 --
 -- @since 2.0.0
-deriveStakingPrivateKey
+deriveDelegationPrivateKey
     :: Jormungandr 'AccountK XPrv
-    -> Jormungandr 'StakingK XPrv
-deriveStakingPrivateKey accXPrv =
+    -> Jormungandr 'DelegationK XPrv
+deriveDelegationPrivateKey accXPrv =
     let (Jormungandr stakeXPrv) =
             deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
     in Jormungandr stakeXPrv
@@ -356,7 +356,7 @@ deriveStakingPrivateKey accXPrv =
 -- === Generating a 'DelegationAddress'
 --
 -- > import Cardano.Address ( DelegationAddress (..) )
--- > import Cardano.Address.Derivation ( StakingDerivation (..) )
+-- > import Cardano.Address.Derivation ( delegationDerivation (..) )
 -- >
 -- > bech32 $ delegationAddress incentivizedTestnet (toXPub <$> addrK) (toXPub <$> stakeK)
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
@@ -371,11 +371,11 @@ instance Internal.PaymentAddress Jormungandr where
           expectedLength = 1 + publicKeySize
 
 instance Internal.DelegationAddress Jormungandr where
-    delegationAddress discrimination paymentKey stakingKey = unsafeMkAddress $
+    delegationAddress discrimination paymentKey delegationKey = unsafeMkAddress $
         invariantSize expectedLength $ BL.toStrict $ runPut $ do
             putWord8 (invariantNetworkTag 255 $ NetworkTag $ firstByte + 1)
             putByteString . xpubPublicKey . getKey $ paymentKey
-            putByteString . xpubPublicKey . getKey $ stakingKey
+            putByteString . xpubPublicKey . getKey $ delegationKey
       where
           (NetworkTag firstByte) = networkTag @Jormungandr discrimination
           expectedLength = 1 + 2*publicKeySize
@@ -443,14 +443,14 @@ inspectJormungandrAddress addr
 -- @since 2.0.0
 paymentAddress
     :: NetworkDiscriminant Jormungandr
-    -> Jormungandr 'AddressK XPub
+    -> Jormungandr 'PaymentK XPub
     -> Address
 paymentAddress =
     Internal.paymentAddress
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
 --
--- | Convert a public key and a staking key to a delegation 'Address' valid
+-- | Convert a public key and a delegation key to a delegation 'Address' valid
 -- for the given network discrimination. Funds sent to this address will be
 -- delegated according to the delegation settings attached to the delegation
 -- key.
@@ -458,8 +458,8 @@ paymentAddress =
 -- @since 2.0.0
 delegationAddress
     :: NetworkDiscriminant Jormungandr
-    -> Jormungandr 'AddressK XPub
-    -> Jormungandr 'StakingK XPub
+    -> Jormungandr 'PaymentK XPub
+    -> Jormungandr 'DelegationK XPub
     -> Address
 delegationAddress =
     Internal.delegationAddress

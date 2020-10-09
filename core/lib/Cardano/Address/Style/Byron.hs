@@ -179,8 +179,8 @@ type family DerivationPath (depth :: Depth) :: * where
     DerivationPath 'AccountK =
         Index 'WholeDomain 'AccountK
     -- The address key is generated from the account key and address index.
-    DerivationPath 'AddressK =
-        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
+    DerivationPath 'PaymentK =
+        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'PaymentK)
 {-# DEPRECATED DerivationPath "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
 
 --
@@ -275,8 +275,8 @@ deriveAccountPrivateKey =
 -- @since 1.0.0
 deriveAddressPrivateKey
     :: Byron 'AccountK XPrv
-    -> Index 'WholeDomain 'AddressK
-    -> Byron 'AddressK XPrv
+    -> Index 'WholeDomain 'PaymentK
+    -> Byron 'PaymentK XPrv
 deriveAddressPrivateKey acctK =
     Internal.deriveAddressPrivateKey acctK ()
 {-# DEPRECATED deriveAddressPrivateKey "see 'Cardano.Address.Style.Icarus.Icarus'" #-}
@@ -379,7 +379,7 @@ instance Internal.PaymentAddress Byron where
 -- @since 1.0.0
 paymentAddress
     :: NetworkDiscriminant Byron
-    -> Byron 'AddressK XPub
+    -> Byron 'PaymentK XPub
     -> Address
 paymentAddress =
     Internal.paymentAddress
@@ -433,7 +433,7 @@ byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 -- _ :: Byron AccountK XPrv
 --
 -- >>> liftXPrv rootPrv (minBound, minBound) prv
--- _ :: Byron AddressK XPrv
+-- _ :: Byron PaymentK XPrv
 --
 -- @since 2.0.0
 liftXPrv

@@ -126,11 +126,11 @@ fromBech32 =
 --
 -- @since 2.0.0
 class HasNetworkDiscriminant key => StakeAddress key where
-    -- | Convert a staking key to a stake 'Address' (aka: reward account address)
+    -- | Convert a delegation key to a stake 'Address' (aka: reward account address)
     -- valid for the given network discrimination.
     --
     -- @since 2.0.0
-    stakeAddress :: NetworkDiscriminant key -> key 'StakingK XPub -> Address
+    stakeAddress :: NetworkDiscriminant key -> key 'DelegationK XPub -> Address
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
@@ -140,14 +140,14 @@ class HasNetworkDiscriminant key => PaymentAddress key where
     -- network discrimination.
     --
     -- @since 1.0.0
-    paymentAddress :: NetworkDiscriminant key -> key 'AddressK XPub -> Address
+    paymentAddress :: NetworkDiscriminant key -> key 'PaymentK XPub -> Address
 
 -- | Encoding of delegation addresses for certain key types and backend targets.
 --
 -- @since 2.0.0
 class PaymentAddress key
     => DelegationAddress key where
-    -- | Convert a public key and a staking key to a delegation 'Address' valid
+    -- | Convert a public key and a delegation key to a delegation 'Address' valid
     -- for the given network discrimination. Funds sent to this address will be
     -- delegated according to the delegation settings attached to the delegation
     -- key.
@@ -155,17 +155,17 @@ class PaymentAddress key
     -- @since 2.0.0
     delegationAddress
         :: NetworkDiscriminant key
-        ->  key 'AddressK XPub
+        ->  key 'PaymentK XPub
             -- ^ Payment key
-        ->  key 'StakingK XPub
-            -- ^ Staking key
+        ->  key 'DelegationK XPub
+            -- ^ Delegation key
         -> Address
 
 -- | A 'ChainPointer' type representing location of some object
--- in the blockchain (eg., staking certificate). This can be achieved
+-- in the blockchain (eg., delegation certificate). This can be achieved
 -- unambiguously by specifying slot number, transaction index and the index
 -- in the object list (eg., certification list).
--- For staking certificates, alternatively,  the staking key can be used and
+-- For delegation certificates, alternatively, the delegation key can be used and
 -- then 'DelegationAddress' can be used.
 --
 -- @since 2.0.0
@@ -179,13 +179,13 @@ data ChainPointer = ChainPointer
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData ChainPointer
 
--- | Encoding of pointer addresses for payment key type, pointer to staking
+-- | Encoding of pointer addresses for payment key type, pointer to delegation
 -- certificate in the blockchain and backend targets.
 --
 -- @since 2.0.0
 class PaymentAddress key
     => PointerAddress key where
-    -- | Convert a payment public key and a pointer to staking key in the
+    -- | Convert a payment public key and a pointer to delegation key in the
     -- blockchain to a delegation 'Address' valid for the given network
     -- discrimination. Funds sent to this address will be delegated according to
     -- the delegation settings attached to the delegation key located by
@@ -194,10 +194,10 @@ class PaymentAddress key
     -- @since 2.0.0
     pointerAddress
         :: NetworkDiscriminant key
-        ->  key 'AddressK XPub
+        ->  key 'PaymentK XPub
             -- ^ Payment key
         ->  ChainPointer
-            -- ^ Pointer to locate staking key in blockchain
+            -- ^ Pointer to locate delegation key in blockchain
         -> Address
 
 class HasNetworkDiscriminant (key :: Depth -> * -> *) where
