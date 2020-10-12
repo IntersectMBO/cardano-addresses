@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "https://raw.githubusercontent.com/input-output-hk/cardano-addresses/master/schemas/address-inspect.json",
+  "$id": "https://raw.githubusercontent.com/input-output-hk/cardano-addresses/master/command-line/schemas/address-inspect.json",
   "description": "JSON specification for address inspection.",
   "type": "object",
   "required": [

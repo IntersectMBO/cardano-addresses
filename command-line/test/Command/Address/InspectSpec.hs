@@ -104,7 +104,7 @@ specInspectAddress mustHave args addr = it addr $ do
             es -> expectationFailure $ "invalid JSON: " <> unlines (show <$> es)
   where
     schema :: SchemaRef
-    schema = "../schemas/address-inspect.json"
+    schema = "./schemas/address-inspect.json"
 
 specInspectMalformed :: String -> SpecWith ()
 specInspectMalformed str = it ("malformed: " <> str) $ do
