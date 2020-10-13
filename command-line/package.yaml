@@ -12,7 +12,7 @@ description: |
   Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 
 extra-source-files:
-  ../schemas/address-inspect.json
+  ./schemas/address-inspect.json
 
 dependencies:
 - base >= 4.7 && < 5

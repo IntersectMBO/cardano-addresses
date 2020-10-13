@@ -20,7 +20,7 @@ license:        Apache-2.0
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    ../schemas/address-inspect.json
+    ./schemas/address-inspect.json
 
 source-repository head
   type: git
