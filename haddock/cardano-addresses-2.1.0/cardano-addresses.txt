@@ -183,7 +183,7 @@ module Cardano.Address.Derivation
 --   
 --   <pre>
 --   let accountIx = Index 'Hardened 'AccountK
---   let addressIx = Index 'Soft 'AddressK
+--   let addressIx = Index 'Soft 'PaymentK
 --   </pre>
 data Index (derivationType :: DerivationType) (depth :: Depth)
 
@@ -196,16 +196,12 @@ data Index (derivationType :: DerivationType) (depth :: Depth)
 --   
 --   We do not manipulate purpose, cointype and change paths directly, so
 --   there are no constructors for these.
---   
---   TODO: rename <a>StakingK</a> into <tt>DelegationK</tt>. TODO: rename
---   <a>AddressK</a> into <tt>PaymentK</tt> TODO: rename <a>MultisigK</a>
---   into <tt>ScriptK</tt>
 data Depth
 RootK :: Depth
 AccountK :: Depth
-AddressK :: Depth
-StakingK :: Depth
-MultisigK :: Depth
+PaymentK :: Depth
+DelegationK :: Depth
+ScriptK :: Depth
 
 -- | Type of derivation that should be used with the given indexes.
 --   
@@ -248,7 +244,7 @@ deriveAccountPrivateKey :: HardDerivation key => key  'RootK XPrv -> Index (Acco
 -- | Derives address private key from the given account private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> WithRole key -> Index (AddressIndexDerivationType key)  'AddressK -> key  'AddressK XPrv
+deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> WithRole key -> Index (AddressIndexDerivationType key)  'PaymentK -> key  'PaymentK XPrv
 
 -- | An interface for doing soft derivations from an account public key
 class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
@@ -259,7 +255,7 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
 --   
 --   This is the preferred way of deriving new sequential address public
 --   keys.
-deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> WithRole key -> Index  'Soft  'AddressK -> key  'AddressK XPub
+deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> WithRole key -> Index  'Soft  'PaymentK -> key  'PaymentK XPub
 
 -- | An opaque type representing an extended private key.
 --   
@@ -421,41 +417,41 @@ class HasNetworkDiscriminant key => PaymentAddress key
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: PaymentAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> Address
+paymentAddress :: PaymentAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> Address
 
 -- | Encoding of addresses for certain key types and backend targets.
 class HasNetworkDiscriminant key => StakeAddress key
 
--- | Convert a staking key to a stake <a>Address</a> (aka: reward account
---   address) valid for the given network discrimination.
-stakeAddress :: StakeAddress key => NetworkDiscriminant key -> key  'StakingK XPub -> Address
+-- | Convert a delegation key to a stake <a>Address</a> (aka: reward
+--   account address) valid for the given network discrimination.
+stakeAddress :: StakeAddress key => NetworkDiscriminant key -> key  'DelegationK XPub -> Address
 
 -- | Encoding of delegation addresses for certain key types and backend
 --   targets.
 class PaymentAddress key => DelegationAddress key
 
--- | Convert a public key and a staking key to a delegation <a>Address</a>
---   valid for the given network discrimination. Funds sent to this address
---   will be delegated according to the delegation settings attached to the
---   delegation key.
-delegationAddress :: DelegationAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> key  'StakingK XPub -> Address
+-- | Convert a public key and a delegation key to a delegation
+--   <a>Address</a> valid for the given network discrimination. Funds sent
+--   to this address will be delegated according to the delegation settings
+--   attached to the delegation key.
+delegationAddress :: DelegationAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> key  'DelegationK XPub -> Address
 
--- | Encoding of pointer addresses for payment key type, pointer to staking
---   certificate in the blockchain and backend targets.
+-- | Encoding of pointer addresses for payment key type, pointer to
+--   delegation certificate in the blockchain and backend targets.
 class PaymentAddress key => PointerAddress key
 
--- | Convert a payment public key and a pointer to staking key in the
+-- | Convert a payment public key and a pointer to delegation key in the
 --   blockchain to a delegation <a>Address</a> valid for the given network
 --   discrimination. Funds sent to this address will be delegated according
 --   to the delegation settings attached to the delegation key located by
 --   <a>ChainPointer</a>.
-pointerAddress :: PointerAddress key => NetworkDiscriminant key -> key  'AddressK XPub -> ChainPointer -> Address
+pointerAddress :: PointerAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> ChainPointer -> Address
 
 -- | A <a>ChainPointer</a> type representing location of some object in the
---   blockchain (eg., staking certificate). This can be achieved
+--   blockchain (eg., delegation certificate). This can be achieved
 --   unambiguously by specifying slot number, transaction index and the
---   index in the object list (eg., certification list). For staking
---   certificates, alternatively, the staking key can be used and then
+--   index in the object list (eg., certification list). For delegation
+--   certificates, alternatively, the delegation key can be used and then
 --   <a>DelegationAddress</a> can be used.
 data ChainPointer
 ChainPointer :: Natural -> Natural -> Natural -> ChainPointer
@@ -513,7 +509,7 @@ module Cardano.Address.Style.Jormungandr
 --   <pre>
 --   let rootPrivateKey = Jormungandr 'RootK XPrv
 --   let accountPubKey  = Jormungandr 'AccountK XPub
---   let addressPubKey  = Jormungandr 'AddressK XPub
+--   let addressPubKey  = Jormungandr 'PaymentK XPub
 --   </pre>
 data Jormungandr (depth :: Depth) key
 
@@ -530,19 +526,19 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Jormungandr  'RootK
 deriveAccountPrivateKey :: Jormungandr  'RootK XPrv -> Index  'Hardened  'AccountK -> Jormungandr  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPrv
+deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Jormungandr  'PaymentK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Jormungandr  'AddressK XPub
+deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Jormungandr  'PaymentK XPub
 
--- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one staking key per
+-- | Derive a delegation key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one delegation key per
 --   account, and always the first account (with index 0').
 --   
---   Deriving staking keys for something else than the initial account is
---   not recommended and can lead to incompatibility with existing wallet
---   softwares (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'StakingK XPrv
+--   Deriving delegation keys for something else than the initial account
+--   is not recommended and can lead to incompatibility with existing
+--   wallet softwares (Daedalus, Yoroi, Adalite...).
+deriveDelegationPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'DelegationK XPrv
 
 -- | Analyze an <a>Address</a> to know whether it's a Jormungandr address
 --   or not.
@@ -554,13 +550,13 @@ inspectJormungandrAddress :: MonadThrow m => Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'AddressK XPub -> Address
+paymentAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'PaymentK XPub -> Address
 
--- | Convert a public key and a staking key to a delegation <a>Address</a>
---   valid for the given network discrimination. Funds sent to this address
---   will be delegated according to the delegation settings attached to the
---   delegation key.
-delegationAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'AddressK XPub -> Jormungandr  'StakingK XPub -> Address
+-- | Convert a public key and a delegation key to a delegation
+--   <a>Address</a> valid for the given network discrimination. Funds sent
+--   to this address will be delegated according to the delegation settings
+--   attached to the delegation key.
+delegationAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'PaymentK XPub -> Jormungandr  'DelegationK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano Incentivized Testnet testnet
 --   &amp; Jormungandr
@@ -640,7 +636,7 @@ deriveAccountPrivateKey :: Byron  'RootK XPrv -> Index  'WholeDomain  'AccountK 
 -- | Derives an address private key from the given account private key.
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'AddressK -> Byron  'AddressK XPrv
+deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'PaymentK -> Byron  'PaymentK XPrv
 
 -- | Analyze an <a>Address</a> to know whether it's a Byron address or not.
 --   Throws <a>ByronAddrError</a> if the address isn't a byron address, or
@@ -649,7 +645,7 @@ inspectByronAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Valu
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: NetworkDiscriminant Byron -> Byron  'AddressK XPub -> Address
+paymentAddress :: NetworkDiscriminant Byron -> Byron  'PaymentK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano MainNet &amp; Byron
 byronMainnet :: NetworkDiscriminant Byron
@@ -684,7 +680,7 @@ byronTestnet :: NetworkDiscriminant Byron
 --   
 --   <pre>
 --   &gt;&gt;&gt; liftXPrv rootPrv (minBound, minBound) prv
---   _ :: Byron AddressK XPrv
+--   _ :: Byron PaymentK XPrv
 --   </pre>
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
@@ -720,7 +716,7 @@ module Cardano.Address.Style.Icarus
 --   <pre>
 --   let rootPrivateKey = Icarus 'RootK XPrv
 --   let accountPubKey  = Icarus 'AccountK XPub
---   let addressPubKey  = Icarus 'AddressK XPub
+--   let addressPubKey  = Icarus 'PaymentK XPub
 --   </pre>
 data Icarus (depth :: Depth) key
 
@@ -737,14 +733,14 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
 deriveAccountPrivateKey :: Icarus  'RootK XPrv -> Index  'Hardened  'AccountK -> Icarus  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Icarus  'AddressK XPrv
+deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Icarus  'PaymentK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Icarus  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Icarus  'AddressK XPub
+deriveAddressPublicKey :: Icarus  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Icarus  'PaymentK XPub
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: NetworkDiscriminant Icarus -> Icarus  'AddressK XPub -> Address
+paymentAddress :: NetworkDiscriminant Icarus -> Icarus  'PaymentK XPub -> Address
 
 -- | <a>NetworkDiscriminant</a> for Cardano MainNet &amp; <a>Icarus</a>
 icarusMainnet :: NetworkDiscriminant Icarus
@@ -813,7 +809,7 @@ module Cardano.Address.Style.Shelley
 --   <pre>
 --   let rootPrivateKey = Shelley 'RootK XPrv
 --   let accountPubKey  = Shelley 'AccountK XPub
---   let addressPubKey  = Shelley 'AddressK XPub
+--   let addressPubKey  = Shelley 'PaymentK XPub
 --   </pre>
 data Shelley (depth :: Depth) key
 
@@ -842,8 +838,6 @@ Multisig :: Role
 --   
 --   This data-family has two instances, depending on whether the key is
 --   used for payment or for delegation.
---   
---   TODO: rename <tt>Staking</tt> into <tt>Delegation</tt>.
 data family Credential (purpose :: Depth)
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
@@ -856,25 +850,25 @@ genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPr
 deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> Role -> Index  'Soft  'AddressK -> Shelley  'AddressK XPrv
+deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Shelley  'PaymentK XPrv
 
--- | Derive a staking key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one staking key per
+-- | Derive a delegation key for a corresponding <a>AccountK</a>. Note that
+--   wallet software are by convention only using one delegation key per
 --   account, and always the first account (with index 0').
 --   
---   Deriving staking keys for something else than the initial account is
---   not recommended and can lead to incompatibility with existing wallet
---   softwares (Daedalus, Yoroi, Adalite...).
-deriveStakingPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'StakingK XPrv
+--   Deriving delegation keys for something else than the initial account
+--   is not recommended and can lead to incompatibility with existing
+--   wallet softwares (Daedalus, Yoroi, Adalite...).
+deriveDelegationPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'DelegationK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Shelley  'AccountK XPub -> Role -> Index  'Soft  'AddressK -> Shelley  'AddressK XPub
+deriveAddressPublicKey :: Shelley  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Shelley  'PaymentK XPub
 
 -- | Derives a multisig private key from the given account private key.
-deriveMultisigPrivateKey :: Shelley  'AccountK XPrv -> Index  'Soft  'AddressK -> Shelley  'MultisigK XPrv
+deriveMultisigPrivateKey :: Shelley  'AccountK XPrv -> Index  'Soft  'PaymentK -> Shelley  'ScriptK XPrv
 
 -- | Derives a multisig public key from the given account public key.
-deriveMultisigPublicKey :: Shelley  'AccountK XPub -> Index  'Soft  'AddressK -> Shelley  'MultisigK XPub
+deriveMultisigPublicKey :: Shelley  'AccountK XPub -> Index  'Soft  'PaymentK -> Shelley  'ScriptK XPub
 
 -- | Apply Blake2b224 hashing on Shelley <a>XPub</a>. This results in
 --   28-byte hash.
@@ -889,26 +883,27 @@ inspectShelleyAddress :: (Alternative m, MonadThrow m) => Maybe XPub -> Address 
 
 -- | Convert a payment credential (key or script) to a payment
 --   <a>Address</a> valid for the given network discrimination.
-paymentAddress :: NetworkDiscriminant Shelley -> Credential  'AddressK -> Address
+paymentAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> Address
 
--- | Convert a payment credential (key or script) and a staking credential
---   (key or script) to a delegation <a>Address</a> valid for the given
---   network discrimination. Funds sent to this address will be delegated
---   according to the delegation settings attached to the delegation key.
-delegationAddress :: NetworkDiscriminant Shelley -> Credential  'AddressK -> Credential  'StakingK -> Address
+-- | Convert a payment credential (key or script) and a delegation
+--   credential (key or script) to a delegation <a>Address</a> valid for
+--   the given network discrimination. Funds sent to this address will be
+--   delegated according to the delegation settings attached to the
+--   delegation key.
+delegationAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> Credential  'DelegationK -> Address
 
--- | Convert a payment credential (key or script) and pointer to staking
+-- | Convert a payment credential (key or script) and pointer to delegation
 --   certificate in blockchain to a pointer <a>Address</a> valid for the
 --   given network discrimination.
-pointerAddress :: NetworkDiscriminant Shelley -> Credential  'AddressK -> ChainPointer -> Address
+pointerAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> ChainPointer -> Address
 
--- | Convert a staking credential (key or script) to a stake Address (aka
---   reward account address) for the given network discrimination.
-stakeAddress :: NetworkDiscriminant Shelley -> Credential  'StakingK -> Either ErrInvalidStakeAddress Address
+-- | Convert a delegation credential (key or script) to a stake Address
+--   (aka reward account address) for the given network discrimination.
+stakeAddress :: NetworkDiscriminant Shelley -> Credential  'DelegationK -> Either ErrInvalidStakeAddress Address
 
 -- | Extend an existing payment <a>Address</a> to make it a delegation
 --   address.
-extendAddress :: Address -> Credential  'StakingK -> Either ErrExtendAddress Address
+extendAddress :: Address -> Credential  'DelegationK -> Either ErrExtendAddress Address
 
 -- | Captures error occuring when trying to extend an invalid address.
 data ErrExtendAddress
@@ -973,8 +968,8 @@ instance GHC.Generics.Generic Cardano.Address.Style.Shelley.Role
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.AddressK)
-instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.StakingK)
+instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.PaymentK)
+instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.DelegationK)
 instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
 instance Formatting.Buildable.Buildable Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance Control.DeepSeq.NFData Cardano.Address.Style.Shelley.Role

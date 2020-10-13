@@ -198,8 +198,8 @@ span.spaces    { background: white }
 <span class="lineno">  179 </span>    DerivationPath 'AccountK =
 <span class="lineno">  180 </span>        Index 'WholeDomain 'AccountK
 <span class="lineno">  181 </span>    -- The address key is generated from the account key and address index.
-<span class="lineno">  182 </span>    DerivationPath 'AddressK =
-<span class="lineno">  183 </span>        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'AddressK)
+<span class="lineno">  182 </span>    DerivationPath 'PaymentK =
+<span class="lineno">  183 </span>        (Index 'WholeDomain 'AccountK, Index 'WholeDomain 'PaymentK)
 <span class="lineno">  184 </span>{-# DEPRECATED DerivationPath &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
 <span class="lineno">  185 </span>
 <span class="lineno">  186 </span>--
@@ -294,8 +294,8 @@ span.spaces    { background: white }
 <span class="lineno">  275 </span>-- @since 1.0.0
 <span class="lineno">  276 </span>deriveAddressPrivateKey
 <span class="lineno">  277 </span>    :: Byron 'AccountK XPrv
-<span class="lineno">  278 </span>    -&gt; Index 'WholeDomain 'AddressK
-<span class="lineno">  279 </span>    -&gt; Byron 'AddressK XPrv
+<span class="lineno">  278 </span>    -&gt; Index 'WholeDomain 'PaymentK
+<span class="lineno">  279 </span>    -&gt; Byron 'PaymentK XPrv
 <span class="lineno">  280 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey acctK =</span>
 <span class="lineno">  281 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey acctK ()</span></span>
 <span class="lineno">  282 </span>{-# DEPRECATED deriveAddressPrivateKey &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
@@ -398,7 +398,7 @@ span.spaces    { background: white }
 <span class="lineno">  379 </span>-- @since 1.0.0
 <span class="lineno">  380 </span>paymentAddress
 <span class="lineno">  381 </span>    :: NetworkDiscriminant Byron
-<span class="lineno">  382 </span>    -&gt; Byron 'AddressK XPub
+<span class="lineno">  382 </span>    -&gt; Byron 'PaymentK XPub
 <span class="lineno">  383 </span>    -&gt; Address
 <span class="lineno">  384 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
 <span class="lineno">  385 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
@@ -452,7 +452,7 @@ span.spaces    { background: white }
 <span class="lineno">  433 </span>-- _ :: Byron AccountK XPrv
 <span class="lineno">  434 </span>--
 <span class="lineno">  435 </span>-- &gt;&gt;&gt; liftXPrv rootPrv (minBound, minBound) prv
-<span class="lineno">  436 </span>-- _ :: Byron AddressK XPrv
+<span class="lineno">  436 </span>-- _ :: Byron PaymentK XPrv
 <span class="lineno">  437 </span>--
 <span class="lineno">  438 </span>-- @since 2.0.0
 <span class="lineno">  439 </span>liftXPrv

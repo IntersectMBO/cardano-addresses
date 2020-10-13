@@ -145,11 +145,11 @@ span.spaces    { background: white }
 <span class="lineno">  126 </span>--
 <span class="lineno">  127 </span>-- @since 2.0.0
 <span class="lineno">  128 </span>class HasNetworkDiscriminant key =&gt; StakeAddress key where
-<span class="lineno">  129 </span>    -- | Convert a staking key to a stake 'Address' (aka: reward account address)
+<span class="lineno">  129 </span>    -- | Convert a delegation key to a stake 'Address' (aka: reward account address)
 <span class="lineno">  130 </span>    -- valid for the given network discrimination.
 <span class="lineno">  131 </span>    --
 <span class="lineno">  132 </span>    -- @since 2.0.0
-<span class="lineno">  133 </span>    stakeAddress :: NetworkDiscriminant key -&gt; key 'StakingK XPub -&gt; Address
+<span class="lineno">  133 </span>    stakeAddress :: NetworkDiscriminant key -&gt; key 'DelegationK XPub -&gt; Address
 <span class="lineno">  134 </span>
 <span class="lineno">  135 </span>-- | Encoding of addresses for certain key types and backend targets.
 <span class="lineno">  136 </span>--
@@ -159,14 +159,14 @@ span.spaces    { background: white }
 <span class="lineno">  140 </span>    -- network discrimination.
 <span class="lineno">  141 </span>    --
 <span class="lineno">  142 </span>    -- @since 1.0.0
-<span class="lineno">  143 </span>    paymentAddress :: NetworkDiscriminant key -&gt; key 'AddressK XPub -&gt; Address
+<span class="lineno">  143 </span>    paymentAddress :: NetworkDiscriminant key -&gt; key 'PaymentK XPub -&gt; Address
 <span class="lineno">  144 </span>
 <span class="lineno">  145 </span>-- | Encoding of delegation addresses for certain key types and backend targets.
 <span class="lineno">  146 </span>--
 <span class="lineno">  147 </span>-- @since 2.0.0
 <span class="lineno">  148 </span>class PaymentAddress key
 <span class="lineno">  149 </span>    =&gt; DelegationAddress key where
-<span class="lineno">  150 </span>    -- | Convert a public key and a staking key to a delegation 'Address' valid
+<span class="lineno">  150 </span>    -- | Convert a public key and a delegation key to a delegation 'Address' valid
 <span class="lineno">  151 </span>    -- for the given network discrimination. Funds sent to this address will be
 <span class="lineno">  152 </span>    -- delegated according to the delegation settings attached to the delegation
 <span class="lineno">  153 </span>    -- key.
@@ -174,17 +174,17 @@ span.spaces    { background: white }
 <span class="lineno">  155 </span>    -- @since 2.0.0
 <span class="lineno">  156 </span>    delegationAddress
 <span class="lineno">  157 </span>        :: NetworkDiscriminant key
-<span class="lineno">  158 </span>        -&gt;  key 'AddressK XPub
+<span class="lineno">  158 </span>        -&gt;  key 'PaymentK XPub
 <span class="lineno">  159 </span>            -- ^ Payment key
-<span class="lineno">  160 </span>        -&gt;  key 'StakingK XPub
-<span class="lineno">  161 </span>            -- ^ Staking key
+<span class="lineno">  160 </span>        -&gt;  key 'DelegationK XPub
+<span class="lineno">  161 </span>            -- ^ Delegation key
 <span class="lineno">  162 </span>        -&gt; Address
 <span class="lineno">  163 </span>
 <span class="lineno">  164 </span>-- | A 'ChainPointer' type representing location of some object
-<span class="lineno">  165 </span>-- in the blockchain (eg., staking certificate). This can be achieved
+<span class="lineno">  165 </span>-- in the blockchain (eg., delegation certificate). This can be achieved
 <span class="lineno">  166 </span>-- unambiguously by specifying slot number, transaction index and the index
 <span class="lineno">  167 </span>-- in the object list (eg., certification list).
-<span class="lineno">  168 </span>-- For staking certificates, alternatively,  the staking key can be used and
+<span class="lineno">  168 </span>-- For delegation certificates, alternatively, the delegation key can be used and
 <span class="lineno">  169 </span>-- then 'DelegationAddress' can be used.
 <span class="lineno">  170 </span>--
 <span class="lineno">  171 </span>-- @since 2.0.0
@@ -198,13 +198,13 @@ span.spaces    { background: white }
 <span class="lineno">  179 </span>    } deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
 <span class="lineno">  180 </span>instance NFData ChainPointer
 <span class="lineno">  181 </span>
-<span class="lineno">  182 </span>-- | Encoding of pointer addresses for payment key type, pointer to staking
+<span class="lineno">  182 </span>-- | Encoding of pointer addresses for payment key type, pointer to delegation
 <span class="lineno">  183 </span>-- certificate in the blockchain and backend targets.
 <span class="lineno">  184 </span>--
 <span class="lineno">  185 </span>-- @since 2.0.0
 <span class="lineno">  186 </span>class PaymentAddress key
 <span class="lineno">  187 </span>    =&gt; PointerAddress key where
-<span class="lineno">  188 </span>    -- | Convert a payment public key and a pointer to staking key in the
+<span class="lineno">  188 </span>    -- | Convert a payment public key and a pointer to delegation key in the
 <span class="lineno">  189 </span>    -- blockchain to a delegation 'Address' valid for the given network
 <span class="lineno">  190 </span>    -- discrimination. Funds sent to this address will be delegated according to
 <span class="lineno">  191 </span>    -- the delegation settings attached to the delegation key located by
@@ -213,10 +213,10 @@ span.spaces    { background: white }
 <span class="lineno">  194 </span>    -- @since 2.0.0
 <span class="lineno">  195 </span>    pointerAddress
 <span class="lineno">  196 </span>        :: NetworkDiscriminant key
-<span class="lineno">  197 </span>        -&gt;  key 'AddressK XPub
+<span class="lineno">  197 </span>        -&gt;  key 'PaymentK XPub
 <span class="lineno">  198 </span>            -- ^ Payment key
 <span class="lineno">  199 </span>        -&gt;  ChainPointer
-<span class="lineno">  200 </span>            -- ^ Pointer to locate staking key in blockchain
+<span class="lineno">  200 </span>            -- ^ Pointer to locate delegation key in blockchain
 <span class="lineno">  201 </span>        -&gt; Address
 <span class="lineno">  202 </span>
 <span class="lineno">  203 </span>class HasNetworkDiscriminant (key :: Depth -&gt; * -&gt; *) where

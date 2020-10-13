@@ -100,11 +100,11 @@ span.spaces    { background: white }
 <span class="lineno">   81 </span><span class="spaces">      </span><span class="istickedoff">where</span>
 <span class="lineno">   82 </span><span class="spaces">        </span><span class="istickedoff">malformedScript = MalformedScript</span></span>
 <span class="lineno">   83 </span>
-<span class="lineno">   84 </span>stakeCredentialArg  :: String -&gt; Parser (Credential 'StakingK)
+<span class="lineno">   84 </span>stakeCredentialArg  :: String -&gt; Parser (Credential 'DelegationK)
 <span class="lineno">   85 </span><span class="decl"><span class="istickedoff">stakeCredentialArg str =</span>
-<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">(StakingFromKey . liftXPub &lt;$&gt; xpubOpt &quot;from-key&quot; str)</span>
+<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">(DelegationFromKey . liftXPub &lt;$&gt; xpubOpt &quot;from-key&quot; str)</span>
 <span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">&lt;|&gt;</span>
-<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">(<span class="nottickedoff">StakingFromScript</span> &lt;$&gt; scriptHashArg str)</span></span>
+<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">(<span class="nottickedoff">DelegationFromScript</span> &lt;$&gt; scriptHashArg str)</span></span>
 <span class="lineno">   89 </span>
 <span class="lineno">   90 </span>scriptHashArg :: String -&gt; Parser ScriptHash
 <span class="lineno">   91 </span><span class="decl"><span class="istickedoff">scriptHashArg helpDoc =</span>
