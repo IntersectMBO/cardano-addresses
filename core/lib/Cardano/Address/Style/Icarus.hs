@@ -145,7 +145,7 @@ import qualified Data.Text.Encoding as T
 -- @
 -- let rootPrivateKey = Icarus 'RootK XPrv
 -- let accountPubKey  = Icarus 'AccountK XPub
--- let addressPubKey  = Icarus 'AddressK XPub
+-- let addressPubKey  = Icarus 'PaymentK XPub
 -- @
 --
 -- @since 1.0.0
@@ -303,8 +303,8 @@ deriveAccountPrivateKey =
 deriveAddressPrivateKey
     :: Icarus 'AccountK XPrv
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Icarus 'AddressK XPrv
+    -> Index 'Soft 'PaymentK
+    -> Icarus 'PaymentK XPrv
 deriveAddressPrivateKey =
     Internal.deriveAddressPrivateKey
 
@@ -316,8 +316,8 @@ deriveAddressPrivateKey =
 deriveAddressPublicKey
     :: Icarus 'AccountK XPub
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Icarus 'AddressK XPub
+    -> Index 'Soft 'PaymentK
+    -> Icarus 'PaymentK XPub
 deriveAddressPublicKey =
     Internal.deriveAddressPublicKey
 
@@ -384,7 +384,7 @@ instance Internal.PaymentAddress Icarus where
 -- @since 1.0.0
 paymentAddress
     :: NetworkDiscriminant Icarus
-    -> Icarus 'AddressK XPub
+    -> Icarus 'PaymentK XPub
     -> Address
 paymentAddress =
     Internal.paymentAddress

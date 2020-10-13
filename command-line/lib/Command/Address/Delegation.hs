@@ -45,7 +45,7 @@ import qualified Data.Text.Encoding as T
 
 
 newtype Cmd = Cmd
-    { credential :: Credential 'StakingK
+    { credential :: Credential 'DelegationK
     } deriving Show
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent

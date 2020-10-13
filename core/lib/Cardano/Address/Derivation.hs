@@ -282,19 +282,14 @@ generateNew seed sndFactor =
 -- We do not manipulate purpose, cointype and change paths directly, so there
 -- are no constructors for these.
 --
---
--- TODO: rename 'StakingK' into 'DelegationK'.
--- TODO: rename 'AddressK' into 'PaymentK'
--- TODO: rename 'MultisigK' into 'ScriptK'
---
 -- @since 1.0.0
-data Depth = RootK | AccountK | AddressK | StakingK | MultisigK
+data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --
 -- @
 -- let accountIx = Index 'Hardened 'AccountK
--- let addressIx = Index 'Soft 'AddressK
+-- let addressIx = Index 'Soft 'PaymentK
 -- @
 --
 -- @since 1.0.0
@@ -381,8 +376,8 @@ class HardDerivation (key :: Depth -> * -> *) where
     deriveAddressPrivateKey
         :: key 'AccountK XPrv
         -> WithRole key
-        -> Index (AddressIndexDerivationType key) 'AddressK
-        -> key 'AddressK XPrv
+        -> Index (AddressIndexDerivationType key) 'PaymentK
+        -> key 'PaymentK XPrv
 
 -- | An interface for doing soft derivations from an account public key
 class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
@@ -396,8 +391,8 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
     deriveAddressPublicKey
         :: key 'AccountK XPub
         -> WithRole key
-        -> Index 'Soft 'AddressK
-        -> key 'AddressK XPub
+        -> Index 'Soft 'PaymentK
+        -> key 'PaymentK XPub
 
 
 -- | Abstract interface for constructing a /Master Key/.

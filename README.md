@@ -144,7 +144,7 @@ xpub_hash1mevxrng9axvctvk9s64nsduscesqnyyqjgr0sn5katdw5egajw2
 $ echo "all [$(cat verKey1.hash),$(cat verKey2.hash)]" > script.txt
 all [de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea,aca52d7d28ce353f4766e4e2c8cc2208c7113d794e776eafb8c07a80]
 ```
- Having a script constructed we can get its script hash that could go to payment or staking credential
+ Having a script constructed we can get its script hash that could go to payment or delegation credential
  when creating the address. The default hrp (in bech32) is **script_hash**
 
 ```

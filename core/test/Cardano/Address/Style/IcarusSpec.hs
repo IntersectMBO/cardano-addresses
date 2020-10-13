@@ -172,7 +172,7 @@ spec = do
 prop_publicChildKeyDerivation
     :: SomeMnemonic
     -> Role
-    -> Index 'Soft 'AddressK
+    -> Index 'Soft 'PaymentK
     -> Property
 prop_publicChildKeyDerivation mw role ix =
     addrXPub1 === addrXPub2
@@ -202,7 +202,7 @@ data GoldenAddressGeneration = GoldenAddressGeneration
     { goldSeed :: SomeMnemonic
     , goldAcctIx :: Index 'Hardened 'AccountK
     , goldAcctStyle :: Role
-    , goldAddrIx :: Index 'Soft 'AddressK
+    , goldAddrIx :: Index 'Soft 'PaymentK
     , goldAddr :: Text
     }
 

@@ -118,7 +118,7 @@ prop_roundtripEnumIndexHard :: Index 'WholeDomain 'AccountK -> Property
 prop_roundtripEnumIndexHard ix =
     (toEnum . fromEnum) ix === ix .&&. (toEnum . fromEnum) ix === ix
 
-prop_roundtripEnumIndexSoft :: Index 'Soft 'AddressK -> Property
+prop_roundtripEnumIndexSoft :: Index 'Soft 'PaymentK -> Property
 prop_roundtripEnumIndexSoft ix =
     (toEnum . fromEnum) ix === ix .&&. (toEnum . fromEnum) ix === ix
 

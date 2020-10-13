@@ -35,7 +35,7 @@ module Cardano.Address.Style.Shelley
     , genMasterKeyFromMnemonic
     , deriveAccountPrivateKey
     , deriveAddressPrivateKey
-    , deriveStakingPrivateKey
+    , deriveDelegationPrivateKey
     , deriveAddressPublicKey
     , deriveMultisigPrivateKey
     , deriveMultisigPublicKey
@@ -178,7 +178,7 @@ import qualified Data.Text.Encoding as T
 -- @
 -- let rootPrivateKey = Shelley 'RootK XPrv
 -- let accountPubKey  = Shelley 'AccountK XPub
--- let addressPubKey  = Shelley 'AddressK XPub
+-- let addressPubKey  = Shelley 'PaymentK XPub
 -- @
 --
 -- @since 2.0.0
@@ -251,7 +251,7 @@ instance Enum Role where
 -- > let addIx = toEnum 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
--- > let stakeK = deriveStakingPrivateKey acctK
+-- > let stakeK = deriveDelegationPrivateKey acctK
 
 instance Internal.GenMasterKey Shelley where
     type SecondFactor Shelley = ScrubbedBytes
@@ -351,8 +351,8 @@ deriveAccountPrivateKey =
 deriveAddressPrivateKey
     :: Shelley 'AccountK XPrv
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Shelley 'AddressK XPrv
+    -> Index 'Soft 'PaymentK
+    -> Shelley 'PaymentK XPrv
 deriveAddressPrivateKey =
     Internal.deriveAddressPrivateKey
 
@@ -364,26 +364,26 @@ deriveAddressPrivateKey =
 deriveAddressPublicKey
     :: Shelley 'AccountK XPub
     -> Role
-    -> Index 'Soft 'AddressK
-    -> Shelley 'AddressK XPub
+    -> Index 'Soft 'PaymentK
+    -> Shelley 'PaymentK XPub
 deriveAddressPublicKey =
     Internal.deriveAddressPublicKey
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 --
--- | Derive a staking key for a corresponding 'AccountK'. Note that wallet
--- software are by convention only using one staking key per account, and always
+-- | Derive a delegation key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one delegation key per account, and always
 -- the first account (with index 0').
 --
--- Deriving staking keys for something else than the initial account is not
+-- Deriving delegation keys for something else than the initial account is not
 -- recommended and can lead to incompatibility with existing wallet softwares
 -- (Daedalus, Yoroi, Adalite...).
 --
 -- @since 2.0.0
-deriveStakingPrivateKey
+deriveDelegationPrivateKey
     :: Shelley 'AccountK XPrv
-    -> Shelley 'StakingK XPrv
-deriveStakingPrivateKey accXPrv =
+    -> Shelley 'DelegationK XPrv
+deriveDelegationPrivateKey accXPrv =
     let (Shelley stakeXPrv) =
             deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
     in Shelley stakeXPrv
@@ -396,8 +396,8 @@ deriveStakingPrivateKey accXPrv =
 -- @since 3.0.0
 deriveMultisigPrivateKey
     :: Shelley 'AccountK XPrv
-    -> Index 'Soft 'AddressK
-    -> Shelley 'MultisigK XPrv
+    -> Index 'Soft 'PaymentK
+    -> Shelley 'ScriptK XPrv
 deriveMultisigPrivateKey accPrv addrIx =
     let (Shelley xprv) = Internal.deriveAddressPrivateKey accPrv Multisig addrIx
     in Shelley xprv
@@ -409,8 +409,8 @@ deriveMultisigPrivateKey accPrv addrIx =
 -- @since 3.0.0
 deriveMultisigPublicKey
     :: Shelley 'AccountK XPub
-    -> Index 'Soft 'AddressK
-    -> Shelley 'MultisigK XPub
+    -> Index 'Soft 'PaymentK
+    -> Shelley 'ScriptK XPub
 deriveMultisigPublicKey accPub addrIx =
     let (Shelley xpub) = Internal.deriveAddressPublicKey accPub Multisig addrIx
     in Shelley xpub
@@ -451,8 +451,8 @@ deriveMultisigPublicKey accPub addrIx =
 --
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
--- > let stakingCredential = StakeFromKey $ (toXPub <$> stakeK)
--- > bech32 $ delegationAddress tag paymentCredential stakingCredential
+-- > let delegationCredential = StakeFromKey $ (toXPub <$> stakeK)
+-- > bech32 $ delegationAddress tag paymentCredential delegationCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
 -- === Generating a 'PointerAddress'
@@ -607,20 +607,18 @@ inspectShelleyAddress mRootPub addr
 -- This data-family has two instances, depending on whether the key is used for
 -- payment or for delegation.
 --
--- TODO: rename 'Staking' into 'Delegation'.
---
 -- @since 3.0.0
 data family Credential (purpose :: Depth)
 
-data instance Credential 'AddressK where
-    PaymentFromKey :: Shelley 'AddressK XPub -> Credential 'AddressK
-    PaymentFromScript :: ScriptHash -> Credential 'AddressK
+data instance Credential 'PaymentK where
+    PaymentFromKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
+    PaymentFromScript :: ScriptHash -> Credential 'PaymentK
     deriving Show
 
-data instance Credential 'StakingK where
-    StakingFromKey :: Shelley 'StakingK XPub -> Credential 'StakingK
-    StakingFromScript :: ScriptHash -> Credential 'StakingK
-    StakingFromPointer :: ChainPointer -> Credential 'StakingK
+data instance Credential 'DelegationK where
+    DelegationFromKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
+    DelegationFromScript :: ScriptHash -> Credential 'DelegationK
+    DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
     deriving Show
 
 -- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
@@ -631,7 +629,7 @@ data instance Credential 'StakingK where
 -- @since 2.0.0
 paymentAddress
     :: NetworkDiscriminant Shelley
-    -> Credential 'AddressK
+    -> Credential 'PaymentK
     -> Address
 paymentAddress discrimination = \case
     PaymentFromKey keyPub ->
@@ -645,7 +643,7 @@ paymentAddress discrimination = \case
             discrimination
             bytes
 
--- | Convert a payment credential (key or script) and a staking credential (key or script)
+-- | Convert a payment credential (key or script) and a delegation credential (key or script)
 -- to a delegation 'Address' valid for the given network discrimination.
 -- Funds sent to this address will be delegated according to the delegation settings
 -- attached to the delegation key.
@@ -653,50 +651,50 @@ paymentAddress discrimination = \case
 -- @since 2.0.0
 delegationAddress
     :: NetworkDiscriminant Shelley
-    -> Credential 'AddressK
-    -> Credential 'StakingK
+    -> Credential 'PaymentK
+    -> Credential 'DelegationK
     -> Address
 delegationAddress discrimination paymentCredential stakeCredential =
     unsafeFromRight $ extendAddress
         (paymentAddress discrimination paymentCredential)
         stakeCredential
 
--- | Convert a payment credential (key or script) and pointer to staking certificate in blockchain to a
+-- | Convert a payment credential (key or script) and pointer to delegation certificate in blockchain to a
 -- pointer 'Address' valid for the given network discrimination.
 --
 -- @since 3.0.0
 pointerAddress
     :: NetworkDiscriminant Shelley
-    -> Credential 'AddressK
+    -> Credential 'PaymentK
     -> ChainPointer
     -> Address
 pointerAddress discrimination credential pointer =
     unsafeFromRight $ extendAddress
         (paymentAddress discrimination credential)
-        (StakingFromPointer pointer)
+        (DelegationFromPointer pointer)
 
--- | Convert a staking credential (key or script) to a stake Address (aka reward account address)
+-- | Convert a delegation credential (key or script) to a stake Address (aka reward account address)
 -- for the given network discrimination.
 --
 -- @since 3.0.0
 stakeAddress
     :: NetworkDiscriminant Shelley
-    -> Credential 'StakingK
+    -> Credential 'DelegationK
     -> Either ErrInvalidStakeAddress Address
 stakeAddress discrimination = \case
-    StakingFromKey keyPub ->
+    DelegationFromKey keyPub ->
         Right $ constructPayload
             (RewardAccount CredentialFromKey)
             discrimination
             (blake2b224 keyPub)
 
-    StakingFromScript (ScriptHash bytes) ->
+    DelegationFromScript (ScriptHash bytes) ->
         Right $ constructPayload
             (RewardAccount CredentialFromScript)
             discrimination
             bytes
 
-    StakingFromPointer{} ->
+    DelegationFromPointer{} ->
         Left ErrStakeAddressFromPointer
 
 -- | Stake addresses can only be constructed from key or script hash. Trying to
@@ -712,7 +710,7 @@ data ErrInvalidStakeAddress
 -- @since 2.0.0
 extendAddress
     :: Address
-    -> Credential 'StakingK
+    -> Credential 'DelegationK
     -> Either ErrExtendAddress Address
 extendAddress addr stakeReference = do
     when (isNothing (inspectShelleyAddress Nothing addr)) $
@@ -732,17 +730,17 @@ extendAddress addr stakeReference = do
     case stakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
         -- base address: scripthash32,keyhash28 : 00010000 -> 16
-        StakingFromKey stakingKey -> do
+        DelegationFromKey delegationKey -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
                 -- 0b01110000 .&. 0b00011111 = 16
                 putWord8 $ fstByte .&. 0b00011111
                 putByteString rest
-                putByteString . blake2b224 $ stakingKey
+                putByteString . blake2b224 $ delegationKey
 
         -- base address: keyhash28,scripthash32    : 00100000 -> 32
         -- base address: scripthash32,scripthash32 : 00110000 -> 48
-        StakingFromScript (ScriptHash scriptBytes) -> do
+        DelegationFromScript (ScriptHash scriptBytes) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
                 -- 0b01110000 .&. 0b00111111 = 48
@@ -752,7 +750,7 @@ extendAddress addr stakeReference = do
 
         -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
         -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
-        StakingFromPointer pointer -> do
+        DelegationFromPointer pointer -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b01011111 = 64
                 -- 0b01110000 .&. 0b01011111 = 80

@@ -95,7 +95,7 @@ run Cmd{_slotNum,_transactionIndex,_outputIndex} = do
             , transactionIndex = _transactionIndex
             , outputIndex = _outputIndex
             }
-    case Shelley.extendAddress (unsafeMkAddress bytes) (StakingFromPointer ptr) of
+    case Shelley.extendAddress (unsafeMkAddress bytes) (DelegationFromPointer ptr) of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->

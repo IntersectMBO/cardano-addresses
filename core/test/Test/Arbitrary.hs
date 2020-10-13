@@ -116,7 +116,7 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
-instance Arbitrary (Index 'Soft 'AddressK) where
+instance Arbitrary (Index 'Soft 'PaymentK) where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
 
@@ -124,11 +124,11 @@ instance Arbitrary (Index 'Hardened 'AccountK) where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
 
-instance Arbitrary (Index 'Hardened 'AddressK) where
+instance Arbitrary (Index 'Hardened 'PaymentK) where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
 
-instance Arbitrary (Index 'WholeDomain 'AddressK) where
+instance Arbitrary (Index 'WholeDomain 'PaymentK) where
     shrink _ = []
     arbitrary = arbitraryBoundedEnum
 
@@ -149,7 +149,7 @@ instance Arbitrary XPub where
     arbitrary =
         toXPub <$> arbitrary
 
-instance Arbitrary (Byron 'AddressK XPub) where
+instance Arbitrary (Byron 'PaymentK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @12
@@ -158,7 +158,7 @@ instance Arbitrary (Byron 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK () <$> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary (Icarus 'AddressK XPub) where
+instance Arbitrary (Icarus 'PaymentK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
@@ -169,7 +169,7 @@ instance Arbitrary (Icarus 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary (Shelley 'AddressK XPub) where
+instance Arbitrary (Shelley 'PaymentK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
@@ -180,7 +180,7 @@ instance Arbitrary (Shelley 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary (Jormungandr 'AddressK XPub) where
+instance Arbitrary (Jormungandr 'PaymentK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
@@ -191,25 +191,25 @@ instance Arbitrary (Jormungandr 'AddressK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary (Shelley 'StakingK XPub) where
+instance Arbitrary (Shelley 'DelegationK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = Shelley.deriveStakingPrivateKey acctK
-        pure $ toXPub <$> stakingK
+        let delegationK = Shelley.deriveDelegationPrivateKey acctK
+        pure $ toXPub <$> delegationK
 
-instance Arbitrary (Jormungandr 'StakingK XPub) where
+instance Arbitrary (Jormungandr 'DelegationK XPub) where
     shrink _ = []
     arbitrary = do
         mw <- SomeMnemonic <$> genMnemonic @15
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let stakingK = Jormungandr.deriveStakingPrivateKey acctK
-        pure $ toXPub <$> stakingK
+        let delegationK = Jormungandr.deriveDelegationPrivateKey acctK
+        pure $ toXPub <$> delegationK
 
 instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
     arbitrary = oneof

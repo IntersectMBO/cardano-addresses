@@ -81,11 +81,11 @@ scriptArg = argument (eitherReader reader) $ mempty
       where
         malformedScript = MalformedScript
 
-stakeCredentialArg  :: String -> Parser (Credential 'StakingK)
+stakeCredentialArg  :: String -> Parser (Credential 'DelegationK)
 stakeCredentialArg str =
-    (StakingFromKey . liftXPub <$> xpubOpt "from-key" str)
+    (DelegationFromKey . liftXPub <$> xpubOpt "from-key" str)
     <|>
-    (StakingFromScript <$> scriptHashArg str)
+    (DelegationFromScript <$> scriptHashArg str)
 
 scriptHashArg :: String -> Parser ScriptHash
 scriptHashArg helpDoc =
