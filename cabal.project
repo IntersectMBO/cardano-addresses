@@ -4,6 +4,21 @@ packages:
   core
   command-line
 
+-- -------------------------------------------------------------------------
+-- Disable all tests by default, then enable tests for local packages
+
+tests: False
+
+test-show-details: direct
+
+package cardano-addresses
+  tests: True
+
+package cardano-addresses-cli
+  tests: True
+
+-- -------------------------------------------------------------------------
+
 source-repository-package
   type: git
   location: https://github.com/input-output-hk/cardano-crypto
