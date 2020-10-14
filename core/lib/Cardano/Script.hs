@@ -31,6 +31,8 @@ module Cardano.Script
 
 import Prelude
 
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
@@ -41,6 +43,8 @@ import Crypto.Hash.Algorithms
     ( Blake2b_224 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
+import Data.Aeson
+    ( ToJSON (..), Value (..), (.=) )
 import Data.ByteString
     ( ByteString )
 import Data.Foldable
@@ -57,6 +61,7 @@ import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
+import qualified Data.Text.Encoding as T
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -154,10 +159,10 @@ serialize script =
         CBOR.encodeListLen listLen <> CBOR.encodeWord ctrIndex
 
     encodeFoldable :: (Foldable f) => (a -> CBOR.Encoding) -> f a -> CBOR.Encoding
-    encodeFoldable encode xs = wrapArray len contents
+    encodeFoldable encode' xs = wrapArray len contents
       where
         (len, contents) = foldl' go (0, mempty) xs
-        go (!l, !enc) next = (l + 1, enc <> encode next)
+        go (!l, !enc) next = (l + 1, enc <> encode' next)
 
         wrapArray :: Word -> CBOR.Encoding -> CBOR.Encoding
         wrapArray len' contents'
@@ -212,3 +217,15 @@ blake2b224 =
 -- Size, in bytes, of a hash of public key (without the corresponding chain code)
 hashSize :: Int
 hashSize = hashDigestSize Blake2b_224
+
+instance ToJSON Script where
+    toJSON (RequireSignatureOf (KeyHash key)) =
+        let keyHexed = T.decodeUtf8 $ encode EBase16 key
+        in Object ("key" .= keyHexed)
+    toJSON (RequireAllOf content) =
+        Object ("all" .= fmap toJSON content)
+    toJSON (RequireAnyOf content) =
+        Object ("any" .= fmap toJSON content)
+    toJSON (RequireMOf m content) =
+        let inside = Object ("from" .= fmap toJSON content <> "m" .= toJSON m)
+        in Object ("at_least" .= inside)
