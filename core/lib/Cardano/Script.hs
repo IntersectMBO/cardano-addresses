@@ -32,7 +32,7 @@ module Cardano.Script
 import Prelude
 
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), encode )
+    ( AbstractEncoding (..), encode, fromBase16 )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
@@ -44,13 +44,15 @@ import Crypto.Hash.Algorithms
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Aeson
-    ( ToJSON (..), Value (..), (.=) )
+    ( FromJSON (..), ToJSON (..), Value (..), withObject, (.:), (.:?), (.=) )
 import Data.ByteString
     ( ByteString )
 import Data.Foldable
     ( foldl', traverse_ )
 import Data.Maybe
     ( isNothing )
+import Data.Text
+    ( Text )
 import Data.Word
     ( Word8 )
 import GHC.Generics
@@ -58,6 +60,7 @@ import GHC.Generics
 
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
+import qualified Data.Aeson.Types as Aeson
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -229,3 +232,33 @@ instance ToJSON Script where
     toJSON (RequireMOf m content) =
         let inside = Object ("from" .= fmap toJSON content <> "m" .= toJSON m)
         in Object ("at_least" .= inside)
+
+instance FromJSON Script where
+    parseJSON obj = do
+        reqKey <-
+            (withObject "script" $
+             \o -> o .:? "key" :: Aeson.Parser (Maybe Text)) obj
+        reqAny <-
+            (withObject "script" $
+             \o -> o .:? "any" :: Aeson.Parser (Maybe [Script])) obj
+        reqAll <-
+            (withObject "script" $
+             \o -> o .:? "all" :: Aeson.Parser (Maybe [Script])) obj
+        mOfN <-
+            (withObject "script" $
+             \o -> o .:? "at_least" :: Aeson.Parser (Maybe Value)) obj
+        case (reqKey, reqAny, reqAll, mOfN) of
+            (Just txt, Nothing, Nothing, Nothing) ->
+                case (fromBase16 $ T.encodeUtf8 txt) of
+                    Left err -> fail err
+                    Right bytes ->
+                        pure $ RequireSignatureOf (KeyHash bytes)
+            (Nothing, Just content, Nothing, Nothing) ->
+                pure $ RequireAnyOf content
+            (Nothing, Nothing, Just content, Nothing) ->
+                pure $ RequireAllOf content
+            (Nothing, Nothing, Nothing, Just (Object obj')) -> do
+                content <- obj' .: "from"
+                m <- obj' .: "m"
+                RequireMOf m <$> parseJSON content
+            _ -> fail "Script FromJSON failed"
