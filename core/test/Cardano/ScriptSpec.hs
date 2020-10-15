@@ -5,6 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cardano.ScriptSpec
     ( spec
@@ -20,6 +21,7 @@ import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Cardano.Script
     ( ErrValidateScript (..)
+    , KeyHash (..)
     , Script (..)
     , ScriptHash (..)
     , serialize
@@ -28,9 +30,17 @@ import Cardano.Script
     )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
+import Control.Monad
+    ( replicateM )
+import Data.Aeson
+    ( ToJSON (..) )
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
+import Test.QuickCheck
+    ( Arbitrary (..), choose, oneof, property, vector, (===) )
 
+import qualified Data.Aeson as Json
+import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
 spec :: Spec
@@ -251,6 +261,34 @@ spec = do
                         ]
                     ]
             validateScript script `shouldBe` Right ()
+
+    describe "can perform roundtrip JSON serialization & deserialization" $
+        it "fromJSON . toJSON === pure" $ do
+            let roundtrip =
+                    Json.decode . Json.encode . toJSON :: Script -> Maybe Script
+            property $ \(t :: Script) -> roundtrip t === pure t
+
   where
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
+
+instance Arbitrary Script where
+    arbitrary = do
+        reqAllGen <- do
+            n <- choose (1,10)
+            pure $ RequireAllOf <$> vector n
+        reqAnyGen <- do
+            n <- choose (1,10)
+            pure $ RequireAnyOf <$> vector n
+        reqMofNGen <- do
+            m <- choose (2,5)
+            n <- choose ((fromInteger $ toInteger m),10)
+            pure $ RequireMOf m <$> vector n
+        let reqSig =
+                (RequireSignatureOf . KeyHash . BS.pack) <$> replicateM 28 arbitrary
+        oneof
+            (replicate 15 reqSig ++
+            [ reqAllGen
+            , reqAnyGen
+            , reqMofNGen
+            ])

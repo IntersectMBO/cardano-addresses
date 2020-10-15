@@ -60,7 +60,7 @@ import GHC.Generics
 
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
-import qualified Data.Aeson.Types as Aeson
+import qualified Data.Aeson.Types as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -221,6 +221,29 @@ blake2b224 =
 hashSize :: Int
 hashSize = hashDigestSize Blake2b_224
 
+-- Examples of Script jsons:
+--{ "key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a" }
+--{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
+--          , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
+--          ]
+--}
+--{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
+--          , {"any": [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
+--                    , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"}
+--                    ]
+--            }
+--          ]
+--}
+--{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
+--          , {"at_least": { "from" :[ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
+--                                   , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"}
+--                                   , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"}
+--                                   ]
+--                         , "m" : 2
+--                         }
+--            }
+--          ]
+--}
 instance ToJSON Script where
     toJSON (RequireSignatureOf (KeyHash key)) =
         let keyHexed = T.decodeUtf8 $ encode EBase16 key
@@ -237,16 +260,16 @@ instance FromJSON Script where
     parseJSON obj = do
         reqKey <-
             (withObject "script" $
-             \o -> o .:? "key" :: Aeson.Parser (Maybe Text)) obj
+             \o -> o .:? "key" :: Json.Parser (Maybe Text)) obj
         reqAny <-
             (withObject "script" $
-             \o -> o .:? "any" :: Aeson.Parser (Maybe [Script])) obj
+             \o -> o .:? "any" :: Json.Parser (Maybe [Script])) obj
         reqAll <-
             (withObject "script" $
-             \o -> o .:? "all" :: Aeson.Parser (Maybe [Script])) obj
+             \o -> o .:? "all" :: Json.Parser (Maybe [Script])) obj
         mOfN <-
             (withObject "script" $
-             \o -> o .:? "at_least" :: Aeson.Parser (Maybe Value)) obj
+             \o -> o .:? "at_least" :: Json.Parser (Maybe Value)) obj
         case (reqKey, reqAny, reqAll, mOfN) of
             (Just txt, Nothing, Nothing, Nothing) ->
                 case (fromBase16 $ T.encodeUtf8 txt) of
