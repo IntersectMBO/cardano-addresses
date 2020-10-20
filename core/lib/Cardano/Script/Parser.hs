@@ -82,7 +82,7 @@ requireSignatureOfParser = do
             Left _ -> fail "Invalid Base16-encoded string."
             Right keyHash -> return $ toSignature keyHash
         Just EBech32{} -> case fromBech32 (T.pack verKeyStr) of
-            Nothing -> fail "Invalid Bech32-encoded string.."
+            Nothing -> fail "Invalid Bech32-encoded string."
             Just keyHash -> return $ toSignature keyHash
         Just EBase58 -> case fromBase58 (toBytes verKeyStr) of
             Left err -> fail err

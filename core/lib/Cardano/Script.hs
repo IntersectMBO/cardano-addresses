@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -26,6 +27,7 @@ module Cardano.Script
 
     , KeyHash (..)
     , keyHashFromBytes
+    , keyHashFromText
 
     -- * Internal
     , hashSize
@@ -34,7 +36,9 @@ module Cardano.Script
 import Prelude
 
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), encode, fromBase16 )
+    ( AbstractEncoding (..), detectEncoding, encode, fromBase16, fromBase58 )
+import Control.Applicative
+    ( (<|>) )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
@@ -51,12 +55,14 @@ import Data.Aeson
     , Value (..)
     , object
     , withObject
+    , withText
     , (.:)
-    , (.:?)
     , (.=)
     )
 import Data.ByteString
     ( ByteString )
+import Data.Either.Combinators
+    ( maybeToRight )
 import Data.Foldable
     ( foldl', traverse_ )
 import Data.Maybe
@@ -69,13 +75,16 @@ import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -219,6 +228,62 @@ keyHashFromBytes bytes
     | BS.length bytes /= hashSize = Nothing
     | otherwise = Just $ KeyHash bytes
 
+data ErrorKeyHashFromText =
+      ErrorKeyHashFromTextInvalidString (AbstractEncoding ())
+    | ErrorKeyHashFromTextWrongEncoding
+    | ErrorKeyHashFromTextWrongPayload
+    | ErrorKeyHashFromTextWrongHrp
+    | ErrorKeyHashFromTextWrongDataPart
+    deriving (Show, Eq)
+
+showErr :: ErrorKeyHashFromText -> String
+showErr (ErrorKeyHashFromTextInvalidString EBase16) =
+    "Invalid Base16-encoded string."
+showErr (ErrorKeyHashFromTextInvalidString EBech32{}) =
+    "Invalid Bech32-encoded string."
+showErr (ErrorKeyHashFromTextInvalidString EBase58) =
+    "Invalid Base58-encoded string."
+showErr ErrorKeyHashFromTextWrongEncoding =
+    "Verification key hash must be must be encoded as \
+    \base16, bech32 or base58."
+showErr ErrorKeyHashFromTextWrongPayload =
+    "Verification key hash must contain exactly 28 bytes."
+showErr ErrorKeyHashFromTextWrongHrp =
+    "Verification key hash must have 'script_vkh' hrp when Bech32-encoded."
+showErr ErrorKeyHashFromTextWrongDataPart =
+    "Verification key hash is Bech32-encoded but has wrong data part."
+
+-- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
+-- Bech32 encoded text with `script_vkh` hrp is expected. Also
+-- binary payload is expected to be composed of 28 bytes.
+--
+-- @since 3.0.0
+keyHashFromText :: Text -> Either ErrorKeyHashFromText KeyHash
+keyHashFromText txt =  case detectEncoding str of
+        Just EBase16 -> case fromBase16 (toBytes str) of
+            Left _ -> Left $ ErrorKeyHashFromTextInvalidString EBase16
+            Right bytes -> checkPayload bytes
+        Just EBech32{} -> fromBech32
+        Just EBase58 -> case fromBase58 (toBytes str) of
+            Left _ -> Left $ ErrorKeyHashFromTextInvalidString EBase58
+            Right bytes -> checkPayload bytes
+        Nothing -> Left ErrorKeyHashFromTextWrongEncoding
+ where
+    str = T.unpack txt
+    toBytes = T.encodeUtf8 . T.pack
+    checkPayload bytes =
+        maybeToRight ErrorKeyHashFromTextWrongPayload (keyHashFromBytes bytes)
+    fromBech32 = do
+        (hrp, dp) <- either
+            (const $ Left $ ErrorKeyHashFromTextInvalidString $ EBech32 ())
+            Right (Bech32.decodeLenient txt)
+        case Bech32.humanReadablePartToText hrp of
+            "script_vkh" -> do
+                bytes <- maybeToRight
+                    ErrorKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
+                checkPayload bytes
+            _ -> Left ErrorKeyHashFromTextWrongHrp
+
 --
 -- Internal
 --
@@ -241,31 +306,31 @@ bech32 (KeyHash keyHash) = T.decodeUtf8 $ encode (EBech32 hrp) keyHash
     hrp = [Bech32.humanReadablePart|script_vkh|]
 
 -- Examples of Script jsons:
---{ "key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a" }
---{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
---          , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
+--"e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--          , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
 --          ]
 --}
---{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
---          , {"any": [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
---                    , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"}
+--{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--          , {"any": [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
+--                    , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
 --                    ]
 --            }
 --          ]
 --}
---{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
---          , {"at_least": { "from" :[ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"}
---                                   , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"}
---                                   , {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"}
+--{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--          , {"at_least": { "from" :[ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
+--                                   , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
+--                                   , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"
 --                                   ]
 --                         , "m" : 2
 --                         }
 --            }
 --          ]
 --}
+
 instance ToJSON Script where
-    toJSON (RequireSignatureOf (KeyHash key)) =
-        object ["key" .=  T.decodeLatin1 (encode EBase16 key)]
+    toJSON (RequireSignatureOf keyHash) = String $ bech32 keyHash
     toJSON (RequireAllOf content) =
         object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =
@@ -275,31 +340,16 @@ instance ToJSON Script where
         in object ["at_least" .= inside]
 
 instance FromJSON Script where
-    parseJSON obj = do
-        reqKey <-
-            (withObject "script" $
-             \o -> o .:? "key" :: Json.Parser (Maybe Text)) obj
-        reqAny <-
-            (withObject "script" $
-             \o -> o .:? "any" :: Json.Parser (Maybe [Script])) obj
-        reqAll <-
-            (withObject "script" $
-             \o -> o .:? "all" :: Json.Parser (Maybe [Script])) obj
-        mOfN <-
-            (withObject "script" $
-             \o -> o .:? "at_least" :: Json.Parser (Maybe Value)) obj
-        case (reqKey, reqAny, reqAll, mOfN) of
-            (Just txt, Nothing, Nothing, Nothing) ->
-                case (fromBase16 $ T.encodeUtf8 txt) of
-                    Left err -> fail err
-                    Right bytes ->
-                        pure $ RequireSignatureOf (KeyHash bytes)
-            (Nothing, Just content, Nothing, Nothing) ->
-                pure $ RequireAnyOf content
-            (Nothing, Nothing, Just content, Nothing) ->
-                pure $ RequireAllOf content
-            (Nothing, Nothing, Nothing, Just (Object obj')) -> do
-                content <- obj' .: "from"
-                m <- obj' .: "m"
-                RequireMOf m <$> parseJSON content
-            _ -> fail "Script FromJSON failed"
+    parseJSON v = parseKey v <|> parseAnyOf v  <|> parseAllOf v <|> parseAtLeast v
+      where
+          parseKey = withText "Script KeyHash" $
+              either (fail . showErr) (pure . RequireSignatureOf) . keyHashFromText
+          parseAnyOf =
+              withObject "Script AnyOf" $ \o -> RequireAnyOf <$> (o .: "any" :: Json.Parser [Script])
+          parseAllOf =
+              withObject "Script AllOf" $ \o -> RequireAllOf <$> (o .: "all" :: Json.Parser [Script])
+          parseAtLeast = withObject "Script MOf" $ \o -> do
+              obj <- o .: "at_least"
+              content <- obj .: "from"
+              m <- obj .: "m"
+              RequireMOf m <$> parseJSON content
