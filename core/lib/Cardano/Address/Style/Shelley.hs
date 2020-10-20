@@ -96,14 +96,14 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Errors
     ( ShelleyAddrError (..) )
+import Cardano.Address.Script
+    ( KeyHash (..), ScriptHash (..) )
 import Cardano.Address.Style.Byron
     ( inspectByronAddress )
 import Cardano.Address.Style.Icarus
     ( inspectIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
-import Cardano.Script
-    ( KeyHash (..), ScriptHash (..) )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative

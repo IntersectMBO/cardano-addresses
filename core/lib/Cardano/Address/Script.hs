@@ -9,7 +9,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Cardano.Script
+module Cardano.Address.Script
     (
     -- * Script
       Script (..)

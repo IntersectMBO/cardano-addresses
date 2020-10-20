@@ -7,7 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Cardano.ScriptSpec
+module Cardano.Address.ScriptSpec
     ( spec
     ) where
 
@@ -15,11 +15,7 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, toXPub )
-import Cardano.Address.Style.Shelley
-    ( Shelley (..), deriveMultisigPrivateKey, hashKey )
-import Cardano.Mnemonic
-    ( mkSomeMnemonic )
-import Cardano.Script
+import Cardano.Address.Script
     ( ErrValidateScript (..)
     , KeyHash (..)
     , Script (..)
@@ -28,6 +24,10 @@ import Cardano.Script
     , toScriptHash
     , validateScript
     )
+import Cardano.Address.Style.Shelley
+    ( Shelley (..), deriveMultisigPrivateKey, hashKey )
+import Cardano.Mnemonic
+    ( mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Monad

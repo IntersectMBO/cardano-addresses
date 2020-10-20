@@ -14,10 +14,10 @@ module Command.Key.Hash
 import Prelude hiding
     ( mod )
 
+import Cardano.Address.Script
+    ( KeyHash (..) )
 import Cardano.Address.Style.Shelley
     ( hashKey, liftXPub )
-import Cardano.Script
-    ( KeyHash (..) )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Options.Applicative

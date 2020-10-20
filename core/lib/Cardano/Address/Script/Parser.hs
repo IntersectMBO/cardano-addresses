@@ -5,7 +5,7 @@
 
 {-# OPTIONS_HADDOCK hide #-}
 
-module Cardano.Script.Parser
+module Cardano.Address.Script.Parser
     (
     -- ** Script Parser
       scriptFromString
@@ -21,7 +21,7 @@ module Cardano.Script.Parser
 
 import Prelude
 
-import Cardano.Script
+import Cardano.Address.Script
     ( KeyHash (..), Script (..) )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), detectEncoding, fromBase16, fromBase58 )

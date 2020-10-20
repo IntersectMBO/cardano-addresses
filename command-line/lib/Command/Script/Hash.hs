@@ -12,7 +12,7 @@ module Command.Script.Hash
 
     ) where
 
-import Cardano.Script
+import Cardano.Address.Script
     ( Script (..)
     , ScriptHash (..)
     , prettyErrValidateScript
@@ -60,7 +60,7 @@ mod liftCmd = command "hash" $
             ])
   where
     parser = Cmd
-        <$> encodingOpt [humanReadablePart|script_hash|]
+        <$> encodingOpt [humanReadablePart|script|]
         <*> scriptArg
 
 run :: Cmd -> IO ()

@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Cardano.Script.ParserSpec
+module Cardano.Address.Script.ParserSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.Script
+import Cardano.Address.Script
     ( KeyHash (..), Script (..) )
-import Cardano.Script.Parser
+import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9439acb25d33e97c7ba29e1b44c0df45b18c0c4553e8fffd2f695f41edbf69fa
+-- hash: d031c987a04a14f86cdbbc2cae6c846d9b47c0ea9754ff29a51efaeeb84ccaab
 
 name:           cardano-addresses
 version:        2.1.0
@@ -34,14 +34,14 @@ library
       Cardano.Address
       Cardano.Address.Derivation
       Cardano.Address.Errors
+      Cardano.Address.Script
+      Cardano.Address.Script.Parser
       Cardano.Address.Style.Byron
       Cardano.Address.Style.Icarus
       Cardano.Address.Style.Jormungandr
       Cardano.Address.Style.Shelley
       Cardano.Codec.Cbor
       Cardano.Mnemonic
-      Cardano.Script
-      Cardano.Script.Parser
       Codec.Binary.Encoding
       Data.Word7
   other-modules:
@@ -79,6 +79,8 @@ test-suite unit
   main-is: Main.hs
   other-modules:
       Cardano.Address.DerivationSpec
+      Cardano.Address.Script.ParserSpec
+      Cardano.Address.ScriptSpec
       Cardano.Address.Style.ByronSpec
       Cardano.Address.Style.IcarusSpec
       Cardano.Address.Style.JormungandrSpec
@@ -86,8 +88,6 @@ test-suite unit
       Cardano.AddressSpec
       Cardano.Codec.CborSpec
       Cardano.MnemonicSpec
-      Cardano.Script.ParserSpec
-      Cardano.ScriptSpec
       Codec.Binary.EncodingSpec
       Data.Word7Spec
       Test.Arbitrary
