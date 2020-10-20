@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Cardano.Script
@@ -14,6 +15,7 @@ module Cardano.Script
     , validateScript
     , ErrValidateScript (..)
     , prettyErrValidateScript
+    , bech32
 
     -- * Hashing
     , serialize
@@ -44,7 +46,15 @@ import Crypto.Hash.Algorithms
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.Aeson
-    ( FromJSON (..), ToJSON (..), Value (..), withObject, (.:), (.:?), (.=) )
+    ( FromJSON (..)
+    , ToJSON (..)
+    , Value (..)
+    , object
+    , withObject
+    , (.:)
+    , (.:?)
+    , (.=)
+    )
 import Data.ByteString
     ( ByteString )
 import Data.Foldable
@@ -59,6 +69,7 @@ import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Codec.Cbor as CBOR
+import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteArray as BA
@@ -221,6 +232,14 @@ blake2b224 =
 hashSize :: Int
 hashSize = hashDigestSize Blake2b_224
 
+-- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
+--
+-- @since 3.0.0
+bech32 :: KeyHash -> Text
+bech32 (KeyHash keyHash) = T.decodeUtf8 $ encode (EBech32 hrp) keyHash
+  where
+    hrp = [Bech32.humanReadablePart|script_vkh|]
+
 -- Examples of Script jsons:
 --{ "key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a" }
 --{ "all" : [ {"key" : "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"}
@@ -246,15 +265,14 @@ hashSize = hashDigestSize Blake2b_224
 --}
 instance ToJSON Script where
     toJSON (RequireSignatureOf (KeyHash key)) =
-        let keyHexed = T.decodeUtf8 $ encode EBase16 key
-        in Object ("key" .= keyHexed)
+        object ["key" .=  T.decodeLatin1 (encode EBase16 key)]
     toJSON (RequireAllOf content) =
-        Object ("all" .= fmap toJSON content)
+        object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =
-        Object ("any" .= fmap toJSON content)
+        object ["any" .= fmap toJSON content]
     toJSON (RequireMOf m content) =
         let inside = Object ("from" .= fmap toJSON content <> "m" .= toJSON m)
-        in Object ("at_least" .= inside)
+        in object ["at_least" .= inside]
 
 instance FromJSON Script where
     parseJSON obj = do
