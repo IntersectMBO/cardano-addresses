@@ -36,7 +36,7 @@ module Cardano.Address.Script
 import Prelude
 
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), detectEncoding, encode, fromBase16, fromBase58 )
+    ( AbstractEncoding (..), detectEncoding, encode, fromBase16 )
 import Control.Applicative
     ( (<|>) )
 import Control.DeepSeq
@@ -241,10 +241,11 @@ showErr (ErrorKeyHashFromTextInvalidString EBase16) =
 showErr (ErrorKeyHashFromTextInvalidString EBech32{}) =
     "Invalid Bech32-encoded string."
 showErr (ErrorKeyHashFromTextInvalidString EBase58) =
-    "Invalid Base58-encoded string."
+    "Verification key hash must be must be encoded as \
+    \base16 or bech32."
 showErr ErrorKeyHashFromTextWrongEncoding =
     "Verification key hash must be must be encoded as \
-    \base16, bech32 or base58."
+    \base16 or bech32."
 showErr ErrorKeyHashFromTextWrongPayload =
     "Verification key hash must contain exactly 28 bytes."
 showErr ErrorKeyHashFromTextWrongHrp =
@@ -263,9 +264,7 @@ keyHashFromText txt =  case detectEncoding str of
             Left _ -> Left $ ErrorKeyHashFromTextInvalidString EBase16
             Right bytes -> checkPayload bytes
         Just EBech32{} -> fromBech32
-        Just EBase58 -> case fromBase58 (toBytes str) of
-            Left _ -> Left $ ErrorKeyHashFromTextInvalidString EBase58
-            Right bytes -> checkPayload bytes
+        Just EBase58 -> Left ErrorKeyHashFromTextWrongEncoding
         Nothing -> Left ErrorKeyHashFromTextWrongEncoding
  where
     str = T.unpack txt
