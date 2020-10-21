@@ -78,7 +78,6 @@ import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
-import qualified Data.Aeson.Types as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -335,9 +334,8 @@ instance ToJSON Script where
         object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =
         object ["any" .= fmap toJSON content]
-    toJSON (RequireSomeOf m content) =
-        let inside = Object ("from" .= fmap toJSON content <> "at_least" .= toJSON m)
-        in object ["some" .= inside]
+    toJSON (RequireSomeOf count scripts) =
+        object ["some" .= (object ["at_least" .= count, "from" .= scripts])]
 
 instance FromJSON Script where
     parseJSON v = parseKey v <|> parseAnyOf v  <|> parseAllOf v <|> parseAtLeast v
@@ -345,9 +343,9 @@ instance FromJSON Script where
           parseKey = withText "Script KeyHash" $
               either (fail . showErr) (pure . RequireSignatureOf) . keyHashFromText
           parseAnyOf =
-              withObject "Script AnyOf" $ \o -> RequireAnyOf <$> (o .: "any" :: Json.Parser [Script])
+              withObject "Script AnyOf" $ \o -> RequireAnyOf <$> (o .: "any" )
           parseAllOf =
-              withObject "Script AllOf" $ \o -> RequireAllOf <$> (o .: "all" :: Json.Parser [Script])
+              withObject "Script AllOf" $ \o -> RequireAllOf <$> (o .: "all" )
           parseAtLeast = withObject "Script SomeOf" $ \o -> do
               obj <- o .: "some"
               content <- obj .: "from"
