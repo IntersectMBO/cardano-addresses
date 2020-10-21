@@ -113,7 +113,7 @@ requireAtLeastOfParser :: ReadP Script
 requireAtLeastOfParser = do
     P.skipSpaces
     _identifier <- P.string "at_least"
-    RequireMOf <$> naturalParser <*> commonPart
+    RequireSomeOf <$> naturalParser <*> commonPart
 
 naturalParser :: ReadP Word8
 naturalParser = do

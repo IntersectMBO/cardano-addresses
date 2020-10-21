@@ -94,7 +94,7 @@ data Script
     = RequireSignatureOf !KeyHash
     | RequireAllOf ![Script]
     | RequireAnyOf ![Script]
-    | RequireMOf Word8 ![Script]
+    | RequireSomeOf Word8 ![Script]
     deriving stock (Generic, Show, Eq)
 instance NFData Script
 
@@ -116,7 +116,7 @@ validateScript = \case
         when (hasDuplicate script) $ Left DuplicateSignatures
         traverse_ validateScript script
 
-    RequireMOf m script -> do
+    RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
         when (length script < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
@@ -171,7 +171,7 @@ serialize script =
             encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR contents
         RequireAnyOf contents ->
             encodeMultiscriptCtr 2 2 <> encodeFoldable toCBOR contents
-        RequireMOf m contents -> mconcat
+        RequireSomeOf m contents -> mconcat
             [ encodeMultiscriptCtr 3 3
             , CBOR.encodeInt (fromInteger $ toInteger m)
             , encodeFoldable toCBOR contents
@@ -319,12 +319,12 @@ bech32 (KeyHash keyHash) = T.decodeUtf8 $ encode (EBech32 hrp) keyHash
 --          ]
 --}
 --{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
---          , {"at_least": { "from" :[ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
---                                   , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
---                                   , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"
---                                   ]
---                         , "m" : 2
---                         }
+--          , {"some": { "from" :[ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
+--                               , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
+--                               , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"
+--                               ]
+--                     , "at_least" : 2
+--                     }
 --            }
 --          ]
 --}
@@ -335,9 +335,9 @@ instance ToJSON Script where
         object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =
         object ["any" .= fmap toJSON content]
-    toJSON (RequireMOf m content) =
-        let inside = Object ("from" .= fmap toJSON content <> "m" .= toJSON m)
-        in object ["at_least" .= inside]
+    toJSON (RequireSomeOf m content) =
+        let inside = Object ("from" .= fmap toJSON content <> "at_least" .= toJSON m)
+        in object ["some" .= inside]
 
 instance FromJSON Script where
     parseJSON v = parseKey v <|> parseAnyOf v  <|> parseAllOf v <|> parseAtLeast v
@@ -348,8 +348,8 @@ instance FromJSON Script where
               withObject "Script AnyOf" $ \o -> RequireAnyOf <$> (o .: "any" :: Json.Parser [Script])
           parseAllOf =
               withObject "Script AllOf" $ \o -> RequireAllOf <$> (o .: "all" :: Json.Parser [Script])
-          parseAtLeast = withObject "Script MOf" $ \o -> do
-              obj <- o .: "at_least"
+          parseAtLeast = withObject "Script SomeOf" $ \o -> do
+              obj <- o .: "some"
               content <- obj .: "from"
-              m <- obj .: "m"
-              RequireMOf m <$> parseJSON content
+              m <- obj .: "at_least"
+              RequireSomeOf m <$> parseJSON content

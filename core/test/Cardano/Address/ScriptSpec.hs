@@ -122,14 +122,14 @@ spec = do
                 \215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
                 "270cbddf1d43fb4ad7eca05f08f2c9c65a290389d8c48c57ba9f38c4"
 
-        it "RequireMOf 1 out of index=0 and index=1 keys" $ do
-            let script = RequireMOf 1 [verKeyHash1, verKeyHash2]
+        it "RequireSomeOf 1 out of index=0 and index=1 keys" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, verKeyHash2]
             checkCBORandScriptHash script
                 "00830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504\
                 \379cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
                 "31aa5030ae386603145f0cb16577da64ce0647b3cf2104e8d5646d67"
         it "RequireAllOf 2 out of index=0, index=1, index=2 and index=3 keys" $ do
-            let script = RequireMOf 2 [verKeyHash1, verKeyHash2, verKeyHash3, verKeyHash4]
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, verKeyHash3, verKeyHash4]
             checkCBORandScriptHash script
                 "00830302848200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82\
                 \00581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb723\
@@ -139,7 +139,7 @@ spec = do
 
         it "nested 1" $ do
             let nested = RequireAllOf [verKeyHash3, verKeyHash4]
-            let script = RequireMOf 2 [verKeyHash1, verKeyHash2, nested]
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, nested]
             checkCBORandScriptHash script
                 "00830302838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
                 \200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8201828200581c\
@@ -160,7 +160,7 @@ spec = do
         it "nested 3" $ do
             let nested' = RequireAnyOf [verKeyHash3, verKeyHash4]
             let nested = RequireAllOf [verKeyHash1, nested']
-            let script = RequireMOf 1 [verKeyHash1, nested]
+            let script = RequireSomeOf 1 [verKeyHash1, nested]
             checkCBORandScriptHash script
                 "00830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
                 \201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82028282\
@@ -177,34 +177,34 @@ spec = do
             let script = RequireAnyOf []
             validateScript script `shouldBe` (Left EmptyList)
 
-        it "no content in RequireMOf" $ do
-            let script = RequireMOf 1 []
+        it "no content in RequireSomeOf" $ do
+            let script = RequireSomeOf 1 []
             validateScript script `shouldBe` (Left ListTooSmall)
 
-        it "too high m in RequireMOf" $ do
-            let script = RequireMOf 3 [verKeyHash3, verKeyHash4]
+        it "too high m in RequireSomeOf" $ do
+            let script = RequireSomeOf 3 [verKeyHash3, verKeyHash4]
             validateScript script `shouldBe` (Left ListTooSmall)
 
-        it "m=0 in RequireMOf" $ do
-            let script = RequireMOf 0 [verKeyHash3, verKeyHash4]
+        it "m=0 in RequireSomeOf" $ do
+            let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
             validateScript script `shouldBe`(Left MZero)
 
         it "wrong in nested 1" $ do
-            let script = RequireMOf 1 [verKeyHash1, RequireAnyOf [] ]
+            let script = RequireSomeOf 1 [verKeyHash1, RequireAnyOf [] ]
             validateScript script `shouldBe` (Left EmptyList)
 
         it "wrong in nested 2" $ do
-            let script = RequireMOf 1
+            let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [verKeyHash2, RequireAllOf [] ]
                     ]
             validateScript script `shouldBe` (Left EmptyList)
 
         it "wrong in nested 3" $ do
-            let script = RequireMOf 1
+            let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [ verKeyHash2
-                                   , RequireMOf 3 [verKeyHash3, verKeyHash4]
+                                   , RequireSomeOf 3 [verKeyHash3, verKeyHash4]
                                    ]
                     ]
             validateScript script `shouldBe` (Left ListTooSmall)
@@ -217,15 +217,15 @@ spec = do
             let script = RequireAnyOf [verKeyHash1, verKeyHash2, verKeyHash1]
             validateScript script `shouldBe` (Left DuplicateSignatures)
 
-        it "duplicate content in RequireMOf" $ do
-            let script = RequireMOf 1 [verKeyHash1, verKeyHash2, verKeyHash1]
+        it "duplicate content in RequireSomeOf" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, verKeyHash2, verKeyHash1]
             validateScript script `shouldBe` (Left DuplicateSignatures)
 
         it "duplicate in nested" $ do
-            let script = RequireMOf 1
+            let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [ verKeyHash2
-                                   , RequireMOf 2 [verKeyHash3, verKeyHash3, verKeyHash4]
+                                   , RequireSomeOf 2 [verKeyHash3, verKeyHash3, verKeyHash4]
                                    ]
                     ]
             validateScript script `shouldBe` (Left DuplicateSignatures)
@@ -240,17 +240,17 @@ spec = do
             validateScript script `shouldBe` Right ()
 
         it "nested 1" $ do
-            let script = RequireMOf 1
+            let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf
                         [ verKeyHash2
-                        , RequireMOf 1 [verKeyHash3, verKeyHash4]
+                        , RequireSomeOf 1 [verKeyHash3, verKeyHash4]
                         ]
                     ]
             validateScript script `shouldBe` Right ()
 
         it "nested 2" $ do
-            let script = RequireMOf 1
+            let script = RequireSomeOf 1
                     [ RequireAnyOf
                         [ verKeyHash1
                         , verKeyHash2
@@ -283,7 +283,7 @@ instance Arbitrary Script where
         reqMofNGen <- do
             m <- choose (2,5)
             n <- choose ((fromInteger $ toInteger m),10)
-            pure $ RequireMOf m <$> vector n
+            pure $ RequireSomeOf m <$> vector n
         let reqSig =
                 (RequireSignatureOf . KeyHash . BS.pack) <$> replicateM 28 arbitrary
         oneof
