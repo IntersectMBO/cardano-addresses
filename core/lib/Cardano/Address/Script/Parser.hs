@@ -5,7 +5,7 @@
 
 {-# OPTIONS_HADDOCK hide #-}
 
-module Cardano.Script.Parser
+module Cardano.Address.Script.Parser
     (
     -- ** Script Parser
       scriptFromString
@@ -21,7 +21,7 @@ module Cardano.Script.Parser
 
 import Prelude
 
-import Cardano.Script
+import Cardano.Address.Script
     ( KeyHash (..), Script (..) )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), detectEncoding, fromBase16, fromBase58 )
@@ -82,7 +82,7 @@ requireSignatureOfParser = do
             Left _ -> fail "Invalid Base16-encoded string."
             Right keyHash -> return $ toSignature keyHash
         Just EBech32{} -> case fromBech32 (T.pack verKeyStr) of
-            Nothing -> fail "Invalid Bech32-encoded string.."
+            Nothing -> fail "Invalid Bech32-encoded string."
             Just keyHash -> return $ toSignature keyHash
         Just EBase58 -> case fromBase58 (toBytes verKeyStr) of
             Left err -> fail err
@@ -113,7 +113,7 @@ requireAtLeastOfParser :: ReadP Script
 requireAtLeastOfParser = do
     P.skipSpaces
     _identifier <- P.string "at_least"
-    RequireMOf <$> naturalParser <*> commonPart
+    RequireSomeOf <$> naturalParser <*> commonPart
 
 naturalParser :: ReadP Word8
 naturalParser = do

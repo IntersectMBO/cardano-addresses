@@ -7,7 +7,7 @@ module Command.ScriptSpec
 
 import Prelude
 
-import Cardano.Script
+import Cardano.Address.Script
     ( ErrValidateScript (..), prettyErrValidateScript )
 import Data.String.Interpolate
     ( iii )

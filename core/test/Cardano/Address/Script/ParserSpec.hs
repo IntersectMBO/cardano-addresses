@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Cardano.Script.ParserSpec
+module Cardano.Address.Script.ParserSpec
     ( spec
     ) where
 
 import Prelude
 
-import Cardano.Script
+import Cardano.Address.Script
     ( KeyHash (..), Script (..) )
-import Cardano.Script.Parser
+import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
@@ -127,14 +127,14 @@ spec = do
         valuesParserUnitTest scriptParser script13 expected5
 
     describe "requireAtLeastOfParser : unit tests" $ do
-        let expected1 = RequireMOf 1
+        let expected1 = RequireSomeOf 1
                 [ RequireSignatureOf $ KeyHash bytes1
                 , RequireSignatureOf $ KeyHash bytes2
                 , RequireSignatureOf $ KeyHash bytes3 ]
         valuesParserUnitTest requireAtLeastOfParser script10 expected1
         valuesParserUnitTest scriptParser script10 expected1
 
-        let expected2 = RequireMOf 1
+        let expected2 = RequireSomeOf 1
                 [ RequireSignatureOf $ KeyHash bytes1
                 , RequireAllOf
                   [ RequireSignatureOf $ KeyHash bytes2

@@ -28,10 +28,10 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( XPrv, XPub, xprvFromBytes, xpubFromBytes )
+import Cardano.Address.Script
+    ( ScriptHash, scriptHashFromBytes )
 import Cardano.Mnemonic
     ( MkSomeMnemonicError (..), SomeMnemonic, mkSomeMnemonic )
-import Cardano.Script
-    ( ScriptHash, scriptHashFromBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..)
     , Encoding

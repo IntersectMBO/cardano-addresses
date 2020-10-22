@@ -22,9 +22,7 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( Depth (..) )
-import Cardano.Address.Style.Shelley
-    ( Credential (..), liftXPub )
-import Cardano.Script
+import Cardano.Address.Script
     ( ErrValidateScript
     , Script (..)
     , ScriptHash
@@ -32,8 +30,10 @@ import Cardano.Script
     , scriptHashFromBytes
     , validateScript
     )
-import Cardano.Script.Parser
+import Cardano.Address.Script.Parser
     ( scriptFromString )
+import Cardano.Address.Style.Shelley
+    ( Credential (..), liftXPub )
 import Control.Applicative
     ( (<|>) )
 import Control.Arrow
