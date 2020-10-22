@@ -30,14 +30,24 @@ import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
-import Control.Monad
-    ( replicateM )
-import Data.Aeson
-    ( ToJSON (..) )
+import Data.Either
+    ( isLeft )
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
-    ( Arbitrary (..), choose, oneof, property, vector, (===) )
+    ( Arbitrary (..)
+    , Positive (..)
+    , Property
+    , choose
+    , classify
+    , elements
+    , genericShrink
+    , property
+    , scale
+    , sized
+    , vectorOf
+    , (===)
+    )
 
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
@@ -263,32 +273,37 @@ spec = do
             validateScript script `shouldBe` Right ()
 
     describe "can perform roundtrip JSON serialization & deserialization" $
-        it "fromJSON . toJSON === pure" $ do
-            let roundtrip =
-                    Json.decode . Json.encode . toJSON :: Script -> Maybe Script
-            property $ \(t :: Script) -> roundtrip t === pure t
+        it "fromJSON . toJSON === pure" $ property $ prop_jsonRoundtrip
 
   where
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
 
+prop_jsonRoundtrip :: Script -> Property
+prop_jsonRoundtrip script =
+    classify (isLeft $ validateScript script) "invalid" $
+    roundtrip script === Just script
+  where
+    roundtrip :: Script -> Maybe Script
+    roundtrip = Json.decode . Json.encode
+
 instance Arbitrary Script where
-    arbitrary = do
-        reqAllGen <- do
-            n <- choose (1,10)
-            pure $ RequireAllOf <$> vector n
-        reqAnyGen <- do
-            n <- choose (1,10)
-            pure $ RequireAnyOf <$> vector n
-        reqMofNGen <- do
-            m <- choose (2,5)
-            n <- choose ((fromInteger $ toInteger m),10)
-            pure $ RequireSomeOf m <$> vector n
-        let reqSig =
-                (RequireSignatureOf . KeyHash . BS.pack) <$> replicateM 28 arbitrary
-        oneof
-            (replicate 15 reqSig ++
-            [ reqAllGen
-            , reqAnyGen
-            , reqMofNGen
-            ])
+    arbitrary = scale (`div` 3) $ sized scriptTree
+      where
+        scriptTree 0 = RequireSignatureOf <$> arbitrary
+        scriptTree n = do
+            Positive m <- arbitrary
+            let n' = n `div` (m + 1)
+            scripts <- vectorOf m (scriptTree n')
+            atLeast <- choose (0, fromIntegral (m + 1))
+            elements
+                [ RequireAllOf scripts
+                , RequireAnyOf scripts
+                , RequireSomeOf atLeast scripts
+                ]
+    shrink = genericShrink
+
+instance Arbitrary KeyHash where
+    -- always generate valid hashes, because json decoding will immediately fail
+    -- on these.
+    arbitrary = KeyHash . BS.pack <$> vectorOf 28 arbitrary
