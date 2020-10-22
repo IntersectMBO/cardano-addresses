@@ -273,7 +273,7 @@ spec = do
             validateScript script `shouldBe` Right ()
 
     describe "can perform roundtrip JSON serialization & deserialization" $
-        it "fromJSON . toJSON === pure" $ property $ prop_jsonRoundtrip
+        it "fromJSON . toJSON === pure" $ property prop_jsonRoundtrip
 
   where
     toHexText = T.decodeUtf8 . encode EBase16
