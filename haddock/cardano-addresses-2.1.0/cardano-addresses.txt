@@ -344,7 +344,7 @@ instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Deriva
 instance GHC.Enum.Enum (Cardano.Address.Derivation.Index 'Cardano.Address.Derivation.WholeDomain depth)
 instance Formatting.Buildable.Buildable (Cardano.Address.Derivation.Index derivationType depth)
 
-module Cardano.Script
+module Cardano.Address.Script
 
 -- | A <a>Script</a> type represents multi signature script. The script
 --   embodies conditions that need to be satisfied to make it valid.
@@ -352,7 +352,7 @@ data Script
 RequireSignatureOf :: !KeyHash -> Script
 RequireAllOf :: ![Script] -> Script
 RequireAnyOf :: ![Script] -> Script
-RequireMOf :: Word8 -> ![Script] -> Script
+RequireSomeOf :: Word8 -> ![Script] -> Script
 
 -- | Validate <a>Script</a>
 validateScript :: Script -> Either ErrValidateScript ()
@@ -366,6 +366,10 @@ DuplicateSignatures :: ErrValidateScript
 WrongKeyHash :: ErrValidateScript
 prettyErrValidateScript :: ErrValidateScript -> String
 
+-- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
+--   <tt>script_vkh</tt> as a human readable prefix.
+bech32 :: KeyHash -> Text
+
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR
 --   script` realizes This is basically doing the symbolically following:
 --   toCBOR [0,multisigScript]
@@ -375,6 +379,7 @@ serialize :: Script -> ByteString
 --   to have size of 28-byte.
 newtype ScriptHash
 ScriptHash :: ByteString -> ScriptHash
+[unScriptHash] :: ScriptHash -> ByteString
 
 -- | Construct an <a>ScriptHash</a> from raw <a>ByteString</a> (28 bytes).
 scriptHashFromBytes :: ByteString -> Maybe ScriptHash
@@ -387,24 +392,34 @@ toScriptHash :: Script -> ScriptHash
 --   to have size of 28-byte.
 newtype KeyHash
 KeyHash :: ByteString -> KeyHash
+[unKeyHash] :: KeyHash -> ByteString
 
 -- | Construct an <a>KeyHash</a> from raw <a>ByteString</a> (28 bytes).
 keyHashFromBytes :: ByteString -> Maybe KeyHash
+
+-- | Construct a <a>KeyHash</a> from <a>Text</a>. Either hex encoded text
+--   or Bech32 encoded text with <tt>script_vkh</tt> hrp is expected. Also
+--   binary payload is expected to be composed of 28 bytes.
+keyHashFromText :: Text -> Either ErrorKeyHashFromText KeyHash
 hashSize :: Int
-instance GHC.Classes.Eq Cardano.Script.Script
-instance GHC.Show.Show Cardano.Script.Script
-instance GHC.Generics.Generic Cardano.Script.Script
-instance GHC.Classes.Eq Cardano.Script.KeyHash
-instance GHC.Show.Show Cardano.Script.KeyHash
-instance GHC.Generics.Generic Cardano.Script.KeyHash
-instance GHC.Classes.Eq Cardano.Script.ScriptHash
-instance GHC.Show.Show Cardano.Script.ScriptHash
-instance GHC.Generics.Generic Cardano.Script.ScriptHash
-instance GHC.Show.Show Cardano.Script.ErrValidateScript
-instance GHC.Classes.Eq Cardano.Script.ErrValidateScript
-instance Control.DeepSeq.NFData Cardano.Script.Script
-instance Control.DeepSeq.NFData Cardano.Script.KeyHash
-instance Control.DeepSeq.NFData Cardano.Script.ScriptHash
+instance GHC.Classes.Eq Cardano.Address.Script.ErrorKeyHashFromText
+instance GHC.Show.Show Cardano.Address.Script.ErrorKeyHashFromText
+instance GHC.Classes.Eq Cardano.Address.Script.Script
+instance GHC.Show.Show Cardano.Address.Script.Script
+instance GHC.Generics.Generic Cardano.Address.Script.Script
+instance GHC.Classes.Eq Cardano.Address.Script.KeyHash
+instance GHC.Show.Show Cardano.Address.Script.KeyHash
+instance GHC.Generics.Generic Cardano.Address.Script.KeyHash
+instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
+instance GHC.Show.Show Cardano.Address.Script.ScriptHash
+instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
+instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
+instance Control.DeepSeq.NFData Cardano.Address.Script.Script
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.Script
+instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.Script
+instance Control.DeepSeq.NFData Cardano.Address.Script.KeyHash
+instance Control.DeepSeq.NFData Cardano.Address.Script.ScriptHash
 
 module Cardano.Address
 
