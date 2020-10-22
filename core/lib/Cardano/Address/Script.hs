@@ -199,7 +199,7 @@ toScriptHash = ScriptHash . blake2b224 . serialize
 -- 28-byte.
 --
 -- @since 3.0.0
-newtype ScriptHash = ScriptHash ByteString
+newtype ScriptHash = ScriptHash { unScriptHash :: ByteString }
     deriving (Generic, Show, Eq)
 instance NFData ScriptHash
 
@@ -215,7 +215,7 @@ scriptHashFromBytes bytes
 -- multi-signature script. The hash is expected to have size of 28-byte.
 --
 -- @since 3.0.0
-newtype KeyHash = KeyHash ByteString
+newtype KeyHash = KeyHash { unKeyHash :: ByteString }
     deriving (Generic, Show, Eq)
 instance NFData KeyHash
 
@@ -334,19 +334,17 @@ instance ToJSON Script where
     toJSON (RequireAnyOf content) =
         object ["any" .= fmap toJSON content]
     toJSON (RequireSomeOf count scripts) =
-        object ["some" .= (object ["at_least" .= count, "from" .= scripts])]
+        object ["some" .= object ["at_least" .= count, "from" .= scripts]]
 
 instance FromJSON Script where
     parseJSON v = parseKey v <|> parseAnyOf v  <|> parseAllOf v <|> parseAtLeast v
       where
-          parseKey = withText "Script KeyHash" $
-              either (fail . showErr) (pure . RequireSignatureOf) . keyHashFromText
-          parseAnyOf =
-              withObject "Script AnyOf" $ \o -> RequireAnyOf <$> (o .: "any" )
-          parseAllOf =
-              withObject "Script AllOf" $ \o -> RequireAllOf <$> (o .: "all" )
-          parseAtLeast = withObject "Script SomeOf" $ \o -> do
-              obj <- o .: "some"
-              content <- obj .: "from"
-              m <- obj .: "at_least"
-              RequireSomeOf m <$> parseJSON content
+        parseKey = withText "Script KeyHash" $
+            either (fail . showErr) (pure . RequireSignatureOf) . keyHashFromText
+        parseAnyOf = withObject "Script AnyOf" $ \o ->
+            RequireAnyOf <$> o .: "any"
+        parseAllOf = withObject "Script AllOf" $ \o ->
+            RequireAllOf <$> o .: "all"
+        parseAtLeast = withObject "Script SomeOf" $ \o -> do
+            some <- o .: "some"
+            RequireSomeOf <$> some .: "at_least" <*> some .: "from"
