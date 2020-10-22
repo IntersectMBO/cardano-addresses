@@ -1,0 +1,12 @@
+cradle:
+  cabal:
+    # core package
+    - path: "./core/lib"
+      component: "cardano-addresses:library:cardano-addresses"
+    - path: "./core/test"
+      component: "cardano-addresses:test:unit"
+    # cli package
+    - path: "./command-line/lib"
+      component: "cardano-addresses-cli:library:cardano-addresses-cli"
+    - path: "./command-line/test"
+      component: "cardano-addresses-cli:test:unit"
