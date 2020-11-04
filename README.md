@@ -47,6 +47,7 @@ xprv1zz8x2k6jemuq884k4s4c862n2maaskk07ua7xc4pcegfd70fx9ymnhrk5jkex5rh5fggph0682r
 Notice the `xprv` prefix to identify an e**x**tended **prv**ivate key. Should you prefer an hexadecimal output, you can choose a different output encoding via a special flag:
 
 ```
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
 $ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley --base16
 108e655b52cef8039eb6ac2b83e95356fbd85acff73be362a1c65096f9e93149
 b9dc76a4ad935077a25080ddfa3a86d3483d497dfb0f60042a5db63b03e746c2
@@ -58,6 +59,7 @@ b97fb3339a649c51149e8299e88e870eb5d7a251b200e5b036600a868a4d9b26
   <summary>How to generate an extended public stake key (public key plus chain code)</summary>
 
 ```
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
 $ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
 | cardano-address key public --with-chain-code
@@ -72,6 +74,7 @@ xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7yak6lmcyst8yclpm3yalrspc
   <summary>How to generate a public stake key (public key without chain code)</summary>
 
 ```
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
 $ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
 | cardano-address key public --without-chain-code
