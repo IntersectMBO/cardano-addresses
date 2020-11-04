@@ -66,9 +66,9 @@ mod liftCmd = command "delegation" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/0/0 > addr.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat addr.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address delegation $(cat stake.prv | "<>progName<>" key public)"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address delegation $(cat stake.prv | "<>progName<>" key public --with-chain-code)"
             , indent 2 $ string "addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k..."
             ])
   where

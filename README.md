@@ -72,10 +72,10 @@ xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7yak6lmcyst8yclpm3yalrspc
   <summary>How to generate a public stake key (public key without chain code)</summary>
 
 ```
-$ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley \
+$ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
 | cardano-address key public --without-chain-code
-xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qh83kg9
+pub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qssu5l3
 ```
 
 > :information_source: `1852H/1815H/0H/2/0` is the derivation path that is typically used by Cardano wallet to identify a stake key within HD wallet. If you seek compatibility with Daedalus or Yoroi, use this as well!

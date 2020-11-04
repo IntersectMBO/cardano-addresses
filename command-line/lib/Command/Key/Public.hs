@@ -48,14 +48,20 @@ mod liftCmd = command "public" $
             ])
   where
     parser = Public
-        <$> encodingOpt [humanReadablePart|xpub|]
+        <$> encodingOpt [humanReadablePart|???|]
         <*> publicOpt
 
 run :: Cmd -> IO ()
 run Public{encoding, chainCode} = do
     xprv <- hGetXPrv stdin
     let xpub = toXPub xprv
-    bytes <- case chainCode of
-        WithChainCode -> pure $ xpubToBytes xpub
-        WithoutChainCode -> pure $ xpubPublicKey xpub
-    hPutBytes stdout bytes encoding
+    (bytes, encoding') <- case chainCode of
+        WithChainCode -> pure
+            ( xpubToBytes xpub
+            , fmap (const [humanReadablePart|xpub|] ) encoding
+            )
+        WithoutChainCode -> pure
+            ( xpubPublicKey xpub
+            , fmap (const [humanReadablePart|pub|] ) encoding
+            )
+    hPutBytes stdout bytes encoding'
