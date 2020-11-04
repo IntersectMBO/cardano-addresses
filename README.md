@@ -31,7 +31,7 @@ Here's are some key examples:
   <summary>How to generate a recovery phrase</summary>
 
 ```
-$ cardano-address recovery-phrase generate --size 15
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
 east student silly already breeze enact seat trade few way online skin grass humble electric
 ```
 </details>
@@ -40,31 +40,45 @@ east student silly already breeze enact seat trade few way online skin grass hum
   <summary>How to generate a root private key</summary>
 
 ```
-$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
-$ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley
-xprv1fzu4e8cecxshgzzxzh7557sd8tffqreeq2je7fgsm7f02mq849vdupw7qwgxc3qawyqev0l8ew0f4fkp8hvr8mskz4hz6e6ejzjlevcskcl6lqpr07u7552fsfgteztuclse7luh4cp493zdhkrjdss0250cdw8n
+$ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley
+xprv1zz8x2k6jemuq884k4s4c862n2maaskk07ua7xc4pcegfd70fx9ymnhrk5jkex5rh5fggph0682rdxjpaf97lkrmqqs49md3mq0n5ds4e07en8xnyn3g3f85zn85gapcwkht6y5djqrjmqdnqp2rg5nvmycwgyqvx
 ```
 
 Notice the `xprv` prefix to identify an e**x**tended **prv**ivate key. Should you prefer an hexadecimal output, you can choose a different output encoding via a special flag:
 
 ```
-$ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley --base16
-48b95c9f19c1a174084615fd4a7a0d3ad2900f3902a59f2510df92f56c07a958
-de05de03906c441d7101963fe7cb9e9aa6c13dd833ee16156e2d675990a5fcb3
-10b63faf80237fb9ea51498250bc897cc7e19f7f97ae0352c44dbd8726c20f55
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
+$ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley --base16
+108e655b52cef8039eb6ac2b83e95356fbd85acff73be362a1c65096f9e93149
+b9dc76a4ad935077a25080ddfa3a86d3483d497dfb0f60042a5db63b03e746c2
+b97fb3339a649c51149e8299e88e870eb5d7a251b200e5b036600a868a4d9b26
 ```
 </details>
 
 <details>
-  <summary>How to generate a public stake key</summary>
+  <summary>How to generate an extended public stake key (public key plus chain code)</summary>
 
 ```
-$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.prv
-$ cat recovery-phrase.prv \
-| cardano-address key from-recovery-phrase Shelley \
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
+$ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
-| cardano-address key public
-xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sjlugy655aqemlvk6gmkuna46xwj9g4frwzw
+| cardano-address key public --with-chain-code
+xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7yak6lmcyst8yclpm3yalrspc7q2wy9f6683x6f9z4e3gclhs5snst6nr2z
+```
+
+> :information_source: `1852H/1815H/0H/2/0` is the derivation path that is typically used by Cardano wallet to identify a stake key within HD wallet. If you seek compatibility with Daedalus or Yoroi, use this as well!
+
+</details>
+
+<details>
+  <summary>How to generate a public stake key (public key without chain code)</summary>
+
+```
+$ cardano-address recovery-phrase generate --size 15 > recovery-phrase.txt
+$ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
+| cardano-address key child 1852H/1815H/0H/2/0 \
+| cardano-address key public --without-chain-code
+pub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qssu5l3
 ```
 
 > :information_source: `1852H/1815H/0H/2/0` is the derivation path that is typically used by Cardano wallet to identify a stake key within HD wallet. If you seek compatibility with Daedalus or Yoroi, use this as well!
@@ -82,7 +96,7 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
   | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet
 
   addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek
@@ -100,9 +114,9 @@ xpub16y4vhpyuj2t84gh2qfe3ydng3wc37yqzxev6gce380fvvg47ye8um3dm3wn5a64gt7l0fh5j6sj
   | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet \
-  | cardano-address address delegation --from-key $(cat stake.prv | cardano-address key public)
+  | cardano-address address delegation --from-key $(cat stake.prv | cardano-address key public --with-chain-code)
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
 ```
 </details>
@@ -129,14 +143,14 @@ xprv1vpr59y3p3cfggk85x6dvmlpkwm9f4c99lvkmw8r6j5vwd669830rw5lvsuh8530q897ht9a297k
 ```
  The corresponding verification keys and their hashes can be obtained as follows
 ```
-$ cat signingKey1.xprv | cardano-address key public | cardano-address key hash --base16 > verKey1.hash
+$ cat signingKey1.xprv | cardano-address key public --with-chain-code | cardano-address key hash --base16 > verKey1.hash
 de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea
-$ cat signingKey2.xprv | cardano-address key public | cardano-address key hash --base16 > verKey2.hash
+$ cat signingKey2.xprv | cardano-address key public --with-chain-code | cardano-address key hash --base16 > verKey2.hash
 aca52d7d28ce353f4766e4e2c8cc2208c7113d794e776eafb8c07a80
 ```
 Also notice the default hrp (in bech32) for the hashes of verification key - **xpub_hash**
 ```
-$ cat signingKey1.xprv | cardano-address key public | cardano-address key hash
+$ cat signingKey1.xprv | cardano-address key public --with-chain-code | cardano-address key hash
 xpub_hash1mevxrng9axvctvk9s64nsduscesqnyyqjgr0sn5katdw5egajw2
 ```
  Now we can construct the script using the hashes of verification keys
@@ -174,7 +188,7 @@ script_hash15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465uz36435
   | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet \
   | cardano-address address delegation --from-script $(cardano-address script hash "$(cat script.txt)")
   addr_test1yqqc24zex4mqch3hp5q7da87mwufkl7hncg472phe74ea2...

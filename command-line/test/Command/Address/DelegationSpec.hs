@@ -49,7 +49,7 @@ specShelley :: [String] -> String -> String -> String -> SpecWith ()
 specShelley phrase path addr want = it ("golden shelley (delegation) " <> addr) $ do
     stakeKey <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
-       >>= cli [ "key", "public" ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
     out <- cli [ "address", "delegation", "--from-key", stakeKey ] addr
     out `shouldBe` want
 

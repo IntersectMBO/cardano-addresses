@@ -77,5 +77,5 @@ prop_publicKeyDerivation ix xprv = do
         assert ("you must use soft indexes only" `isInfixOf` err)
   where
     bytes  = T.unpack $ T.decodeUtf8 $ convertToBase Base16 $ xprvToBytes xprv
-    public = cli [ "key", "public" ]
+    public = cli [ "key", "public", "--with-chain-code" ]
     child  = cli [ "key", "child", derivationIndexToString ix ]

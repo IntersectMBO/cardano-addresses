@@ -76,7 +76,7 @@ mod liftCmd = command "pointer" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/0/0 > addr.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat addr.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag 0\\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address pointer 42 14 0"
             , indent 2 $ string "addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu"

@@ -19,7 +19,7 @@ specPublicDerivationUsesSoft :: SpecWith ()
 specPublicDerivationUsesSoft = it "Public derivation requires soft indexes" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
               >>= cli [ "key", "from-recovery-phrase", "icarus" ]
-              >>= cli [ "key", "public" ]
+              >>= cli [ "key", "public", "--with-chain-code" ]
               >>= cli [ "key", "child", "14H" ]
 
     out `shouldBe` ""

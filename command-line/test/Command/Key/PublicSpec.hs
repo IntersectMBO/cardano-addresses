@@ -19,8 +19,8 @@ specKeyNotPrivate :: SpecWith ()
 specKeyNotPrivate = it "fail if key isn't private" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
               >>= cli [ "key", "from-recovery-phrase", "icarus" ]
-              >>= cli [ "key", "public" ]
-              >>= cli [ "key", "public" ]
+              >>= cli [ "key", "public", "--with-chain-code" ]
+              >>= cli [ "key", "public", "--with-chain-code" ]
 
     out `shouldBe` ""
     err `shouldContain` "Couldn't convert bytes into extended private key."

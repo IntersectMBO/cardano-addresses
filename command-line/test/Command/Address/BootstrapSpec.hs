@@ -53,16 +53,16 @@ specIcarus :: [String] -> String -> String -> String -> SpecWith ()
 specIcarus phrase path networkTag want = it ("golden icarus " <> path <> " (" <> networkTag <> ")") $ do
     out <- cli [ "key", "from-recovery-phrase", "icarus" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
-       >>= cli [ "key", "public" ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
        >>= cli [ "address", "bootstrap", "--network-tag", networkTag ]
     out `shouldBe` want
 
 specByron :: [String] -> String -> String -> String -> SpecWith ()
 specByron phrase path networkTag want = it ("golden byron " <> path <> " (" <> networkTag <> ")") $ do
     rootPrv <- cli [ "key", "from-recovery-phrase", "byron" ] (unwords phrase)
-    rootPub <- cli [ "key", "public" ] rootPrv
+    rootPub <- cli [ "key", "public", "--with-chain-code" ] rootPrv
     out <- cli [ "key", "child", "--legacy", path ] rootPrv
-       >>= cli [ "key", "public" ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
        >>= cli [ "address", "bootstrap", "--root", rootPub, "--network-tag", networkTag, path ]
     out `shouldBe` want
 
