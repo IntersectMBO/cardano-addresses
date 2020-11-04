@@ -60,7 +60,7 @@ b97fb3339a649c51149e8299e88e870eb5d7a251b200e5b036600a868a4d9b26
 ```
 $ cat recovery-phrase.txt | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
-| cardano-address key public
+| cardano-address key public --with-chain-code
 xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7yak6lmcyst8yclpm3yalrspc7q2wy9f6683x6f9z4e3gclhs5snst6nr2z
 ```
 
@@ -74,7 +74,7 @@ xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7yak6lmcyst8yclpm3yalrspc
 ```
 $ cat recovery-phrase.prv | cardano-address key from-recovery-phrase Shelley \
 | cardano-address key child 1852H/1815H/0H/2/0 \
-| cardano-address key public --pub
+| cardano-address key public --without-chain-code
 xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qh83kg9
 ```
 
@@ -93,7 +93,7 @@ xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qh83kg9
   | cardano-address key child 1852H/1815H/0H/0/0 > addr.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet
 
   addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek
@@ -111,9 +111,9 @@ xpub16apaenn9ut6s40lcw3l8v68xawlrlq20z2966uzcx8jmv2q9uy7qh83kg9
   | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet \
-  | cardano-address address delegation --from-key $(cat stake.prv | cardano-address key public)
+  | cardano-address address delegation --from-key $(cat stake.prv | cardano-address key public --with-chain-code)
   addr1vrcmygdgp7v3mhz78v8kdsfru0y9wysnr9pgvvgmdqx2w0qrg8swg...
 ```
 </details>
@@ -140,14 +140,14 @@ xprv1vpr59y3p3cfggk85x6dvmlpkwm9f4c99lvkmw8r6j5vwd669830rw5lvsuh8530q897ht9a297k
 ```
  The corresponding verification keys and their hashes can be obtained as follows
 ```
-$ cat signingKey1.xprv | cardano-address key public | cardano-address key hash --base16 > verKey1.hash
+$ cat signingKey1.xprv | cardano-address key public --with-chain-code | cardano-address key hash --base16 > verKey1.hash
 de5861cd05e99985b2c586ab383790c6600990809206f84e96eadaea
-$ cat signingKey2.xprv | cardano-address key public | cardano-address key hash --base16 > verKey2.hash
+$ cat signingKey2.xprv | cardano-address key public --with-chain-code | cardano-address key hash --base16 > verKey2.hash
 aca52d7d28ce353f4766e4e2c8cc2208c7113d794e776eafb8c07a80
 ```
 Also notice the default hrp (in bech32) for the hashes of verification key - **xpub_hash**
 ```
-$ cat signingKey1.xprv | cardano-address key public | cardano-address key hash
+$ cat signingKey1.xprv | cardano-address key public --with-chain-code | cardano-address key hash
 xpub_hash1mevxrng9axvctvk9s64nsduscesqnyyqjgr0sn5katdw5egajw2
 ```
  Now we can construct the script using the hashes of verification keys
@@ -185,7 +185,7 @@ script_hash15hx806zf0g8kcv399dpxf6fq4l98myqpvvzj2rltg465uz36435
   | cardano-address key child 1852H/1815H/0H/2/0 > stake.prv
 
   $ cat addr.prv \
-  | cardano-address key public \
+  | cardano-address key public --with-chain-code \
   | cardano-address address payment --from-key --network-tag testnet \
   | cardano-address address delegation --from-script $(cardano-address script hash "$(cat script.txt)")
   addr_test1yqqc24zex4mqch3hp5q7da87mwufkl7hncg472phe74ea2...

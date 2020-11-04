@@ -43,8 +43,8 @@ mod liftCmd = command "public" $
         <> progDesc "Get the public counterpart of a private key"
         <> footerDoc (Just $ string $ mconcat
             [ "The private key is read from stdin."
-            , "Extended public key is default. In order to get public key"
-            , ", ei., without chain code use '--pub'."
+            , "To get extended public key pass '--with-chain-code'."
+            , "To get public key pass '--without-chain-code'."
             ])
   where
     parser = Public

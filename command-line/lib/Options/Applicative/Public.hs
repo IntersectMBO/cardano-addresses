@@ -13,8 +13,10 @@ module Options.Applicative.Public
 
 import Prelude
 
+import Control.Applicative
+    ( (<|>) )
 import Options.Applicative
-    ( Parser, flag, long )
+    ( Parser, flag', long )
 
 
 data PublicType = WithChainCode | WithoutChainCode
@@ -26,6 +28,7 @@ data PublicType = WithChainCode | WithoutChainCode
 
 -- | Parse an 'PublicType' from the command-line, as set of non-overlapping flags.
 publicOpt :: Parser PublicType
-publicOpt = withoutCC
+publicOpt = withoutCC <|> withCC
   where
-    withoutCC = flag WithChainCode WithoutChainCode (long "pub")
+    withoutCC = flag' WithoutChainCode (long "without-chain-code")
+    withCC = flag' WithChainCode (long "with-chain-code")

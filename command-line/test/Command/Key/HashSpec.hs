@@ -29,6 +29,6 @@ specKeyPublic :: SpecWith ()
 specKeyPublic = it "succeds if key is public" $ do
     out <- cli [ "recovery-phrase", "generate" ] ""
            >>= cli [ "key", "from-recovery-phrase", "icarus" ]
-           >>= cli [ "key", "public" ]
+           >>= cli [ "key", "public", "--with-chain-code" ]
            >>= cli [ "key", "hash" ]
     out `shouldContain` "xpub_hash"
