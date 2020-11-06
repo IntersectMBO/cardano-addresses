@@ -1,7 +1,7 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -18,13 +18,7 @@ import Prelude hiding
 import Cardano.Address
     ( ChainPointer (..), bech32With, unsafeMkAddress )
 import Cardano.Address.Style.Shelley
-    ( Credential (..)
-    , ErrExtendAddress (..)
-    , inspectNetworkDiscriminant
-    , shelleyTestnet
-    )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+    ( Credential (..), ErrExtendAddress (..) )
 import Numeric.Natural
     ( Natural )
 import Options.Applicative
@@ -46,17 +40,17 @@ import Options.Applicative.Help.Pretty
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBytes, progName )
+    ( hGetBech32, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
 
-
 data Cmd = Cmd
-    { _slotNum :: Natural
-    , _transactionIndex :: Natural
-    , _outputIndex :: Natural
+    { slotNum :: Natural
+    , transactionIndex :: Natural
+    , outputIndex :: Natural
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -88,23 +82,19 @@ mod liftCmd = command "pointer" $
         <*> argument auto (metavar "OUT"  <> help "An output index within that transaction")
 
 run :: Cmd -> IO ()
-run Cmd{_slotNum,_transactionIndex,_outputIndex} = do
-    bytes <- hGetBytes stdin
-    let ptr = ChainPointer
-            { slotNum = _slotNum
-            , transactionIndex = _transactionIndex
-            , outputIndex = _outputIndex
-            }
+run Cmd{slotNum,transactionIndex,outputIndex} = do
+    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     case Shelley.extendAddress (unsafeMkAddress bytes) (DelegationFromPointer ptr) of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->
             fail msg
         Right addr ->
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With (hrpFor addr) addr
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
-    hrpFor addr = case inspectNetworkDiscriminant addr of
-        Just networkTag | networkTag == shelleyTestnet ->
-            [humanReadablePart|addr_test|]
-        _ ->
-            [humanReadablePart|addr|]
+    allowedPrefixes =
+        [ CIP5.addr
+        , CIP5.addr_test
+        ]
+
+    ptr = ChainPointer { slotNum, transactionIndex, outputIndex  }

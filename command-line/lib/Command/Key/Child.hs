@@ -147,7 +147,7 @@ run Child{path} = do
     childHrpFor _ hrp
         | hrp == CIP5.root_xsk = fail
             "When deriving child keys from a parent root key, you must \
-            \provide either 2, 3 or 5 path segments. Provide 2 (account and\
+            \provide either 2, 3 or 5 path segments. Provide 2 (account and \
             \address) if you intend to derive a legacy Byron key. Provide 3 or 5 \
             \(purpose, coin_type, account, role, index) if you're dealing with \
             \anything else."

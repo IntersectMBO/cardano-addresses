@@ -26,8 +26,8 @@ spec = describeCmd [ "address", "inspect" ] $ do
 
     specInspectAddress ["Byron", "address_index", "account_index"]
         [ "--root"
-        , "xpub18amv7cs8kj0mxpk0l3vk2w6g22vyf7y5texr9huevqg9kd3davgv\
-          \5j52xrfcf90kxx2zdrrl826pzc2kptgwegzzzpfgddwqkrk2gpc80hdq2"
+        , "root_xvk18amv7cs8kj0mxpk0l3vk2w6g22vyf7y5texr9huevqg9kd3dav\
+          \gv5j52xrfcf90kxx2zdrrl826pzc2kptgwegzzzpfgddwqkrk2gpclvvx76"
         ]
         "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZ\
         \q2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"
@@ -87,8 +87,8 @@ spec = describeCmd [ "address", "inspect" ] $ do
     -- Provided key is not the root key.
     specInspectInvalid "Failed to decrypt derivation path"
         [ "--root"
-        , "xpub1kvz64d7yggggk5uc8kf8t8jjmh3djlx7ksr2xu25na5ypjzjs59j\
-          \8ym5gqga8un7yg8e6et6sex8kx0cejwjtz8gh8pj0zg7kc53nuq4x3xaw"
+        , "root_xvk1kvz64d7yggggk5uc8kf8t8jjmh3djlx7ksr2xu25na5ypjzjs5\
+          \9j8ym5gqga8un7yg8e6et6sex8kx0cejwjtz8gh8pj0zg7kc53nuqd92dr7"
         ]
         "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZ\
         \q2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"

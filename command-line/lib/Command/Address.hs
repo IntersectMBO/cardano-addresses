@@ -35,10 +35,10 @@ import qualified Command.Address.Reward as Reward
 data Cmd
     = Bootstrap Bootstrap.Cmd
     | Payment Payment.Cmd
+    | Reward Reward.Cmd
     | Delegation Delegation.Cmd
     | Pointer Pointer.Cmd
     | Inspect Inspect.Cmd
-    | Reward Reward.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -56,17 +56,17 @@ mod liftCmd = command "address" $
     parser = subparser $ mconcat
         [ Bootstrap.mod Bootstrap
         , Payment.mod Payment
+        , Reward.mod Reward
         , Delegation.mod Delegation
         , Pointer.mod Pointer
         , Inspect.mod Inspect
-        , Reward.mod Reward
         ]
 
 run :: Cmd -> IO ()
 run = \case
     Bootstrap sub -> Bootstrap.run sub
     Payment sub -> Payment.run sub
+    Reward sub -> Reward.run sub
     Delegation sub -> Delegation.run sub
     Pointer sub -> Pointer.run sub
     Inspect sub -> Inspect.run sub
-    Reward sub -> Reward.run sub

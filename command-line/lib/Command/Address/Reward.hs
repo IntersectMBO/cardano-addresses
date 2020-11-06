@@ -1,6 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -14,37 +13,33 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( NetworkTag (..), bech32With )
+    ( NetworkTag (..), unAddress )
+import Cardano.Address.Derivation
+    ( xpubFromBytes )
+import Cardano.Address.Script
+    ( scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
-    ( Credential (..), mkNetworkDiscriminant, shelleyTestnet, unsafeFromRight )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
-import Fmt
-    ( build, fmt )
+    ( Credential (..), shelleyTestnet, unsafeFromRight )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
-import Options.Applicative.Credential
-    ( CredentialType (..), credentialOpt )
 import Options.Applicative.Discrimination
-    ( networkTagOpt )
+    ( fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
     ( Style (..) )
-import System.Exit
-    ( die )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetScriptHash, hGetXPub, progName )
+    ( hGetBech32, hPutBytes, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.Text.Encoding as T
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-data Cmd = Cmd
-    {  credentialType :: CredentialType
-    ,  networkTag :: NetworkTag
+newtype Cmd = Cmd
+    {  networkTag :: NetworkTag
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -70,24 +65,41 @@ mod liftCmd = command "stake" $
             ])
   where
     parser = Cmd
-        <$> credentialOpt
-        <*> networkTagOpt Shelley
+        <$> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag,credentialType} = do
-    case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
-        Left e -> die (fmt $ build e)
-        Right discriminant -> do
-            addr <- case credentialType of
-                CredentialFromKey -> do
-                    xpub <- hGetXPub stdin
-                    let credential = DelegationFromKey $ Shelley.liftXPub xpub
-                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
-                CredentialFromScript -> do
-                    scriptHash <- hGetScriptHash stdin
-                    let credential = DelegationFromScript scriptHash
-                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
+run Cmd{networkTag} = do
+    discriminant <- fromNetworkTag networkTag
+    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
+    addr <- stakeAddressFromBytes discriminant bytes hrp
+    hPutBytes stdout (unAddress addr) (EBech32 stakeHrp)
   where
-    hrp | networkTag == shelleyTestnet = [humanReadablePart|stake_test|]
-        | otherwise = [humanReadablePart|stake|]
+    stakeHrp
+        | networkTag == shelleyTestnet = CIP5.stake_test
+        | otherwise = CIP5.stake
+
+    -- TODO: Also allow `XXX_vk` prefixes. We don't need the chain code to
+    -- construct a payment credential. This will however need some additional
+    -- abstraction over `xpubFromBytes` but I've done enough yake-shaving at
+    -- this stage, so leaving this as an item for later.
+    allowedPrefixes =
+        [ CIP5.stake_xvk
+        , CIP5.script
+        ]
+
+    stakeAddressFromBytes discriminant bytes hrp
+        | hrp == CIP5.script = do
+            case scriptHashFromBytes bytes of
+                Nothing ->
+                    fail "Couldn't convert bytes into script hash."
+                Just h  -> do
+                    let credential = DelegationFromScript h
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+
+        | otherwise = do
+            case xpubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into extended public key."
+                Just key -> do
+                    let credential = DelegationFromKey $ Shelley.liftXPub key
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential

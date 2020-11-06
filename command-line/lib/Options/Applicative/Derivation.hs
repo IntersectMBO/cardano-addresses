@@ -27,26 +27,26 @@ module Options.Applicative.Derivation
     , derivationIndexFromString
 
     -- * XPub / XPrv
+    , xpubReader
     , xpubOpt
     , xpubArg
 
     -- * Internal
-    , encodingReader
+    , bech32Reader
     ) where
 
 import Prelude
 
 import Cardano.Address.Derivation
     ( DerivationType (..), Index, XPub, xpubFromBytes )
+import Codec.Binary.Bech32
+    ( HumanReadablePart, humanReadablePartToText )
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..)
-    , detectEncoding
-    , fromBase16
-    , fromBase58
-    , fromBech32
-    )
+    ( fromBech32 )
 import Control.Arrow
     ( left )
+import Control.Monad
+    ( when )
 import Data.ByteString
     ( ByteString )
 import Data.List
@@ -185,34 +185,48 @@ derivationIndexToString ix_@(DerivationIndex ix)
   where
     ix' = fromIntegral ix - indexToInteger firstHardened
 
-encodingReader :: String -> Either String ByteString
-encodingReader str = case detectEncoding str of
-    Just EBase16   -> fromBase16 (toBytes str)
-    Just EBech32{} -> snd <$> fromBech32 markCharsRedAtIndices (toBytes str)
-    Just EBase58   -> fromBase58 (toBytes str)
-    Nothing        -> Left
-        "Couldn't detect input encoding? The key must be encoded as \
-        \base16, bech32 or base58."
-  where
-    toBytes = T.encodeUtf8 . T.pack
+--
+-- XPub / XPrv
+--
 
-xpubReader :: String -> Either String XPub
-xpubReader str = do
-    bytes <- encodingReader str
+xpubReader :: [HumanReadablePart] -> String -> Either String XPub
+xpubReader allowedPrefixes str = do
+    (_hrp, bytes) <- bech32Reader allowedPrefixes str
     case xpubFromBytes bytes of
         Just xpub -> pure xpub
         Nothing   -> Left
             "Failed to convert bytes into a valid extended public key."
 
-xpubOpt :: String -> String -> Parser XPub
-xpubOpt name helpDoc =
-    option (eitherReader xpubReader) $ mempty
+xpubOpt :: [HumanReadablePart] -> String -> String -> Parser XPub
+xpubOpt allowedPrefixes name helpDoc =
+    option (eitherReader (xpubReader allowedPrefixes)) $ mempty
         <> long name
         <> metavar "XPUB"
         <> help helpDoc
 
-xpubArg :: String -> Parser XPub
-xpubArg helpDoc =
-    argument (eitherReader xpubReader) $ mempty
+xpubArg :: [HumanReadablePart] -> String -> Parser XPub
+xpubArg allowedPrefixes helpDoc =
+    argument (eitherReader (xpubReader allowedPrefixes)) $ mempty
         <> metavar "XPUB"
         <> help helpDoc
+
+--
+-- Internal
+--
+
+bech32Reader
+    :: [HumanReadablePart]
+    -> String
+    -> Either String (HumanReadablePart, ByteString)
+bech32Reader allowedPrefixes str = do
+    (hrp, bytes) <- fromBech32 markCharsRedAtIndices (toBytes str)
+    when (hrp `notElem` allowedPrefixes) $ Left
+        $ "Invalid human-readable prefix. Prefix ought to be one of: "
+        <> show (showHrp <$> allowedPrefixes)
+    pure (hrp, bytes)
+  where
+    showHrp :: HumanReadablePart -> String
+    showHrp = T.unpack . humanReadablePartToText
+
+    toBytes :: String -> ByteString
+    toBytes = T.encodeUtf8 . T.pack

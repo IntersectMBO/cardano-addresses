@@ -27,10 +27,10 @@ spec = describeCmd [ "address", "pointer" ] $ do
 
     specMalformed ("💩","💩","💩") defaultAddrMainnet
 
-    specInvalidAddress
+    specMalformedAddress
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
-    specInvalidAddress
+    specMalformedAddress
         "DdzFFzCqrhsf6hiTYkK5gBAhVDwg3SiaHiEL9wZLYU3WqLUpx6DP\
         \5ZRJr4rtNRXbVNfk89FCHCDR365647os9AEJ8MKZNvG7UKTpythG"
 
@@ -50,6 +50,12 @@ specMalformed (a,b,c) addr = it ("malformed pointer " <> unwords [a,b,c]) $ do
     out `shouldBe` ""
     err `shouldContain` "cannot parse value"
     err `shouldContain` "Usage"
+
+specMalformedAddress :: String -> SpecWith ()
+specMalformedAddress addr = it ("invalid address " <> addr) $ do
+    (out, err) <- cli [ "address", "pointer", "0", "0", "0" ] addr
+    out `shouldBe` ""
+    err `shouldContain` "Bech32 error"
 
 specInvalidAddress :: String -> SpecWith ()
 specInvalidAddress addr = it ("invalid address " <> addr) $ do

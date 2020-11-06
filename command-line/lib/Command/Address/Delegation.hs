@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -21,28 +20,22 @@ import Cardano.Address
 import Cardano.Address.Derivation
     ( Depth (..) )
 import Cardano.Address.Style.Shelley
-    ( Credential (..)
-    , ErrExtendAddress (..)
-    , inspectNetworkDiscriminant
-    , shelleyTestnet
-    )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+    ( Credential (..), ErrExtendAddress (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+import Options.Applicative.Credential
+    ( delegationCredentialArg )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
-import Options.Applicative.Script
-    ( stakeCredentialArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBytes, progName )
+    ( hGetBech32, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
-
 
 newtype Cmd = Cmd
     { credential :: Credential 'DelegationK
@@ -73,21 +66,20 @@ mod liftCmd = command "delegation" $
             ])
   where
     parser = Cmd
-        <$> stakeCredentialArg "An extended stake public key or a script hash."
+        <$> delegationCredentialArg "An extended stake public key or a script hash."
 
 run :: Cmd -> IO ()
 run Cmd{credential} = do
-    bytes <- hGetBytes stdin
+    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     case Shelley.extendAddress (unsafeMkAddress bytes) credential of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->
             fail msg
         Right addr ->
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With (hrpFor addr) addr
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
   where
-    hrpFor addr = case inspectNetworkDiscriminant addr of
-        Just networkTag | networkTag == shelleyTestnet ->
-            [humanReadablePart|addr_test|]
-        _ ->
-            [humanReadablePart|addr|]
+    allowedPrefixes =
+        [ CIP5.addr
+        , CIP5.addr_test
+        ]
