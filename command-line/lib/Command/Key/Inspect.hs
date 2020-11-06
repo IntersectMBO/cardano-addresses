@@ -14,6 +14,8 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( XPrv, XPub, xprvChainCode, xprvPrivateKey, xpubChainCode, xpubPublicKey )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Data.Aeson
@@ -31,6 +33,7 @@ import System.IO
 import System.IO.Extra
     ( hGetXP__ )
 
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.ByteString.Lazy.Char8 as BL8
@@ -52,13 +55,27 @@ mod liftCmd = command "inspect" $
 
 run :: Cmd -> IO ()
 run Inspect = do
-    either inspectXPub inspectXPrv =<< hGetXP__ stdin
+    either inspectXPub inspectXPrv =<< hGetXP__ stdin allowedPrefixes
   where
+    allowedPrefixes :: [HumanReadablePart]
+    allowedPrefixes =
+        [ CIP5.root_xvk
+        , CIP5.root_xsk
+        , CIP5.acct_xvk
+        , CIP5.acct_xsk
+        , CIP5.addr_xvk
+        , CIP5.addr_xsk
+        , CIP5.script_xvk
+        , CIP5.script_xsk
+        , CIP5.stake_xvk
+        , CIP5.stake_xsk
+        ]
+
     base16 :: ByteString -> Text
     base16 = T.decodeUtf8 . encode EBase16
 
-    inspectXPub :: XPub -> IO ()
-    inspectXPub xpub = do
+    inspectXPub :: (HumanReadablePart, XPub) -> IO ()
+    inspectXPub (_, xpub) = do
         BL8.hPutStrLn stdout $ Json.encodePretty $ Json.object
             [ "key_type" .= Json.String "public"
             , "extended_key" .= Json.String (base16 pub)
@@ -68,8 +85,8 @@ run Inspect = do
         pub = xpubPublicKey xpub
         cc  = xpubChainCode xpub
 
-    inspectXPrv :: XPrv -> IO ()
-    inspectXPrv xprv =
+    inspectXPrv :: (HumanReadablePart, XPrv) -> IO ()
+    inspectXPrv (_, xprv) =
         BL8.hPutStrLn stdout $ Json.encodePretty $ Json.object
             [ "key_type" .= Json.String "private"
             , "extended_key" .= Json.String (base16 prv)

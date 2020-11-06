@@ -26,10 +26,6 @@ module Options.Applicative.Derivation
     , derivationIndexToString
     , derivationIndexFromString
 
-    -- * Derivation Scheme
-    , DerivationScheme
-    , derivationSchemeOpt
-
     -- * XPub / XPrv
     , xpubOpt
     , xpubArg
@@ -41,7 +37,7 @@ module Options.Applicative.Derivation
 import Prelude
 
 import Cardano.Address.Derivation
-    ( DerivationScheme (..), DerivationType (..), Index, XPub, xpubFromBytes )
+    ( DerivationType (..), Index, XPub, xpubFromBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..)
     , detectEncoding
@@ -62,7 +58,6 @@ import Options.Applicative
     , argument
     , completer
     , eitherReader
-    , flag
     , help
     , listCompleter
     , long
@@ -190,19 +185,10 @@ derivationIndexToString ix_@(DerivationIndex ix)
   where
     ix' = fromIntegral ix - indexToInteger firstHardened
 
---
--- DerivationScheme
---
-
--- | Parse a 'DerivationScheme' from the command-line as an optional flag.
-derivationSchemeOpt :: Parser DerivationScheme
-derivationSchemeOpt =
-    flag DerivationScheme2 DerivationScheme1 (long "legacy")
-
 encodingReader :: String -> Either String ByteString
 encodingReader str = case detectEncoding str of
     Just EBase16   -> fromBase16 (toBytes str)
-    Just EBech32{} -> fromBech32 markCharsRedAtIndices (toBytes str)
+    Just EBech32{} -> snd <$> fromBech32 markCharsRedAtIndices (toBytes str)
     Just EBase58   -> fromBase58 (toBytes str)
     Nothing        -> Left
         "Couldn't detect input encoding? The key must be encoded as \

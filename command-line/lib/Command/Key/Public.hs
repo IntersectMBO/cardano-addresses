@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -16,12 +15,10 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( toXPub, xpubPublicKey, xpubToBytes )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Encoding
-    ( Encoding, encodingOpt )
 import Options.Applicative.Help.Pretty
     ( string )
 import Options.Applicative.Public
@@ -31,10 +28,10 @@ import System.IO
 import System.IO.Extra
     ( hGetXPrv, hPutBytes )
 
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-data Cmd = Public
-    { encoding :: Encoding
-    , chainCode :: PublicType
+newtype Cmd = Public
+    { chainCode :: PublicType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -48,20 +45,38 @@ mod liftCmd = command "public" $
             ])
   where
     parser = Public
-        <$> encodingOpt [humanReadablePart|???|]
-        <*> publicOpt
+        <$> publicOpt
 
 run :: Cmd -> IO ()
-run Public{encoding, chainCode} = do
-    xprv <- hGetXPrv stdin
+run Public{chainCode} = do
+    (hrp, xprv) <- hGetXPrv stdin allowedPrefixes
     let xpub = toXPub xprv
-    (bytes, encoding') <- case chainCode of
-        WithChainCode -> pure
-            ( xpubToBytes xpub
-            , fmap (const [humanReadablePart|xpub|] ) encoding
-            )
-        WithoutChainCode -> pure
-            ( xpubPublicKey xpub
-            , fmap (const [humanReadablePart|pub|] ) encoding
-            )
-    hPutBytes stdout bytes encoding'
+    let bytes = case chainCode of
+            WithChainCode    -> xpubToBytes xpub
+            WithoutChainCode -> xpubPublicKey xpub
+    hPutBytes stdout bytes (EBech32 $ prefixToPublic chainCode hrp)
+  where
+    allowedPrefixes =
+        [ CIP5.root_xsk
+        , CIP5.acct_xsk
+        , CIP5.addr_xsk
+        , CIP5.stake_xsk
+        , CIP5.script_xsk
+        ]
+
+    prefixToPublic WithChainCode hrp
+        | hrp == CIP5.root_xsk   = CIP5.root_xvk
+        | hrp == CIP5.acct_xsk   = CIP5.acct_xvk
+        | hrp == CIP5.addr_xsk   = CIP5.addr_xvk
+        | hrp == CIP5.stake_xsk  = CIP5.stake_xvk
+        | hrp == CIP5.script_xsk = CIP5.script_xvk
+
+    prefixToPublic WithoutChainCode hrp
+        | hrp == CIP5.root_xsk   = CIP5.root_vk
+        | hrp == CIP5.acct_xsk   = CIP5.acct_vk
+        | hrp == CIP5.addr_xsk   = CIP5.addr_vk
+        | hrp == CIP5.stake_xsk  = CIP5.stake_vk
+        | hrp == CIP5.script_xsk = CIP5.script_vk
+
+    prefixToPublic _ _ =
+        error "impossible: pattern-match not covering all cases."

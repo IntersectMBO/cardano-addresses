@@ -23,4 +23,4 @@ specKeyNotPrivate = it "fail if key isn't private" $ do
               >>= cli [ "key", "public", "--with-chain-code" ]
 
     out `shouldBe` ""
-    err `shouldContain` "Couldn't convert bytes into extended private key."
+    err `shouldContain` "Invalid human-readable prefix."

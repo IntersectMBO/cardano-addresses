@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -16,12 +15,10 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( xprvToBytes )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Encoding
-    ( Encoding, encodingOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
@@ -31,10 +28,11 @@ import System.IO
 import System.IO.Extra
     ( hGetSomeMnemonic, hPutBytes, progName )
 
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-data Cmd = FromRecoveryPhrase
-    { encoding :: Encoding
-    , style :: Style
+
+newtype Cmd = FromRecoveryPhrase
+    { style :: Style
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -50,11 +48,10 @@ mod liftCmd = command "from-recovery-phrase" $
             ])
   where
     parser = FromRecoveryPhrase
-        <$> encodingOpt [humanReadablePart|xprv|]
-        <*> styleArg
+        <$> styleArg
 
 run :: Cmd -> IO ()
-run FromRecoveryPhrase{encoding,style} = do
+run FromRecoveryPhrase{style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
-    hPutBytes stdout (xprvToBytes rootK) encoding
+    hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.root_xsk)

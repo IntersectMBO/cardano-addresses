@@ -13,34 +13,34 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
-    specGolden "byron" defaultPhrase "--base16"
-        "609b6958eb363277b5dba70326b47d730bf3ec0a9119a000ca27c5c7939d3f51\
-        \95169089ff22a393cea887f9c5a2d7f5d000882faf4cd5cf1925638bf0b41ccd\
-        \793d7bc5037200087714d438b49f2952a2dc03e9f3bdf7f046be725e40e9cdb3"
+    specGolden "byron" defaultPhrase
+        "root_xsk1vzdkjk8txce80dwm5upjddrawv9l8mq2jyv6qqx2ylzu0yua8age295\
+        \s38lj9gune65g07w95ttlt5qq3qh67nx4euvj2cut7z6pente84au2qmjqqy8w9x\
+        \58z6f722j5twq860nhhmlq347wf0yp6wdkvq80h42"
 
-    specGolden "icarus" defaultPhrase "--base16"
-        "00aa5f5f364980f4ac6295fd0fbf65643390d6bb1cf76536c2ebb02713c8ba50\
-        \d8903bee774b7bf8678ea0d6fded6d876db3b42bef687640cc514eb73f767537\
-        \a8c754f89bc9cc83533eab257d7c94625c95f0d749710428f5aa2404eeb6499b"
+    specGolden "icarus" defaultPhrase
+        "root_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3yp\
+        \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
+        \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
 
-    specGolden "jormungandr" defaultPhrase "--bech32"
-        "xprv1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3ypmaem\
-        \5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04ty47\
-        \he9rztj2lp46fwyzz3ad2yszwadjfnv4h6y7z"
+    specGolden "jormungandr" defaultPhrase
+        "root_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3yp\
+        \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
+        \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
 
-    specGolden "shelley" defaultPhrase "--bech32"
-        "xprv1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3ypmaem\
-        \5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04ty47\
-        \he9rztj2lp46fwyzz3ad2yszwadjfnv4h6y7z"
+    specGolden "shelley" defaultPhrase
+        "root_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3yp\
+        \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
+        \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
 
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
 
     specInvalidPhrase "shelley" invalidPhrase
 
-specGolden :: String -> [String] -> String -> String -> SpecWith ()
-specGolden style phrase encoding want = it ("golden " <> style) $ do
-    out <-  cli [ "key", "from-recovery-phrase", encoding, style ] (unwords phrase)
+specGolden :: String -> [String] -> String -> SpecWith ()
+specGolden style phrase want = it ("golden " <> style) $ do
+    out <-  cli [ "key", "from-recovery-phrase",  style ] (unwords phrase)
     out `shouldBe` want
 
 specInvalidStyle :: String -> [String] -> SpecWith ()

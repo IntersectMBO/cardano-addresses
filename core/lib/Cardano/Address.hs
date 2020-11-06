@@ -120,7 +120,7 @@ bech32With hrp =
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
 fromBech32 =
-    eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 (const id) . T.encodeUtf8
+    eitherToMaybe . fmap (unsafeMkAddress . snd) . E.fromBech32 (const id) . T.encodeUtf8
 
 -- | Encoding of addresses for certain key types and backend targets.
 --

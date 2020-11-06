@@ -28,13 +28,12 @@ module Cardano.Address.Script
     , KeyHash (..)
     , keyHashFromBytes
     , keyHashFromText
-
-    -- * Internal
-    , hashSize
     ) where
 
 import Prelude
 
+import Cardano.Address.Derivation
+    ( credentialHashSize, hashCredential )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), detectEncoding, encode, fromBase16 )
 import Control.Applicative
@@ -43,12 +42,6 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( when )
-import Crypto.Hash
-    ( hash )
-import Crypto.Hash.Algorithms
-    ( Blake2b_224 (..) )
-import Crypto.Hash.IO
-    ( HashAlgorithm (hashDigestSize) )
 import Data.Aeson
     ( FromJSON (..)
     , ToJSON (..)
@@ -78,7 +71,6 @@ import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.Binary.Bech32.TH as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
-import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.List as L
 import qualified Data.Text as T
@@ -148,7 +140,7 @@ prettyErrValidateScript = \case
     DuplicateSignatures ->
         "The list inside a script has duplicate keys."
     WrongKeyHash ->
-        "The hash of verification key is expected to have "<>show hashSize<>" bytes."
+        "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
 
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
 -- This is basically doing the symbolically following:
@@ -193,7 +185,7 @@ serialize script =
 
 -- | Computes the hash of a given script, by first serializing it to CBOR.
 toScriptHash :: Script -> ScriptHash
-toScriptHash = ScriptHash . blake2b224 . serialize
+toScriptHash = ScriptHash . hashCredential . serialize
 
 -- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
 -- 28-byte.
@@ -208,7 +200,7 @@ instance NFData ScriptHash
 -- @since 3.0.0
 scriptHashFromBytes :: ByteString -> Maybe ScriptHash
 scriptHashFromBytes bytes
-    | BS.length bytes /= hashSize = Nothing
+    | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
 -- | A 'KeyHash' type represents verification key hash that participate in building
@@ -224,7 +216,7 @@ instance NFData KeyHash
 -- @since 3.0.0
 keyHashFromBytes :: ByteString -> Maybe KeyHash
 keyHashFromBytes bytes
-    | BS.length bytes /= hashSize = Nothing
+    | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ KeyHash bytes
 
 data ErrorKeyHashFromText =
@@ -285,15 +277,6 @@ keyHashFromText txt =  case detectEncoding str of
 --
 -- Internal
 --
-
--- Hash a public key
-blake2b224 :: ByteString -> ByteString
-blake2b224 =
-    BA.convert . hash @_ @Blake2b_224
-
--- Size, in bytes, of a hash of public key (without the corresponding chain code)
-hashSize :: Int
-hashSize = hashDigestSize Blake2b_224
 
 -- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
 --
