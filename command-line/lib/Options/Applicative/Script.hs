@@ -1,16 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
 module Options.Applicative.Script
     (
-    -- ** Data-Types
-      ScriptError (..)
-    , prettyScriptError
-
     -- ** Applicative Parser
-    , scriptArg
+      scriptArg
     , scriptReader
     , scriptHashArg
     , scriptHashReader
@@ -19,43 +14,17 @@ module Options.Applicative.Script
 import Prelude
 
 import Cardano.Address.Script
-    ( ErrValidateScript
-    , Script (..)
-    , ScriptHash
-    , prettyErrValidateScript
-    , scriptHashFromBytes
-    , validateScript
-    )
+    ( Script (..), ScriptHash, scriptHashFromBytes )
 import Cardano.Address.Script.Parser
-    ( scriptFromString )
+    ( prettyErrValidateScript, scriptFromString )
 import Control.Arrow
     ( left )
-import Data.Bifunctor
-    ( bimap )
 import Options.Applicative
     ( Parser, argument, eitherReader, help, metavar )
 import Options.Applicative.Derivation
     ( bech32Reader )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
-
---
--- Data-Types
---
-
-data ScriptError
-    = MalformedScript
-    | InvalidScript ErrValidateScript
-    deriving (Eq, Show)
-
-prettyScriptError :: ScriptError -> String
-prettyScriptError = \case
-    MalformedScript ->
-        "Parsing of the script failed. The script should be composed of nested \
-        \lists, and the verification keys should be either encoded as base16, \
-        \bech32 or base58."
-    InvalidScript e ->
-        prettyErrValidateScript e
 
 --
 -- Applicative Parsers
@@ -69,12 +38,7 @@ scriptArg = argument (eitherReader scriptReader) $ mempty
     <> help "Script string."
 
 scriptReader :: String -> Either String Script
-scriptReader
-    = left prettyScriptError
-    . maybe (Left malformedScript) (\s -> bimap InvalidScript (const s) $ validateScript s)
-    . scriptFromString
-  where
-    malformedScript = MalformedScript
+scriptReader = left prettyErrValidateScript . scriptFromString
 
 scriptHashArg :: String -> Parser ScriptHash
 scriptHashArg helpDoc =

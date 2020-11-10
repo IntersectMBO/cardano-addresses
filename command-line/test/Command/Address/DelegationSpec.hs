@@ -25,7 +25,7 @@ spec = describeCmd [ "address", "delegation" ] $ do
 
     specFromScript
         defaultAddrMainnet
-        "all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe]"
+        "all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms]"
         "addr1y9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qt6kpqze4\
         \j6a90k78yw0wnr69lvkjust488vd0leqesr6kqcze2fd"
 
