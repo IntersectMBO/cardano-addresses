@@ -17,7 +17,7 @@ import Cardano.Address.Script.Parser
     , scriptParser
     )
 import Codec.Binary.Encoding
-    ( fromBase16 )
+    ( fromBech32 )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -30,13 +30,12 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
-
-    let verKeyH1 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe" :: Text
-    let (Right bytes1) = fromBase16 $ T.encodeUtf8 verKeyH1
-    let verKeyH2 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333" :: Text
-    let (Right bytes2) = fromBase16 $ T.encodeUtf8 verKeyH2
-    let verKeyH3 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f344" :: Text
-    let (Right bytes3) = fromBase16 $ T.encodeUtf8 verKeyH3
+    let verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms" :: Text
+    let (Right (_, bytes1)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH1
+    let verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj" :: Text
+    let (Right (_, bytes2)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH2
+    let verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2" :: Text
+    let (Right (_, bytes3)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH3
 
     let script1 = "all ["<>verKeyH1<>"]"
     let script2 = " all   [ "<>verKeyH1<>"  ] "

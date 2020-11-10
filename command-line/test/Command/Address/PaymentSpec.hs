@@ -35,14 +35,14 @@ specShelley phrase path networkTag want = it ("golden shelley (payment) " <> pat
     out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
-       >>= cli [ "address", "payment", "--from-key", "--network-tag", networkTag ]
+       >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` want
 
 specMalformedNetwork :: String -> SpecWith ()
 specMalformedNetwork networkTag = it ("malformed network " <> networkTag) $ do
     (out, err) <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords defaultPhrase)
         >>= cli [ "key", "public", "--with-chain-code" ]
-        >>= cli [ "address", "payment", "--from-key", "--network-tag", networkTag ]
+        >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` ""
     err `shouldContain` "Invalid network tag. Must be an integer value or one of the allowed keywords:"
     err `shouldContain` "Usage"
@@ -51,7 +51,7 @@ specInvalidNetwork :: String -> SpecWith ()
 specInvalidNetwork networkTag = it ("invalid network " <> networkTag) $ do
     (out, err) <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords defaultPhrase)
         >>= cli [ "key", "public", "--with-chain-code" ]
-        >>= cli [ "address", "payment", "--from-key", "--network-tag", networkTag ]
+        >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` ""
     err `shouldContain` "Invalid network tag."
 

@@ -51,6 +51,8 @@ module Cardano.Address.Derivation
     , deriveXPub
     , generate
     , generateNew
+    , hashCredential
+    , credentialHashSize
     ------------------
     ) where
 
@@ -64,6 +66,12 @@ import Control.DeepSeq
     ( NFData )
 import Crypto.Error
     ( eitherCryptoError )
+import Crypto.Hash
+    ( hash )
+import Crypto.Hash.Algorithms
+    ( Blake2b_224 (..) )
+import Crypto.Hash.IO
+    ( HashAlgorithm (hashDigestSize) )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
@@ -83,6 +91,7 @@ import GHC.Stack
 
 import qualified Cardano.Crypto.Wallet as CC
 import qualified Crypto.ECC.Edwards25519 as Ed25519
+import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 
 -- $overview
@@ -267,6 +276,19 @@ generateNew
     -> XPrv
 generateNew seed sndFactor =
     CC.generateNew seed sndFactor (mempty :: ScrubbedBytes)
+
+-- Hash a credential (pub key or script).
+--
+-- __internal__
+hashCredential :: ByteString -> ByteString
+hashCredential =
+    BA.convert . hash @_ @Blake2b_224
+
+-- Size, in bytes, of a hash of credential (pub key or script).
+--
+-- __internal__
+credentialHashSize :: Int
+credentialHashSize = hashDigestSize Blake2b_224
 
 --
 -- Key Derivation

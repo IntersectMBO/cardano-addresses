@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d031c987a04a14f86cdbbc2cae6c846d9b47c0ea9754ff29a51efaeeb84ccaab
+-- hash: d552774979f5732b0bd69f610bcbf6aacc36439f23ad1cd53eda0bc6be678ce6
 
 name:           cardano-addresses
 version:        2.1.0
@@ -40,6 +40,7 @@ library
       Cardano.Address.Style.Icarus
       Cardano.Address.Style.Jormungandr
       Cardano.Address.Style.Shelley
+      Cardano.Codec.Bech32.Prefixes
       Cardano.Codec.Cbor
       Cardano.Mnemonic
       Codec.Binary.Encoding

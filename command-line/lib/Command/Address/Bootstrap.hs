@@ -45,9 +45,9 @@ import System.IO.Extra
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Encoding as T
-
 
 data Cmd = Cmd
     { rootXPub :: Maybe XPub
@@ -66,7 +66,7 @@ mod liftCmd = command "bootstrap" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Byron > root.prv"
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child --legacy 14H/42H | tee addr.prv \\"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key child 14H/42H | tee addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap --root $(cat root.prv | "<>progName<>" key public) \\"
             , indent 8 $ bold $ string "--network-tag testnet 14H/42H"
@@ -74,13 +74,13 @@ mod liftCmd = command "bootstrap" $
             ])
   where
     parser = Cmd
-        <$> optional (xpubOpt "root" "A root public key. Needed for Byron addresses only.")
+        <$> optional (xpubOpt [CIP5.root_xvk] "root" "A root public key. Needed for Byron addresses only.")
         <*> networkTagOpt Byron
         <*> optional derivationPathArg
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,rootXPub,derivationPath} = do
-    xpub <- hGetXPub stdin
+    (_hrp, xpub) <- hGetXPub stdin [CIP5.addr_xvk]
     addr <- case derivationPath of
         Nothing ->
             pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)

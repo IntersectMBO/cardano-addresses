@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -12,35 +11,28 @@ module Command.Script.Hash
 
     ) where
 
+import Prelude hiding
+    ( mod )
+
 import Cardano.Address.Script
-    ( Script (..)
-    , ScriptHash (..)
-    , prettyErrValidateScript
-    , toScriptHash
-    , validateScript
-    )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+    ( Script (..), ScriptHash (..), toScriptHash )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
-import Options.Applicative.Encoding
-    ( Encoding, encodingOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Script
     ( scriptArg )
-import Prelude hiding
-    ( mod )
-import System.Exit
-    ( die )
 import System.IO
     ( stdout )
 import System.IO.Extra
     ( hPutBytes, progName )
 
-data Cmd = Cmd
-    { encoding :: Encoding
-    , script :: Script
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+
+newtype Cmd = Cmd
+    { script :: Script
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -52,7 +44,7 @@ mod liftCmd = command "hash" $
             [ string "The script is taken as argument."
             , string ""
             , string "Example:"
-            , indent 2 $ bold $ string $ progName<>" script hash --base16 'all "
+            , indent 2 $ bold $ string $ progName<>" script hash 'all "
             , indent 4 $ bold $ string "[ 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
             , indent 4 $ bold $ string ", 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
             , indent 4 $ bold $ string "]'"
@@ -60,14 +52,9 @@ mod liftCmd = command "hash" $
             ])
   where
     parser = Cmd
-        <$> encodingOpt [humanReadablePart|script|]
-        <*> scriptArg
+        <$> scriptArg
 
 run :: Cmd -> IO ()
-run Cmd{encoding, script} =
-    case (validateScript script) of
-        Left err ->
-            die $ prettyErrValidateScript err
-        Right{} -> do
-            let (ScriptHash bytes) = toScriptHash script
-            hPutBytes stdout bytes encoding
+run Cmd{script} = do
+    let (ScriptHash bytes) = toScriptHash script
+    hPutBytes stdout bytes (EBech32 CIP5.script)

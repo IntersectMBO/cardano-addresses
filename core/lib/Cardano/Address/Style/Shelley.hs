@@ -65,8 +65,6 @@ module Cardano.Address.Style.Shelley
 
       -- Internals
     , minSeedLengthBytes
-    , hashSize
-    , blake2b224
     ) where
 
 import Prelude
@@ -89,9 +87,11 @@ import Cardano.Address.Derivation
     , Index
     , XPrv
     , XPub
+    , credentialHashSize
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , hashCredential
     , xpubPublicKey
     )
 import Cardano.Address.Errors
@@ -118,12 +118,6 @@ import Control.Monad
     ( guard, unless, when )
 import Control.Monad.Catch
     ( MonadThrow, throwM )
-import Crypto.Hash
-    ( hash )
-import Crypto.Hash.Algorithms
-    ( Blake2b_224 (..) )
-import Crypto.Hash.IO
-    ( HashAlgorithm (hashDigestSize) )
 import Data.Aeson
     ( (.=) )
 import Data.Binary.Get
@@ -477,7 +471,7 @@ inspectShelleyAddress
     -> Address
     -> m Json.Value
 inspectShelleyAddress mRootPub addr
-    | BS.length bytes < 1 + hashSize = throwM (ShWrongInputSize (BS.length bytes))
+    | BS.length bytes < 1 + credentialHashSize = throwM (ShWrongInputSize (BS.length bytes))
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
@@ -486,98 +480,98 @@ inspectShelleyAddress mRootPub addr
         in
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
-                0b00000000 | BS.length rest == 2 * hashSize ->
+                0b00000000 | BS.length rest == 2 * credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 (BS.take hashSize rest)
-                        , "stake_key_hash"    .= base16 (BS.drop hashSize rest)
+                        , "spending_key_hash" .= base16 (BS.take credentialHashSize rest)
+                        , "stake_key_hash"    .= base16 (BS.drop credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0001: base address: scripthash32,keyhash28
-                0b00010000 | BS.length rest == hashSize + hashSize ->
+                0b00010000 | BS.length rest == credentialHashSize + credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 (BS.take hashSize rest)
-                        , "stake_key_hash"    .= base16 (BS.drop hashSize rest)
+                        , "script_hash"       .= base16 (BS.take credentialHashSize rest)
+                        , "stake_key_hash"    .= base16 (BS.drop credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0010: base address: keyhash28,scripthash32
-                0b00100000 | BS.length rest == hashSize + hashSize ->
+                0b00100000 | BS.length rest == credentialHashSize + credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 (BS.take hashSize rest)
-                        , "stake_script_hash" .= base16 (BS.drop hashSize rest)
+                        , "spending_key_hash" .= base16 (BS.take credentialHashSize rest)
+                        , "stake_script_hash" .= base16 (BS.drop credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0011: base address: scripthash32,scripthash32
-                0b00110000 | BS.length rest == 2 * hashSize ->
+                0b00110000 | BS.length rest == 2 * credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 (BS.take hashSize rest)
-                        , "stake_script_hash" .= base16 (BS.drop hashSize rest)
+                        , "script_hash"       .= base16 (BS.take credentialHashSize rest)
+                        , "stake_script_hash" .= base16 (BS.drop credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0100: pointer address: keyhash28, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01000000 | BS.length rest > hashSize -> do
-                    ptr <- getPtr (BS.drop hashSize rest)
+                0b01000000 | BS.length rest > credentialHashSize -> do
+                    ptr <- getPtr (BS.drop credentialHashSize rest)
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
-                        , "spending_key_hash" .= base16 (BS.take hashSize rest)
+                        , "spending_key_hash" .= base16 (BS.take credentialHashSize rest)
                         , "pointer"           .= ptrToJSON ptr
                         , "network_tag"       .= network
                         ]
                -- 0101: pointer address: scripthash32, 3 variable length uint
                -- TODO Could fo something better for pointer and try decoding
                --      the pointer
-                0b01010000 | BS.length rest > hashSize -> do
-                    ptr <- getPtr (BS.drop hashSize rest)
+                0b01010000 | BS.length rest > credentialHashSize -> do
+                    ptr <- getPtr (BS.drop credentialHashSize rest)
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by pointer"
-                        , "script_hash"       .= base16 (BS.take hashSize rest)
+                        , "script_hash"       .= base16 (BS.take credentialHashSize rest)
                         , "pointer"           .= ptrToJSON ptr
                         , "network_tag"       .= network
                         ]
                -- 0110: enterprise address: keyhash28
-                0b01100000 | BS.length rest == hashSize ->
+                0b01100000 | BS.length rest == credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
-                        , "spending_key_hash" .= base16 (BS.take hashSize rest)
+                        , "spending_key_hash" .= base16 (BS.take credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 0111: enterprise address: scripthash32
-                0b01110000 | BS.length rest == hashSize ->
+                0b01110000 | BS.length rest == credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "none"
-                        , "script_hash"       .= base16 (BS.take hashSize rest)
+                        , "script_hash"       .= base16 (BS.take credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 1000: byron address
                 0b10000000 ->
                     inspectIcarusAddress addr <|> inspectByronAddress mRootPub addr
                -- 1110: reward account: keyhash28
-                0b11100000 | BS.length rest == hashSize ->
+                0b11100000 | BS.length rest == credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "stake_key_hash"    .= base16 (BS.take hashSize rest)
+                        , "stake_key_hash"    .= base16 (BS.take credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                -- 1111: reward account: scripthash32
-                0b11110000 | BS.length rest == hashSize ->
+                0b11110000 | BS.length rest == credentialHashSize ->
                     pure $ Json.object
                         [ "address_style"     .= Json.String "Shelley"
                         , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 (BS.take hashSize rest)
+                        , "script_hash"       .= base16 (BS.take credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
                 _ -> throwM ShUnknownAddrType
@@ -636,7 +630,7 @@ paymentAddress discrimination = \case
         constructPayload
             (EnterpriseAddress CredentialFromKey)
             discrimination
-            (blake2b224 keyPub)
+            (hashCredential . xpubPublicKey . getKey $ keyPub)
     PaymentFromScript (ScriptHash bytes) ->
         constructPayload
             (EnterpriseAddress CredentialFromScript)
@@ -686,7 +680,7 @@ stakeAddress discrimination = \case
         Right $ constructPayload
             (RewardAccount CredentialFromKey)
             discrimination
-            (blake2b224 keyPub)
+            (hashCredential . xpubPublicKey . getKey $ keyPub)
 
     DelegationFromScript (ScriptHash bytes) ->
         Right $ constructPayload
@@ -736,7 +730,7 @@ extendAddress addr stakeReference = do
                 -- 0b01110000 .&. 0b00011111 = 16
                 putWord8 $ fstByte .&. 0b00011111
                 putByteString rest
-                putByteString . blake2b224 $ delegationKey
+                putByteString . hashCredential . xpubPublicKey . getKey $ delegationKey
 
         -- base address: keyhash28,scripthash32    : 00100000 -> 32
         -- base address: scripthash32,scripthash32 : 00110000 -> 48
@@ -866,21 +860,11 @@ unsafeFromRight =
 -- Internal
 --
 
--- Hash a public key
-blake2b224 :: Shelley depth XPub -> ByteString
-blake2b224 =
-    BA.convert . hash @_ @Blake2b_224 . xpubPublicKey . getKey
-
--- | Apply Blake2b224 hashing on Shelley 'XPub'.
--- This results in 28-byte hash.
---
--- @since 3.0.0
+--- | Computes a 28-byte Blake2b224 digest of a Shelley 'XPub'.
+---
+--- @since 3.0.0
 hashKey :: Shelley key XPub -> KeyHash
-hashKey = KeyHash . blake2b224
-
--- Size, in bytes, of a hash of public key (without the corresponding chain code)
-hashSize :: Int
-hashSize = hashDigestSize Blake2b_224
+hashKey = KeyHash . hashCredential . xpubPublicKey . getKey
 
 -- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:
@@ -957,4 +941,4 @@ constructPayload addrType discrimination bytes = unsafeMkAddress $
         in addressType addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
     expectedLength =
         let headerSizeBytes = 1
-        in headerSizeBytes + hashSize
+        in headerSizeBytes + credentialHashSize

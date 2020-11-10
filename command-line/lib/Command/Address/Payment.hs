@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
@@ -16,21 +15,19 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( bech32With )
+    ( unAddress )
+import Cardano.Address.Derivation
+    ( xpubFromBytes )
+import Cardano.Address.Script
+    ( scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
-    ( Credential (..)
-    , MkNetworkDiscriminantError (..)
-    , mkNetworkDiscriminant
-    , shelleyTestnet
-    )
-import Codec.Binary.Bech32.TH
-    ( humanReadablePart )
+    ( Credential (..), shelleyTestnet )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
-import Options.Applicative.Credential
-    ( CredentialType (..), credentialOpt )
 import Options.Applicative.Discrimination
-    ( NetworkTag (..), networkTagOpt )
+    ( NetworkTag (..), fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
@@ -38,16 +35,13 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetScriptHash, hGetXPub, progName )
+    ( hGetBech32, hPutBytes, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.Text.Encoding as T
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-
-data Cmd = Cmd
-    {  credentialType :: CredentialType
-    ,  networkTag :: NetworkTag
+newtype Cmd = Cmd
+    {  networkTag :: NetworkTag
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -65,28 +59,46 @@ mod liftCmd = command "payment" $
             , indent 2 $ string ""
             , indent 2 $ bold $ string "$ cat addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --from-key --network-tag testnet"
+            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet"
             , indent 2 $ string "addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek"
             ])
   where
     parser = Cmd
-        <$> credentialOpt
-        <*> networkTagOpt Shelley
+        <$> networkTagOpt Shelley
 
 run :: Cmd -> IO ()
-run Cmd{networkTag,credentialType} = do
-    case (mkNetworkDiscriminant . fromIntegral . unNetworkTag) networkTag of
-        Left ErrWrongNetworkTag{} -> do
-            fail "Invalid network tag. Must be between [0, 15]"
-        Right discriminant -> do
-            addr <- case credentialType of
-                CredentialFromKey -> do
-                    xpub <- hGetXPub stdin
-                    pure $ Shelley.paymentAddress discriminant (PaymentFromKey $ Shelley.liftXPub xpub)
-                CredentialFromScript -> do
-                    scriptHash <- hGetScriptHash stdin
-                    pure $ Shelley.paymentAddress discriminant (PaymentFromScript scriptHash)
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
+run Cmd{networkTag} = do
+    discriminant <- fromNetworkTag networkTag
+    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
+    addr <- addressFromBytes discriminant bytes hrp
+    hPutBytes stdout (unAddress addr) (EBech32 addrHrp)
   where
-    hrp | networkTag == shelleyTestnet = [humanReadablePart|addr_test|]
-        | otherwise = [humanReadablePart|addr|]
+    addrHrp
+        | networkTag == shelleyTestnet = CIP5.addr_test
+        | otherwise = CIP5.addr
+
+    -- TODO: Also allow `XXX_vk` prefixes. We don't need the chain code to
+    -- construct a payment credential. This will however need some additional
+    -- abstraction over `xpubFromBytes` but I've done enough yake-shaving at
+    -- this stage, so leaving this as an item for later.
+    allowedPrefixes =
+        [ CIP5.addr_xvk
+        , CIP5.script
+        ]
+
+    addressFromBytes discriminant bytes hrp
+        | hrp == CIP5.script = do
+            case scriptHashFromBytes bytes of
+                Nothing ->
+                    fail "Couldn't convert bytes into script hash."
+                Just h  -> do
+                    let credential = PaymentFromScript h
+                    pure $ Shelley.paymentAddress discriminant credential
+
+        | otherwise = do
+            case xpubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into extended public key."
+                Just key -> do
+                    let credential = PaymentFromKey $ Shelley.liftXPub key
+                    pure $ Shelley.paymentAddress discriminant credential

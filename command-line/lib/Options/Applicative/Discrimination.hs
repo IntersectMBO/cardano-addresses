@@ -7,6 +7,7 @@ module Options.Applicative.Discrimination
     (
     -- * Type (re-export from Cardano.Address)
       NetworkTag(..)
+    , fromNetworkTag
 
     -- * Applicative Parser
     , networkTagOpt
@@ -15,7 +16,11 @@ module Options.Applicative.Discrimination
 import Prelude
 
 import Cardano.Address
-    ( NetworkTag (..) )
+    ( NetworkDiscriminant (..), NetworkTag (..) )
+import Cardano.Address.Style.Shelley
+    ( Shelley )
+import Control.Monad.Fail
+    ( MonadFail )
 import Data.List
     ( intercalate )
 import Options.Applicative
@@ -39,6 +44,16 @@ import Text.Read
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Jormungandr as Jormungandr
 import qualified Cardano.Address.Style.Shelley as Shelley
+
+-- | Construct a Shelley 'NetworkDiscriminant' from a network tag. Fails loudly
+-- if not possible.
+fromNetworkTag :: MonadFail m => NetworkTag -> m (NetworkDiscriminant Shelley)
+fromNetworkTag tag =
+    case (Shelley.mkNetworkDiscriminant . fromIntegral . unNetworkTag) tag of
+        Left Shelley.ErrWrongNetworkTag{} -> do
+            fail "Invalid network tag. Must be between [0, 15]"
+        Right discriminant ->
+            pure discriminant
 
 --
 -- Applicative Parser

@@ -17,6 +17,8 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..), Encoding, encode )
 import Control.Exception
     ( IOException, SomeException, try )
+import Data.Bifunctor
+    ( bimap )
 import Data.ByteString
     ( ByteString )
 import Data.Function
@@ -51,6 +53,8 @@ import Test.QuickCheck
     , Property
     , choose
     , counterexample
+    , elements
+    , forAll
     , forAllShrink
     , property
     , vector
@@ -136,38 +140,45 @@ base58  = encode EBase58 . bytes
 
 propGetPrvRoundtrip
     :: XPrv
-    -> Encoding
     -> Property
-propGetPrvRoundtrip xprv encoding = monadicIO $ do
-    xprv' <- run $ try $ withHandle
+propGetPrvRoundtrip xprv = monadicIO $ do
+    result <- run $ try $ withHandle
         (\h -> hPutBytes h (xprvToBytes xprv) encoding)
-        hGetXPrv
-    monitor (encodingexample encoding (xprvToBytes xprv) (xprvToBytes <$> xprv'))
-    assert (xprv' == Right xprv)
+        (`hGetXPrv` [hrp])
+    monitor (encodingexample encoding (xprvToBytes xprv) (xprvToBytes . snd <$> result))
+    assert (result == Right (hrp, xprv))
+  where
+    hrp = [humanReadablePart|xprv|]
+    encoding = EBech32 hrp
 
 propGetPubRoundtrip
     :: XPub
-    -> Encoding
     -> Property
-propGetPubRoundtrip xpub encoding = monadicIO $ do
-    xpub' <- run $ try $ withHandle
+propGetPubRoundtrip xpub = monadicIO $ do
+    result <- run $ try $ withHandle
         (\h -> hPutBytes h (xpubToBytes xpub) encoding)
-        hGetXPub
-    monitor (encodingexample encoding (xpubToBytes xpub) (xpubToBytes <$> xpub'))
-    assert (xpub' == Right xpub)
+        (`hGetXPub` [hrp])
+    monitor (encodingexample encoding (xpubToBytes xpub) (xpubToBytes . snd <$> result))
+    assert (result == Right (hrp, xpub))
+  where
+    hrp = [humanReadablePart|xpub|]
+    encoding = EBech32 hrp
 
 propGetAnyRoundtrip
     :: Either XPub XPrv
-    -> Encoding
     -> Property
-propGetAnyRoundtrip xany encoding = monadicIO $ do
-    xany' <- run $ try $ withHandle
+propGetAnyRoundtrip xany = forAll genEncoding $ \encoding -> monadicIO $ do
+    result <- run $ try $ withHandle
         (\h -> hPutBytes h (either xpubToBytes xprvToBytes xany) encoding)
-        hGetXP__
+        (`hGetXP__` hrp)
     monitor (encodingexample encoding
         (either xpubToBytes xprvToBytes xany)
-        (either xpubToBytes xprvToBytes <$> xany'))
-    assert (xany' == Right xany)
+        (either (xpubToBytes . snd) (xprvToBytes . snd) <$> result))
+    assert ((bimap snd snd <$> result) == Right xany)
+    assert ((either fst fst <$> result) `elem` (Right <$> hrp))
+  where
+    hrp = [ [humanReadablePart|xpub|], [humanReadablePart|xprv|] ]
+    genEncoding = elements (EBech32 <$> hrp)
 
 propMarkedStringsExpectedLength
     :: [Word]

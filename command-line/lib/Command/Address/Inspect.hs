@@ -46,6 +46,7 @@ import System.IO
 import System.IO.Extra
     ( hGetBytes, progName )
 
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.ByteString.Lazy.Char8 as BL8
@@ -77,7 +78,7 @@ mod liftCmd = command "inspect" $
             ])
   where
     parser = Inspect
-        <$> optional (xpubOpt "root" helpDoc)
+        <$> optional (xpubOpt [CIP5.root_xvk] "root" helpDoc)
     helpDoc =
         "A root public key. If specified, tries to decrypt the derivation path \
         \of Byron addresses."

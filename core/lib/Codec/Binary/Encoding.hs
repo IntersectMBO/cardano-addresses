@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TupleSections #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -125,10 +126,10 @@ fromBase16 = convertFromBase Base16
 fromBech32
     :: ([Int] -> String -> String)
     -> ByteString
-    -> Either String ByteString
+    -> Either String (HumanReadablePart, ByteString)
 fromBech32 markCharsRedAtIndices raw = left errToString $ do
-    (_hrp, dp) <- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw
-    maybe (Left Nothing) Right $ Bech32.dataPartToBytes dp
+    (hrp, dp) <- left Just $ Bech32.decodeLenient $ T.decodeUtf8 raw
+    maybe (Left Nothing) (Right . (hrp,)) $ Bech32.dataPartToBytes dp
   where
     unCharPos (Bech32.CharPosition x) = x
     invalidCharsMsg = "Invalid character(s) in string"

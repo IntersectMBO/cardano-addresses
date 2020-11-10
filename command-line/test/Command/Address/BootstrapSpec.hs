@@ -61,7 +61,7 @@ specByron :: [String] -> String -> String -> String -> SpecWith ()
 specByron phrase path networkTag want = it ("golden byron " <> path <> " (" <> networkTag <> ")") $ do
     rootPrv <- cli [ "key", "from-recovery-phrase", "byron" ] (unwords phrase)
     rootPub <- cli [ "key", "public", "--with-chain-code" ] rootPrv
-    out <- cli [ "key", "child", "--legacy", path ] rootPrv
+    out <- cli [ "key", "child", path ] rootPrv
        >>= cli [ "key", "public", "--with-chain-code" ]
        >>= cli [ "address", "bootstrap", "--root", rootPub, "--network-tag", networkTag, path ]
     out `shouldBe` want

@@ -5,6 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cardano.Address.ScriptSpec
@@ -16,14 +17,9 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, toXPub )
 import Cardano.Address.Script
-    ( ErrValidateScript (..)
-    , KeyHash (..)
-    , Script (..)
-    , ScriptHash (..)
-    , serialize
-    , toScriptHash
-    , validateScript
-    )
+    ( KeyHash (..), Script (..), ScriptHash (..), serialize, toScriptHash )
+import Cardano.Address.Script.Parser
+    ( ErrValidateScript (..), validateScript )
 import Cardano.Address.Style.Shelley
     ( Shelley (..), deriveMultisigPrivateKey, hashKey )
 import Cardano.Mnemonic

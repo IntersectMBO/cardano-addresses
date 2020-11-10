@@ -14,8 +14,10 @@ import Cardano.Address.Derivation
     , xpubPublicKey
     , xpubToBytes
     )
-import Data.ByteArray.Encoding
-    ( Base (..), convertToBase )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Data.ByteString
     ( ByteString )
 import Test.Hspec
@@ -28,33 +30,46 @@ import Test.Utils
 import Test.Arbitrary
     ()
 
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = describeCmd [ "key", "inspect" ] $ do
-    specInspectPrivate
-    specInspectPublic
+    specInspectPrivate CIP5.root_xsk
+    specInspectPrivate CIP5.acct_xsk
+    specInspectPrivate CIP5.addr_xsk
+    specInspectPrivate CIP5.stake_xsk
+    specInspectPrivate CIP5.script_xsk
 
-specInspectPrivate :: SpecWith ()
-specInspectPrivate = it "can inspect private key" $ do
+    specInspectPublic CIP5.root_xvk
+    specInspectPublic CIP5.acct_xvk
+    specInspectPublic CIP5.addr_xvk
+    specInspectPublic CIP5.stake_xvk
+    specInspectPublic CIP5.script_xvk
+
+specInspectPrivate :: HumanReadablePart -> SpecWith ()
+specInspectPrivate hrp = it "can inspect private key" $ do
     xprv <- generate arbitrary
     let cc  = base16 $ xprvChainCode xprv
     let prv = base16 $ xprvPrivateKey xprv
-    out <- cli [ "key", "inspect" ] (base16 $ xprvToBytes xprv)
+    out <- cli [ "key", "inspect" ] (bech32 hrp $ xprvToBytes xprv)
     out `shouldContain` "private"
     out `shouldContain` cc
     out `shouldContain` prv
 
-specInspectPublic :: SpecWith ()
-specInspectPublic = it "can inspect public key" $ do
+specInspectPublic :: HumanReadablePart -> SpecWith ()
+specInspectPublic hrp = it "can inspect public key" $ do
     xpub <- generate arbitrary
     let cc  = base16 $ xpubChainCode xpub
     let pub = base16 $ xpubPublicKey xpub
-    out <- cli [ "key", "inspect" ] (base16 $ xpubToBytes xpub)
+    out <- cli [ "key", "inspect" ] (bech32 hrp $ xpubToBytes xpub)
     out `shouldContain` "public"
     out `shouldContain` cc
     out `shouldContain` pub
 
 base16 :: ByteString -> String
-base16 = T.unpack . T.decodeUtf8 . convertToBase Base16
+base16 = T.unpack . T.decodeUtf8 . encode EBase16
+
+bech32 :: HumanReadablePart -> ByteString -> String
+bech32 hrp = T.unpack . T.decodeUtf8 . encode (EBech32 hrp)

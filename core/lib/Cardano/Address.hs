@@ -5,7 +5,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -65,7 +64,7 @@ import GHC.Stack
 import Numeric.Natural
     ( Natural )
 
-import qualified Codec.Binary.Bech32.TH as Bech32
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Codec.Binary.Encoding as E
 import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
@@ -104,9 +103,7 @@ fromBase58 =
 --
 -- @since 1.0.0
 bech32 :: Address -> Text
-bech32 = bech32With hrp
-  where
-    hrp = [Bech32.humanReadablePart|addr|]
+bech32 = bech32With CIP5.addr
 
 -- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
 --
@@ -120,7 +117,7 @@ bech32With hrp =
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
 fromBech32 =
-    eitherToMaybe . fmap unsafeMkAddress. E.fromBech32 (const id) . T.encodeUtf8
+    eitherToMaybe . fmap (unsafeMkAddress . snd) . E.fromBech32 (const id) . T.encodeUtf8
 
 -- | Encoding of addresses for certain key types and backend targets.
 --

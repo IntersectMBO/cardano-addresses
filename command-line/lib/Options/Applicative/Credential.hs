@@ -1,30 +1,49 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
 module Options.Applicative.Credential
-    (
-    -- * Types
-      CredentialType (..)
-
-    -- * Applicative Parser
-    , credentialOpt
+    ( delegationCredentialArg
     ) where
 
+import Prelude
+
+import Cardano.Address.Derivation
+    ( Depth (..) )
 import Cardano.Address.Style.Shelley
-    ( CredentialType (..) )
-import Control.Applicative
-    ( (<|>) )
+    ( Credential (..), liftXPub )
 import Options.Applicative
-    ( Parser, flag', long )
+    ( Parser, argument, eitherReader, help, metavar )
+import Options.Applicative.Derivation
+    ( xpubReader )
+import Options.Applicative.Script
+    ( scriptHashReader )
+
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 --
 -- Applicative Parser
 --
 
--- | Parse an 'CredentialType' from the command-line, as set of non-overlapping flags.
-credentialOpt :: Parser CredentialType
-credentialOpt = fromKeyFlag <|> fromScriptFlag
+delegationCredentialArg  :: String -> Parser (Credential 'DelegationK)
+delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
+    <> metavar "KEY || SCRIPT HASH"
+    <> help helpDoc
   where
-    fromKeyFlag = flag' CredentialFromKey (long "from-key")
-    fromScriptFlag = flag' CredentialFromScript (long "from-script")
+    reader :: String -> Either String (Credential 'DelegationK)
+    reader str =
+       (DelegationFromKey . liftXPub <$> xpubReader allowedPrefixes str)
+       `orElse`
+       (DelegationFromScript <$> scriptHashReader str)
+       `orElse`
+       Left "Couldn't parse delegation credentials. Neither a public key nor a script hash."
+
+    -- TODO: Allow non-extended keys here.
+    allowedPrefixes =
+        [ CIP5.stake_xvk
+        ]
+
+    orElse :: Either e result -> Either e result -> Either e result
+    orElse _1st@Right{} _2nd = _1st
+    orElse _1st@Left{}  _2nd = _2nd

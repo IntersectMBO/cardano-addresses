@@ -7,12 +7,10 @@ module Command.ScriptSpec
 
 import Prelude
 
-import Cardano.Address.Script
+import Cardano.Address.Script.Parser
     ( ErrValidateScript (..), prettyErrValidateScript )
 import Data.String.Interpolate
     ( iii )
-import Options.Applicative.Script
-    ( ScriptError (..), prettyScriptError )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldBe, shouldContain )
 import Test.Utils
@@ -21,37 +19,31 @@ import Test.Utils
 spec :: Spec
 spec = do
     describeCmd [ "script", "hash" ] $ do
-        specScriptHashProper "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
+        specScriptHashProper "script102cyqtxktt547mcu3ea6v0ghaj6tjpw5ua34llyrxq02cg3yew2"
             [iii|all [ #{verKeyH1} ]|]
 
-        specScriptHashProper "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
-            [iii|all [ #{verKeyH1Bech32} ]|]
-
-        specScriptHashProper "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
-            [iii|all [ #{verKeyH1Base58} ]|]
-
-        specScriptHashProper "7ab0402cd65ae95f6f1c8e7ba63d17ecb4b905d4e7635ffc83301eac"
+        specScriptHashProper "script102cyqtxktt547mcu3ea6v0ghaj6tjpw5ua34llyrxq02cg3yew2"
             ("all    [ " <>verKeyH1<>"  ] ")
 
-        specScriptHashProper "5e26af6e6e0342b6f1360192f5c27a07a615af74d1146b46d15d859b"
+        specScriptHashProper "script1tcn27mnwqdptdufkqxf0tsn6q7npttm56y2xk3k3tkzeklgpray"
             [iii|all [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "7787e991398b96e1171d87cd98d0148d45f8bcf80a574381a8645c05"
+        specScriptHashProper "script1w7r7nyfe3wtwz9caslxe35q534zl308cpft58qdgv3wq25j9e5x"
             [iii|any [ #{verKeyH1} ]|]
 
-        specScriptHashProper "d25a9787f60b5c988fe5e7aad0d412682363ed0f00c045afe59e55a2"
+        specScriptHashProper "script16fdf0plkpdwf3rl9u74dp4qjdq3k8mg0qrqyttl9ne26yx4w2tr"
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "d48f83b08759679b2f029d375f6586c9acccb9d86cf88ad2eb9361e0"
+        specScriptHashProper "script16j8c8vy8t9nektczn5m47evxexkvewwcdnug45htjds7qdcdjgt"
             [iii|at_least 1 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "6f7ff5aee204c2d7e93cb0752ac1ead3a1370c692d9ff22c487de72d"
+        specScriptHashProper "script1dalltthzqnpd06fukp6j4s026wsnwrrf9k0lytzg0hnj64tfxdm"
             [iii|at_least 1 [ #{verKeyH1}, all [ #{verKeyH2}, #{verKeyH3} ] ]|]
 
-        specScriptParsingWrong
+        specScriptInvalid Malformed
             [iii|wrong [ #{verKeyH1} ]|]
 
-        specScriptParsingWrong
+        specScriptInvalid Malformed
             [iii|any [ #{verKeyH1}, ]|]
 
         specScriptInvalid ListTooSmall
@@ -73,36 +65,24 @@ spec = do
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH1}]|]
 
         specScriptInvalid WrongKeyHash
-            [iii|3c07030e36bfffe67e2e2ec09e5293d384637cd2|]
+            [iii|script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxjq8egs9|]
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper expected script = it (script <> " => " <> expected) $ do
-    out <- cli ["script", "hash", "--base16", script] ""
+    out <- cli ["script", "hash", script] ""
     out `shouldBe` expected
-
-specScriptParsingWrong :: String -> SpecWith ()
-specScriptParsingWrong script = it "fails if a script is malformed" $ do
-    (out, err) <- cli ["script", "hash", "--base16", script] ""
-    out `shouldBe` ("" :: String)
-    err `shouldContain` (prettyScriptError MalformedScript)
 
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()
 specScriptInvalid errMsg script = it (script <> " => " <> show errMsg) $ do
-    (out, err) <- cli ["script", "hash", "--base16", script] ""
+    (out, err) <- cli ["script", "hash", script] ""
     out `shouldBe` ("" :: String)
     err `shouldContain` (prettyErrValidateScript errMsg)
 
 verKeyH1 :: String
-verKeyH1 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
-
-verKeyH1Bech32 :: String
-verKeyH1Bech32 = "xpub_hash18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrelufhy5t2"
-
-verKeyH1Base58 :: String
-verKeyH1Base58 = "covdomtKN9H7F5ZBTEXxZYL9u5mCTYNtrsafVf"
+verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
 
 verKeyH2 :: String
-verKeyH2 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 
 verKeyH3 :: String
-verKeyH3 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f344"
+verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
