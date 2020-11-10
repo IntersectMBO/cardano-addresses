@@ -38,6 +38,41 @@ instance GHC.Exception.Type.Exception Cardano.Address.Errors.IcarusAddrError
 instance GHC.Exception.Type.Exception Cardano.Address.Errors.ByronAddrError
 instance GHC.Exception.Type.Exception Cardano.Address.Errors.ShelleyAddrError
 
+
+-- | List common bech32 prefixes used for objects in the Cardano
+--   eco-systems.
+--   
+--   As specified in <a>CIP-5</a>
+module Cardano.Codec.Bech32.Prefixes
+addr :: HumanReadablePart
+addr_test :: HumanReadablePart
+script :: HumanReadablePart
+stake :: HumanReadablePart
+stake_test :: HumanReadablePart
+addr_vk :: HumanReadablePart
+addr_sk :: HumanReadablePart
+addr_xvk :: HumanReadablePart
+addr_xsk :: HumanReadablePart
+acct_vk :: HumanReadablePart
+acct_sk :: HumanReadablePart
+acct_xvk :: HumanReadablePart
+acct_xsk :: HumanReadablePart
+root_vk :: HumanReadablePart
+root_sk :: HumanReadablePart
+root_xvk :: HumanReadablePart
+root_xsk :: HumanReadablePart
+script_vk :: HumanReadablePart
+script_sk :: HumanReadablePart
+script_xvk :: HumanReadablePart
+script_xsk :: HumanReadablePart
+stake_vk :: HumanReadablePart
+stake_sk :: HumanReadablePart
+stake_xvk :: HumanReadablePart
+stake_xsk :: HumanReadablePart
+addr_vkh :: HumanReadablePart
+script_vkh :: HumanReadablePart
+stake_vkh :: HumanReadablePart
+
 module Cardano.Mnemonic
 
 -- | Ease the manipulation of <a>Mnemonic</a> by encapsulating the type
@@ -354,26 +389,14 @@ RequireAllOf :: ![Script] -> Script
 RequireAnyOf :: ![Script] -> Script
 RequireSomeOf :: Word8 -> ![Script] -> Script
 
--- | Validate <a>Script</a>
-validateScript :: Script -> Either ErrValidateScript ()
-
--- | Possible validation errors when validating a script
-data ErrValidateScript
-EmptyList :: ErrValidateScript
-ListTooSmall :: ErrValidateScript
-MZero :: ErrValidateScript
-DuplicateSignatures :: ErrValidateScript
-WrongKeyHash :: ErrValidateScript
-prettyErrValidateScript :: ErrValidateScript -> String
-
--- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
---   <tt>script_vkh</tt> as a human readable prefix.
-bech32 :: KeyHash -> Text
-
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR
 --   script` realizes This is basically doing the symbolically following:
 --   toCBOR [0,multisigScript]
 serialize :: Script -> ByteString
+
+-- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
+--   <tt>script_vkh</tt> as a human readable prefix.
+bech32 :: KeyHash -> Text
 
 -- | A <a>ScriptHash</a> type represents script hash. The hash is expected
 --   to have size of 28-byte.
@@ -381,11 +404,11 @@ newtype ScriptHash
 ScriptHash :: ByteString -> ScriptHash
 [unScriptHash] :: ScriptHash -> ByteString
 
--- | Construct an <a>ScriptHash</a> from raw <a>ByteString</a> (28 bytes).
-scriptHashFromBytes :: ByteString -> Maybe ScriptHash
-
 -- | Computes the hash of a given script, by first serializing it to CBOR.
 toScriptHash :: Script -> ScriptHash
+
+-- | Construct an <a>ScriptHash</a> from raw <a>ByteString</a> (28 bytes).
+scriptHashFromBytes :: ByteString -> Maybe ScriptHash
 
 -- | A <a>KeyHash</a> type represents verification key hash that
 --   participate in building multi-signature script. The hash is expected
@@ -400,10 +423,9 @@ keyHashFromBytes :: ByteString -> Maybe KeyHash
 -- | Construct a <a>KeyHash</a> from <a>Text</a>. Either hex encoded text
 --   or Bech32 encoded text with <tt>script_vkh</tt> hrp is expected. Also
 --   binary payload is expected to be composed of 28 bytes.
-keyHashFromText :: Text -> Either ErrorKeyHashFromText KeyHash
-hashSize :: Int
-instance GHC.Classes.Eq Cardano.Address.Script.ErrorKeyHashFromText
-instance GHC.Show.Show Cardano.Address.Script.ErrorKeyHashFromText
+keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
+instance GHC.Classes.Eq Cardano.Address.Script.ErrKeyHashFromText
+instance GHC.Show.Show Cardano.Address.Script.ErrKeyHashFromText
 instance GHC.Classes.Eq Cardano.Address.Script.Script
 instance GHC.Show.Show Cardano.Address.Script.Script
 instance GHC.Generics.Generic Cardano.Address.Script.Script
@@ -413,13 +435,58 @@ instance GHC.Generics.Generic Cardano.Address.Script.KeyHash
 instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
 instance GHC.Show.Show Cardano.Address.Script.ScriptHash
 instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
-instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
-instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
 instance Control.DeepSeq.NFData Cardano.Address.Script.Script
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.Script
 instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.Script
 instance Control.DeepSeq.NFData Cardano.Address.Script.KeyHash
 instance Control.DeepSeq.NFData Cardano.Address.Script.ScriptHash
+
+module Cardano.Address.Script.Parser
+
+-- | Run <a>scriptParser</a> on string input.
+scriptFromString :: String -> Either ErrValidateScript Script
+
+-- | The script embodies combination of signing keys that need to be met to
+--   make it valid. We assume here that the script could delivered from
+--   standard input. The examples below are self-explanatory:
+--   
+--   <ol>
+--   <li>requiring signature
+--   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe</li>
+--   <li><a>any</a> for signature required any
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe,
+--   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]</li>
+--   <li><a>all</a> signatures required all
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe,
+--   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]</li>
+--   <li><tt>at_least</tt> 1 signature required at_least 1
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe,
+--   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]</li>
+--   <li>Nested script are supported at_least 1
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1,
+--   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]</li>
+--   </ol>
+--   
+--   Parser is insensitive to whitespaces.
+scriptParser :: ReadP Script
+
+-- | Validate a <a>Script</a>, semantically
+validateScript :: Script -> Either ErrValidateScript ()
+
+-- | Possible validation errors when validating a script
+data ErrValidateScript
+EmptyList :: ErrValidateScript
+ListTooSmall :: ErrValidateScript
+MZero :: ErrValidateScript
+DuplicateSignatures :: ErrValidateScript
+WrongKeyHash :: ErrValidateScript
+Malformed :: ErrValidateScript
+
+-- | Pretty-print a validation error.
+prettyErrValidateScript :: ErrValidateScript -> String
+instance GHC.Show.Show Cardano.Address.Script.Parser.ErrValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.Parser.ErrValidateScript
 
 module Cardano.Address
 
@@ -884,10 +951,6 @@ deriveMultisigPrivateKey :: Shelley  'AccountK XPrv -> Index  'Soft  'PaymentK -
 
 -- | Derives a multisig public key from the given account public key.
 deriveMultisigPublicKey :: Shelley  'AccountK XPub -> Index  'Soft  'PaymentK -> Shelley  'ScriptK XPub
-
--- | Apply Blake2b224 hashing on Shelley <a>XPub</a>. This results in
---   28-byte hash.
-hashKey :: Shelley key XPub -> KeyHash
 
 -- | Analyze an <a>Address</a> to know whether it's a Shelley address or
 --   not.

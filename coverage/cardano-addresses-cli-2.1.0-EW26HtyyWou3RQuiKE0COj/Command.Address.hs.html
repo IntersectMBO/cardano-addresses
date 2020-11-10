@@ -54,10 +54,10 @@ span.spaces    { background: white }
 <span class="lineno">   35 </span>data Cmd
 <span class="lineno">   36 </span>    = Bootstrap Bootstrap.Cmd
 <span class="lineno">   37 </span>    | Payment Payment.Cmd
-<span class="lineno">   38 </span>    | Delegation Delegation.Cmd
-<span class="lineno">   39 </span>    | Pointer Pointer.Cmd
-<span class="lineno">   40 </span>    | Inspect Inspect.Cmd
-<span class="lineno">   41 </span>    | Reward Reward.Cmd
+<span class="lineno">   38 </span>    | Reward Reward.Cmd
+<span class="lineno">   39 </span>    | Delegation Delegation.Cmd
+<span class="lineno">   40 </span>    | Pointer Pointer.Cmd
+<span class="lineno">   41 </span>    | Inspect Inspect.Cmd
 <span class="lineno">   42 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
 <span class="lineno">   43 </span>
 <span class="lineno">   44 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
@@ -75,20 +75,20 @@ span.spaces    { background: white }
 <span class="lineno">   56 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
 <span class="lineno">   57 </span><span class="spaces">        </span><span class="istickedoff">[ Bootstrap.mod Bootstrap</span>
 <span class="lineno">   58 </span><span class="spaces">        </span><span class="istickedoff">, Payment.mod Payment</span>
-<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff">, Delegation.mod Delegation</span>
-<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">, Pointer.mod Pointer</span>
-<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">, Inspect.mod Inspect</span>
-<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">, Reward.mod Reward</span>
+<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff">, Reward.mod Reward</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">, Delegation.mod Delegation</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">, Pointer.mod Pointer</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">, Inspect.mod Inspect</span>
 <span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
 <span class="lineno">   64 </span>
 <span class="lineno">   65 </span>run :: Cmd -&gt; IO ()
 <span class="lineno">   66 </span><span class="decl"><span class="istickedoff">run = \case</span>
 <span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">Bootstrap sub -&gt; Bootstrap.run sub</span>
 <span class="lineno">   68 </span><span class="spaces">    </span><span class="istickedoff">Payment sub -&gt; Payment.run sub</span>
-<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">Delegation sub -&gt; Delegation.run sub</span>
-<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">Pointer sub -&gt; Pointer.run sub</span>
-<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">Inspect sub -&gt; Inspect.run sub</span>
-<span class="lineno">   72 </span><span class="spaces">    </span><span class="istickedoff">Reward sub -&gt; Reward.run sub</span></span>
+<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">Reward sub -&gt; Reward.run sub</span>
+<span class="lineno">   70 </span><span class="spaces">    </span><span class="istickedoff">Delegation sub -&gt; Delegation.run sub</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">Pointer sub -&gt; Pointer.run sub</span>
+<span class="lineno">   72 </span><span class="spaces">    </span><span class="istickedoff">Inspect sub -&gt; Inspect.run sub</span></span>
 
 </pre>
 </body>
