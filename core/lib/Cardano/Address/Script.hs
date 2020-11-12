@@ -13,8 +13,7 @@ module Cardano.Address.Script
     (
     -- * Script
       Script (..)
-    , serialize
-    , bech32
+    , serializeScript
 
     -- * Hashing
     , ScriptHash (..)
@@ -24,6 +23,7 @@ module Cardano.Address.Script
     , KeyHash (..)
     , keyHashFromBytes
     , keyHashFromText
+    , keyHashToText
     , ErrKeyHashFromText
     , prettyErrKeyHashFromText
     ) where
@@ -88,8 +88,8 @@ instance NFData Script
 -- toCBOR [0,multisigScript]
 --
 -- @since 3.0.0
-serialize :: Script -> ByteString
-serialize script =
+serializeScript :: Script -> ByteString
+serializeScript script =
     multisigTag <> CBOR.toStrictByteString (toCBOR script)
   where
     -- | Magic number representing the tag of the native multi-signature script
@@ -130,7 +130,7 @@ serialize script =
 --
 -- @since 3.0.0
 toScriptHash :: Script -> ScriptHash
-toScriptHash = ScriptHash . hashCredential . serialize
+toScriptHash = ScriptHash . hashCredential . serializeScript
 
 -- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
 -- 28-byte.
@@ -163,6 +163,13 @@ keyHashFromBytes :: ByteString -> Maybe KeyHash
 keyHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ KeyHash bytes
+
+-- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
+--
+-- @since 3.0.0
+keyHashToText :: KeyHash -> Text
+keyHashToText (KeyHash keyHash) =
+    T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
 -- Bech32 encoded text with `script_vkh` hrp is expected. Also
@@ -212,13 +219,6 @@ prettyErrKeyHashFromText = \case
 -- Internal
 --
 
--- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
---
--- @since 3.0.0
-bech32 :: KeyHash -> Text
-bech32 (KeyHash keyHash) =
-    T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
-
 -- Examples of Script jsons:
 --"e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
 --{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
@@ -244,7 +244,8 @@ bech32 (KeyHash keyHash) =
 --}
 
 instance ToJSON Script where
-    toJSON (RequireSignatureOf keyHash) = String $ bech32 keyHash
+    toJSON (RequireSignatureOf keyHash) =
+        String $ keyHashToText keyHash
     toJSON (RequireAllOf content) =
         object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =

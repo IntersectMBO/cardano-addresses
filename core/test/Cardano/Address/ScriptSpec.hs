@@ -17,7 +17,12 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, toXPub )
 import Cardano.Address.Script
-    ( KeyHash (..), Script (..), ScriptHash (..), serialize, toScriptHash )
+    ( KeyHash (..)
+    , Script (..)
+    , ScriptHash (..)
+    , serializeScript
+    , toScriptHash
+    )
 import Cardano.Address.Script.Parser
     ( ErrValidateScript (..), validateScript )
 import Cardano.Address.Style.Shelley
@@ -80,7 +85,7 @@ spec = do
 
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
-                (toHexText (serialize script)) `shouldBe` cbor
+                (toHexText (serializeScript script)) `shouldBe` cbor
                 (toHexText' (toScriptHash script)) `shouldBe` hash
 
         it "RequireSignatureOf index=0" $
