@@ -1,0 +1,10 @@
+- package:
+  - name: cardano-addresses-cli
+  - section:
+    - name: test:unit
+    - message:
+      - name: Weeds exported
+      - module:
+        - name: AutoDiscover
+        - identifier: main
+
