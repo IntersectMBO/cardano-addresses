@@ -21,8 +21,6 @@ import Cardano.Address
     ( Address, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( XPub )
-import Cardano.Address.Style.Shelley
-    ( inspectShelleyAddress )
 import Control.Applicative
     ( optional )
 import Control.Exception
@@ -44,6 +42,7 @@ import System.IO
 import System.IO.Extra
     ( hGetBytes, progName )
 
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
@@ -97,4 +96,4 @@ run Inspect{rootPublicKey} = do
     -- Luckily, there's an existing instance for:
     --   instance (Error e) => Alternative (Either e)
     inspect :: (e ~ SomeException) => Address -> Either e Json.Value
-    inspect = inspectShelleyAddress rootPublicKey
+    inspect = Shelley.inspectAddress rootPublicKey

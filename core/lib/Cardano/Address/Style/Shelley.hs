@@ -43,6 +43,7 @@ module Cardano.Address.Style.Shelley
 
       -- * Addresses
       -- $addresses
+    , inspectAddress
     , inspectShelleyAddress
     , paymentAddress
     , delegationAddress
@@ -50,6 +51,8 @@ module Cardano.Address.Style.Shelley
     , stakeAddress
     , extendAddress
     , ErrExtendAddress (..)
+    , ErrInspectAddress (..)
+    , prettyErrInspectAddress
 
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
@@ -94,14 +97,8 @@ import Cardano.Address.Derivation
     , hashCredential
     , xpubPublicKey
     )
-import Cardano.Address.Errors
-    ( ShelleyAddrError (..) )
 import Cardano.Address.Script
     ( KeyHash (..), ScriptHash (..) )
-import Cardano.Address.Style.Byron
-    ( inspectByronAddress )
-import Cardano.Address.Style.Icarus
-    ( inspectIcarusAddress )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -112,6 +109,8 @@ import Control.Arrow
     ( first )
 import Control.DeepSeq
     ( NFData )
+import Control.Exception
+    ( Exception, displayException )
 import Control.Exception.Base
     ( assert )
 import Control.Monad
@@ -141,11 +140,13 @@ import Data.Word
 import Data.Word7
     ( getVariableLengthNat, putVariableLengthNat )
 import Fmt
-    ( Buildable, build, (+|), (|+) )
+    ( Buildable, build, format, (+|), (|+) )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address.Derivation as Internal
+import qualified Cardano.Address.Style.Byron as Byron
+import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -459,7 +460,31 @@ deriveMultisigPublicKey accPub addrIx =
 -- > bech32 $ pointerAddress tag paymentCredential ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 
--- | Analyze an 'Address' to know whether it's a Shelley address or not.
+-- | Possible errors from inspecting a Shelley address
+--
+-- @since 3.0.0
+data ErrInspectAddress
+    = UnknownAddrType
+    | WrongInputSize Int -- | Actual size
+    | PtrRetrieveError String -- | Human readable error of underlying operation
+    deriving (Eq, Show)
+
+instance Exception ErrInspectAddress where
+    displayException = prettyErrInspectAddress
+
+-- | Pretty-print an 'ErrInspectAddress'
+--
+-- @since 3.0.0
+prettyErrInspectAddress :: ErrInspectAddress -> String
+prettyErrInspectAddress = \case
+    UnknownAddrType ->
+        "Unknown address type"
+    WrongInputSize i ->
+        format "Wrong input size of {}" i
+    PtrRetrieveError s ->
+        format "Failed to retrieve pointer (underlying errors was: {})" s
+
+-- Analyze an 'Address' to know whether it's a Shelley address or not.
 --
 -- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
 -- string giving details about the 'Address'.
@@ -470,8 +495,22 @@ inspectShelleyAddress
     => Maybe XPub
     -> Address
     -> m Json.Value
-inspectShelleyAddress mRootPub addr
-    | BS.length bytes < 1 + credentialHashSize = throwM (ShWrongInputSize (BS.length bytes))
+inspectShelleyAddress = inspectAddress
+{-# DEPRECATED inspectShelleyAddress "use qualified 'inspectAddress' instead." #-}
+
+-- | Analyze an 'Address' to know whether it's a Shelley address or not.
+--
+-- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
+-- string giving details about the 'Address'.
+--
+-- @since 3.0.0
+inspectAddress
+    :: (Alternative m, MonadThrow m)
+    => Maybe XPub
+    -> Address
+    -> m Json.Value
+inspectAddress mRootPub addr
+    | BS.length bytes < 1 + credentialHashSize = throwM (WrongInputSize (BS.length bytes))
     | otherwise =
         let
             (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
@@ -557,7 +596,7 @@ inspectShelleyAddress mRootPub addr
                         ]
                -- 1000: byron address
                 0b10000000 ->
-                    inspectIcarusAddress addr <|> inspectByronAddress mRootPub addr
+                    Icarus.inspectAddress addr <|> Byron.inspectAddress mRootPub addr
                -- 1110: reward account: keyhash28
                 0b11100000 | BS.length rest == credentialHashSize ->
                     pure $ Json.object
@@ -574,7 +613,7 @@ inspectShelleyAddress mRootPub addr
                         , "script_hash"       .= base16 (BS.take credentialHashSize rest)
                         , "network_tag"       .= network
                         ]
-                _ -> throwM ShUnknownAddrType
+                _ -> throwM UnknownAddrType
   where
     bytes  = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
@@ -588,7 +627,7 @@ inspectShelleyAddress mRootPub addr
 
     getPtr :: (Alternative m, MonadThrow m) => ByteString -> m ChainPointer
     getPtr source = case runGetOrFail get (BL.fromStrict source) of
-        Left (_, _, e) -> throwM (ShPtrRetrieveError e)
+        Left (_, _, e) -> throwM (PtrRetrieveError e)
         Right (rest, _, a) -> guard (BL.null rest) $> a
       where
         get = ChainPointer

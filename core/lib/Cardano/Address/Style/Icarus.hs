@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -35,8 +36,11 @@ module Cardano.Address.Style.Icarus
 
       -- * Addresses
       -- $addresses
+    , inspectAddress
     , inspectIcarusAddress
     , paymentAddress
+    , ErrInspectAddress
+    , prettyErrInspectAddress
 
       -- * Network Discrimination
     , icarusMainnet
@@ -74,8 +78,6 @@ import Cardano.Address.Derivation
     , generateNew
     , xprvFromBytes
     )
-import Cardano.Address.Errors
-    ( IcarusAddrError (..) )
 import Cardano.Address.Style.Byron
     ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
@@ -86,6 +88,8 @@ import Control.Arrow
     ( first )
 import Control.DeepSeq
     ( NFData )
+import Control.Exception
+    ( Exception, displayException )
 import Control.Exception.Base
     ( assert )
 import Control.Monad
@@ -112,6 +116,8 @@ import Data.Typeable
     ( Typeable )
 import Data.Word
     ( Word32, Word8 )
+import Fmt
+    ( format )
 import GHC.Generics
     ( Generic )
 
@@ -332,20 +338,51 @@ deriveAddressPublicKey =
 -- >
 -- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+
+-- | Possible errors from inspecting a Shelley address
 --
--- | Analyze an 'Address' to know whether it's an Icarus address or not.
+-- @since 3.0.0
+data ErrInspectAddress
+    = UnexpectedDerivationPath
+    | forall e . (Exception e, Show e) => DeserialiseError e
+
+deriving instance Show ErrInspectAddress
+
+instance Exception ErrInspectAddress where
+  displayException = prettyErrInspectAddress
+
+-- | Pretty-print an 'ErrInspectAddress'
+--
+-- @since 3.0.0
+prettyErrInspectAddress :: ErrInspectAddress -> String
+prettyErrInspectAddress = \case
+    UnexpectedDerivationPath ->
+        "Unexpected derivation path"
+    DeserialiseError e ->
+        format "Deserialisation error (was: {})" (show e)
+
+-- Analyze an 'Address' to know whether it's an Icarus address or not.
 -- Throws 'IcarusAddrError' if the address isn't a byron address, or return a
 -- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
 inspectIcarusAddress :: MonadThrow m => Address -> m Json.Value
-inspectIcarusAddress addr = do
-    payload <- either (throwM . IcDeserialiseError) pure
+inspectIcarusAddress = inspectAddress
+{-# DEPRECATED inspectIcarusAddress "use qualified 'inspectAddress' instead." #-}
+
+-- | Analyze an 'Address' to know whether it's an Icarus address or not.
+-- Throws 'IcarusAddrError' if the address isn't a byron address, or return a
+-- structured JSON that gives information about an address.
+--
+-- @since 3.0.0
+inspectAddress :: MonadThrow m => Address -> m Json.Value
+inspectAddress addr = do
+    payload <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
-    (root, attrs) <- either (throwM . IcDeserialiseError) pure
+    (root, attrs) <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor decodePayload payload
-    when (elem 1 . fmap fst $ attrs) $ throwM IcUnexpectedDerivationPath
-    ntwrk <- either (throwM . IcDeserialiseError) pure
+    when (elem 1 . fmap fst $ attrs) $ throwM UnexpectedDerivationPath
+    ntwrk <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
     pure $ Json.object
         [ "address_style"   .= Json.String "Icarus"

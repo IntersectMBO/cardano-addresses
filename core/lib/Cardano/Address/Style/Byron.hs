@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -38,8 +40,11 @@ module Cardano.Address.Style.Byron
 
       -- * Addresses
       -- $addresses
+    , inspectAddress
     , inspectByronAddress
     , paymentAddress
+    , ErrInspectAddress (..)
+    , prettyErrInspectAddress
 
       -- * Network Discrimination
     , byronMainnet
@@ -76,14 +81,14 @@ import Cardano.Address.Derivation
     , toXPub
     , xpubToBytes
     )
-import Cardano.Address.Errors
-    ( ByronAddrError (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
+import Control.Exception
+    ( Exception, displayException )
 import Control.Exception.Base
     ( assert )
 import Control.Monad.Catch
@@ -106,6 +111,8 @@ import Data.Word
     ( Word32, Word8 )
 import GHC.Generics
     ( Generic )
+import Fmt
+    ( format )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
@@ -293,21 +300,55 @@ deriveAddressPrivateKey acctK =
 -- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
--- | Analyze an 'Address' to know whether it's a Byron address or not.
+-- | Possible errors from inspecting a Byron address
+--
+-- @since 3.0.0
+data ErrInspectAddress
+    = MissingExpectedDerivationPath
+    | forall e . (Exception e, Show e) => DeserialiseError e
+    | FailedToDecryptPath
+
+deriving instance Show ErrInspectAddress
+
+instance Exception ErrInspectAddress where
+  displayException = prettyErrInspectAddress
+
+-- | Pretty-print an 'ErrInspectAddress'
+--
+-- @since 3.0.0
+prettyErrInspectAddress :: ErrInspectAddress -> String
+prettyErrInspectAddress = \case
+    MissingExpectedDerivationPath ->
+        "Missing expected derivation path"
+    DeserialiseError e ->
+        format "Deserialisation error (was: {})" (show e)
+    FailedToDecryptPath ->
+        "Failed to decrypt derivation path"
+
+-- Analyze an 'Address' to know whether it's a Byron address or not.
 -- Throws 'ByronAddrError' if the address isn't a byron address, or return a
 -- structured JSON that gives information about an address.
 --
 -- @since 2.0.0
 inspectByronAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Json.Value
-inspectByronAddress mRootPub addr = do
-    payload <- either (throwM . BrDeserialiseError) pure
+inspectByronAddress = inspectAddress
+{-# DEPRECATED inspectByronAddress "use qualified 'inspectAddress' instead." #-}
+
+-- | Analyze an 'Address' to know whether it's a Byron address or not.
+-- Throws 'ByronAddrError' if the address isn't a byron address, or return a
+-- structured JSON that gives information about an address.
+--
+-- @since 3.0.0
+inspectAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Json.Value
+inspectAddress mRootPub addr = do
+    payload <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
 
-    (root, attrs) <- either (throwM . BrDeserialiseError) pure
+    (root, attrs) <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor decodePayload payload
 
     path <- do
-        attr <- maybe (throwM BrMissingExpectedDerivationPath) pure
+        attr <- maybe (throwM MissingExpectedDerivationPath) pure
             (find ((== 1) . fst) attrs)
         case mRootPub of
             Nothing ->
@@ -315,7 +356,7 @@ inspectByronAddress mRootPub addr = do
             Just rootPub ->
                 decryptPath rootPub attr
 
-    ntwrk <- either (throwM . BrDeserialiseError) pure
+    ntwrk <- either (throwM . DeserialiseError) pure
         $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
 
     pure $ Json.object
@@ -338,10 +379,10 @@ inspectByronAddress mRootPub addr = do
     decryptPath :: XPub -> (Word8, ByteString) -> m Json.Value
     decryptPath rootPub attr = do
         let pwd = hdPassphrase rootPub
-        path <- either (const (throwM BrFailedToDecryptPath)) pure
+        path <- either (const (throwM FailedToDecryptPath)) pure
             $ CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) mempty
         case path of
-            Nothing -> throwM BrFailedToDecryptPath
+            Nothing -> throwM FailedToDecryptPath
             Just (acctIx, addrIx) -> pure $ Json.object
                 [ "account_index" .= prettyIndex acctIx
                 , "address_index" .= prettyIndex addrIx
