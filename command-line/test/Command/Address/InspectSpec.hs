@@ -35,13 +35,6 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectAddress ["Icarus", "none"] []
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
-    specInspectAddress ["Jormungandr", "single"] []
-        "addr1qdaa2wrvxxkrrwnsw6zk2qx0ymu96354hq83s0r6203l9pqe6677z5t3m7d"
-
-    specInspectAddress ["Jormungandr", "group"] []
-        "addr1s3aa2wrvxxkrrwnsw6zk2qx0ymu96354hq83s0r6203l9pqe6677r\
-        \vjwwzcv9nhtynxf728nserccua2w8q949dqzxdmj8wcazwrty4wkdnx06"
-
     specInspectAddress ["Shelley", "none"] []
         "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
 

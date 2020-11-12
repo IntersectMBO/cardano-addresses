@@ -78,21 +78,6 @@ module "Cardano.Address.Style.Shelley" {
   }
 }
 
-module "Cardano.Address.Style.Jormungandr" {
-  tick function "showsPrec" [Show instance];
-  tick function "=="  [Eq instance];
-  tick function "compare" [Ord instance];
-
-  tick function "paymentAddress" [Re-Export];
-  tick function "delegationAddress" [Re-Export];
-  tick function "deriveStakingPrivateKey" [Re-export];
-  tick function "deriveAddressPrivateKey" [Re-export];
-  tick function "deriveAddressPublicKey" [Re-export];
-  tick function "deriveAccountPrivateKey" [Re-export];
-  tick function "genMasterKeyFromXPrv" [Re-export];
-  tick function "genMasterKeyFromMnemonic" [Re-export];
-}
-
 module "Cardano.Mnemonic" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];

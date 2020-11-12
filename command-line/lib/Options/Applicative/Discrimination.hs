@@ -42,7 +42,6 @@ import Text.Read
     ( readMaybe )
 
 import qualified Cardano.Address.Style.Byron as Byron
-import qualified Cardano.Address.Style.Jormungandr as Jormungandr
 import qualified Cardano.Address.Style.Shelley as Shelley
 
 -- | Construct a Shelley 'NetworkDiscriminant' from a network tag. Fails loudly
@@ -83,8 +82,6 @@ networkTagOpt style = option (eitherReader reader) $ mempty
                 "┌ Byron / Icarus ──────────"
             Icarus ->
                 "┌ Byron / Icarus ──────────"
-            Jormungandr ->
-                "┌ Jormungandr ─────────────"
             Shelley ->
                 "┌ Shelley ─────────────────"
         fmtAllowedKeyword network =
@@ -98,9 +95,6 @@ networkTagOpt style = option (eitherReader reader) $ mempty
             ]
         Icarus ->
             tagsFor Byron
-        Jormungandr ->
-            [ unNetworkTag Jormungandr.incentivizedTestnet
-            ]
         Shelley ->
             [ unNetworkTag Shelley.shelleyMainnet
             , unNetworkTag Shelley.shelleyTestnet
@@ -120,11 +114,9 @@ networkTagOpt style = option (eitherReader reader) $ mempty
         Icarus -> readKeywordMaybe str Byron
         Shelley | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shelley | str == "testnet" -> pure Shelley.shelleyTestnet
-        Jormungandr | str == "testnet" -> pure Jormungandr.incentivizedTestnet
         _ -> Nothing
 
     allowedKeywords = \case
         Byron -> ["mainnet", "staging", "testnet"]
         Icarus -> allowedKeywords Byron
         Shelley -> ["mainnet", "testnet"]
-        Jormungandr -> ["testnet"]

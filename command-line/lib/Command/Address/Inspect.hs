@@ -21,12 +21,10 @@ import Cardano.Address
     ( Address, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( XPub )
-import Cardano.Address.Style.Jormungandr
-    ( inspectJormungandrAddress )
 import Cardano.Address.Style.Shelley
     ( inspectShelleyAddress )
 import Control.Applicative
-    ( optional, (<|>) )
+    ( optional )
 import Control.Exception
     ( SomeException, displayException )
 import Control.Monad.Error.Class
@@ -99,7 +97,4 @@ run Inspect{rootPublicKey} = do
     -- Luckily, there's an existing instance for:
     --   instance (Error e) => Alternative (Either e)
     inspect :: (e ~ SomeException) => Address -> Either e Json.Value
-    inspect addr = do
-        inspectJormungandrAddress addr
-        <|>
-        inspectShelleyAddress rootPublicKey addr
+    inspect = inspectShelleyAddress rootPublicKey
