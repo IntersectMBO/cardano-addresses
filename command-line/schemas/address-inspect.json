@@ -11,7 +11,7 @@
   "properties": {
     "address_style": {
       "type": "string",
-      "enum": ["Shelley", "Icarus", "Byron", "Jormungandr"]
+      "enum": ["Shelley", "Icarus", "Byron"]
     },
     "stake_reference": {
       "type": "string",

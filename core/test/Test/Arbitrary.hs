@@ -38,8 +38,6 @@ import Cardano.Address.Style.Byron
     ( Byron, byronMainnet, byronStaging, byronTestnet )
 import Cardano.Address.Style.Icarus
     ( Icarus, icarusMainnet, icarusStaging, icarusTestnet )
-import Cardano.Address.Style.Jormungandr
-    ( Jormungandr, incentivizedTestnet )
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic
@@ -77,7 +75,6 @@ import Numeric.Natural
 import Test.QuickCheck
     ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
 
-import qualified Cardano.Address.Style.Jormungandr as Jormungandr
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -180,17 +177,6 @@ instance Arbitrary (Shelley 'PaymentK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
-instance Arbitrary (Jormungandr 'PaymentK XPub) where
-    shrink _ = []
-    arbitrary = do
-        mw <- SomeMnemonic <$> genMnemonic @15
-        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
-        let rootK = genMasterKeyFromMnemonic mw bytes
-        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen = arbitraryBoundedEnum
-        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
-        pure $ toXPub <$> addrK
-
 instance Arbitrary (Shelley 'DelegationK XPub) where
     shrink _ = []
     arbitrary = do
@@ -199,16 +185,6 @@ instance Arbitrary (Shelley 'DelegationK XPub) where
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
         let delegationK = Shelley.deriveDelegationPrivateKey acctK
-        pure $ toXPub <$> delegationK
-
-instance Arbitrary (Jormungandr 'DelegationK XPub) where
-    shrink _ = []
-    arbitrary = do
-        mw <- SomeMnemonic <$> genMnemonic @15
-        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
-        let rootK = genMasterKeyFromMnemonic mw bytes
-        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let delegationK = Jormungandr.deriveDelegationPrivateKey acctK
         pure $ toXPub <$> delegationK
 
 instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
@@ -222,7 +198,6 @@ instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
         , pure icarusMainnet
         , pure icarusStaging
         , pure icarusTestnet
-        , pure (RequiresNetworkTag, incentivizedTestnet)
         ]
 
 instance Arbitrary NetworkTag where

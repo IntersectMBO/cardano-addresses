@@ -23,11 +23,6 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
         \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
         \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
 
-    specGolden "jormungandr" defaultPhrase
-        "root_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3yp\
-        \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
-        \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
-
     specGolden "shelley" defaultPhrase
         "root_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7ghfgd3yp\
         \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\

@@ -30,7 +30,6 @@ import Options.Applicative
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
-import qualified Cardano.Address.Style.Jormungandr as Jormungandr
 import qualified Cardano.Address.Style.Shelley as Shelley
 
 --
@@ -41,7 +40,6 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 data Style
     = Byron
     | Icarus
-    | Jormungandr
     | Shelley
     deriving (Eq, Show, Enum, Bounded)
 
@@ -59,10 +57,6 @@ generateRootKey mw = \case
         let sndFactor = mempty
         let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor
         pure $ Icarus.getKey rootK
-    Jormungandr -> do
-        let sndFactor = mempty
-        let rootK = Jormungandr.genMasterKeyFromMnemonic mw sndFactor
-        pure $ Jormungandr.getKey rootK
     Shelley -> do
         let sndFactor = mempty
         let rootK = Shelley.genMasterKeyFromMnemonic mw sndFactor
@@ -88,6 +82,5 @@ styleArg = argument (eitherReader reader) $ mempty
     reader str = case toLower <$> str of
         "byron"       -> Right Byron
         "icarus"      -> Right Icarus
-        "jormungandr" -> Right Jormungandr
         "shelley"     -> Right Shelley
         _             -> Left $ "Unknown style; expecting one of " <> styles'

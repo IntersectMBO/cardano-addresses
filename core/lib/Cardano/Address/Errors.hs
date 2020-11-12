@@ -13,13 +13,11 @@ module Cardano.Address.Errors
       ShelleyAddrError(..)
     , ByronAddrError(..)
     , IcarusAddrError(..)
-    , JormungandrAddrError(..)
 
       -- * pretty printers
     , prettyShError
     , prettyBrError
     , prettyIcError
-    , prettyJoError
   ) where
 
 import Prelude
@@ -78,18 +76,3 @@ instance Exception IcarusAddrError where
 prettyIcError :: IcarusAddrError -> String
 prettyIcError IcUnexpectedDerivationPath = "Unexpected derivation path"
 prettyIcError (IcDeserialiseError e) = format "Deserialisation error (was: {})" (show e)
-
-
-data JormungandrAddrError
-    = JoUnknownAddrType
-    | JoWrongInputSize Int -- the actual size
-
-deriving instance Show JormungandrAddrError
-
-instance Exception JormungandrAddrError where
-  displayException = prettyJoError
-
-prettyJoError :: JormungandrAddrError -> String
-prettyJoError JoUnknownAddrType = "Unknown address type"
-prettyJoError (JoWrongInputSize i) = format "Wrong input size of {}" i
-
