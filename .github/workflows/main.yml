@@ -40,7 +40,7 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release --flag cardano-addresses-cli:release
+        stack --no-terminal test --no-run-tests --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release --flag cardano-addresses-cli:release
         mkdir -p bin && cp $(stack path --local-install-root)/bin/* bin && chmod +x bin/*
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
         sed -i 's@href="[^"]*/doc/\([^"]*.html\)"@href="\1"@g' dist/haddock/index.html
