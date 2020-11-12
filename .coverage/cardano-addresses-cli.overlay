@@ -60,9 +60,9 @@ module "Command.Address.Delegation" {
 
 module "Command.Address.Pointer" {
   tick function "showsPrec" [Show instance];
-  tick "_slotNum" [Record Accessor];
-  tick "_transactionIndex" [Record Accessor];
-  tick "_outputIndex" [Record Accessor];
+  tick "slotNum" [Record Accessor];
+  tick "transactionIndex" [Record Accessor];
+  tick "outputIndex" [Record Accessor];
 }
 
 module "Command.Address.Inspect" {
@@ -72,7 +72,14 @@ module "Command.Address.Inspect" {
 module "Command.Address.Reward" {
   tick function "showsPrec" [Show instance];
   tick "networkTag" [Record Accessor];
+}
 
+module "Command.Script" {
+  tick function "showsPrec" [Show instance];
+}
+
+module "Command.Script.Hash" {
+  tick function "showsPrec" [Show instance];
 }
 
 module "Options.Applicative.Derivation" {
@@ -92,6 +99,11 @@ module "Options.Applicative.Style" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
   tick function "succ" [Enum instance];
+}
+
+module "Options.Applicative.Public" {
+  tick function "showsPrec" [Show instance];
+  tick function "==" [Eq instance];
 }
 
 module "Paths_cardano_addresses_cli" {
