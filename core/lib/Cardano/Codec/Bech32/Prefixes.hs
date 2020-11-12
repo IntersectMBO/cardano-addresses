@@ -7,7 +7,41 @@
 -- | List common bech32 prefixes used for objects in the Cardano eco-systems.
 --
 -- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)
-module Cardano.Codec.Bech32.Prefixes where
+module Cardano.Codec.Bech32.Prefixes
+    ( -- * Addresses
+      addr
+    , addr_test
+    , script
+    , stake
+    , stake_test
+
+      -- * Hashes
+    , addr_vkh
+    , script_vkh
+    , stake_vkh
+
+      -- * Keys
+    , addr_vk
+    , addr_sk
+    , addr_xvk
+    , addr_xsk
+    , acct_vk
+    , acct_sk
+    , acct_xvk
+    , acct_xsk
+    , root_vk
+    , root_sk
+    , root_xvk
+    , root_xsk
+    , script_vk
+    , script_sk
+    , script_xvk
+    , script_xsk
+    , stake_vk
+    , stake_sk
+    , stake_xvk
+    , stake_xsk
+    ) where
 
 import Codec.Binary.Bech32
     ( HumanReadablePart )

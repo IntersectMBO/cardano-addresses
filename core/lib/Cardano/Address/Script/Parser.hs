@@ -17,7 +17,7 @@ module Cardano.Address.Script.Parser
     , ErrValidateScript (..)
     , prettyErrValidateScript
 
-    -- * Internal
+    -- Internal
     , requireSignatureOfParser
     , requireAllOfParser
     , requireAnyOfParser

@@ -465,8 +465,8 @@ deriveMultisigPublicKey accPub addrIx =
 -- @since 3.0.0
 data ErrInspectAddress
     = UnknownAddrType
-    | WrongInputSize Int -- | Actual size
-    | PtrRetrieveError String -- | Human readable error of underlying operation
+    | WrongInputSize Int -- ^ Actual size
+    | PtrRetrieveError String -- ^ Human readable error of underlying operation
     deriving (Eq, Show)
 
 instance Exception ErrInspectAddress where
