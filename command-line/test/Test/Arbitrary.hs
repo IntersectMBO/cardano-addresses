@@ -23,6 +23,8 @@ import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Bech32.TH
     ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
 import Data.ByteString
     ( ByteString )
 import Data.Function
@@ -43,8 +45,6 @@ import Options.Applicative.Derivation
     , indexToInteger
     , mkDerivationIndex
     )
-import Options.Applicative.Encoding
-    ( AbstractEncoding (..) )
 import Test.QuickCheck
     ( Arbitrary (..), choose, elements, oneof, vector )
 
