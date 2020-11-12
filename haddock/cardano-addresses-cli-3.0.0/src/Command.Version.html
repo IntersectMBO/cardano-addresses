@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE TemplateHaskell #-}</span><span>
+</span><a name="line-3"></a><span>
+</span><a name="line-4"></a><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><a name="line-5"></a><span>
+</span><a name="line-6"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Command.Version</span><span>
+</span><a name="line-7"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Command.Version.html#opt"><span class="hs-identifier hs-var">opt</span></a><span>
+</span><a name="line-8"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Command.Version.html#run"><span class="hs-identifier hs-var">run</span></a><span>
+</span><a name="line-9"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-10"></a><span>
+</span><a name="line-11"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Prelude</span><span>
+</span><a name="line-12"></a><span>
+</span><a name="line-13"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Version</span><span>
+</span><a name="line-14"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-var">showVersion</span><span> </span><span class="hs-special">)</span><span>
+</span><a name="line-15"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Options.Applicative</span><span>
+</span><a name="line-16"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">Parser</span><span>
+</span><a name="line-17"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">command</span><span>
+</span><a name="line-18"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">flag'</span><span>
+</span><a name="line-19"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">help</span><span>
+</span><a name="line-20"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">hidden</span><span>
+</span><a name="line-21"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">info</span><span>
+</span><a name="line-22"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">long</span><span>
+</span><a name="line-23"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">progDesc</span><span>
+</span><a name="line-24"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">short</span><span>
+</span><a name="line-25"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">subparser</span><span>
+</span><a name="line-26"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator hs-var">&lt;|&gt;</span><span class="hs-special">)</span><span>
+</span><a name="line-27"></a><span>    </span><span class="hs-special">)</span><span>
+</span><a name="line-28"></a><span class="hs-keyword">import</span><span> </span><a href="Paths_cardano_addresses_cli.html"><span class="hs-identifier">Paths_cardano_addresses_cli</span></a><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Paths_cardano_addresses_cli.html#version"><span class="hs-identifier hs-var">version</span></a><span> </span><span class="hs-special">)</span><span>
+</span><a name="line-30"></a><span class="hs-keyword">import</span><span> </span><a href="System.Git.TH.html"><span class="hs-identifier">System.Git.TH</span></a><span>
+</span><a name="line-31"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="System.Git.TH.html#gitRevParseHEAD"><span class="hs-identifier hs-var">gitRevParseHEAD</span></a><span> </span><span class="hs-special">)</span><span>
+</span><a name="line-32"></a><span>
+</span><a name="line-33"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Data.ByteString.Char8</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">B8</span><span>
+</span><a name="line-34"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Data.Text</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">T</span><span>
+</span><a name="line-35"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Data.Text.Encoding</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">T</span><span>
+</span><a name="line-36"></a><span>
+</span><a name="line-37"></a><span class="hs-identifier">opt</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="#local-6989586621679095987"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="#local-6989586621679095987"><span class="hs-identifier hs-type">a</span></a><span>
+</span><a name="line-38"></a><a name="opt"><a href="Command.Version.html#opt"><span class="hs-identifier">opt</span></a></a><span> </span><a name="local-6989586621679095988"><a href="#local-6989586621679095988"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-39"></a><span>    </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="#local-6989586621679095988"><span class="hs-identifier hs-var">a</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">mconcat</span><span>
+</span><a name="line-40"></a><span>        </span><span class="hs-special">[</span><span> </span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;version&quot;</span><span>
+</span><a name="line-41"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">short</span><span> </span><span class="hs-char">'v'</span><span>
+</span><a name="line-42"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><a href="#local-6989586621679095989"><span class="hs-identifier hs-var">helpText</span></a><span>
+</span><a name="line-43"></a><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><a name="line-44"></a><span>  </span><span class="hs-operator hs-var">&lt;|&gt;</span><span>
+</span><a name="line-45"></a><span>    </span><span class="hs-identifier hs-var">subparser</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">mconcat</span><span>
+</span><a name="line-46"></a><span>        </span><span class="hs-special">[</span><span> </span><span class="hs-identifier hs-var">hidden</span><span>
+</span><a name="line-47"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">command</span><span> </span><span class="hs-string">&quot;version&quot;</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">info</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">pure</span><span> </span><a href="#local-6989586621679095988"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">progDesc</span><span> </span><a href="#local-6989586621679095989"><span class="hs-identifier hs-var">helpText</span></a><span class="hs-special">)</span><span>
+</span><a name="line-48"></a><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><a name="line-49"></a><span>  </span><span class="hs-keyword">where</span><span>
+</span><a name="line-50"></a><span>    </span><a name="local-6989586621679095989"><a href="#local-6989586621679095989"><span class="hs-identifier">helpText</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-string">&quot;Show the software current version and build revision.&quot;</span><span>
+</span><a name="line-51"></a><span>
+</span><a name="line-52"></a><span class="hs-identifier">run</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">IO</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><a name="line-53"></a><a name="run"><a href="Command.Version.html#run"><span class="hs-identifier">run</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a name="line-54"></a><span>    </span><span class="hs-identifier hs-var">B8.putStrLn</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">T.encodeUtf8</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">T.pack</span><span> </span><span class="hs-operator hs-var">$</span><span>
+</span><a name="line-55"></a><span>        </span><span class="hs-identifier hs-var">showVersion</span><span> </span><a href="Paths_cardano_addresses_cli.html#version"><span class="hs-identifier hs-var">version</span></a><span> </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-string">&quot; @ &quot;</span><span> </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-special">$(</span><span class="hs-identifier">gitRevParseHEAD</span><span class="hs-special">)</span><span>
+</span><a name="line-56"></a></pre></body></html>
