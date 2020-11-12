@@ -1,3 +1,39 @@
+## [3.0.0] - 2020-11-12
+
+### Added
+
+- Support for (multisig) scripts and script addresses in modules:
+  - `Cardano.Address.Script`
+  - `Cardano.Address.Script.Parser`
+
+- Support for constructing scripts and script addresses via the command-line.
+
+- Support for constructing rewards addresses via the library and command-line.
+
+- New command for computing key and script hashes that are required in the construction of larger objects (e.g. addresses).
+
+- Support for cabal build. 
+
+### Changed 
+
+- The command-line API no longer support multi-encoding (base16, bech32 and base58) but instead, enforces bech32 for keys and addresses, with specific human readable prefixes. It is still possible to easily go from base16-encoded data to bech32 by piping data through the [`bech32`](https://github.com/input-output-hk/bech32/) command-line.
+
+- It is no longer possible to derive child keys to and from any path. Are only allowed:
+   - root -> account
+   - root -> address 
+   - account -> address
+  This is reflected in the bech32 prefixes of the inputs and outputs.
+
+- Allow constructing delegation addresses from a script. This works transparently from previous version of the command-line, but the command now also accepts script hashes as possible valid inputs.
+
+### Removed
+
+- No more `--legacy` option on the `key child` command. Which derivation scheme to use is now inferred from the bech32 prefixe used and the derivation path.
+
+- `Cardano.Address.Errors` module. Errors data-types have been moved to their respective module `Cardano.Address.Styles.{Byron,Icarus,Shelley}`
+
+- Anything related to Jormungandr in both the library and the command-line.
+
 ## [2.1.0] - 2020-09-29
 
 ### Added

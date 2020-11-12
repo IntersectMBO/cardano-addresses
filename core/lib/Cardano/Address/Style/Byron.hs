@@ -1,10 +1,11 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -109,10 +110,10 @@ import Data.List
     ( find )
 import Data.Word
     ( Word32, Word8 )
-import GHC.Generics
-    ( Generic )
 import Fmt
     ( format )
+import GHC.Generics
+    ( Generic )
 
 import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
