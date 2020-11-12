@@ -20,10 +20,6 @@ module "Cardano.Address.Derivation" {
   tick "getIndex" [Record Accessor];
 }
 
-module "Cardano.Address.Errors" {
-  tick function "showsPrec" [Show instance];
-}
-
 module "Cardano.Address.Style.Byron" {
   tick function "showsPrec" [Show instance];
   tick function "==" [Eq instance];
