@@ -22,18 +22,12 @@ BrFailedToDecryptPath :: ByronAddrError
 data IcarusAddrError
 IcUnexpectedDerivationPath :: IcarusAddrError
 IcDeserialiseError :: e -> IcarusAddrError
-data JormungandrAddrError
-JoUnknownAddrType :: JormungandrAddrError
-JoWrongInputSize :: Int -> JormungandrAddrError
 prettyShError :: ShelleyAddrError -> String
 prettyBrError :: ByronAddrError -> String
 prettyIcError :: IcarusAddrError -> String
-prettyJoError :: JormungandrAddrError -> String
 instance GHC.Show.Show Cardano.Address.Errors.ShelleyAddrError
 instance GHC.Show.Show Cardano.Address.Errors.ByronAddrError
 instance GHC.Show.Show Cardano.Address.Errors.IcarusAddrError
-instance GHC.Show.Show Cardano.Address.Errors.JormungandrAddrError
-instance GHC.Exception.Type.Exception Cardano.Address.Errors.JormungandrAddrError
 instance GHC.Exception.Type.Exception Cardano.Address.Errors.IcarusAddrError
 instance GHC.Exception.Type.Exception Cardano.Address.Errors.ByronAddrError
 instance GHC.Exception.Type.Exception Cardano.Address.Errors.ShelleyAddrError
@@ -581,95 +575,6 @@ instance Control.DeepSeq.NFData Cardano.Address.AddressDiscrimination
 instance Control.DeepSeq.NFData Cardano.Address.NetworkTag
 instance Control.DeepSeq.NFData Cardano.Address.ChainPointer
 instance Control.DeepSeq.NFData Cardano.Address.Address
-
-
-module Cardano.Address.Style.Jormungandr
-
--- | A cryptographic key for sequential-scheme address derivation, with
---   phantom-types to disambiguate key types.
---   
---   <pre>
---   let rootPrivateKey = Jormungandr 'RootK XPrv
---   let accountPubKey  = Jormungandr 'AccountK XPub
---   let addressPubKey  = Jormungandr 'PaymentK XPub
---   </pre>
-data Jormungandr (depth :: Depth) key
-
--- | Extract the raw <a>XPrv</a> or <a>XPub</a> wrapped by this type.
-getKey :: Jormungandr depth key -> key
-
--- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: XPrv -> Jormungandr  'RootK XPrv
-
--- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Jormungandr  'RootK XPrv
-
--- | Derives an account private key from the given root private key.
-deriveAccountPrivateKey :: Jormungandr  'RootK XPrv -> Index  'Hardened  'AccountK -> Jormungandr  'AccountK XPrv
-
--- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Jormungandr  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Jormungandr  'PaymentK XPrv
-
--- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Jormungandr  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Jormungandr  'PaymentK XPub
-
--- | Derive a delegation key for a corresponding <a>AccountK</a>. Note that
---   wallet software are by convention only using one delegation key per
---   account, and always the first account (with index 0').
---   
---   Deriving delegation keys for something else than the initial account
---   is not recommended and can lead to incompatibility with existing
---   wallet softwares (Daedalus, Yoroi, Adalite...).
-deriveDelegationPrivateKey :: Jormungandr  'AccountK XPrv -> Jormungandr  'DelegationK XPrv
-
--- | Analyze an <a>Address</a> to know whether it's a Jormungandr address
---   or not.
---   
---   Throws <a>JormungandrAddrError</a> if it's not a valid Shelley
---   address, or a ready-to-print string giving details about the
---   <a>Jormungandr</a>.
-inspectJormungandrAddress :: MonadThrow m => Address -> m Value
-
--- | Convert a public key to a payment <a>Address</a> valid for the given
---   network discrimination.
-paymentAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'PaymentK XPub -> Address
-
--- | Convert a public key and a delegation key to a delegation
---   <a>Address</a> valid for the given network discrimination. Funds sent
---   to this address will be delegated according to the delegation settings
---   attached to the delegation key.
-delegationAddress :: NetworkDiscriminant Jormungandr -> Jormungandr  'PaymentK XPub -> Jormungandr  'DelegationK XPub -> Address
-
--- | <a>NetworkDiscriminant</a> for Cardano Incentivized Testnet testnet
---   &amp; Jormungandr
-incentivizedTestnet :: NetworkDiscriminant Jormungandr
-
--- | Unsafe backdoor for constructing an <a>Jormungandr</a> key from a raw
---   <a>XPrv</a>. this is unsafe because it lets the caller choose the
---   actually derivation <tt>depth</tt>.
---   
---   This can be useful however when serializing / deserializing such a
---   type, or to speed up test code (and avoid having to do needless
---   derivations from a master key down to an address key for instance).
-liftXPrv :: XPrv -> Jormungandr depth XPrv
-instance GHC.Enum.Bounded Cardano.Address.Style.Jormungandr.Role
-instance GHC.Classes.Ord Cardano.Address.Style.Jormungandr.Role
-instance GHC.Classes.Eq Cardano.Address.Style.Jormungandr.Role
-instance GHC.Show.Show Cardano.Address.Style.Jormungandr.Role
-instance GHC.Generics.Generic Cardano.Address.Style.Jormungandr.Role
-instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
-instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
-instance GHC.Generics.Generic (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
-instance GHC.Base.Functor (Cardano.Address.Style.Jormungandr.Jormungandr depth)
-instance Control.DeepSeq.NFData Cardano.Address.Style.Jormungandr.Role
-instance GHC.Enum.Enum Cardano.Address.Style.Jormungandr.Role
-instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Jormungandr.Jormungandr
-instance Control.DeepSeq.NFData key => Control.DeepSeq.NFData (Cardano.Address.Style.Jormungandr.Jormungandr depth key)
-instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.Derivation.SoftDerivation Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.PaymentAddress Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.DelegationAddress Cardano.Address.Style.Jormungandr.Jormungandr
-instance Cardano.Address.HasNetworkDiscriminant Cardano.Address.Style.Jormungandr.Jormungandr
 
 
 module Cardano.Address.Style.Byron
