@@ -27,8 +27,9 @@ import Prelude
 
 import Cardano.Address.Script
     ( ErrValidateScript (..)
-    , KeyHash (..)
     , Script (..)
+    , keyHashFromText
+    , prettyErrKeyHashFromText
     , prettyErrValidateScript
     , validateScript
     )
@@ -41,7 +42,6 @@ import Data.Word
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 
-import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.Text as T
 import qualified Text.ParserCombinators.ReadP as P
 
@@ -87,14 +87,9 @@ requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
     P.skipSpaces
     verKeyStr <- P.munch1 (\c -> isDigit c || isLetter c || c == '_')
-    case fromBech32 (T.pack verKeyStr) of
-        Nothing -> fail "Invalid Bech32-encoded string."
-        Just keyHash -> return $ toSignature keyHash
- where
-    toSignature = RequireSignatureOf . KeyHash
-    fromBech32 txt = do
-        (_, dp) <- either (const Nothing) Just (Bech32.decodeLenient txt)
-        Bech32.dataPartToBytes dp
+    case keyHashFromText (T.pack verKeyStr) of
+        Left e  -> fail (prettyErrKeyHashFromText e)
+        Right h -> pure (RequireSignatureOf h)
 
 requireAllOfParser :: ReadP Script
 requireAllOfParser = do

@@ -64,8 +64,6 @@ import Data.Either.Combinators
     ( maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
-import Data.Functor
-    ( ($>) )
 import Data.Text
     ( Text )
 import Data.Word
@@ -184,10 +182,11 @@ keyHashToText (KeyHash keyHash) =
     T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
--- Bech32 encoded text with `script_vkh` hrp is expected. Also
--- binary payload is expected to be composed of 28 bytes.
+-- Bech32 encoded text with `script_vkh`, `script_vk` or `script_xvk` hrp are
+-- expected. Raw keys will be hashed on the fly, whereas hash that are directly
+-- provided will remain as such.
 --
--- @since 3.0.0
+-- @since 3.1.0
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 keyHashFromText txt = do
     (hrp, dp) <- either
@@ -195,12 +194,14 @@ keyHashFromText txt = do
         Right
         (Bech32.decodeLenient txt)
 
-    (guardHrp hrp $> dp)
-        >>= maybeToRight ErrKeyHashFromTextWrongDataPart . Bech32.dataPartToBytes
+    maybeToRight ErrKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
+        >>= convertBytes hrp
         >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
-    guardHrp hrp
-        | hrp == CIP5.script_vkh = Right ()
+    convertBytes hrp bytes
+        | hrp == CIP5.script_vkh = Right bytes
+        | hrp == CIP5.script_vk  = Right $ hashCredential bytes
+        | hrp == CIP5.script_xvk = Right $ hashCredential $ BS.take 32 bytes
         | otherwise = Left ErrKeyHashFromTextWrongHrp
 
 -- Possible errors when deserializing a key hash from text.

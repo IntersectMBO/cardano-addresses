@@ -40,6 +40,15 @@ spec = do
         specScriptHashProper "script1dalltthzqnpd06fukp6j4s026wsnwrrf9k0lytzg0hnj64tfxdm"
             [iii|at_least 1 [ #{verKeyH1}, all [ #{verKeyH2}, #{verKeyH3} ] ]|]
 
+        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
+            [iii|#{verKeyH4}|]
+
+        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
+            [iii|#{verKey4}|]
+
+        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
+            [iii|#{verExtKey4}|]
+
         specScriptInvalid Malformed
             [iii|wrong [ #{verKeyH1} ]|]
 
@@ -64,7 +73,7 @@ spec = do
         specScriptInvalid DuplicateSignatures
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH1}]|]
 
-        specScriptInvalid WrongKeyHash
+        specScriptInvalid Malformed
             [iii|script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxjq8egs9|]
 
 specScriptHashProper :: String -> String -> SpecWith ()
@@ -86,3 +95,12 @@ verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 
 verKeyH3 :: String
 verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
+
+verExtKey4 :: String
+verExtKey4 = "script_xvk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23nlvugj5ez9qfxxvkmjwnpn69s48cv572phfy6qpmnwat0hwcdrasapqewe"
+
+verKey4 :: String
+verKey4 = "script_vk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23skqaly0"
+
+verKeyH4 :: String
+verKeyH4 = "script_vkh14uwy4ftq7d6wzpk5trrc5rlqss52tqp3qkrqk95hegls54e0sga"
