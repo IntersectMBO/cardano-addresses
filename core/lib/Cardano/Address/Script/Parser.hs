@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -26,16 +25,16 @@ module Cardano.Address.Script.Parser
 
 import Prelude
 
-import Cardano.Address.Derivation
-    ( credentialHashSize )
 import Cardano.Address.Script
-    ( KeyHash (..), Script (..) )
-import Control.Monad
-    ( when )
+    ( ErrValidateScript (..)
+    , Script (..)
+    , keyHashFromText
+    , prettyErrKeyHashFromText
+    , prettyErrValidateScript
+    , validateScript
+    )
 import Data.Char
     ( isDigit, isLetter )
-import Data.Foldable
-    ( traverse_ )
 import Data.Functor
     ( ($>) )
 import Data.Word
@@ -43,9 +42,6 @@ import Data.Word
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 
-import qualified Codec.Binary.Bech32 as Bech32
-import qualified Data.ByteString as BS
-import qualified Data.List as L
 import qualified Data.Text as T
 import qualified Text.ParserCombinators.ReadP as P
 
@@ -57,69 +53,6 @@ scriptFromString str =
     case readP_to_S scriptParser str of
          [(script, "")] -> validateScript script $> script
          _ -> Left Malformed
-
--- | Validate a 'Script', semantically
---
--- @since 3.0.0
-validateScript :: Script -> Either ErrValidateScript ()
-validateScript = \case
-    RequireSignatureOf (KeyHash bytes) -> do
-        when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
-
-    RequireAllOf script -> do
-        when (L.null script) $ Left EmptyList
-        when (hasDuplicate script) $ Left DuplicateSignatures
-        traverse_ validateScript script
-
-    RequireAnyOf script -> do
-        when (L.null script) $ Left EmptyList
-        when (hasDuplicate script) $ Left DuplicateSignatures
-        traverse_ validateScript script
-
-    RequireSomeOf m script -> do
-        when (m == 0) $ Left MZero
-        when (length script < fromIntegral m) $ Left ListTooSmall
-        when (hasDuplicate script) $ Left DuplicateSignatures
-        traverse_ validateScript script
-  where
-    hasDuplicate xs = do
-        length sigs /= length (L.nub sigs)
-      where
-        sigs = [ sig | RequireSignatureOf sig <- xs ]
-
--- | Possible validation errors when validating a script
---
--- @since 3.0.0
-data ErrValidateScript
-    = EmptyList
-    | ListTooSmall
-    | MZero
-    | DuplicateSignatures
-    | WrongKeyHash
-    | Malformed
-    deriving (Eq, Show)
-
--- | Pretty-print a validation error.
---
--- @since 3.0.0
-prettyErrValidateScript
-    :: ErrValidateScript
-    -> String
-prettyErrValidateScript = \case
-    EmptyList ->
-        "The list inside a script is empty."
-    MZero ->
-        "The M in at_least cannot be 0."
-    ListTooSmall ->
-        "The list inside at_least cannot be less than M."
-    DuplicateSignatures ->
-        "The list inside a script has duplicate keys."
-    WrongKeyHash ->
-        "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
-    Malformed ->
-        "Parsing of the script failed. The script should be composed of nested \
-        \lists, and the verification keys should be either encoded as bech32."
-
 
 -- | The script embodies combination of signing keys that need to be met to make
 -- it valid. We assume here that the script could
@@ -154,14 +87,9 @@ requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
     P.skipSpaces
     verKeyStr <- P.munch1 (\c -> isDigit c || isLetter c || c == '_')
-    case fromBech32 (T.pack verKeyStr) of
-        Nothing -> fail "Invalid Bech32-encoded string."
-        Just keyHash -> return $ toSignature keyHash
- where
-    toSignature = RequireSignatureOf . KeyHash
-    fromBech32 txt = do
-        (_, dp) <- either (const Nothing) Just (Bech32.decodeLenient txt)
-        Bech32.dataPartToBytes dp
+    case keyHashFromText (T.pack verKeyStr) of
+        Left e  -> fail (prettyErrKeyHashFromText e)
+        Right h -> pure (RequireSignatureOf h)
 
 requireAllOfParser :: ReadP Script
 requireAllOfParser = do
