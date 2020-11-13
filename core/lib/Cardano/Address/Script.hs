@@ -15,6 +15,11 @@ module Cardano.Address.Script
       Script (..)
     , serializeScript
 
+    -- * Validation
+    , validateScript
+    , ErrValidateScript (..)
+    , prettyErrValidateScript
+
     -- * Hashing
     , ScriptHash (..)
     , toScriptHash
@@ -38,6 +43,8 @@ import Control.Applicative
     ( (<|>) )
 import Control.DeepSeq
     ( NFData )
+import Control.Monad
+    ( when )
 import Data.Aeson
     ( FromJSON (..)
     , ToJSON (..)
@@ -46,14 +53,17 @@ import Data.Aeson
     , withObject
     , withText
     , (.:)
+    , (.:?)
     , (.=)
     )
+import Data.Aeson.Types
+    ( Parser )
 import Data.ByteString
     ( ByteString )
 import Data.Either.Combinators
     ( maybeToRight )
 import Data.Foldable
-    ( foldl' )
+    ( asum, foldl', traverse_ )
 import Data.Functor
     ( ($>) )
 import Data.Text
@@ -67,7 +77,9 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
+import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
+import qualified Data.List as L
 import qualified Data.Text.Encoding as T
 
 
@@ -216,6 +228,72 @@ prettyErrKeyHashFromText = \case
         "Verification key hash is Bech32-encoded but has an invalid data part."
 
 --
+-- Script validation
+--
+
+-- | Validate a 'Script', semantically
+--
+-- @since 3.0.0
+validateScript :: Script -> Either ErrValidateScript ()
+validateScript = \case
+    RequireSignatureOf (KeyHash bytes) -> do
+        when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
+
+    RequireAllOf script -> do
+        when (L.null script) $ Left EmptyList
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+
+    RequireAnyOf script -> do
+        when (L.null script) $ Left EmptyList
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+
+    RequireSomeOf m script -> do
+        when (m == 0) $ Left MZero
+        when (length script < fromIntegral m) $ Left ListTooSmall
+        when (hasDuplicate script) $ Left DuplicateSignatures
+        traverse_ validateScript script
+  where
+    hasDuplicate xs = do
+        length sigs /= length (L.nub sigs)
+      where
+        sigs = [ sig | RequireSignatureOf sig <- xs ]
+
+-- | Possible validation errors when validating a script
+--
+-- @since 3.0.0
+data ErrValidateScript
+    = EmptyList
+    | ListTooSmall
+    | MZero
+    | DuplicateSignatures
+    | WrongKeyHash
+    | Malformed
+    deriving (Eq, Show)
+
+-- | Pretty-print a validation error.
+--
+-- @since 3.0.0
+prettyErrValidateScript
+    :: ErrValidateScript
+    -> String
+prettyErrValidateScript = \case
+    EmptyList ->
+        "The list inside a script is empty."
+    MZero ->
+        "At least must be at least 1."
+    ListTooSmall ->
+        "At least must not be larger than the list of keys."
+    DuplicateSignatures ->
+        "The list inside a script has duplicate keys."
+    WrongKeyHash ->
+        "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
+    Malformed ->
+        "Parsing of the script failed. The script should be composed of nested \
+        \lists, and the verification keys should be either encoded as bech32."
+
+--
 -- Internal
 --
 
@@ -254,17 +332,59 @@ instance ToJSON Script where
         object ["some" .= object ["at_least" .= count, "from" .= scripts]]
 
 instance FromJSON Script where
-    parseJSON v = parseKey v <|> parseAnyOf v  <|> parseAllOf v <|> parseAtLeast v
+    parseJSON v = do
+        script <- asum
+            [ parseKey v
+            , parseAnyOf v
+            , parseAllOf v
+            , parseAtLeast v
+            ] <|> backtrack v
+
+        either (fail . prettyErrValidateScript) pure
+            (validateScript script)
+
+        return script
       where
         parseKey = withText "Script KeyHash" $
             either
                 (fail . prettyErrKeyHashFromText)
                 (pure . RequireSignatureOf)
                 . keyHashFromText
+
         parseAnyOf = withObject "Script AnyOf" $ \o ->
             RequireAnyOf <$> o .: "any"
+
         parseAllOf = withObject "Script AllOf" $ \o ->
             RequireAllOf <$> o .: "all"
+
         parseAtLeast = withObject "Script SomeOf" $ \o -> do
             some <- o .: "some"
             RequireSomeOf <$> some .: "at_least" <*> some .: "from"
+
+        -- NOTE: Because we use an alternative sum to define all parsers, in
+        -- case all parser fails, only the last error is returned which can be
+        -- very misleading. For example, sending {"any": []} yields an error
+        -- telling us that the key `"some"` is missing.
+        --
+        -- To cope with this, we add a last parser 'backtrack' which always
+        -- fail but with a more helpful error which tries its best at
+        -- identifying the right constructor.
+        backtrack = \case
+            Object o -> do
+                mAny  <- o .:? "any"  :: Parser (Maybe Value)
+                mAll  <- o .:? "all"  :: Parser (Maybe Value)
+                mSome <- o .:? "some" :: Parser (Maybe Value)
+                case (mAny, mAll, mSome) of
+                    (Just{}, Nothing, Nothing)  -> parseAnyOf v
+                    (Nothing, Just{}, Nothing)  -> parseAllOf v
+                    (Nothing, Nothing, Just{})  -> parseAtLeast v
+                    (Nothing, Nothing, Nothing) -> fail
+                        "Found object with no known key 'any', 'all' or 'some'"
+                    (      _,       _,      _)  -> fail
+                        "Found multiple keys 'any', 'all' and/or 'some' at the same level"
+
+            String{} ->
+                parseKey v
+
+            _ ->
+                Json.typeMismatch "Object or String" v

@@ -276,6 +276,52 @@ spec = do
     describe "can perform roundtrip JSON serialization & deserialization" $
         it "fromJSON . toJSON === pure" $ property prop_jsonRoundtrip
 
+    describe "some JSON parsing error" $ do
+        it "Empty list" $ do
+            let err = "Error in $: The list inside a script is empty."
+            Json.eitherDecode @Script "{ \"any\": [] }"
+                `shouldBe` Left err
+
+        it "Empty list nested" $ do
+            let err = "Error in $.any[0]: The list inside a script is empty."
+            Json.eitherDecode @Script "{ \"any\": [ { \"all\": [] } ] }"
+                `shouldBe` Left err
+
+        it "Invalid type" $ do
+            let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
+            Json.eitherDecode @Script "{ \"all\": [ { \"any\": [1,2,3] } ] }"
+                `shouldBe` Left err
+
+        it "List too small" $ do
+            let err = "Error in $: At least must not be larger than the list of keys."
+            Json.eitherDecode @Script
+                "{ \"some\":\
+                \   { \"at_least\": 2\
+                \   , \"from\":\
+                \       [\"script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms\"\
+                \       ]\
+                \   }\
+                \}" `shouldBe` Left err
+
+        it "Multiple 'any', 'all'" $ do
+            let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
+            Json.eitherDecode @Script "{ \"all\": [ { \"any\": [1,2,3] } ] }"
+                `shouldBe` Left err
+
+        it "Multiple keys" $ do
+            let err = "Error in $: Found multiple keys 'any', 'all' and/or 'some' at the same level"
+            Json.eitherDecode @Script "{ \"all\": [null], \"some\": {} }"
+                `shouldBe` Left err
+
+        it "Unknown keys" $ do
+            let err = "Error in $: Found object with no known key 'any', 'all' or 'some'"
+            Json.eitherDecode @Script "{ \"patate\": {} }"
+                `shouldBe` Left err
+
+        it "Invalid JSON" $ do
+            let err = "Error in $: Failed reading: not a valid json value"
+            Json.eitherDecode @Script "'';[]["
+                `shouldBe` Left err
   where
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
@@ -296,7 +342,7 @@ instance Arbitrary Script where
             Positive m <- arbitrary
             let n' = n `div` (m + 1)
             scripts <- vectorOf m (scriptTree n')
-            atLeast <- choose (0, fromIntegral (m + 1))
+            atLeast <- choose (1, fromIntegral m)
             elements
                 [ RequireAllOf scripts
                 , RequireAnyOf scripts
