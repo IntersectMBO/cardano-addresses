@@ -365,6 +365,21 @@ RequireSomeOf :: Word8 -> ![Script] -> Script
 --   toCBOR [0,multisigScript]
 serializeScript :: Script -> ByteString
 
+-- | Validate a <a>Script</a>, semantically
+validateScript :: Script -> Either ErrValidateScript ()
+
+-- | Possible validation errors when validating a script
+data ErrValidateScript
+EmptyList :: ErrValidateScript
+ListTooSmall :: ErrValidateScript
+MZero :: ErrValidateScript
+DuplicateSignatures :: ErrValidateScript
+WrongKeyHash :: ErrValidateScript
+Malformed :: ErrValidateScript
+
+-- | Pretty-print a validation error.
+prettyErrValidateScript :: ErrValidateScript -> String
+
 -- | A <a>ScriptHash</a> type represents script hash. The hash is expected
 --   to have size of 28-byte.
 newtype ScriptHash
@@ -388,13 +403,16 @@ KeyHash :: ByteString -> KeyHash
 keyHashFromBytes :: ByteString -> Maybe KeyHash
 
 -- | Construct a <a>KeyHash</a> from <a>Text</a>. Either hex encoded text
---   or Bech32 encoded text with <tt>script_vkh</tt> hrp is expected. Also
---   binary payload is expected to be composed of 28 bytes.
+--   or Bech32 encoded text with <tt>script_vkh</tt>, <tt>script_vk</tt> or
+--   <tt>script_xvk</tt> hrp are expected. Raw keys will be hashed on the
+--   fly, whereas hash that are directly provided will remain as such.
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 
 -- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
 --   <tt>script_vkh</tt> as a human readable prefix.
 keyHashToText :: KeyHash -> Text
+instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
 instance GHC.Classes.Eq Cardano.Address.Script.ErrKeyHashFromText
 instance GHC.Show.Show Cardano.Address.Script.ErrKeyHashFromText
 instance GHC.Classes.Eq Cardano.Address.Script.Script
@@ -456,8 +474,6 @@ Malformed :: ErrValidateScript
 
 -- | Pretty-print a validation error.
 prettyErrValidateScript :: ErrValidateScript -> String
-instance GHC.Show.Show Cardano.Address.Script.Parser.ErrValidateScript
-instance GHC.Classes.Eq Cardano.Address.Script.Parser.ErrValidateScript
 
 module Cardano.Address
 
