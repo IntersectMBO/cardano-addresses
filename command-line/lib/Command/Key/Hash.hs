@@ -68,7 +68,13 @@ run Hash = do
                 fail "data should be a 32-byte public key."
 
     prefixFor hrp
-        | hrp == CIP5.addr_vk   = CIP5.addr_vkh
-        | hrp == CIP5.stake_vk  = CIP5.stake_vkh
-        | hrp == CIP5.script_vk = CIP5.script_vkh
+        | hrp == CIP5.addr_vk    = CIP5.addr_vkh
+        | hrp == CIP5.addr_xvk   = CIP5.addr_vkh
+
+        | hrp == CIP5.stake_vk   = CIP5.stake_vkh
+        | hrp == CIP5.stake_xvk  = CIP5.stake_vkh
+
+        | hrp == CIP5.script_vk  = CIP5.script_vkh
+        | hrp == CIP5.script_xvk = CIP5.script_vkh
+
         | otherwise = error "impossible: pattern-match not coverage all cases."
