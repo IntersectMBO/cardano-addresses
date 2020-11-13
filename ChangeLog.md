@@ -1,3 +1,24 @@
+## [3.1.0] - 2020-11-13
+
+### Added
+
+N/A
+
+### Changed 
+
+- 'keyHashFromText' now works seamlessly with key, extended keys or key hashes. In case a key or extended key is given, the relevant part will be hashed on the fly. Said differently, it means that
+  the command-line and the JSON instance for 'Script' works transparently with keys or key hashes. 
+
+- Fixed a bug with the `key hash` command which failed when provided with extended keys. 
+
+- The 'FromJSON' instance for 'Script' now runs the validation within the JSON parser, such that when the parser succeeds the resulting 'Script' is indeed valid. 
+
+- The 'FromJSON' instance for 'Script' is now much better at showing errors.
+
+### Removed
+
+N/A
+
 ## [3.0.0] - 2020-11-12
 
 ### Added
