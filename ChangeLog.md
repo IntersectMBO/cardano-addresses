@@ -1,17 +1,31 @@
+## [3.1.1] - UNRELEASED
+
+### Added
+
+N/A
+
+### Changed
+
+- Fix `cardano-address --version` reporting.
+
+### Removed
+
+N/A
+
 ## [3.1.0] - 2020-11-13
 
 ### Added
 
 N/A
 
-### Changed 
+### Changed
 
 - 'keyHashFromText' now works seamlessly with key, extended keys or key hashes. In case a key or extended key is given, the relevant part will be hashed on the fly. Said differently, it means that
-  the command-line and the JSON instance for 'Script' works transparently with keys or key hashes. 
+  the command-line and the JSON instance for 'Script' works transparently with keys or key hashes.
 
-- Fixed a bug with the `key hash` command which failed when provided with extended keys. 
+- Fixed a bug with the `key hash` command which failed when provided with extended keys.
 
-- The 'FromJSON' instance for 'Script' now runs the validation within the JSON parser, such that when the parser succeeds the resulting 'Script' is indeed valid. 
+- The 'FromJSON' instance for 'Script' now runs the validation within the JSON parser, such that when the parser succeeds the resulting 'Script' is indeed valid.
 
 - The 'FromJSON' instance for 'Script' is now much better at showing errors.
 
@@ -33,15 +47,15 @@ N/A
 
 - New command for computing key and script hashes that are required in the construction of larger objects (e.g. addresses).
 
-- Support for cabal build. 
+- Support for cabal build.
 
-### Changed 
+### Changed
 
 - The command-line API no longer support multi-encoding (base16, bech32 and base58) but instead, enforces bech32 for keys and addresses, with specific human readable prefixes. It is still possible to easily go from base16-encoded data to bech32 by piping data through the [`bech32`](https://github.com/input-output-hk/bech32/) command-line.
 
 - It is no longer possible to derive child keys to and from any path. Are only allowed:
    - root -> account
-   - root -> address 
+   - root -> address
    - account -> address
   This is reflected in the bech32 prefixes of the inputs and outputs.
 
@@ -62,9 +76,9 @@ N/A
 - Added constructors to derive keys on the multisig role.
 - Made the parser for `--network-tag` more user friendly by now accepting pre-defined keywords such as "mainnet" or "testnet".
 
-### Changed 
+### Changed
 
-- Renamed `AccountingStyle` into `Role` to better capture the semantic of the 4th level in derivation paths. 
+- Renamed `AccountingStyle` into `Role` to better capture the semantic of the 4th level in derivation paths.
 - Made script hashes 28-byte long again, after this was fixed upstream in the Cardano ledger.
 
 ### Removed
@@ -74,7 +88,7 @@ N/A
 
 ## [2.0.0] - 2020-09-10
 
-### Added 
+### Added
 
 - Command-line interface `cardano-address` for managing recovery-phrases, keys and addresses.
 - Support for Shelley-specific address types.
