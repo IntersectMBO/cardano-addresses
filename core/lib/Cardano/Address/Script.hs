@@ -45,9 +45,7 @@ import Control.Applicative
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
-    ( foldM )
-import Control.Monad
-    ( when )
+    ( foldM, when )
 import Data.Aeson
     ( FromJSON (..)
     , ToJSON (..)

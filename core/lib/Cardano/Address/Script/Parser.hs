@@ -21,6 +21,8 @@ module Cardano.Address.Script.Parser
     , requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
+    , validFromSlotParser
+    , validUntilSlotParser
     ) where
 
 import Prelude
@@ -39,6 +41,8 @@ import Data.Functor
     ( ($>) )
 import Data.Word
     ( Word8 )
+import Numeric.Natural
+    ( Natural )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 
@@ -72,6 +76,12 @@ scriptFromString str =
 --
 -- 5. Nested script are supported
 -- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
+-- 6. 1 signature required after slot number 120
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, valid_from 120]
+-- 7. 1 signature required until slot number 150
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, valid_until 150]
+-- 8. 1 signature required in slot interval <145, 150)
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, valid_from 145, valid_until 150]
 --
 -- Parser is insensitive to whitespaces.
 --
@@ -81,7 +91,9 @@ scriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
     requireAtLeastOfParser <++
-    requireSignatureOfParser
+    requireSignatureOfParser <++
+    validFromSlotParser <++
+    validUntilSlotParser
 
 requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
@@ -109,8 +121,25 @@ requireAtLeastOfParser = do
     _identifier <- P.string "at_least"
     RequireSomeOf <$> naturalParser <*> commonPart
 
+validFromSlotParser :: ReadP Script
+validFromSlotParser = do
+    P.skipSpaces
+    _identifier <- P.string "valid_from"
+    ValidFromSlot <$> slotParser
+
+validUntilSlotParser :: ReadP Script
+validUntilSlotParser = do
+    P.skipSpaces
+    _identifier <- P.string "valid_until"
+    ValidUntilSlot <$> slotParser
+
 naturalParser :: ReadP Word8
 naturalParser = do
+    P.skipSpaces
+    fromInteger . read <$> P.munch1 isDigit
+
+slotParser :: ReadP Natural
+slotParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit
 
