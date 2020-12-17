@@ -75,6 +75,8 @@ import Data.Word
     ( Word8 )
 import GHC.Generics
     ( Generic )
+import Numeric.Natural
+    ( Natural )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Cardano.Codec.Cbor as CBOR
@@ -95,6 +97,8 @@ data Script
     | RequireAllOf ![Script]
     | RequireAnyOf ![Script]
     | RequireSomeOf Word8 ![Script]
+    | ValidFromSlot Natural
+    | ValidUntilSlot Natural
     deriving stock (Generic, Show, Eq)
 instance NFData Script
 
@@ -125,6 +129,10 @@ serializeScript script =
             , CBOR.encodeInt (fromInteger $ toInteger m)
             , encodeFoldable toCBOR contents
             ]
+        ValidFromSlot slotNum ->
+            encodeMultiscriptCtr 4 2 <> CBOR.encodeWord64 (fromInteger $ toInteger slotNum)
+        ValidUntilSlot slotNum ->
+            encodeMultiscriptCtr 5 2 <> CBOR.encodeWord64 (fromInteger $ toInteger slotNum)
 
     encodeMultiscriptCtr :: Word -> Word -> CBOR.Encoding
     encodeMultiscriptCtr ctrIndex listLen =
@@ -239,13 +247,15 @@ prettyErrKeyHashFromText = \case
 
 -- | 'Script' folding
 --
--- @since 4.0.0
+-- @since 3.2.0
 foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
 foldScript fn zero = \case
     RequireSignatureOf k -> fn k zero
     RequireAllOf xs      -> foldMScripts xs
     RequireAnyOf xs      -> foldMScripts xs
     RequireSomeOf _ xs   -> foldMScripts xs
+    ValidFromSlot _      -> zero
+    ValidUntilSlot _     -> zero
   where
     foldMScripts =
         runIdentity . foldM (\acc -> Identity . foldScript fn acc) zero
@@ -278,6 +288,10 @@ validateScript = \case
         when (length script < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         traverse_ validateScript script
+
+    ValidFromSlot _ -> pure ()
+
+    ValidUntilSlot _ -> pure ()
   where
     hasDuplicate xs = do
         length sigs /= length (L.nub sigs)
@@ -344,6 +358,10 @@ prettyErrValidateScript = \case
 --            }
 --          ]
 --}
+--{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--          , {"valid_from": 120 }
+--          ]
+--}
 
 instance ToJSON Script where
     toJSON (RequireSignatureOf keyHash) =
@@ -354,6 +372,10 @@ instance ToJSON Script where
         object ["any" .= fmap toJSON content]
     toJSON (RequireSomeOf count scripts) =
         object ["some" .= object ["at_least" .= count, "from" .= scripts]]
+    toJSON (ValidFromSlot slot) =
+        object ["valid_from" .= slot]
+    toJSON (ValidUntilSlot slot) =
+        object ["valid_until" .= slot]
 
 instance FromJSON Script where
     parseJSON v = do
@@ -362,6 +384,8 @@ instance FromJSON Script where
             , parseAnyOf v
             , parseAllOf v
             , parseAtLeast v
+            , parseValidFrom v
+            , parseValidUntil v
             ] <|> backtrack v
 
         either (fail . prettyErrValidateScript) pure
@@ -384,6 +408,12 @@ instance FromJSON Script where
         parseAtLeast = withObject "Script SomeOf" $ \o -> do
             some <- o .: "some"
             RequireSomeOf <$> some .: "at_least" <*> some .: "from"
+
+        parseValidFrom = withObject "Script ValidFrom" $ \o ->
+            ValidFromSlot <$> o .: "valid_from"
+
+        parseValidUntil = withObject "Script ValidUntil" $ \o ->
+            ValidUntilSlot <$> o .: "valid_until"
 
         -- NOTE: Because we use an alternative sum to define all parsers, in
         -- case all parser fails, only the last error is returned which can be

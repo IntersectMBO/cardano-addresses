@@ -33,18 +33,23 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Data.Either
     ( isLeft )
+import Numeric.Natural
+    ( Natural )
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Positive (..)
     , Property
+    , arbitrarySizedNatural
     , choose
     , classify
     , elements
     , genericShrink
+    , oneof
     , property
     , scale
+    , shrinkIntegral
     , sized
     , vectorOf
     , (===)
@@ -334,10 +339,18 @@ prop_jsonRoundtrip script =
     roundtrip :: Script -> Maybe Script
     roundtrip = Json.decode . Json.encode
 
+instance Arbitrary Natural where
+    shrink = shrinkIntegral
+    arbitrary = arbitrarySizedNatural
+
 instance Arbitrary Script where
     arbitrary = scale (`div` 3) $ sized scriptTree
       where
-        scriptTree 0 = RequireSignatureOf <$> arbitrary
+        scriptTree 0 = oneof
+            [ RequireSignatureOf <$> arbitrary
+            , ValidFromSlot <$> arbitrary
+            , ValidUntilSlot <$> arbitrary
+            ]
         scriptTree n = do
             Positive m <- arbitrary
             let n' = n `div` (m + 1)
