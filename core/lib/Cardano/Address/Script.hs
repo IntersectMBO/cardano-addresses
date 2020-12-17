@@ -14,6 +14,7 @@ module Cardano.Address.Script
     -- * Script
       Script (..)
     , serializeScript
+    , foldScript
 
     -- * Validation
     , validateScript
@@ -44,6 +45,8 @@ import Control.Applicative
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
+    ( foldM )
+import Control.Monad
     ( when )
 import Data.Aeson
     ( FromJSON (..)
@@ -64,6 +67,8 @@ import Data.Either.Combinators
     ( maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
+import Data.Functor.Identity
+    ( Identity (..) )
 import Data.Text
     ( Text )
 import Data.Word
@@ -147,7 +152,7 @@ toScriptHash = ScriptHash . hashCredential . serializeScript
 --
 -- @since 3.0.0
 newtype ScriptHash = ScriptHash { unScriptHash :: ByteString }
-    deriving (Generic, Show, Eq)
+    deriving (Generic, Show, Ord, Eq)
 instance NFData ScriptHash
 
 -- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
@@ -163,7 +168,7 @@ scriptHashFromBytes bytes
 --
 -- @since 3.0.0
 newtype KeyHash = KeyHash { unKeyHash :: ByteString }
-    deriving (Generic, Show, Eq)
+    deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
 
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
@@ -227,6 +232,24 @@ prettyErrKeyHashFromText = \case
         "Invalid human-readable prefix: must be 'script_vkh'."
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
+
+--
+-- Script folding
+--
+
+-- | 'Script' folding
+--
+-- @since 4.0.0
+foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
+foldScript fn zero = \case
+    RequireSignatureOf k -> fn k zero
+    RequireAllOf xs      -> foldMScripts xs
+    RequireAnyOf xs      -> foldMScripts xs
+    RequireSomeOf _ xs   -> foldMScripts xs
+  where
+    foldMScripts =
+        runIdentity . foldM (\acc -> Identity . foldScript fn acc) zero
+
 
 --
 -- Script validation
