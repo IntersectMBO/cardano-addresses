@@ -15,6 +15,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
+    - name: 'GitHub actions env workaround'
+      run: 'echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append'
+
     - name: 📥 Checkout repository
       uses: actions/checkout@v1
 
