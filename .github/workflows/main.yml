@@ -15,6 +15,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
+    - name: 'GitHub actions env workaround'
+      run: 'echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV'
+
     - name: 💽 Install OS Packages
       uses: mstksg/get-package@v1
       with:
