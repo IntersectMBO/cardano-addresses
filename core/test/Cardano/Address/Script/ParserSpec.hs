@@ -50,9 +50,9 @@ spec = do
     let script11 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
     let script12 = "all []"
     let script13 = "any ["<>verKeyH1<>", all [   ]]"
-    let script14 = "all ["<>verKeyH1<>", valid_from 120]"
-    let script15 = "all ["<>verKeyH1<>", valid_until 150]"
-    let script16 = "all ["<>verKeyH1<>", valid_from 120, valid_until 125]"
+    let script14 = "all ["<>verKeyH1<>", active_from 120]"
+    let script15 = "all ["<>verKeyH1<>", active_until 150]"
+    let script16 = "all ["<>verKeyH1<>", active_from 120, active_until 125]"
 
     describe "requireSignatureOfParser : unit tests" $ do
         valuesParserUnitTest requireSignatureOfParser verKeyH1
@@ -148,20 +148,20 @@ spec = do
     describe "validFromSlot unit test" $ do
         let expected = RequireAllOf
                 [ RequireSignatureOf $ KeyHash bytes1
-                , ValidFromSlot 120 ]
+                , ActiveFromSlot 120 ]
         valuesParserUnitTest scriptParser script14 expected
 
     describe "validUntilSlot unit test" $ do
         let expected = RequireAllOf
                 [ RequireSignatureOf $ KeyHash bytes1
-                , ValidUntilSlot 150 ]
+                , ActiveUntilSlot 150 ]
         valuesParserUnitTest scriptParser script15 expected
 
     describe "validUntilSlot and validFromSlot unit test" $ do
         let expected = RequireAllOf
                 [ RequireSignatureOf $ KeyHash bytes1
-                , ValidFromSlot 120
-                , ValidUntilSlot 125 ]
+                , ActiveFromSlot 120
+                , ActiveUntilSlot 125 ]
         valuesParserUnitTest scriptParser script16 expected
 
 valuesParserUnitTest

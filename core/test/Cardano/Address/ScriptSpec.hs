@@ -184,6 +184,24 @@ spec = do
                 \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
                 "8aa7af44362310140ff3d32ac7d1a2ecbe26da65f3d146c64b90e9e1"
 
+        it "ActivateFromSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120]
+            checkCBORandScriptHash script
+                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82041878"
+                "f0252f0e8b31694afe2e793aefa8420fe7cdefc08003fe6a911f710d"
+
+        it "ActivateUntilSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveUntilSlot 150]
+            checkCBORandScriptHash script
+                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82051896"
+                "88bf6eca7c3bf7abc74fdb6bd8dee2ac08656a9b79bd5cccfddda058"
+
+        it "ActivateUntilSlot and ActivateUntilSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120, ActiveUntilSlot 150]
+            checkCBORandScriptHash script
+                "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8204187882051896"
+                "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
+
     describe "validateScript - errors" $ do
         it "no content in RequireAllOf" $ do
             let script = RequireAllOf []
@@ -348,8 +366,8 @@ instance Arbitrary Script where
       where
         scriptTree 0 = oneof
             [ RequireSignatureOf <$> arbitrary
-            , ValidFromSlot <$> arbitrary
-            , ValidUntilSlot <$> arbitrary
+            , ActiveFromSlot <$> arbitrary
+            , ActiveUntilSlot <$> arbitrary
             ]
         scriptTree n = do
             Positive m <- arbitrary
