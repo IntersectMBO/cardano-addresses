@@ -14,6 +14,7 @@ module Cardano.Address.Script
     -- * Script
       Script (..)
     , serializeScript
+    , foldScript
 
     -- * Validation
     , validateScript
@@ -44,7 +45,7 @@ import Control.Applicative
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
-    ( when )
+    ( foldM, when )
 import Data.Aeson
     ( FromJSON (..)
     , ToJSON (..)
@@ -64,12 +65,16 @@ import Data.Either.Combinators
     ( maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
+import Data.Functor.Identity
+    ( Identity (..) )
 import Data.Text
     ( Text )
 import Data.Word
     ( Word8 )
 import GHC.Generics
     ( Generic )
+import Numeric.Natural
+    ( Natural )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Cardano.Codec.Cbor as CBOR
@@ -90,6 +95,8 @@ data Script
     | RequireAllOf ![Script]
     | RequireAnyOf ![Script]
     | RequireSomeOf Word8 ![Script]
+    | ActiveFromSlot Natural
+    | ActiveUntilSlot Natural
     deriving stock (Generic, Show, Eq)
 instance NFData Script
 
@@ -120,6 +127,10 @@ serializeScript script =
             , CBOR.encodeInt (fromInteger $ toInteger m)
             , encodeFoldable toCBOR contents
             ]
+        ActiveFromSlot slotNum ->
+            encodeMultiscriptCtr 4 2 <> CBOR.encodeWord64 (fromInteger $ toInteger slotNum)
+        ActiveUntilSlot slotNum ->
+            encodeMultiscriptCtr 5 2 <> CBOR.encodeWord64 (fromInteger $ toInteger slotNum)
 
     encodeMultiscriptCtr :: Word -> Word -> CBOR.Encoding
     encodeMultiscriptCtr ctrIndex listLen =
@@ -147,7 +158,7 @@ toScriptHash = ScriptHash . hashCredential . serializeScript
 --
 -- @since 3.0.0
 newtype ScriptHash = ScriptHash { unScriptHash :: ByteString }
-    deriving (Generic, Show, Eq)
+    deriving (Generic, Show, Ord, Eq)
 instance NFData ScriptHash
 
 -- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
@@ -163,7 +174,7 @@ scriptHashFromBytes bytes
 --
 -- @since 3.0.0
 newtype KeyHash = KeyHash { unKeyHash :: ByteString }
-    deriving (Generic, Show, Eq)
+    deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
 
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
@@ -229,6 +240,26 @@ prettyErrKeyHashFromText = \case
         "Verification key hash is Bech32-encoded but has an invalid data part."
 
 --
+-- Script folding
+--
+
+-- | 'Script' folding
+--
+-- @since 3.2.0
+foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
+foldScript fn zero = \case
+    RequireSignatureOf k -> fn k zero
+    RequireAllOf xs      -> foldMScripts xs
+    RequireAnyOf xs      -> foldMScripts xs
+    RequireSomeOf _ xs   -> foldMScripts xs
+    ActiveFromSlot _     -> zero
+    ActiveUntilSlot _    -> zero
+  where
+    foldMScripts =
+        runIdentity . foldM (\acc -> Identity . foldScript fn acc) zero
+
+
+--
 -- Script validation
 --
 
@@ -255,6 +286,10 @@ validateScript = \case
         when (length script < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         traverse_ validateScript script
+
+    ActiveFromSlot _ -> pure ()
+
+    ActiveUntilSlot _ -> pure ()
   where
     hasDuplicate xs = do
         length sigs /= length (L.nub sigs)
@@ -321,6 +356,10 @@ prettyErrValidateScript = \case
 --            }
 --          ]
 --}
+--{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--          , {"active_from": 120 }
+--          ]
+--}
 
 instance ToJSON Script where
     toJSON (RequireSignatureOf keyHash) =
@@ -331,6 +370,10 @@ instance ToJSON Script where
         object ["any" .= fmap toJSON content]
     toJSON (RequireSomeOf count scripts) =
         object ["some" .= object ["at_least" .= count, "from" .= scripts]]
+    toJSON (ActiveFromSlot slot) =
+        object ["active_from" .= slot]
+    toJSON (ActiveUntilSlot slot) =
+        object ["active_until" .= slot]
 
 instance FromJSON Script where
     parseJSON v = do
@@ -339,6 +382,8 @@ instance FromJSON Script where
             , parseAnyOf v
             , parseAllOf v
             , parseAtLeast v
+            , parseActiveFrom v
+            , parseActiveUntil v
             ] <|> backtrack v
 
         either (fail . prettyErrValidateScript) pure
@@ -361,6 +406,12 @@ instance FromJSON Script where
         parseAtLeast = withObject "Script SomeOf" $ \o -> do
             some <- o .: "some"
             RequireSomeOf <$> some .: "at_least" <*> some .: "from"
+
+        parseActiveFrom = withObject "Script ActiveFrom" $ \o ->
+            ActiveFromSlot <$> o .: "active_from"
+
+        parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
+            ActiveUntilSlot <$> o .: "active_until"
 
         -- NOTE: Because we use an alternative sum to define all parsers, in
         -- case all parser fails, only the last error is returned which can be

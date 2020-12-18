@@ -33,18 +33,23 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Data.Either
     ( isLeft )
+import Numeric.Natural
+    ( Natural )
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Positive (..)
     , Property
+    , arbitrarySizedNatural
     , choose
     , classify
     , elements
     , genericShrink
+    , oneof
     , property
     , scale
+    , shrinkIntegral
     , sized
     , vectorOf
     , (===)
@@ -178,6 +183,24 @@ spec = do
                 \00581cffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c9683402\
                 \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
                 "8aa7af44362310140ff3d32ac7d1a2ecbe26da65f3d146c64b90e9e1"
+
+        it "ActivateFromSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120]
+            checkCBORandScriptHash script
+                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82041878"
+                "f0252f0e8b31694afe2e793aefa8420fe7cdefc08003fe6a911f710d"
+
+        it "ActivateUntilSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveUntilSlot 150]
+            checkCBORandScriptHash script
+                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82051896"
+                "88bf6eca7c3bf7abc74fdb6bd8dee2ac08656a9b79bd5cccfddda058"
+
+        it "ActivateUntilSlot and ActivateUntilSlot" $ do
+            let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120, ActiveUntilSlot 150]
+            checkCBORandScriptHash script
+                "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8204187882051896"
+                "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
 
     describe "validateScript - errors" $ do
         it "no content in RequireAllOf" $ do
@@ -334,10 +357,18 @@ prop_jsonRoundtrip script =
     roundtrip :: Script -> Maybe Script
     roundtrip = Json.decode . Json.encode
 
+instance Arbitrary Natural where
+    shrink = shrinkIntegral
+    arbitrary = arbitrarySizedNatural
+
 instance Arbitrary Script where
     arbitrary = scale (`div` 3) $ sized scriptTree
       where
-        scriptTree 0 = RequireSignatureOf <$> arbitrary
+        scriptTree 0 = oneof
+            [ RequireSignatureOf <$> arbitrary
+            , ActiveFromSlot <$> arbitrary
+            , ActiveUntilSlot <$> arbitrary
+            ]
         scriptTree n = do
             Positive m <- arbitrary
             let n' = n `div` (m + 1)

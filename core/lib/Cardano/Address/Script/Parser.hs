@@ -39,6 +39,8 @@ import Data.Functor
     ( ($>) )
 import Data.Word
     ( Word8 )
+import Numeric.Natural
+    ( Natural )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 
@@ -72,6 +74,12 @@ scriptFromString str =
 --
 -- 5. Nested script are supported
 -- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
+-- 6. 1 signature required after slot number 120
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 120]
+-- 7. 1 signature required until slot number 150
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_until 150]
+-- 8. 1 signature required in slot interval <145, 150)
+-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 145, active_until 150]
 --
 -- Parser is insensitive to whitespaces.
 --
@@ -81,7 +89,9 @@ scriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
     requireAtLeastOfParser <++
-    requireSignatureOfParser
+    requireSignatureOfParser <++
+    activeFromSlotParser <++
+    activeUntilSlotParser
 
 requireSignatureOfParser :: ReadP Script
 requireSignatureOfParser = do
@@ -109,8 +119,25 @@ requireAtLeastOfParser = do
     _identifier <- P.string "at_least"
     RequireSomeOf <$> naturalParser <*> commonPart
 
+activeFromSlotParser :: ReadP Script
+activeFromSlotParser = do
+    P.skipSpaces
+    _identifier <- P.string "active_from"
+    ActiveFromSlot <$> slotParser
+
+activeUntilSlotParser :: ReadP Script
+activeUntilSlotParser = do
+    P.skipSpaces
+    _identifier <- P.string "active_until"
+    ActiveUntilSlot <$> slotParser
+
 naturalParser :: ReadP Word8
 naturalParser = do
+    P.skipSpaces
+    fromInteger . read <$> P.munch1 isDigit
+
+slotParser :: ReadP Natural
+slotParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit
 
