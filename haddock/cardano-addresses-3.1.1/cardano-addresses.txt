@@ -359,11 +359,16 @@ RequireSignatureOf :: !KeyHash -> Script
 RequireAllOf :: ![Script] -> Script
 RequireAnyOf :: ![Script] -> Script
 RequireSomeOf :: Word8 -> ![Script] -> Script
+ActiveFromSlot :: Natural -> Script
+ActiveUntilSlot :: Natural -> Script
 
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR
 --   script` realizes This is basically doing the symbolically following:
 --   toCBOR [0,multisigScript]
 serializeScript :: Script -> ByteString
+
+-- | <a>Script</a> folding
+foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
 
 -- | Validate a <a>Script</a>, semantically
 validateScript :: Script -> Either ErrValidateScript ()
@@ -419,9 +424,11 @@ instance GHC.Classes.Eq Cardano.Address.Script.Script
 instance GHC.Show.Show Cardano.Address.Script.Script
 instance GHC.Generics.Generic Cardano.Address.Script.Script
 instance GHC.Classes.Eq Cardano.Address.Script.KeyHash
+instance GHC.Classes.Ord Cardano.Address.Script.KeyHash
 instance GHC.Show.Show Cardano.Address.Script.KeyHash
 instance GHC.Generics.Generic Cardano.Address.Script.KeyHash
 instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
+instance GHC.Classes.Ord Cardano.Address.Script.ScriptHash
 instance GHC.Show.Show Cardano.Address.Script.ScriptHash
 instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
 instance Control.DeepSeq.NFData Cardano.Address.Script.Script
@@ -455,6 +462,15 @@ scriptFromString :: String -> Either ErrValidateScript Script
 --   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all
 --   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1,
 --   3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]</li>
+--   <li>1 signature required after slot number 120 all
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from
+--   120]</li>
+--   <li>1 signature required until slot number 150 all
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe,
+--   active_until 150]</li>
+--   <li>1 signature required in slot interval &lt;145, 150) all
+--   [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from
+--   145, active_until 150]</li>
 --   </ol>
 --   
 --   Parser is insensitive to whitespaces.
