@@ -4,6 +4,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -90,22 +92,22 @@ import qualified Data.Text.Encoding as T
 -- that need to be satisfied to make it valid.
 --
 -- @since 3.0.0
-data Script
-    = RequireSignatureOf !KeyHash
-    | RequireAllOf ![Script]
-    | RequireAnyOf ![Script]
-    | RequireSomeOf Word8 ![Script]
+data Script (elem :: *)
+    = RequireSignatureOf !elem
+    | RequireAllOf ![Script elem]
+    | RequireAnyOf ![Script elem]
+    | RequireSomeOf Word8 ![Script elem]
     | ActiveFromSlot Natural
     | ActiveUntilSlot Natural
     deriving stock (Generic, Show, Eq)
-instance NFData Script
+instance NFData elem => NFData (Script elem)
 
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
 -- This is basically doing the symbolically following:
 -- toCBOR [0,multisigScript]
 --
 -- @since 3.0.0
-serializeScript :: Script -> ByteString
+serializeScript :: Script KeyHash -> ByteString
 serializeScript script =
     multisigTag <> CBOR.toStrictByteString (toCBOR script)
   where
@@ -114,7 +116,7 @@ serializeScript script =
     multisigTag :: ByteString
     multisigTag = "\00"
 
-    toCBOR :: Script -> CBOR.Encoding
+    toCBOR :: Script KeyHash -> CBOR.Encoding
     toCBOR = \case
         RequireSignatureOf (KeyHash verKeyHash) ->
             encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
@@ -150,7 +152,7 @@ serializeScript script =
 -- | Computes the hash of a given script, by first serializing it to CBOR.
 --
 -- @since 3.0.0
-toScriptHash :: Script -> ScriptHash
+toScriptHash :: Script KeyHash -> ScriptHash
 toScriptHash = ScriptHash . hashCredential . serializeScript
 
 -- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
@@ -246,7 +248,7 @@ prettyErrKeyHashFromText = \case
 -- | 'Script' folding
 --
 -- @since 3.2.0
-foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
+foldScript :: (KeyHash -> b -> b) -> b -> Script KeyHash -> b
 foldScript fn zero = \case
     RequireSignatureOf k -> fn k zero
     RequireAllOf xs      -> foldMScripts xs
@@ -266,7 +268,7 @@ foldScript fn zero = \case
 -- | Validate a 'Script', semantically
 --
 -- @since 3.0.0
-validateScript :: Script -> Either ErrValidateScript ()
+validateScript :: Script KeyHash -> Either ErrValidateScript ()
 validateScript = \case
     RequireSignatureOf (KeyHash bytes) -> do
         when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
@@ -361,7 +363,7 @@ prettyErrValidateScript = \case
 --          ]
 --}
 
-instance ToJSON Script where
+instance ToJSON (Script KeyHash) where
     toJSON (RequireSignatureOf keyHash) =
         String $ keyHashToText keyHash
     toJSON (RequireAllOf content) =
@@ -375,7 +377,7 @@ instance ToJSON Script where
     toJSON (ActiveUntilSlot slot) =
         object ["active_until" .= slot]
 
-instance FromJSON Script where
+instance FromJSON (Script KeyHash) where
     parseJSON v = do
         script <- asum
             [ parseKey v

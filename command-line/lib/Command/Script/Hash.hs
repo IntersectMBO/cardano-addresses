@@ -15,7 +15,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Script
-    ( Script (..), ScriptHash (..), toScriptHash )
+    ( KeyHash, Script (..), ScriptHash (..), toScriptHash )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
@@ -32,7 +32,7 @@ import System.IO.Extra
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 newtype Cmd = Cmd
-    { script :: Script
+    { script :: Script KeyHash
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent

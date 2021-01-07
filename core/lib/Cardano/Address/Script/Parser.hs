@@ -27,6 +27,7 @@ import Prelude
 
 import Cardano.Address.Script
     ( ErrValidateScript (..)
+    , KeyHash
     , Script (..)
     , keyHashFromText
     , prettyErrKeyHashFromText
@@ -50,7 +51,7 @@ import qualified Text.ParserCombinators.ReadP as P
 -- | Run 'scriptParser' on string input.
 --
 -- @since 3.0.0
-scriptFromString :: String -> Either ErrValidateScript Script
+scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
 scriptFromString str =
     case readP_to_S scriptParser str of
          [(script, "")] -> validateScript script $> script
@@ -84,7 +85,7 @@ scriptFromString str =
 -- Parser is insensitive to whitespaces.
 --
 -- @since 3.0.0
-scriptParser :: ReadP Script
+scriptParser :: ReadP (Script KeyHash)
 scriptParser =
     requireAllOfParser <++
     requireAnyOfParser <++
@@ -93,7 +94,7 @@ scriptParser =
     activeFromSlotParser <++
     activeUntilSlotParser
 
-requireSignatureOfParser :: ReadP Script
+requireSignatureOfParser :: ReadP (Script KeyHash)
 requireSignatureOfParser = do
     P.skipSpaces
     verKeyStr <- P.munch1 (\c -> isDigit c || isLetter c || c == '_')
@@ -101,31 +102,31 @@ requireSignatureOfParser = do
         Left e  -> fail (prettyErrKeyHashFromText e)
         Right h -> pure (RequireSignatureOf h)
 
-requireAllOfParser :: ReadP Script
+requireAllOfParser :: ReadP (Script KeyHash)
 requireAllOfParser = do
     P.skipSpaces
     _identifier <- P.string "all"
     RequireAllOf <$> commonPart
 
-requireAnyOfParser :: ReadP Script
+requireAnyOfParser :: ReadP (Script KeyHash)
 requireAnyOfParser = do
     P.skipSpaces
     _identifier <- P.string "any"
     RequireAnyOf <$> commonPart
 
-requireAtLeastOfParser :: ReadP Script
+requireAtLeastOfParser :: ReadP (Script KeyHash)
 requireAtLeastOfParser = do
     P.skipSpaces
     _identifier <- P.string "at_least"
     RequireSomeOf <$> naturalParser <*> commonPart
 
-activeFromSlotParser :: ReadP Script
+activeFromSlotParser :: ReadP (Script KeyHash)
 activeFromSlotParser = do
     P.skipSpaces
     _identifier <- P.string "active_from"
     ActiveFromSlot <$> slotParser
 
-activeUntilSlotParser :: ReadP Script
+activeUntilSlotParser :: ReadP (Script KeyHash)
 activeUntilSlotParser = do
     P.skipSpaces
     _identifier <- P.string "active_until"
@@ -141,7 +142,7 @@ slotParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit
 
-commonPart :: ReadP [Script]
+commonPart :: ReadP [(Script KeyHash)]
 commonPart = do
     P.skipSpaces
     _open <- P.string "["

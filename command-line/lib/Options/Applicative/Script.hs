@@ -14,7 +14,7 @@ module Options.Applicative.Script
 import Prelude
 
 import Cardano.Address.Script
-    ( Script (..), ScriptHash, scriptHashFromBytes )
+    ( KeyHash, Script (..), ScriptHash, scriptHashFromBytes )
 import Cardano.Address.Script.Parser
     ( prettyErrValidateScript, scriptFromString )
 import Control.Arrow
@@ -30,14 +30,14 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 -- Applicative Parsers
 --
 
-scriptArg :: Parser Script
+scriptArg :: Parser (Script KeyHash)
 scriptArg = argument (eitherReader scriptReader) $ mempty
     <> metavar "SCRIPT"
     -- TODO: Provides a bigger help text explaining how to construct a script
     -- address.
     <> help "Script string."
 
-scriptReader :: String -> Either String Script
+scriptReader :: String -> Either String (Script KeyHash)
 scriptReader = left prettyErrValidateScript . scriptFromString
 
 scriptHashArg :: String -> Parser ScriptHash

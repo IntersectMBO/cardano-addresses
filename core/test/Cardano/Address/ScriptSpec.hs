@@ -302,22 +302,22 @@ spec = do
     describe "some JSON parsing error" $ do
         it "Empty list" $ do
             let err = "Error in $: The list inside a script is empty."
-            Json.eitherDecode @Script "{ \"any\": [] }"
+            Json.eitherDecode @(Script KeyHash) "{ \"any\": [] }"
                 `shouldBe` Left err
 
         it "Empty list nested" $ do
             let err = "Error in $.any[0]: The list inside a script is empty."
-            Json.eitherDecode @Script "{ \"any\": [ { \"all\": [] } ] }"
+            Json.eitherDecode @(Script KeyHash) "{ \"any\": [ { \"all\": [] } ] }"
                 `shouldBe` Left err
 
         it "Invalid type" $ do
             let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
-            Json.eitherDecode @Script "{ \"all\": [ { \"any\": [1,2,3] } ] }"
+            Json.eitherDecode @(Script KeyHash) "{ \"all\": [ { \"any\": [1,2,3] } ] }"
                 `shouldBe` Left err
 
         it "List too small" $ do
             let err = "Error in $: At least must not be larger than the list of keys."
-            Json.eitherDecode @Script
+            Json.eitherDecode @(Script KeyHash)
                 "{ \"some\":\
                 \   { \"at_least\": 2\
                 \   , \"from\":\
@@ -328,40 +328,40 @@ spec = do
 
         it "Multiple 'any', 'all'" $ do
             let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
-            Json.eitherDecode @Script "{ \"all\": [ { \"any\": [1,2,3] } ] }"
+            Json.eitherDecode @(Script KeyHash) "{ \"all\": [ { \"any\": [1,2,3] } ] }"
                 `shouldBe` Left err
 
         it "Multiple keys" $ do
             let err = "Error in $: Found multiple keys 'any', 'all' and/or 'some' at the same level"
-            Json.eitherDecode @Script "{ \"all\": [null], \"some\": {} }"
+            Json.eitherDecode @(Script KeyHash) "{ \"all\": [null], \"some\": {} }"
                 `shouldBe` Left err
 
         it "Unknown keys" $ do
             let err = "Error in $: Found object with no known key 'any', 'all' or 'some'"
-            Json.eitherDecode @Script "{ \"patate\": {} }"
+            Json.eitherDecode @(Script KeyHash) "{ \"patate\": {} }"
                 `shouldBe` Left err
 
         it "Invalid JSON" $ do
             let err = "Error in $: Failed reading: not a valid json value"
-            Json.eitherDecode @Script "'';[]["
+            Json.eitherDecode @(Script KeyHash) "'';[]["
                 `shouldBe` Left err
   where
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
 
-prop_jsonRoundtrip :: Script -> Property
+prop_jsonRoundtrip :: Script KeyHash -> Property
 prop_jsonRoundtrip script =
     classify (isLeft $ validateScript script) "invalid" $
     roundtrip script === Just script
   where
-    roundtrip :: Script -> Maybe Script
+    roundtrip :: Script KeyHash -> Maybe (Script KeyHash)
     roundtrip = Json.decode . Json.encode
 
 instance Arbitrary Natural where
     shrink = shrinkIntegral
     arbitrary = arbitrarySizedNatural
 
-instance Arbitrary Script where
+instance Arbitrary (Script KeyHash) where
     arbitrary = scale (`div` 3) $ sized scriptTree
       where
         scriptTree 0 = oneof
