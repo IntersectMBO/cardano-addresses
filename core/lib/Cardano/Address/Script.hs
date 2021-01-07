@@ -537,21 +537,24 @@ instance FromJSON (Script Cosigner) where
             _ ->
                 Json.typeMismatch "Object only" v
 
-{--
-        parseCosigner = withObject "Script Cosigner" $ \o ->
+instance FromJSON ScriptTemplate where
+    parseJSON = withObject "ScriptTemplate" $ \o -> do
+        template' <- parseJSON <$> o .: "template"
+        cosigners' <- parseCosignerPairs <$> o .: "cosigners"
+        ScriptTemplate <$> cosigners' <*> template'
+      where
+        parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
             case HM.toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for cs $ \(numTxt, str) -> do
                     case (T.decimal numTxt, str) of
-                        (Right num, String xpub) -> do
+                        (Right (num,""), String xpub) -> do
                             when (num < minBound @Word8 && num > maxBound @Word8) $
-                                fail "Cosigner object field should be between "0" and "256""
+                                fail "Cosigner object field should be between '0' and '255'"
                             case fromBase16 (T.encodeUtf8 xpub) of
                                 Left err -> fail err
                                 Right hex -> case xpubFromBytes hex of
                                     Nothing -> fail "Cosigner object value should be extended public key"
                                     Just validXPub ->
-                                        pure (num, validXPub)
+                                        pure (Cosigner num, validXPub)
                         _ -> fail "Cosigner object field should be number and value string"
-
---}
