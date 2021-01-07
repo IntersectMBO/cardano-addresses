@@ -51,6 +51,7 @@ library:
   - fmt
   - memory
   - text
+  - unordered-containers
 
 tests:
   unit:

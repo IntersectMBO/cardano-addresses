@@ -8,6 +8,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -44,9 +45,9 @@ module Cardano.Address.Script
 import Prelude
 
 import Cardano.Address.Derivation
-    ( XPub, credentialHashSize, hashCredential, xpubToBytes )
+    ( XPub, credentialHashSize, hashCredential, xpubFromBytes, xpubToBytes )
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), encode )
+    ( AbstractEncoding (..), encode, fromBase16 )
 import Control.Applicative
     ( (<|>) )
 import Control.DeepSeq
@@ -76,6 +77,8 @@ import Data.Functor.Identity
     ( Identity (..) )
 import Data.Text
     ( Text )
+import Data.Traversable
+    ( for )
 import Data.Word
     ( Word8 )
 import GHC.Generics
@@ -89,9 +92,11 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
+import qualified Data.HashMap.Strict as HM
 import qualified Data.List as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Data.Text.Read as T
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -157,7 +162,7 @@ serializeScript script =
 -- | Represents the cosigner of the script, ie., party that co-shares the script.
 --
 -- @since 3.2.0
-data Cosigner = Cosigner Word8
+newtype Cosigner = Cosigner Word8
     deriving (Generic, Show, Ord, Eq)
 instance NFData Cosigner
 
@@ -403,14 +408,7 @@ instance ToJSON KeyHash where
 
 instance FromJSON (Script KeyHash) where
     parseJSON v = do
-        script <- asum
-            [ parseKey v
-            , parseAnyOf v
-            , parseAllOf v
-            , parseAtLeast v
-            , parseActiveFrom v
-            , parseActiveUntil v
-            ] <|> backtrack v
+        script <- fromScriptJson parseKey backtrack v
 
         either (fail . prettyErrValidateScript) pure
             (validateScript script)
@@ -422,22 +420,6 @@ instance FromJSON (Script KeyHash) where
                 (fail . prettyErrKeyHashFromText)
                 (pure . RequireSignatureOf)
                 . keyHashFromText
-
-        parseAnyOf = withObject "Script AnyOf" $ \o ->
-            RequireAnyOf <$> o .: "any"
-
-        parseAllOf = withObject "Script AllOf" $ \o ->
-            RequireAllOf <$> o .: "all"
-
-        parseAtLeast = withObject "Script SomeOf" $ \o -> do
-            some <- o .: "some"
-            RequireSomeOf <$> some .: "at_least" <*> some .: "from"
-
-        parseActiveFrom = withObject "Script ActiveFrom" $ \o ->
-            ActiveFromSlot <$> o .: "active_from"
-
-        parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
-            ActiveUntilSlot <$> o .: "active_until"
 
         -- NOTE: Because we use an alternative sum to define all parsers, in
         -- case all parser fails, only the last error is returned which can be
@@ -460,15 +442,67 @@ instance FromJSON (Script KeyHash) where
                         "Found object with no known key 'any', 'all' or 'some'"
                     (      _,       _,      _)  -> fail
                         "Found multiple keys 'any', 'all' and/or 'some' at the same level"
-
             String{} ->
                 parseKey v
-
             _ ->
                 Json.typeMismatch "Object or String" v
 
+fromScriptJson
+    :: FromJSON (Script elem)
+    => (Value -> Parser (Script elem))
+    -> (Value -> Parser (Script elem))
+    -> Value
+    -> Parser (Script elem)
+fromScriptJson parseElem backtrack v =
+    asum
+        [ parseElem v
+        , parseAnyOf v
+        , parseAllOf v
+        , parseAtLeast v
+        , parseActiveFrom v
+        , parseActiveUntil v
+        ] <|> backtrack v
+
+parseAnyOf
+    :: FromJSON (Script elem)
+    => Value
+    -> Parser (Script elem)
+parseAnyOf = withObject "Script AnyOf" $ \o ->
+    RequireAnyOf <$> o .: "any"
+
+parseAllOf
+    :: FromJSON (Script elem)
+    => Value
+    -> Parser (Script elem)
+parseAllOf = withObject "Script AllOf" $ \o ->
+    RequireAllOf <$> o .: "all"
+
+parseAtLeast
+    :: FromJSON (Script elem)
+    => Value
+    -> Parser (Script elem)
+parseAtLeast = withObject "Script SomeOf" $ \o -> do
+    some <- o .: "some"
+    RequireSomeOf <$> some .: "at_least" <*> some .: "from"
+
+parseActiveFrom
+    :: Value
+    -> Parser (Script elem)
+parseActiveFrom = withObject "Script ActiveFrom" $ \o ->
+    ActiveFromSlot <$> o .: "active_from"
+
+parseActiveUntil
+    :: Value
+    -> Parser (Script elem)
+parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
+    ActiveUntilSlot <$> o .: "active_until"
+
 instance ToJSON Cosigner where
     toJSON (Cosigner ix) = object ["cosigner" .= toJSON ix]
+
+instance FromJSON Cosigner where
+    parseJSON = withObject "Cosigner" $ \o ->
+        Cosigner <$> o .: "cosigner"
 
 instance ToJSON ScriptTemplate where
     toJSON (ScriptTemplate cosigners' template') =
@@ -478,3 +512,46 @@ instance ToJSON ScriptTemplate where
         toPair (Cosigner ix, xpub) =
             ( T.pack (show ix)
             , String $ T.decodeUtf8 $ encode EBase16 $ xpubToBytes xpub )
+
+instance FromJSON (Script Cosigner) where
+    parseJSON v = fromScriptJson parserCosigner backtrack v
+      where
+        parserCosigner o = do
+            cosigner <- parseJSON @Cosigner o
+            pure $ RequireSignatureOf cosigner
+        backtrack = \case
+            Object o -> do
+                mAny  <- o .:? "any"  :: Parser (Maybe Value)
+                mAll  <- o .:? "all"  :: Parser (Maybe Value)
+                mSome <- o .:? "some" :: Parser (Maybe Value)
+                mCos <- o .:? "cosigner" :: Parser (Maybe Value)
+                case (mAny, mAll, mSome, mCos) of
+                    (Just{}, Nothing, Nothing, Nothing)  -> parseAnyOf v
+                    (Nothing, Just{}, Nothing, Nothing)  -> parseAllOf v
+                    (Nothing, Nothing, Just{}, Nothing)  -> parseAtLeast v
+                    (Nothing, Nothing, Nothing, Just{})  -> parserCosigner v
+                    (Nothing, Nothing, Nothing, Nothing) -> fail
+                        "Found object with no known key 'any', 'all', 'some' or 'cosigner'"
+                    (      _,       _,      _,       _)  -> fail
+                        "Found multiple keys 'any', 'all', 'cosigner' and/or 'some' at the same level"
+            _ ->
+                Json.typeMismatch "Object only" v
+
+{--
+        parseCosigner = withObject "Script Cosigner" $ \o ->
+            case HM.toList o of
+                [] -> fail "Cosigners object array should not be empty"
+                cs -> for cs $ \(numTxt, str) -> do
+                    case (T.decimal numTxt, str) of
+                        (Right num, String xpub) -> do
+                            when (num < minBound @Word8 && num > maxBound @Word8) $
+                                fail "Cosigner object field should be between "0" and "256""
+                            case fromBase16 (T.encodeUtf8 xpub) of
+                                Left err -> fail err
+                                Right hex -> case xpubFromBytes hex of
+                                    Nothing -> fail "Cosigner object value should be extended public key"
+                                    Just validXPub ->
+                                        pure (num, validXPub)
+                        _ -> fail "Cosigner object field should be number and value string"
+
+--}
