@@ -44,7 +44,7 @@ module Cardano.Address.Script
 import Prelude
 
 import Cardano.Address.Derivation
-    ( XPub, credentialHashSize, hashCredential )
+    ( XPub, credentialHashSize, hashCredential, xpubToBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
@@ -90,8 +90,8 @@ import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
 import qualified Data.List as L
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -385,9 +385,8 @@ prettyErrValidateScript = \case
 --          ]
 --}
 
-instance ToJSON (Script KeyHash) where
-    toJSON (RequireSignatureOf keyHash) =
-        String $ keyHashToText keyHash
+instance ToJSON elem => ToJSON (Script elem) where
+    toJSON (RequireSignatureOf content) = toJSON content
     toJSON (RequireAllOf content) =
         object ["all" .= fmap toJSON content]
     toJSON (RequireAnyOf content) =
@@ -398,6 +397,9 @@ instance ToJSON (Script KeyHash) where
         object ["active_from" .= slot]
     toJSON (ActiveUntilSlot slot) =
         object ["active_until" .= slot]
+
+instance ToJSON KeyHash where
+    toJSON = String . keyHashToText
 
 instance FromJSON (Script KeyHash) where
     parseJSON v = do
@@ -464,3 +466,15 @@ instance FromJSON (Script KeyHash) where
 
             _ ->
                 Json.typeMismatch "Object or String" v
+
+instance ToJSON Cosigner where
+    toJSON (Cosigner ix) = object ["cosigner" .= toJSON ix]
+
+instance ToJSON ScriptTemplate where
+    toJSON (ScriptTemplate cosigners' template') =
+        object [ "cosigners" .= object (fmap toPair cosigners')
+               , "template" .= toJSON template']
+      where
+        toPair (Cosigner ix, xpub) =
+            ( T.pack (show ix)
+            , String $ T.decodeUtf8 $ encode EBase16 $ xpubToBytes xpub )
