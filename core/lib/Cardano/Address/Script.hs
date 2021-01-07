@@ -8,6 +8,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -17,6 +18,10 @@ module Cardano.Address.Script
       Script (..)
     , serializeScript
     , foldScript
+
+    -- * Script template
+    , ScriptTemplate (..)
+    , Cosigner (..)
 
     -- * Validation
     , validateScript
@@ -39,7 +44,7 @@ module Cardano.Address.Script
 import Prelude
 
 import Cardano.Address.Derivation
-    ( credentialHashSize, hashCredential )
+    ( XPub, credentialHashSize, hashCredential )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
@@ -148,6 +153,23 @@ serializeScript script =
         wrapArray len' contents'
             | len' <= 23 = CBOR.encodeListLen len' <> contents'
             | otherwise  = CBOR.encodeListLenIndef <> contents' <> CBOR.encodeBreak
+
+-- | Represents the cosigner of the script, ie., party that co-shares the script.
+--
+-- @since 3.2.0
+data Cosigner = Cosigner Word8
+    deriving (Generic, Show, Ord, Eq)
+instance NFData Cosigner
+
+-- | Represents the script template that show the structure of the script and determines
+-- the expected place of verification keys corresponding to given cosigners.
+--
+-- @since 3.2.0
+data ScriptTemplate = ScriptTemplate
+    { cosigners :: [(Cosigner, XPub)]
+    , template :: Script Cosigner
+    } deriving (Generic, Show, Eq)
+instance NFData ScriptTemplate
 
 -- | Computes the hash of a given script, by first serializing it to CBOR.
 --
