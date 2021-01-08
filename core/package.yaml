@@ -42,6 +42,7 @@ library:
   - bytestring
   - cardano-crypto
   - cborg
+  - containers
   - cryptonite
   - deepseq
   - digest
@@ -79,6 +80,7 @@ tests:
     - bytestring
     - cardano-addresses
     - cardano-crypto
+    - containers
     - hspec
     - memory
     - QuickCheck

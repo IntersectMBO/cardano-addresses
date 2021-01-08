@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81135f1dff6c6c866c26e0f210b2080af1f99c6dea241a445789476033b29dcd
+-- hash: dcfc08dda8fafdfa322f155a2aad0123798f58d944336c6a227e8871becb7dde
 
 name:           cardano-addresses
 version:        3.1.1
@@ -60,6 +60,7 @@ library
     , bytestring
     , cardano-crypto
     , cborg
+    , containers
     , cryptonite
     , deepseq
     , digest
@@ -106,6 +107,7 @@ test-suite unit
     , bytestring
     , cardano-addresses
     , cardano-crypto
+    , containers
     , hspec
     , memory
     , text

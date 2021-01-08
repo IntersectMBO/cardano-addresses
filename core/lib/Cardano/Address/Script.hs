@@ -12,6 +12,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_HADDOCK prune #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cardano.Address.Script
     (
@@ -75,6 +76,8 @@ import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
     ( Identity (..) )
+import Data.Map.Strict
+    ( Map )
 import Data.Text
     ( Text )
 import Data.Traversable
@@ -94,9 +97,11 @@ import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
 import qualified Data.HashMap.Strict as HM
 import qualified Data.List as L
+import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Read as T
+
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -171,7 +176,7 @@ instance NFData Cosigner
 --
 -- @since 3.2.0
 data ScriptTemplate = ScriptTemplate
-    { cosigners :: [(Cosigner, XPub)]
+    { cosigners :: Map Cosigner XPub
     , template :: Script Cosigner
     } deriving (Generic, Show, Eq)
 instance NFData ScriptTemplate
@@ -504,14 +509,25 @@ instance FromJSON Cosigner where
     parseJSON = withObject "Cosigner" $ \o ->
         Cosigner <$> o .: "cosigner"
 
+instance ToJSON XPub where
+    toJSON = String . T.decodeUtf8 . encode EBase16 . xpubToBytes
+
+instance FromJSON XPub where
+    parseJSON = withText "XPub" $ \txt ->
+        case fromBase16 (T.encodeUtf8 txt) of
+            Left err -> fail err
+            Right hex -> case xpubFromBytes hex of
+                Nothing -> fail "Extended public key cannot be retrieved from a given hex bytestring"
+                Just validXPub -> pure validXPub
+
 instance ToJSON ScriptTemplate where
     toJSON (ScriptTemplate cosigners' template') =
-        object [ "cosigners" .= object (fmap toPair cosigners')
+        object [ "cosigners" .= object (fmap toPair (Map.toList cosigners'))
                , "template" .= toJSON template']
       where
         toPair (Cosigner ix, xpub) =
             ( T.pack (show ix)
-            , String $ T.decodeUtf8 $ encode EBase16 $ xpubToBytes xpub )
+            , toJSON xpub )
 
 instance FromJSON (Script Cosigner) where
     parseJSON v = fromScriptJson parserCosigner backtrack v
@@ -541,20 +557,16 @@ instance FromJSON ScriptTemplate where
     parseJSON = withObject "ScriptTemplate" $ \o -> do
         template' <- parseJSON <$> o .: "template"
         cosigners' <- parseCosignerPairs <$> o .: "cosigners"
-        ScriptTemplate <$> cosigners' <*> template'
+        ScriptTemplate <$> (Map.fromList <$> cosigners') <*> template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
             case HM.toList o of
                 [] -> fail "Cosigners object array should not be empty"
-                cs -> for cs $ \(numTxt, str) -> do
-                    case (T.decimal numTxt, str) of
-                        (Right (num,""), String xpub) -> do
-                            when (num < minBound @Word8 && num > maxBound @Word8) $
+                cs -> for (reverse cs) $ \(numTxt, str) -> do
+                    case T.decimal numTxt of
+                        Right (num,"") -> do
+                            when (num < minBound @Word8 || num > maxBound @Word8) $
                                 fail "Cosigner object field should be between '0' and '255'"
-                            case fromBase16 (T.encodeUtf8 xpub) of
-                                Left err -> fail err
-                                Right hex -> case xpubFromBytes hex of
-                                    Nothing -> fail "Cosigner object value should be extended public key"
-                                    Just validXPub ->
-                                        pure (Cosigner num, validXPub)
+                            xpub <- parseJSON str
+                            pure (Cosigner num, xpub)
                         _ -> fail "Cosigner object field should be number and value string"

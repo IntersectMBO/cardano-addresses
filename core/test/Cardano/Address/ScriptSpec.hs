@@ -15,11 +15,13 @@ module Cardano.Address.ScriptSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, toXPub )
+    ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, XPub, toXPub )
 import Cardano.Address.Script
-    ( KeyHash (..)
+    ( Cosigner (..)
+    , KeyHash (..)
     , Script (..)
     , ScriptHash (..)
+    , ScriptTemplate (..)
     , serializeScript
     , toScriptHash
     )
@@ -31,17 +33,19 @@ import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
+import Data.Aeson
+    ( FromJSON, ToJSON )
 import Data.Either
     ( isLeft )
-import Numeric.Natural
-    ( Natural )
+import Test.Arbitrary
+    ()
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
     ( Arbitrary (..)
+    , Gen
     , Positive (..)
     , Property
-    , arbitrarySizedNatural
     , choose
     , classify
     , elements
@@ -49,7 +53,6 @@ import Test.QuickCheck
     , oneof
     , property
     , scale
-    , shrinkIntegral
     , sized
     , vectorOf
     , (===)
@@ -57,6 +60,7 @@ import Test.QuickCheck
 
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
+import qualified Data.Map.Strict as Map
 import qualified Data.Text.Encoding as T
 
 spec :: Spec
@@ -296,8 +300,14 @@ spec = do
                     ]
             validateScript script `shouldBe` Right ()
 
-    describe "can perform roundtrip JSON serialization & deserialization" $
-        it "fromJSON . toJSON === pure" $ property prop_jsonRoundtrip
+    describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
+        it "fromJSON . toJSON === pure" $ property prop_jsonRoundtripWithValidation
+    describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script Cosigner))
+    describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate" $
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @ScriptTemplate)
+    describe "can perform roundtrip JSON serialization & deserialization - XPub" $
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @XPub)
 
     describe "some JSON parsing error" $ do
         it "Empty list" $ do
@@ -349,23 +359,31 @@ spec = do
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
 
-prop_jsonRoundtrip :: Script KeyHash -> Property
-prop_jsonRoundtrip script =
+prop_jsonRoundtripWithValidation :: Script KeyHash -> Property
+prop_jsonRoundtripWithValidation script =
     classify (isLeft $ validateScript script) "invalid" $
     roundtrip script === Just script
   where
     roundtrip :: Script KeyHash -> Maybe (Script KeyHash)
     roundtrip = Json.decode . Json.encode
 
-instance Arbitrary Natural where
-    shrink = shrinkIntegral
-    arbitrary = arbitrarySizedNatural
+prop_jsonRoundtrip :: (Eq a, Show a, FromJSON a, ToJSON a) => a -> Property
+prop_jsonRoundtrip val =
+    (Json.decode $ Json.encode val) === Just val
 
 instance Arbitrary (Script KeyHash) where
-    arbitrary = scale (`div` 3) $ sized scriptTree
-      where
+    arbitrary = genScript (RequireSignatureOf <$> arbitrary)
+    shrink = genericShrink
+
+instance Arbitrary (Script Cosigner) where
+    arbitrary = genScript (RequireSignatureOf <$> arbitrary)
+    shrink = genericShrink
+
+genScript :: Gen (Script elem) -> Gen (Script elem)
+genScript elemGen = scale (`div` 3) $ sized scriptTree
+    where
         scriptTree 0 = oneof
-            [ RequireSignatureOf <$> arbitrary
+            [ elemGen
             , ActiveFromSlot <$> arbitrary
             , ActiveUntilSlot <$> arbitrary
             ]
@@ -379,9 +397,17 @@ instance Arbitrary (Script KeyHash) where
                 , RequireAnyOf scripts
                 , RequireSomeOf atLeast scripts
                 ]
-    shrink = genericShrink
 
 instance Arbitrary KeyHash where
     -- always generate valid hashes, because json decoding will immediately fail
     -- on these.
     arbitrary = KeyHash . BS.pack <$> vectorOf 28 arbitrary
+
+instance Arbitrary Cosigner where
+    arbitrary = Cosigner <$> arbitrary
+
+instance Arbitrary ScriptTemplate where
+    arbitrary = do
+        n <- choose (1,5)
+        cosignerPairs <- vectorOf n arbitrary
+        ScriptTemplate (Map.fromList cosignerPairs) <$> arbitrary
