@@ -301,28 +301,38 @@ foldScript fn zero = \case
 --
 -- @since 3.0.0
 validateScript :: Script KeyHash -> Either ErrValidateScript ()
-validateScript = \case
-    RequireSignatureOf (KeyHash bytes) -> do
-        when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
+validateScript script = do
+    let validateKeyHash (KeyHash bytes) =
+            when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
+    validateScript' validateKeyHash script
+
+validateScript'
+    :: Eq elem
+    => (elem -> Either ErrValidateScript ())
+    -> Script elem
+    -> Either ErrValidateScript ()
+validateScript' validateRequireSignatureOf = \case
+    RequireSignatureOf element ->
+        validateRequireSignatureOf element
 
     RequireAllOf script -> do
         when (L.null script) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ validateScript script
+        traverse_ (validateScript' validateRequireSignatureOf) script
 
     RequireAnyOf script -> do
         when (L.null script) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ validateScript script
+        traverse_ (validateScript' validateRequireSignatureOf) script
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
         when (length script < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ validateScript script
+        traverse_ (validateScript' validateRequireSignatureOf) script
 
     ActiveFromSlot _ -> pure ()
 
