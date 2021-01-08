@@ -24,6 +24,7 @@ module Cardano.Address.Script
     -- * Script template
     , ScriptTemplate (..)
     , Cosigner (..)
+    , validateScriptTemplate
 
     -- * Validation
     , validateScript
@@ -355,6 +356,21 @@ validateScript' validateRequireSignatureOf = \case
             [ActiveUntilSlot _] -> False
             _ -> True
 
+--
+-- ScriptTemplate validation
+--
+
+-- | Validate a 'ScriptTemplate', semantically
+--
+-- @since 3.2.0
+validateScriptTemplate :: ScriptTemplate -> Either ErrValidateScript ()
+validateScriptTemplate (ScriptTemplate cosigners' script) = do
+    when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
+        Left DuplicateXPubs
+    let validateCosigner cosigner =
+            when (cosigner `notElem` (Map.keys cosigners')) $ Left UnknownCosigner
+    validateScript' validateCosigner script
+
 -- | Possible validation errors when validating a script
 --
 -- @since 3.0.0
@@ -366,6 +382,8 @@ data ErrValidateScript
     | WrongKeyHash
     | Malformed
     | InvalidTimelocks
+    | DuplicateXPubs
+    | UnknownCosigner
     deriving (Eq, Show)
 
 -- | Pretty-print a validation error.
@@ -390,7 +408,11 @@ prettyErrValidateScript = \case
         \lists, and the verification keys should be either encoded as bech32."
     InvalidTimelocks ->
         "The list inside a script must contain at most two timelock conditions \
-        \and they cannot be contridactory"
+        \and they cannot be contradictory."
+    DuplicateXPubs ->
+        "Teh cosigners in a script template must assume an unique extended public key."
+    UnknownCosigner ->
+        "The script must use a cosigner present in a script template."
 --
 -- Internal
 --
