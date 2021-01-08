@@ -308,27 +308,42 @@ validateScript = \case
     RequireAllOf script -> do
         when (L.null script) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
+        when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ validateScript script
 
     RequireAnyOf script -> do
         when (L.null script) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
+        when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ validateScript script
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
         when (length script < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
+        when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ validateScript script
 
     ActiveFromSlot _ -> pure ()
 
     ActiveUntilSlot _ -> pure ()
   where
-    hasDuplicate xs = do
+    hasDuplicate xs =
         length sigs /= length (L.nub sigs)
       where
         sigs = [ sig | RequireSignatureOf sig <- xs ]
+    invalidTimelocks xs =
+        let hasTimelocks = \case
+                ActiveFromSlot _ -> True
+                ActiveUntilSlot _ -> True
+                _ -> False
+        in case filter hasTimelocks xs of
+            [] -> False
+            [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
+            [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
+            [ActiveFromSlot _] -> False
+            [ActiveUntilSlot _] -> False
+            _ -> True
 
 -- | Possible validation errors when validating a script
 --
@@ -340,6 +355,7 @@ data ErrValidateScript
     | DuplicateSignatures
     | WrongKeyHash
     | Malformed
+    | InvalidTimelocks
     deriving (Eq, Show)
 
 -- | Pretty-print a validation error.
@@ -362,7 +378,9 @@ prettyErrValidateScript = \case
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, and the verification keys should be either encoded as bech32."
-
+    InvalidTimelocks ->
+        "The list inside a script must contain at most two timelock conditions \
+        \and they cannot be contridactory"
 --
 -- Internal
 --

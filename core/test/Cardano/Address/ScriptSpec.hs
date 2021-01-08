@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
@@ -60,6 +61,7 @@ import Test.QuickCheck
 
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
+import qualified Data.List as L
 import qualified Data.Map.Strict as Map
 import qualified Data.Text.Encoding as T
 
@@ -268,6 +270,23 @@ spec = do
                     ]
             validateScript script `shouldBe` (Left DuplicateSignatures)
 
+        it "invalid timelocks - too many" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 20]
+            validateScript script `shouldBe` (Left InvalidTimelocks)
+
+        it "invalid timelocks - contradictory 1" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 21, ActiveUntilSlot 20]
+            validateScript script `shouldBe` (Left InvalidTimelocks)
+
+        it "invalid timelocks - contradictory 1" $ do
+            let script = RequireSomeOf 1
+                    [ verKeyHash1
+                    , RequireAnyOf [ verKeyHash2
+                                   , RequireSomeOf 2 [verKeyHash3, verKeyHash4, ActiveFromSlot 21, ActiveUntilSlot 20, verKeyHash1]
+                                   ]
+                    ]
+            validateScript script `shouldBe` (Left InvalidTimelocks)
+
     describe "validateScript - correct" $ do
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [verKeyHash1]
@@ -369,7 +388,7 @@ prop_jsonRoundtripWithValidation script =
 
 prop_jsonRoundtrip :: (Eq a, Show a, FromJSON a, ToJSON a) => a -> Property
 prop_jsonRoundtrip val =
-    (Json.decode $ Json.encode val) === Just val
+    Json.decode (Json.encode val) === Just val
 
 instance Arbitrary (Script KeyHash) where
     arbitrary = genScript (RequireSignatureOf <$> arbitrary)
@@ -391,12 +410,34 @@ genScript elemGen = scale (`div` 3) $ sized scriptTree
             Positive m <- arbitrary
             let n' = n `div` (m + 1)
             scripts <- vectorOf m (scriptTree n')
-            atLeast <- choose (1, fromIntegral m)
-            elements
-                [ RequireAllOf scripts
-                , RequireAnyOf scripts
-                , RequireSomeOf atLeast scripts
-                ]
+            let hasTimelocks = \case
+                    ActiveFromSlot _ -> True
+                    ActiveUntilSlot _ -> True
+                    _ -> False
+            let scriptsWithValidTimelocks = case L.partition hasTimelocks scripts of
+                    ([], rest) -> rest
+                    ([ActiveFromSlot s1, ActiveUntilSlot s2], rest) ->
+                        if s2 <= s1 then
+                            rest ++ [ActiveFromSlot s2, ActiveUntilSlot s1]
+                        else
+                            scripts
+                    ([ActiveUntilSlot s2, ActiveFromSlot s1], rest) ->
+                        if s2 <= s1 then
+                            rest ++ [ActiveFromSlot s2, ActiveUntilSlot s1]
+                        else
+                            scripts
+                    ([ActiveFromSlot _], _) -> scripts
+                    ([ActiveUntilSlot _], _) -> scripts
+                    (_,rest) -> rest
+            case fromIntegral (L.length scriptsWithValidTimelocks) of
+                0 -> scriptTree 0
+                num -> do
+                    atLeast <- choose (1, num)
+                    elements
+                        [ RequireAllOf scriptsWithValidTimelocks
+                        , RequireAnyOf scriptsWithValidTimelocks
+                        , RequireSomeOf atLeast scriptsWithValidTimelocks
+                        ]
 
 instance Arbitrary KeyHash where
     -- always generate valid hashes, because json decoding will immediately fail
