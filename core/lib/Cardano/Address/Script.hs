@@ -365,6 +365,7 @@ validateScript' validateRequireSignatureOf = \case
 -- @since 3.2.0
 validateScriptTemplate :: ScriptTemplate -> Either ErrValidateScript ()
 validateScriptTemplate (ScriptTemplate cosigners' script) = do
+    when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
     let validateCosigner cosigner =
@@ -384,6 +385,7 @@ data ErrValidateScript
     | InvalidTimelocks
     | DuplicateXPubs
     | UnknownCosigner
+    | NoCosigner
     deriving (Eq, Show)
 
 -- | Pretty-print a validation error.
@@ -413,6 +415,8 @@ prettyErrValidateScript = \case
         "Teh cosigners in a script template must assume an unique extended public key."
     UnknownCosigner ->
         "The script must use a cosigner present in a script template."
+    NoCosigner ->
+        "The script template must have at least one cosigner defined."
 --
 -- Internal
 --

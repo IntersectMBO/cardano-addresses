@@ -16,7 +16,14 @@ module Cardano.Address.ScriptSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, XPub, toXPub )
+    ( Depth (..)
+    , GenMasterKey (..)
+    , HardDerivation (..)
+    , XPrv
+    , XPub
+    , toXPub
+    , xpubFromBytes
+    )
 import Cardano.Address.Script
     ( Cosigner (..)
     , KeyHash (..)
@@ -25,6 +32,7 @@ import Cardano.Address.Script
     , ScriptTemplate (..)
     , serializeScript
     , toScriptHash
+    , validateScriptTemplate
     )
 import Cardano.Address.Script.Parser
     ( ErrValidateScript (..), validateScript )
@@ -33,11 +41,17 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
+    ( fromBase16 )
+import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Data.Aeson
     ( FromJSON, ToJSON )
 import Data.Either
     ( isLeft )
+import Data.Maybe
+    ( fromJust )
+import Data.Text
+    ( Text )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -319,6 +333,116 @@ spec = do
                     ]
             validateScript script `shouldBe` Right ()
 
+    describe "validateScriptTemplate - errors" $ do
+        let accXpub0 =
+                "7eebe6dfa9a1530248400eb6a1adaca166ab1d723e9618d989d22a9219a364\
+                \cb4c745e128fdc98a5039893f704cf67f58c59cea97241a5c7ec7b4606253e5523"
+        let accXpub1 =
+                "417236c94b3ad73557a4df690527f77bebd203de7a208fb3be9c5efa675aaa\
+                \967ca13a50a2f2e95364d0b7fdc75a82e8cc97b499ecd6b9ba12529dd63a2ca7d5"
+        let accXpub2 =
+                "ebf69a16263b741240d3a3d67b44be3a70516adc1a7422b214d0e379314692\
+                \9eb053c9d5500fdcc4088b6a2c3b20b145d84ca77d5ad59343ddf4ba6c9b482d7c"
+        let accXpub3 =
+                "30a71e7919e9c409811efe8d818b831096ac44678397e8911c921a19f2e9b7\
+                \f45b45a93ec2432ed0d314e356a69409c21823f152ae898a97b9b6f72ecd9c2400"
+        let cosigners' = Map.fromList $
+                zipWith (\ix accXpub -> (Cosigner ix, encodeXPubFromTxtUnsafe accXpub))
+                [0, 1, 2, 3] [accXpub0, accXpub1, accXpub2, accXpub3]
+        let cosignersWrong = Map.fromList $
+                zipWith (\ix accXpub -> (Cosigner ix, encodeXPubFromTxtUnsafe accXpub))
+                [0, 1, 2, 3] [accXpub0, accXpub1, accXpub2, accXpub0]
+        let cosigner0 = RequireSignatureOf (Cosigner 0)
+        let cosigner1 = RequireSignatureOf (Cosigner 1)
+        let cosigner2 = RequireSignatureOf (Cosigner 2)
+        let cosigner3 = RequireSignatureOf (Cosigner 3)
+
+        it "no cosigners in script template" $ do
+            let scriptTemplate = ScriptTemplate Map.empty (RequireAllOf [])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left NoCosigner)
+
+        it "illegal cosigner in script template" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSignatureOf (Cosigner 4))
+            validateScriptTemplate scriptTemplate `shouldBe` (Left UnknownCosigner)
+
+        it "duplicated xpub in cosigners in script template" $ do
+            let scriptTemplate = ScriptTemplate cosignersWrong (RequireSignatureOf (Cosigner 1))
+            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateXPubs)
+
+        it "no content in RequireAnyOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+
+        it "no content in RequireSomeOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+
+        it "too high m in RequireSomeOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 3 [cosigner0, cosigner1])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+
+        it "m=0 in RequireSomeOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 0 [cosigner2, cosigner3])
+            validateScriptTemplate scriptTemplate `shouldBe`(Left MZero)
+
+        it "wrong in nested 1" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner1, RequireAnyOf [] ])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+
+        it "wrong in nested 2" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [cosigner2, RequireAllOf [] ]
+                    ])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+
+        it "wrong in nested 3" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireSomeOf 3 [cosigner0, cosigner3]
+                                   ]
+                    ])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+
+        it "duplicate content in RequireAllOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner1, cosigner2, cosigner1])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+
+        it "duplicate content in RequireAnyOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner1, cosigner2, cosigner1])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+
+        it "duplicate content in RequireSomeOf" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner1, cosigner2, cosigner1])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+
+        it "duplicate in nested" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireSomeOf 2 [cosigner0, cosigner0, cosigner3]
+                                   ]
+                    ])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+
+        it "invalid timelocks - too many" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 20])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+
+        it "invalid timelocks - contradictory 1" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, ActiveFromSlot 21, ActiveUntilSlot 20])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+
+        it "invalid timelocks - contradictory 1" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireSomeOf 2 [cosigner0, cosigner1, ActiveFromSlot 21, ActiveUntilSlot 20, cosigner3]
+                                   ]
+                    ])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $ property prop_jsonRoundtripWithValidation
     describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
@@ -452,3 +576,9 @@ instance Arbitrary ScriptTemplate where
         n <- choose (1,5)
         cosignerPairs <- vectorOf n arbitrary
         ScriptTemplate (Map.fromList cosignerPairs) <$> arbitrary
+
+encodeXPubFromTxtUnsafe :: Text -> XPub
+encodeXPubFromTxtUnsafe txt =
+        case fromBase16 (T.encodeUtf8 txt) of
+            Left _ -> error "encodeXPubFromTxtUnsafe: expecting hex-encoded text"
+            Right hex -> fromJust $ xpubFromBytes hex
