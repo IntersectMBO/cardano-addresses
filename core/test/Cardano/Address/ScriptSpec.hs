@@ -459,8 +459,6 @@ spec = do
         it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script Cosigner))
     describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate" $
         it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @ScriptTemplate)
-    describe "can perform roundtrip JSON serialization & deserialization - XPub" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @XPub)
 
     describe "some JSON parsing error" $ do
         it "Empty list" $ do

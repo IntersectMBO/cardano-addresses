@@ -12,7 +12,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_HADDOCK prune #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cardano.Address.Script
     (
@@ -305,14 +304,14 @@ validateScript :: Script KeyHash -> Either ErrValidateScript ()
 validateScript script = do
     let validateKeyHash (KeyHash bytes) =
             when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
-    validateScript' validateKeyHash script
+    validateScriptWith validateKeyHash script
 
-validateScript'
+validateScriptWith
     :: Eq elem
     => (elem -> Either ErrValidateScript ())
     -> Script elem
     -> Either ErrValidateScript ()
-validateScript' validateRequireSignatureOf = \case
+validateScriptWith validateRequireSignatureOf = \case
     RequireSignatureOf element ->
         validateRequireSignatureOf element
 
@@ -320,20 +319,20 @@ validateScript' validateRequireSignatureOf = \case
         when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScript' validateRequireSignatureOf) script
+        traverse_ (validateScriptWith validateRequireSignatureOf) script
 
     RequireAnyOf script -> do
         when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScript' validateRequireSignatureOf) script
+        traverse_ (validateScriptWith validateRequireSignatureOf) script
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
         when (length (omitTimelocks script) < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScript' validateRequireSignatureOf) script
+        traverse_ (validateScriptWith validateRequireSignatureOf) script
 
     ActiveFromSlot _ -> pure ()
 
@@ -369,7 +368,7 @@ validateScriptTemplate (ScriptTemplate cosigners' script) = do
         Left DuplicateXPubs
     let validateCosigner cosigner =
             when (cosigner `notElem` (Map.keys cosigners')) $ Left UnknownCosigner
-    validateScript' validateCosigner script
+    validateScriptWith validateCosigner script
 
 -- | Possible validation errors when validating a script
 --
@@ -555,32 +554,41 @@ parseActiveUntil
 parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
     ActiveUntilSlot <$> o .: "active_until"
 
+cosignerToText :: Cosigner -> Text
+cosignerToText (Cosigner ix) = "cosigner#"<>(T.pack $ show ix)
+
 instance ToJSON Cosigner where
-    toJSON (Cosigner ix) = object ["cosigner" .= toJSON ix]
+    toJSON = String . cosignerToText
 
 instance FromJSON Cosigner where
-    parseJSON = withObject "Cosigner" $ \o ->
-        Cosigner <$> o .: "cosigner"
+    parseJSON = withText "Cosigner" $ \txt -> case T.splitOn "cosigner#" txt of
+        ["",numTxt] ->  case T.decimal numTxt of
+            Right (num,"") -> do
+                when (num < minBound @Word8 || num > maxBound @Word8) $
+                        fail "Cosigner number should be between '0' and '255'"
+                pure $ Cosigner num
+            _ -> fail "Cosigner should be enumerated with number"
+        _ -> fail "Cosigner should be of form: cosigner#num"
 
-instance ToJSON XPub where
-    toJSON = String . T.decodeUtf8 . encode EBase16 . xpubToBytes
+encodeXPub :: XPub -> Value
+encodeXPub = String . T.decodeUtf8 . encode EBase16 . xpubToBytes
 
-instance FromJSON XPub where
-    parseJSON = withText "XPub" $ \txt ->
-        case fromBase16 (T.encodeUtf8 txt) of
-            Left err -> fail err
-            Right hex -> case xpubFromBytes hex of
-                Nothing -> fail "Extended public key cannot be retrieved from a given hex bytestring"
-                Just validXPub -> pure validXPub
+parseXPub :: Value -> Parser XPub
+parseXPub = withText "XPub" $ \txt ->
+    case fromBase16 (T.encodeUtf8 txt) of
+        Left err -> fail err
+        Right hex -> case xpubFromBytes hex of
+            Nothing -> fail "Extended public key cannot be retrieved from a given hex bytestring"
+            Just validXPub -> pure validXPub
 
 instance ToJSON ScriptTemplate where
     toJSON (ScriptTemplate cosigners' template') =
         object [ "cosigners" .= object (fmap toPair (Map.toList cosigners'))
                , "template" .= toJSON template']
       where
-        toPair (Cosigner ix, xpub) =
-            ( T.pack (show ix)
-            , toJSON xpub )
+        toPair (cosigner', xpub) =
+            ( cosignerToText cosigner'
+            , encodeXPub xpub )
 
 instance FromJSON (Script Cosigner) where
     parseJSON v = fromScriptJson parserCosigner backtrack v
@@ -616,10 +624,6 @@ instance FromJSON ScriptTemplate where
             case HM.toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for (reverse cs) $ \(numTxt, str) -> do
-                    case T.decimal numTxt of
-                        Right (num,"") -> do
-                            when (num < minBound @Word8 || num > maxBound @Word8) $
-                                fail "Cosigner object field should be between '0' and '255'"
-                            xpub <- parseJSON str
-                            pure (Cosigner num, xpub)
-                        _ -> fail "Cosigner object field should be number and value string"
+                    cosigner' <- parseJSON @Cosigner (String numTxt)
+                    xpub <- parseXPub str
+                    pure (cosigner', xpub)
