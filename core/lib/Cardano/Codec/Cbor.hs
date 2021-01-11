@@ -254,13 +254,13 @@ decodeAddress = do
     bytes <- CBOR.decodeBytes
         -- Addr Root + Attributes + Type
     crc <- CBOR.decodeWord32 -- CRC
+
+    when (crc /= crc32 bytes) $ fail "non-matching crc32."
+
     -- NOTE 1:
     -- Treating addresses as a blob here, so we just re-encode them as such
     -- Ultimately for us, addresses are nothing more than a bunch of bytes that
     -- we display in a Base58 format when we have to.
-    --
-    -- NOTE 2:
-    -- We may want to check the CRC at this level as-well... maybe not.
     return $ CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 2
         <> CBOR.encodeTag tag
@@ -272,7 +272,8 @@ decodeAddressPayload = do
     _ <- CBOR.decodeListLenCanonicalOf 2
     _ <- CBOR.decodeTag
     bytes <- CBOR.decodeBytes
-    _ <- CBOR.decodeWord32 -- CRC
+    crc <- CBOR.decodeWord32
+    when (crc /= crc32 bytes) $ fail "non-matching crc32."
     return bytes
 
 decodeAddressDerivationPath
