@@ -86,6 +86,10 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZ\
         \q2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"
 
+    -- Invalid CRC
+    specInspectInvalid "non-matching crc32" []
+        "Ae2tdPwUPEZ5QJkfzoJgarugsX3rUVbTjg8nqTYmuy2c2msy5augpnm91ZR"
+
 specInspectAddress :: [String] -> [String] -> String -> SpecWith ()
 specInspectAddress mustHave args addr = it addr $ do
     (out, err) <- cli ([ "address", "inspect" ] <> args) addr
