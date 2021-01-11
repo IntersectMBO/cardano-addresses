@@ -341,7 +341,7 @@ span.spaces    { background: white }
 <span class="lineno">  322 </span><span class="spaces">    </span><span class="istickedoff">MissingExpectedDerivationPath -&gt;</span>
 <span class="lineno">  323 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&quot;Missing expected derivation path&quot;</span></span>
 <span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">DeserialiseError e -&gt;</span>
-<span class="lineno">  325 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">format &quot;Deserialisation error (was: {})&quot; (show e)</span></span>
+<span class="lineno">  325 </span><span class="spaces">        </span><span class="istickedoff">format &quot;Deserialisation error (was: {})&quot; (show e)</span>
 <span class="lineno">  326 </span><span class="spaces">    </span><span class="istickedoff">FailedToDecryptPath -&gt;</span>
 <span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">&quot;Failed to decrypt derivation path&quot;</span></span>
 <span class="lineno">  328 </span>
@@ -361,7 +361,7 @@ span.spaces    { background: white }
 <span class="lineno">  342 </span>-- @since 3.0.0
 <span class="lineno">  343 </span>inspectAddress :: forall m. MonadThrow m =&gt; Maybe XPub -&gt; Address -&gt; m Json.Value
 <span class="lineno">  344 </span><span class="decl"><span class="istickedoff">inspectAddress mRootPub addr = do</span>
-<span class="lineno">  345 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- either <span class="nottickedoff">(throwM . DeserialiseError)</span> pure</span>
+<span class="lineno">  345 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- either (throwM . DeserialiseError) pure</span>
 <span class="lineno">  346 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
 <span class="lineno">  347 </span><span class="spaces"></span><span class="istickedoff"></span>
 <span class="lineno">  348 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- either <span class="nottickedoff">(throwM . DeserialiseError)</span> pure</span>
