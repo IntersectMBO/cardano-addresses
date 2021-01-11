@@ -317,20 +317,20 @@ validateScript' validateRequireSignatureOf = \case
         validateRequireSignatureOf element
 
     RequireAllOf script -> do
-        when (L.null script) $ Left EmptyList
+        when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ (validateScript' validateRequireSignatureOf) script
 
     RequireAnyOf script -> do
-        when (L.null script) $ Left EmptyList
+        when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ (validateScript' validateRequireSignatureOf) script
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
-        when (length script < fromIntegral m) $ Left ListTooSmall
+        when (length (omitTimelocks script) < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (invalidTimelocks script) $ Left InvalidTimelocks
         traverse_ (validateScript' validateRequireSignatureOf) script
@@ -343,19 +343,18 @@ validateScript' validateRequireSignatureOf = \case
         length sigs /= length (L.nub sigs)
       where
         sigs = [ sig | RequireSignatureOf sig <- xs ]
-    invalidTimelocks xs =
-        let hasTimelocks = \case
-                ActiveFromSlot _ -> True
-                ActiveUntilSlot _ -> True
-                _ -> False
-        in case filter hasTimelocks xs of
-            [] -> False
-            [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
-            [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
-            [ActiveFromSlot _] -> False
-            [ActiveUntilSlot _] -> False
-            _ -> True
-
+    hasTimelocks = \case
+        ActiveFromSlot _ -> True
+        ActiveUntilSlot _ -> True
+        _ -> False
+    invalidTimelocks xs = case filter hasTimelocks xs of
+        [] -> False
+        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
+        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
+        [ActiveFromSlot _] -> False
+        [ActiveUntilSlot _] -> False
+        _ -> True
+    omitTimelocks = filter (not . hasTimelocks)
 --
 -- ScriptTemplate validation
 --

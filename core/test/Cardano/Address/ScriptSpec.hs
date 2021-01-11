@@ -41,9 +41,7 @@ import Cardano.Address.Style.Shelley
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
-    ( fromBase16 )
-import Codec.Binary.Encoding
-    ( AbstractEncoding (..), encode )
+    ( AbstractEncoding (..), encode, fromBase16 )
 import Data.Aeson
     ( FromJSON, ToJSON )
 import Data.Either
@@ -443,6 +441,18 @@ spec = do
                     ])
             validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
 
+        it "too high m in RequireSomeOf when timelocks" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 3 [cosigner0, cosigner1, ActiveFromSlot 21, ActiveUntilSlot 30])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+
+        it "no content in RequireAnyOf when timelocks" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 30])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+
+        it "no content in RequireAnyOf when timelocks" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 30])
+            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $ property prop_jsonRoundtripWithValidation
     describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
@@ -553,7 +563,7 @@ genScript elemGen = scale (`div` 3) $ sized scriptTree
                     ([ActiveFromSlot _], _) -> scripts
                     ([ActiveUntilSlot _], _) -> scripts
                     (_,rest) -> rest
-            case fromIntegral (L.length scriptsWithValidTimelocks) of
+            case fromIntegral (L.length (filter (not . hasTimelocks) scriptsWithValidTimelocks)) of
                 0 -> scriptTree 0
                 num -> do
                     atLeast <- choose (1, num)
