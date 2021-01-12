@@ -555,7 +555,7 @@ parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
     ActiveUntilSlot <$> o .: "active_until"
 
 cosignerToText :: Cosigner -> Text
-cosignerToText (Cosigner ix) = "cosigner#"<>(T.pack $ show ix)
+cosignerToText (Cosigner ix) = "cosigner#"<> T.pack (show ix)
 
 instance ToJSON Cosigner where
     toJSON = String . cosignerToText

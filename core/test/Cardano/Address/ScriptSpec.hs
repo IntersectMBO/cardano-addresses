@@ -454,11 +454,15 @@ spec = do
             validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
 
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
-        it "fromJSON . toJSON === pure" $ property prop_jsonRoundtripWithValidation
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script KeyHash))
+    describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated" $
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtripWithValidation validateScript)
     describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
         it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script Cosigner))
     describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate" $
         it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @ScriptTemplate)
+    describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate validated" $
+        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtripWithValidation validateScriptTemplate)
 
     describe "some JSON parsing error" $ do
         it "Empty list" $ do
@@ -510,13 +514,14 @@ spec = do
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes
 
-prop_jsonRoundtripWithValidation :: Script KeyHash -> Property
-prop_jsonRoundtripWithValidation script =
-    classify (isLeft $ validateScript script) "invalid" $
-    roundtrip script === Just script
-  where
-    roundtrip :: Script KeyHash -> Maybe (Script KeyHash)
-    roundtrip = Json.decode . Json.encode
+prop_jsonRoundtripWithValidation
+    :: (Eq a, Show a, ToJSON a, FromJSON a)
+    => (a -> Either ErrValidateScript ())
+    -> a
+    -> Property
+prop_jsonRoundtripWithValidation validate script =
+    classify (isLeft $ validate script) "invalid" $
+    Json.decode (Json.encode script) === Just script
 
 prop_jsonRoundtrip :: (Eq a, Show a, FromJSON a, ToJSON a) => a -> Property
 prop_jsonRoundtrip val =
