@@ -29,6 +29,8 @@ module Cardano.Address.Script
     , validateScript
     , ErrValidateScript (..)
     , prettyErrValidateScript
+    , validateScript'
+    , TxValidity (..)
 
     -- * Hashing
     , ScriptHash (..)
@@ -54,7 +56,7 @@ import Control.Applicative
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
-    ( foldM, when )
+    ( foldM, unless, when )
 import Data.Aeson
     ( FromJSON (..)
     , ToJSON (..)
@@ -78,6 +80,8 @@ import Data.Functor.Identity
     ( Identity (..) )
 import Data.Map.Strict
     ( Map )
+import Data.Set
+    ( difference )
 import Data.Text
     ( Text )
 import Data.Traversable
@@ -98,10 +102,10 @@ import qualified Data.ByteString as BS
 import qualified Data.HashMap.Strict as HM
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Read as T
-
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -249,6 +253,20 @@ keyHashFromText txt = do
         | hrp == CIP5.script_xvk = Right $ hashCredential $ BS.take 32 bytes
         | otherwise = Left ErrKeyHashFromTextWrongHrp
 
+-- The validity of transaction. It depicts the interval during which tx
+-- can be accommodated in the ledger and is expressed in slot unit when specified.
+-- Nothing means the current bound is not specified. It is closed on the bottom,
+-- open on the top.
+--
+-- Eg., TxValidity (Just 10) (Just 20)  ->  <10,20)
+--      TxValidity (Just 10) Nothing    ->  <10, ∞)
+--      TxValidity Nothing (Just 25)    ->  (∞, 25)
+--
+-- @since 3.2.0
+data TxValidity = TxValidity (Maybe Natural) (Maybe Natural)
+    deriving (Show, Eq, Generic)
+instance NFData TxValidity
+
 -- Possible errors when deserializing a key hash from text.
 --
 -- @since 3.0.0
@@ -280,7 +298,7 @@ prettyErrKeyHashFromText = \case
 -- | 'Script' folding
 --
 -- @since 3.2.0
-foldScript :: (KeyHash -> b -> b) -> b -> Script KeyHash -> b
+foldScript :: (a -> b -> b) -> b -> Script a -> b
 foldScript fn zero = \case
     RequireSignatureOf k -> fn k zero
     RequireAllOf xs      -> foldMScripts xs
@@ -291,7 +309,6 @@ foldScript fn zero = \case
   where
     foldMScripts =
         runIdentity . foldM (\acc -> Identity . foldScript fn acc) zero
-
 
 --
 -- Script validation
@@ -305,6 +322,51 @@ validateScript script = do
     let validateKeyHash (KeyHash bytes) =
             when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
     validateScriptWith validateKeyHash script
+
+validateScript'
+    :: TxValidity
+    -> Script KeyHash
+    -> Either ErrValidateScript ()
+validateScript' interval script = do
+    let validateKeyHash (KeyHash bytes) =
+            (BS.length bytes /= credentialHashSize)
+    let allSigs = foldScript (:) [] script
+    unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
+    unless (requiredValidation interval script)
+        $ Left WrongKeyHash
+
+requiredValidation
+    :: Eq elem
+    => TxValidity
+    -> Script elem
+    -> Bool
+requiredValidation validity = \case
+    RequireSignatureOf _ -> True
+
+    RequireAllOf xs ->
+        L.all (requiredValidation validity) xs
+
+    RequireAnyOf xs ->
+        L.any (requiredValidation validity) xs
+
+    RequireSomeOf m xs ->
+        m <= sum (fmap (\x -> if requiredValidation validity x then 1 else 0) xs)
+
+    ActiveFromSlot lockStart ->
+        let (TxValidity txStart _) = validity
+        in lockStart `lteNegInfty` txStart
+
+    ActiveUntilSlot lockExpiry ->
+        let (TxValidity _ txExpiry) = validity
+        in txExpiry `ltePosInfty` lockExpiry
+  where
+      lteNegInfty :: Natural -> Maybe Natural -> Bool
+      lteNegInfty _ Nothing = False -- i > -∞
+      lteNegInfty i (Just j) = i <= j
+
+      ltePosInfty :: Maybe Natural -> Natural -> Bool
+      ltePosInfty Nothing _ = False -- ∞ > j
+      ltePosInfty (Just i) j = i <= j
 
 validateScriptWith
     :: Eq elem
@@ -366,6 +428,10 @@ validateScriptTemplate (ScriptTemplate cosigners' script) = do
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
+    let allCosigners = Set.fromList $ foldScript (:) [] script
+    let unusedCosigners =
+            (Set.fromList $ Map.keys cosigners') `difference` allCosigners
+    unless (Set.null unusedCosigners) $ Left UnusedCosigner
     let validateCosigner cosigner =
             when (cosigner `notElem` (Map.keys cosigners')) $ Left UnknownCosigner
     validateScriptWith validateCosigner script
@@ -384,6 +450,7 @@ data ErrValidateScript
     | DuplicateXPubs
     | UnknownCosigner
     | NoCosigner
+    | UnusedCosigner
     deriving (Eq, Show)
 
 -- | Pretty-print a validation error.
@@ -410,11 +477,13 @@ prettyErrValidateScript = \case
         "The list inside a script must contain at most two timelock conditions \
         \and they cannot be contradictory."
     DuplicateXPubs ->
-        "Teh cosigners in a script template must assume an unique extended public key."
+        "The cosigners in a script template must stand behind an unique extended public key."
     UnknownCosigner ->
         "The script must use a cosigner present in a script template."
     NoCosigner ->
         "The script template must have at least one cosigner defined."
+    UnusedCosigner ->
+        "Each cosigner predefined must be used in a script template"
 --
 -- Internal
 --

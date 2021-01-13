@@ -376,27 +376,27 @@ spec = do
             validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
 
         it "too high m in RequireSomeOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 3 [cosigner0, cosigner1])
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 5 [cosigner0, cosigner1, cosigner2, cosigner3])
             validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
 
         it "m=0 in RequireSomeOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 0 [cosigner2, cosigner3])
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 0 [cosigner0, cosigner1, cosigner2, cosigner3])
             validateScriptTemplate scriptTemplate `shouldBe`(Left MZero)
 
         it "wrong in nested 1" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner1, RequireAnyOf [] ])
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, cosigner1, cosigner2, cosigner3, RequireAnyOf [] ])
             validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
 
         it "wrong in nested 2" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
-                    [ cosigner1
+                    [ cosigner0, cosigner1, cosigner2, cosigner3
                     , RequireAnyOf [cosigner2, RequireAllOf [] ]
                     ])
             validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
 
         it "wrong in nested 3" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
-                    [ cosigner1
+                    [ cosigner0, cosigner1, cosigner2, cosigner3
                     , RequireAnyOf [ cosigner2
                                    , RequireSomeOf 3 [cosigner0, cosigner3]
                                    ]
