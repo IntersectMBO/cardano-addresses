@@ -23,15 +23,16 @@ module Cardano.Address.Script
     -- * Script template
     , ScriptTemplate (..)
     , Cosigner (..)
-    , validateScriptTemplate
 
     -- * Validation
-    , validateScript
     , ValidationLevel (..)
     , ErrValidateScript (..)
+    , ErrValidateScriptTemplate (..)
     , TxValidity (..)
+    , validateScript
+    , validateScriptTemplate
     , prettyErrValidateScript
-    , validateScript'
+    , prettyErrValidateScriptTemplate
 
     -- * Hashing
     , ScriptHash (..)
@@ -74,7 +75,7 @@ import Data.Aeson.Types
 import Data.ByteString
     ( ByteString )
 import Data.Either.Combinators
-    ( maybeToRight )
+    ( mapLeft, maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
@@ -327,24 +328,20 @@ foldScript fn zero = \case
 -- | Validate a 'Script', semantically
 --
 -- @since 3.0.0
-validateScript :: Script KeyHash -> Either ErrValidateScript ()
-validateScript script = do
-    let validateKeyHash (KeyHash bytes) =
-            when (BS.length bytes /= credentialHashSize) $ Left WrongKeyHash
-    validateScriptWith validateKeyHash script
-
-validateScript'
+validateScript
     :: ValidationLevel
     -> TxValidity
     -> Script KeyHash
     -> Either ErrValidateScript ()
-validateScript' _level interval script = do
+validateScript level interval script = do
     let validateKeyHash (KeyHash bytes) =
             (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
     unless (requiredValidation interval script)
         $ Left LedgerIncompatible
+    when (level == RecommendedValidation ) $
+        recommendedValidation script
 
 requiredValidation
     :: Eq elem
@@ -379,33 +376,30 @@ requiredValidation validity = \case
       ltePosInfty Nothing _ = False -- ∞ > j
       ltePosInfty (Just i) j = i <= j
 
-validateScriptWith
+recommendedValidation
     :: Eq elem
-    => (elem -> Either ErrValidateScript ())
-    -> Script elem
+    => Script elem
     -> Either ErrValidateScript ()
-validateScriptWith validateRequireSignatureOf = \case
-    RequireSignatureOf element ->
-        validateRequireSignatureOf element
+recommendedValidation = \case
+    RequireSignatureOf _ -> pure ()
 
     RequireAllOf script -> do
         when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
-        when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScriptWith validateRequireSignatureOf) script
+        when (redundantTimelocks script) $ Left RedundantTimelocks
+        traverse_ recommendedValidation script
 
     RequireAnyOf script -> do
-        when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
-        when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScriptWith validateRequireSignatureOf) script
+        when (redundantTimelocks script) $ Left RedundantTimelocks
+        traverse_ recommendedValidation script
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
         when (length (omitTimelocks script) < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
-        when (invalidTimelocks script) $ Left InvalidTimelocks
-        traverse_ (validateScriptWith validateRequireSignatureOf) script
+        when (redundantTimelocks script) $ Left RedundantTimelocks
+        traverse_ recommendedValidation script
 
     ActiveFromSlot _ -> pure ()
 
@@ -419,12 +413,11 @@ validateScriptWith validateRequireSignatureOf = \case
         ActiveFromSlot _ -> True
         ActiveUntilSlot _ -> True
         _ -> False
-    invalidTimelocks xs = case filter hasTimelocks xs of
+    redundantTimelocks xs = case L.filter hasTimelocks xs of
         [] -> False
+        [_] -> False
         [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
         [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
-        [ActiveFromSlot _] -> False
-        [ActiveUntilSlot _] -> False
         _ -> True
     omitTimelocks = filter (not . hasTimelocks)
 --
@@ -434,18 +427,27 @@ validateScriptWith validateRequireSignatureOf = \case
 -- | Validate a 'ScriptTemplate', semantically
 --
 -- @since 3.2.0
-validateScriptTemplate :: ScriptTemplate -> Either ErrValidateScript ()
-validateScriptTemplate (ScriptTemplate cosigners' script) = do
+validateScriptTemplate
+    :: ValidationLevel
+    -> TxValidity
+    -> ScriptTemplate
+    -> Either ErrValidateScriptTemplate ()
+validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
     let allCosigners = Set.fromList $ foldScript (:) [] script
+    let unknownCosigners =
+            allCosigners `difference` (Set.fromList $ Map.keys cosigners')
+    unless (Set.null unknownCosigners) $ Left UnknownCosigner
     let unusedCosigners =
             (Set.fromList $ Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
-    let validateCosigner cosigner =
-            when (cosigner `notElem` (Map.keys cosigners')) $ Left UnknownCosigner
-    validateScriptWith validateCosigner script
+    mapLeft WrongScript $ do
+        unless (requiredValidation interval script)
+            $ Left LedgerIncompatible
+        when (level == RecommendedValidation ) $
+            recommendedValidation script
 
 -- | Possible validation errors when validating a script
 --
@@ -458,14 +460,21 @@ data ErrValidateScript
     | DuplicateSignatures
     | WrongKeyHash
     | Malformed
-    | InvalidTimelocks
+    | RedundantTimelocks
+    deriving (Eq, Show)
+
+-- | Possible validation errors when validating a script
+--
+-- @since 3.2.0
+data ErrValidateScriptTemplate
+    = WrongScript ErrValidateScript
     | DuplicateXPubs
     | UnknownCosigner
     | NoCosigner
     | UnusedCosigner
     deriving (Eq, Show)
 
--- | Pretty-print a validation error.
+-- | Pretty-print a script validation error.
 --
 -- @since 3.0.0
 prettyErrValidateScript
@@ -484,12 +493,20 @@ prettyErrValidateScript = \case
         "The list inside a script has duplicate keys."
     WrongKeyHash ->
         "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
+    RedundantTimelocks ->
+        "Timelocks used either are redundant or contradictory."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, and the verification keys should be either encoded as bech32."
-    InvalidTimelocks ->
-        "The list inside a script must contain at most two timelock conditions \
-        \and they cannot be contradictory."
+
+-- | Pretty-print a script template validation error.
+--
+-- @since 3.2.0
+prettyErrValidateScriptTemplate
+    :: ErrValidateScriptTemplate
+    -> String
+prettyErrValidateScriptTemplate = \case
+    WrongScript err -> prettyErrValidateScript err
     DuplicateXPubs ->
         "The cosigners in a script template must stand behind an unique extended public key."
     UnknownCosigner ->
@@ -547,13 +564,8 @@ instance ToJSON KeyHash where
     toJSON = String . keyHashToText
 
 instance FromJSON (Script KeyHash) where
-    parseJSON v = do
-        script <- fromScriptJson parseKey backtrack v
-
-        either (fail . prettyErrValidateScript) pure
-            (validateScript script)
-
-        return script
+    parseJSON v =
+        fromScriptJson parseKey backtrack v
       where
         parseKey = withText "Script KeyHash" $
             either

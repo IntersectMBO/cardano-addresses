@@ -36,8 +36,6 @@ import Cardano.Address.Script
     )
 import Data.Char
     ( isDigit, isLetter )
-import Data.Functor
-    ( ($>) )
 import Data.Word
     ( Word8 )
 import Numeric.Natural
@@ -54,7 +52,7 @@ import qualified Text.ParserCombinators.ReadP as P
 scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
 scriptFromString str =
     case readP_to_S scriptParser str of
-         [(script, "")] -> validateScript script $> script
+         [(script, "")] -> pure script
          _ -> Left Malformed
 
 -- | The script embodies combination of signing keys that need to be met to make

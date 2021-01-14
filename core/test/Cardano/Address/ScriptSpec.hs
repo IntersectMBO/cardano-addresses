@@ -26,6 +26,8 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Script
     ( Cosigner (..)
+    , ErrValidateScript (..)
+    , ErrValidateScriptTemplate (..)
     , KeyHash (..)
     , Script (..)
     , ScriptHash (..)
@@ -34,11 +36,9 @@ import Cardano.Address.Script
     , ValidationLevel (..)
     , serializeScript
     , toScriptHash
-    , validateScript'
+    , validateScript
     , validateScriptTemplate
     )
-import Cardano.Address.Script.Parser
-    ( ErrValidateScript (..), validateScript )
 import Cardano.Address.Style.Shelley
     ( Shelley (..), deriveMultisigPrivateKey, hashKey )
 import Cardano.Mnemonic
@@ -223,111 +223,100 @@ spec = do
                 "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8204187882051896"
                 "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
 
-    describe "validateScript - expectations" $ do
+    describe "validateScript - expectations for RequiredValidation" $ do
         let validity = TxValidity Nothing Nothing
         it "incorrect RequireSignatureOf" $ do
             let script = RequireSignatureOf (KeyHash "<wrong key hash>")
-            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+            validateScript RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
 
         it "incorrect RequireSignatureOf nested" $ do
             let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>")]]
-            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+            validateScript RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireAllOf []" $ do
             let script = RequireAllOf []
-            validateScript' RequiredValidation validity script `shouldBe` (Right ())
+            validateScript RequiredValidation validity script `shouldBe` (Right ())
 
         it "incorrect RequireAnyOf []" $ do
             let script = RequireAnyOf []
-            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 1" $ do
             let script = RequireSomeOf 2 [verKeyHash1]
-            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 2" $ do
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>")]
-            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+            validateScript RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireSomeOf" $ do
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf []]
-            validateScript' RequiredValidation validity script `shouldBe` (Right ())
+            validateScript RequiredValidation validity script `shouldBe` (Right ())
+
+        it "m=0 in RequireSomeOf is correct" $ do
+            let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
+            validateScript RequiredValidation validity script  `shouldBe`(Right ())
 
         it "timelocks are incorrect if the validity is not contained in it - 1" $ do
             let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
-            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
 
         it "timelocks are incorrect if the validity is not contained in it - 2" $ do
             let script = RequireAllOf [ActiveFromSlot 1 , ActiveFromSlot 10, ActiveUntilSlot 15 ]
-            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
 
         it "timelocks are correct if the validity is contained in it - 1" $ do
             let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
             let validity' = TxValidity (Just 1) (Just 10)
-            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+            validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
         it "timelocks are correct if the validity is contained in it - 2" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 11 ]
             let validity' = TxValidity (Just 1) (Just 10)
-            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+            validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
         it "timelocks are correct if the validity is contained in it - 3" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 101, ActiveFromSlot 4]
             let validity' = TxValidity (Just 10) (Just 100)
-            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+            validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
-    describe "validateScript - errors" $ do
-        it "no content in RequireAllOf" $ do
+        it "timelocks are incorrect if timelocks disjoint - 2" $ do
+            let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
+            let validity' = TxValidity (Just 10) (Just 100)
+            validateScript RequiredValidation validity' script `shouldBe` (Left LedgerIncompatible)
+
+    describe "validateScript - expectations for RecomendedValidation" $ do
+        let validity = TxValidity (Just 10) (Just 100)
+        it "incorrect RequireAllOf []" $ do
             let script = RequireAllOf []
-            validateScript script `shouldBe` (Left EmptyList)
+            validateScript RecommendedValidation validity script `shouldBe` (Left EmptyList)
 
-        it "no content in RequireAnyOf" $ do
-            let script = RequireAnyOf []
-            validateScript script `shouldBe` (Left EmptyList)
+        it "incorrect in nested 1" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, RequireAllOf [] ]
+            validateScript RecommendedValidation validity script `shouldBe` (Left EmptyList)
 
-        it "no content in RequireSomeOf" $ do
-            let script = RequireSomeOf 1 []
-            validateScript script `shouldBe` (Left ListTooSmall)
-
-        it "too high m in RequireSomeOf" $ do
-            let script = RequireSomeOf 3 [verKeyHash3, verKeyHash4]
-            validateScript script `shouldBe` (Left ListTooSmall)
-
-        it "m=0 in RequireSomeOf" $ do
-            let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
-            validateScript script `shouldBe`(Left MZero)
-
-        it "wrong in nested 1" $ do
-            let script = RequireSomeOf 1 [verKeyHash1, RequireAnyOf [] ]
-            validateScript script `shouldBe` (Left EmptyList)
-
-        it "wrong in nested 2" $ do
+        it "incorrect in nested 2" $ do
             let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [verKeyHash2, RequireAllOf [] ]
                     ]
-            validateScript script `shouldBe` (Left EmptyList)
+            validateScript RecommendedValidation validity script `shouldBe` (Left EmptyList)
 
-        it "wrong in nested 3" $ do
-            let script = RequireSomeOf 1
-                    [ verKeyHash1
-                    , RequireAnyOf [ verKeyHash2
-                                   , RequireSomeOf 3 [verKeyHash3, verKeyHash4]
-                                   ]
-                    ]
-            validateScript script `shouldBe` (Left ListTooSmall)
+        it "m=0 in RequireSomeOf" $ do
+            let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
+            validateScript RecommendedValidation validity script `shouldBe`(Left MZero)
 
         it "duplicate content in RequireAllOf" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2, verKeyHash1]
-            validateScript script `shouldBe` (Left DuplicateSignatures)
+            validateScript RecommendedValidation validity script `shouldBe` (Left DuplicateSignatures)
 
         it "duplicate content in RequireAnyOf" $ do
             let script = RequireAnyOf [verKeyHash1, verKeyHash2, verKeyHash1]
-            validateScript script `shouldBe` (Left DuplicateSignatures)
+            validateScript RecommendedValidation validity script `shouldBe` (Left DuplicateSignatures)
 
         it "duplicate content in RequireSomeOf" $ do
             let script = RequireSomeOf 1 [verKeyHash1, verKeyHash2, verKeyHash1]
-            validateScript script `shouldBe` (Left DuplicateSignatures)
+            validateScript RecommendedValidation validity script `shouldBe` (Left DuplicateSignatures)
 
         it "duplicate in nested" $ do
             let script = RequireSomeOf 1
@@ -336,33 +325,28 @@ spec = do
                                    , RequireSomeOf 2 [verKeyHash3, verKeyHash3, verKeyHash4]
                                    ]
                     ]
-            validateScript script `shouldBe` (Left DuplicateSignatures)
+            validateScript RecommendedValidation validity script `shouldBe` (Left DuplicateSignatures)
 
-        it "invalid timelocks - too many" $ do
-            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 20]
-            validateScript script `shouldBe` (Left InvalidTimelocks)
+        it "redundant timelocks - too many" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
+            validateScript RecommendedValidation validity script `shouldBe` (Left RedundantTimelocks)
 
-        it "invalid timelocks - contradictory 1" $ do
-            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 21, ActiveUntilSlot 20]
-            validateScript script `shouldBe` (Left InvalidTimelocks)
-
-        it "invalid timelocks - contradictory 1" $ do
+        it "redundant timelocks - nested" $ do
             let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [ verKeyHash2
-                                   , RequireSomeOf 2 [verKeyHash3, verKeyHash4, ActiveFromSlot 21, ActiveUntilSlot 20, verKeyHash1]
+                                   , RequireSomeOf 2 [verKeyHash3, verKeyHash4, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, verKeyHash1]
                                    ]
                     ]
-            validateScript script `shouldBe` (Left InvalidTimelocks)
+            validateScript RecommendedValidation validity script `shouldBe` (Left RedundantTimelocks)
 
-    describe "validateScript - correct" $ do
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [verKeyHash1]
-            validateScript script `shouldBe` Right ()
+            validateScript RecommendedValidation validity  script `shouldBe` Right ()
 
         it "content in RequireAllOf - 2" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2]
-            validateScript script `shouldBe` Right ()
+            validateScript RecommendedValidation validity script `shouldBe` Right ()
 
         it "nested 1" $ do
             let script = RequireSomeOf 1
@@ -372,7 +356,7 @@ spec = do
                         , RequireSomeOf 1 [verKeyHash3, verKeyHash4]
                         ]
                     ]
-            validateScript script `shouldBe` Right ()
+            validateScript RecommendedValidation validity script `shouldBe` Right ()
 
         it "nested 2" $ do
             let script = RequireSomeOf 1
@@ -385,10 +369,10 @@ spec = do
                         , verKeyHash3
                         ]
                     ]
-            validateScript script `shouldBe` Right ()
+            validateScript RecommendedValidation validity script `shouldBe` Right ()
 
-{--
     describe "validateScriptTemplate - errors" $ do
+        let validity = TxValidity (Just 10) (Just 20)
         let accXpub0 =
                 "7eebe6dfa9a1530248400eb6a1adaca166ab1d723e9618d989d22a9219a364\
                 \cb4c745e128fdc98a5039893f704cf67f58c59cea97241a5c7ec7b4606253e5523"
@@ -414,42 +398,46 @@ spec = do
 
         it "no cosigners in script template" $ do
             let scriptTemplate = ScriptTemplate Map.empty (RequireAllOf [])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left NoCosigner)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left NoCosigner)
 
         it "illegal cosigner in script template" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSignatureOf (Cosigner 4))
-            validateScriptTemplate scriptTemplate `shouldBe` (Left UnknownCosigner)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left UnknownCosigner)
+
+        it "not all cosigners used in script template" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner0, cosigner1, cosigner2] )
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left UnusedCosigner)
 
         it "duplicated xpub in cosigners in script template" $ do
             let scriptTemplate = ScriptTemplate cosignersWrong (RequireSignatureOf (Cosigner 1))
-            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateXPubs)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left DuplicateXPubs)
 
         it "no content in RequireAnyOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2, cosigner3, RequireAnyOf []])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript LedgerIncompatible)
 
         it "no content in RequireSomeOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2, cosigner3, RequireSomeOf 1 []])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript LedgerIncompatible)
 
         it "too high m in RequireSomeOf" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 5 [cosigner0, cosigner1, cosigner2, cosigner3])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript LedgerIncompatible)
 
         it "m=0 in RequireSomeOf" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 0 [cosigner0, cosigner1, cosigner2, cosigner3])
-            validateScriptTemplate scriptTemplate `shouldBe`(Left MZero)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe`(Left $ WrongScript MZero)
 
         it "wrong in nested 1" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, cosigner1, cosigner2, cosigner3, RequireAnyOf [] ])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, cosigner1, cosigner2, cosigner3, RequireAllOf [] ])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript EmptyList)
 
         it "wrong in nested 2" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner0, cosigner1, cosigner2, cosigner3
                     , RequireAnyOf [cosigner2, RequireAllOf [] ]
                     ])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript EmptyList)
 
         it "wrong in nested 3" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
@@ -458,19 +446,19 @@ spec = do
                                    , RequireSomeOf 3 [cosigner0, cosigner3]
                                    ]
                     ])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript ListTooSmall)
 
         it "duplicate content in RequireAllOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner1, cosigner2, cosigner1])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner1, cosigner2, cosigner1,cosigner0, cosigner3 ])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript DuplicateSignatures)
 
         it "duplicate content in RequireAnyOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner1, cosigner2, cosigner1])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner1, cosigner2, cosigner1,cosigner0, cosigner3 ])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript DuplicateSignatures)
 
         it "duplicate content in RequireSomeOf" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner1, cosigner2, cosigner1])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner1, cosigner2, cosigner1,cosigner0, cosigner3 ])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript DuplicateSignatures)
 
         it "duplicate in nested" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
@@ -479,74 +467,46 @@ spec = do
                                    , RequireSomeOf 2 [cosigner0, cosigner0, cosigner3]
                                    ]
                     ])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left DuplicateSignatures)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript DuplicateSignatures)
 
         it "invalid timelocks - too many" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 20])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 25])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left  $ WrongScript RedundantTimelocks)
 
         it "invalid timelocks - contradictory 1" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, ActiveFromSlot 21, ActiveUntilSlot 20])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 11, ActiveUntilSlot 15])
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript LedgerIncompatible)
 
         it "invalid timelocks - contradictory 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
-                                   , RequireSomeOf 2 [cosigner0, cosigner1, ActiveFromSlot 21, ActiveUntilSlot 20, cosigner3]
+                                   , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 20]
                                    ]
                     ])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left InvalidTimelocks)
+            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` (Left $ WrongScript RedundantTimelocks)
 
-        it "too high m in RequireSomeOf when timelocks" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 3 [cosigner0, cosigner1, ActiveFromSlot 21, ActiveUntilSlot 30])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left ListTooSmall)
-
-        it "no content in RequireAnyOf when timelocks" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 30])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
-
-        it "no content in RequireAnyOf when timelocks" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 30])
-            validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
---}
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script KeyHash))
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtrip @(Script KeyHash))
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtripWithValidation validateScript)
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtripWithValidation (validateScript RequiredValidation (TxValidity (Just 10) (Just 11))))
     describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script Cosigner))
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtrip @(Script Cosigner))
     describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @ScriptTemplate)
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtrip @ScriptTemplate)
     describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate validated" $
-        it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtripWithValidation validateScriptTemplate)
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtripWithValidation (validateScriptTemplate RequiredValidation (TxValidity (Just 10) (Just 11))))
 
     describe "some JSON parsing error" $ do
-        it "Empty list" $ do
-            let err = "Error in $: The list inside a script is empty."
-            Json.eitherDecode @(Script KeyHash) "{ \"any\": [] }"
-                `shouldBe` Left err
-
-        it "Empty list nested" $ do
-            let err = "Error in $.any[0]: The list inside a script is empty."
-            Json.eitherDecode @(Script KeyHash) "{ \"any\": [ { \"all\": [] } ] }"
-                `shouldBe` Left err
-
         it "Invalid type" $ do
             let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
             Json.eitherDecode @(Script KeyHash) "{ \"all\": [ { \"any\": [1,2,3] } ] }"
                 `shouldBe` Left err
-
-        it "List too small" $ do
-            let err = "Error in $: At least must not be larger than the list of keys."
-            Json.eitherDecode @(Script KeyHash)
-                "{ \"some\":\
-                \   { \"at_least\": 2\
-                \   , \"from\":\
-                \       [\"script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms\"\
-                \       ]\
-                \   }\
-                \}" `shouldBe` Left err
 
         it "Multiple 'any', 'all'" $ do
             let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
@@ -573,7 +533,7 @@ spec = do
 
 prop_jsonRoundtripWithValidation
     :: (Eq a, Show a, ToJSON a, FromJSON a)
-    => (a -> Either ErrValidateScript ())
+    => (a -> Either err ())
     -> a
     -> Property
 prop_jsonRoundtripWithValidation validate script =
