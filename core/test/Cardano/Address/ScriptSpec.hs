@@ -30,8 +30,11 @@ import Cardano.Address.Script
     , Script (..)
     , ScriptHash (..)
     , ScriptTemplate (..)
+    , TxValidity (..)
+    , ValidationLevel (..)
     , serializeScript
     , toScriptHash
+    , validateScript'
     , validateScriptTemplate
     )
 import Cardano.Address.Script.Parser
@@ -220,6 +223,59 @@ spec = do
                 "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8204187882051896"
                 "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
 
+    describe "validateScript - expectations" $ do
+        let validity = TxValidity Nothing Nothing
+        it "incorrect RequireSignatureOf" $ do
+            let script = RequireSignatureOf (KeyHash "<wrong key hash>")
+            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+
+        it "incorrect RequireSignatureOf nested" $ do
+            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>")]]
+            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+
+        it "correct RequireAllOf []" $ do
+            let script = RequireAllOf []
+            validateScript' RequiredValidation validity script `shouldBe` (Right ())
+
+        it "incorrect RequireAnyOf []" $ do
+            let script = RequireAnyOf []
+            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+
+        it "incorrect RequireSomeOf 1" $ do
+            let script = RequireSomeOf 2 [verKeyHash1]
+            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+
+        it "incorrect RequireSomeOf 2" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>")]
+            validateScript' RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
+
+        it "correct RequireSomeOf" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf []]
+            validateScript' RequiredValidation validity script `shouldBe` (Right ())
+
+        it "timelocks are incorrect if the validity is not contained in it - 1" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
+            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+
+        it "timelocks are incorrect if the validity is not contained in it - 2" $ do
+            let script = RequireAllOf [ActiveFromSlot 1 , ActiveFromSlot 10, ActiveUntilSlot 15 ]
+            validateScript' RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+
+        it "timelocks are correct if the validity is contained in it - 1" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
+            let validity' = TxValidity (Just 1) (Just 10)
+            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+
+        it "timelocks are correct if the validity is contained in it - 2" $ do
+            let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 11 ]
+            let validity' = TxValidity (Just 1) (Just 10)
+            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+
+        it "timelocks are correct if the validity is contained in it - 3" $ do
+            let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 101, ActiveFromSlot 4]
+            let validity' = TxValidity (Just 10) (Just 100)
+            validateScript' RequiredValidation validity' script `shouldBe` (Right ())
+
     describe "validateScript - errors" $ do
         it "no content in RequireAllOf" $ do
             let script = RequireAllOf []
@@ -331,6 +387,7 @@ spec = do
                     ]
             validateScript script `shouldBe` Right ()
 
+{--
     describe "validateScriptTemplate - errors" $ do
         let accXpub0 =
                 "7eebe6dfa9a1530248400eb6a1adaca166ab1d723e9618d989d22a9219a364\
@@ -452,7 +509,7 @@ spec = do
         it "no content in RequireAnyOf when timelocks" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 30])
             validateScriptTemplate scriptTemplate `shouldBe` (Left EmptyList)
-
+--}
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $ property (prop_jsonRoundtrip @(Script KeyHash))
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated" $

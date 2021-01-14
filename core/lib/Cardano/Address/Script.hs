@@ -27,10 +27,11 @@ module Cardano.Address.Script
 
     -- * Validation
     , validateScript
+    , ValidationLevel (..)
     , ErrValidateScript (..)
+    , TxValidity (..)
     , prettyErrValidateScript
     , validateScript'
-    , TxValidity (..)
 
     -- * Hashing
     , ScriptHash (..)
@@ -260,12 +261,21 @@ keyHashFromText txt = do
 --
 -- Eg., TxValidity (Just 10) (Just 20)  ->  <10,20)
 --      TxValidity (Just 10) Nothing    ->  <10, ∞)
---      TxValidity Nothing (Just 25)    ->  (∞, 25)
+--      TxValidity Nothing (Just 25)    ->  (-∞, 25)
 --
 -- @since 3.2.0
 data TxValidity = TxValidity (Maybe Natural) (Maybe Natural)
     deriving (Show, Eq, Generic)
 instance NFData TxValidity
+
+-- Validation level. Required level does basic check that will make sure the script
+-- is accepted in ledger. Recommended level collects a number of checks that will
+-- warn about dangerous, unwise and redundant things present in the script.
+--
+-- @since 3.2.0
+data ValidationLevel = RequiredValidation | RecommendedValidation
+    deriving (Show, Eq, Generic)
+instance NFData ValidationLevel
 
 -- Possible errors when deserializing a key hash from text.
 --
@@ -324,16 +334,17 @@ validateScript script = do
     validateScriptWith validateKeyHash script
 
 validateScript'
-    :: TxValidity
+    :: ValidationLevel
+    -> TxValidity
     -> Script KeyHash
     -> Either ErrValidateScript ()
-validateScript' interval script = do
+validateScript' _level interval script = do
     let validateKeyHash (KeyHash bytes) =
-            (BS.length bytes /= credentialHashSize)
+            (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
     unless (requiredValidation interval script)
-        $ Left WrongKeyHash
+        $ Left LedgerIncompatible
 
 requiredValidation
     :: Eq elem
@@ -440,7 +451,8 @@ validateScriptTemplate (ScriptTemplate cosigners' script) = do
 --
 -- @since 3.0.0
 data ErrValidateScript
-    = EmptyList
+    = LedgerIncompatible
+    | EmptyList
     | ListTooSmall
     | MZero
     | DuplicateSignatures
@@ -460,6 +472,8 @@ prettyErrValidateScript
     :: ErrValidateScript
     -> String
 prettyErrValidateScript = \case
+    LedgerIncompatible ->
+        "The script is ill-formed and not going to be accepted by ledger."
     EmptyList ->
         "The list inside a script is empty."
     MZero ->
