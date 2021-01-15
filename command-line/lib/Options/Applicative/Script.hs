@@ -9,20 +9,34 @@ module Options.Applicative.Script
     , scriptReader
     , scriptHashArg
     , scriptHashReader
+    , levelOpt
+    , txValidOpt
     ) where
 
 import Prelude
 
 import Cardano.Address.Script
-    ( KeyHash, Script (..), ScriptHash, scriptHashFromBytes )
+    ( KeyHash
+    , Script (..)
+    , ScriptHash
+    , ValidationLevel (..)
+    , scriptHashFromBytes
+    )
 import Cardano.Address.Script.Parser
     ( prettyErrValidateScript, scriptFromString )
+import Control.Applicative
+    ( (<|>) )
 import Control.Arrow
     ( left )
+import Data.Word
+    ( Word64 )
 import Options.Applicative
-    ( Parser, argument, eitherReader, help, metavar )
+    ( Parser, argument, eitherReader, flag', help, long, metavar, option )
 import Options.Applicative.Derivation
     ( bech32Reader )
+import Text.Read
+    ( readMaybe )
+
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
@@ -56,3 +70,16 @@ scriptHashReader str = do
     allowedPrefixes =
         [ CIP5.script
         ]
+
+levelOpt :: Parser ValidationLevel
+levelOpt = required <|> recommended
+  where
+    required = flag' RequiredValidation (long "required")
+    recommended = flag' RecommendedValidation (long "recommended")
+
+txValidOpt :: String -> Parser Word64
+txValidOpt opt = option (eitherReader reader) $ mempty <> long opt
+  where
+    reader str = maybe (Left err) Right (readMaybe str)
+      where
+        err = "Invalid slot number. Must be a non-negative integer."

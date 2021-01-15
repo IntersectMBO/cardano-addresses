@@ -262,7 +262,7 @@ keyHashFromText txt = do
 --
 -- Eg., TxValidity (Just 10) (Just 20)  ->  <10,20)
 --      TxValidity (Just 10) Nothing    ->  <10, ∞)
---      TxValidity Nothing (Just 25)    ->  (-∞, 25)
+--      TxValidity Nothing (Just 25)    ->  <0, 25)
 --
 -- @since 3.2.0
 data TxValidity = TxValidity (Maybe Natural) (Maybe Natural)
@@ -362,15 +362,15 @@ requiredValidation validity = \case
 
     ActiveFromSlot lockStart ->
         let (TxValidity txStart _) = validity
-        in lockStart `lteNegInfty` txStart
+        in lockStart `lteZero` txStart
 
     ActiveUntilSlot lockExpiry ->
         let (TxValidity _ txExpiry) = validity
         in txExpiry `ltePosInfty` lockExpiry
   where
-      lteNegInfty :: Natural -> Maybe Natural -> Bool
-      lteNegInfty _ Nothing = False -- i > -∞
-      lteNegInfty i (Just j) = i <= j
+      lteZero :: Natural -> Maybe Natural -> Bool
+      lteZero i Nothing = i==0
+      lteZero i (Just j) = i <= j
 
       ltePosInfty :: Maybe Natural -> Natural -> Bool
       ltePosInfty Nothing _ = False -- ∞ > j
@@ -486,18 +486,19 @@ prettyErrValidateScript = \case
     EmptyList ->
         "The list inside a script is empty."
     MZero ->
-        "At least must be at least 1."
+        "At least number must be not smaller than 1."
     ListTooSmall ->
-        "At least must not be larger than the list of keys."
+        "At least number must not be larger than the non-timelock elements in the list."
     DuplicateSignatures ->
         "The list inside a script has duplicate keys."
     WrongKeyHash ->
         "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
     RedundantTimelocks ->
-        "Timelocks used either are redundant or contradictory."
+        "Timelocks used are either redundant or contradictory."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
-        \lists, and the verification keys should be either encoded as bech32."
+        \lists, the verification keys should be either encoded as bech32 or as hex, \
+        \timelocks must use non-negative numbers as slot."
 
 -- | Pretty-print a script template validation error.
 --

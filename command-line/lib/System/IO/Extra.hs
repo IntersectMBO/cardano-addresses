@@ -17,6 +17,7 @@ module System.IO.Extra
 
     -- ** Write
     , hPutBytes
+    , hPutString
 
     -- * I/O Helpers
     , prettyIOException
@@ -162,6 +163,11 @@ hGetXP__ h allowedPrefixes = do
 hPutBytes :: Handle -> ByteString -> Encoding -> IO ()
 hPutBytes h bytes =
     B8.hPutStr h . flip encode bytes
+
+-- | Print string to the console.
+hPutString :: Handle -> String -> IO ()
+hPutString h =
+    B8.hPutStrLn h . T.encodeUtf8 . T.pack
 
 --
 -- Helpers
