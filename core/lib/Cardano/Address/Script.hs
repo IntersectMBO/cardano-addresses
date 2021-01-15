@@ -497,7 +497,7 @@ prettyErrValidateScript = \case
         "Timelocks used are either redundant or contradictory."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
-        \lists, the verification keys should be either bech32- or hex-encoded, \
+        \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \
         \timelocks must use non-negative numbers as slots."
 
 -- | Pretty-print a script template validation error.

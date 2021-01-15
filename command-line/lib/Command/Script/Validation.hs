@@ -64,11 +64,20 @@ mod liftCmd = command "validate" $
             , string "setting lower and upper bound, respectively."
             , string ""
             , string "Example:"
-            , indent 2 $ bold $ string $ progName<>" script validate --required 'all "
-            , indent 4 $ bold $ string "[ 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
-            , indent 4 $ bold $ string ", 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+            , indent 2 $ bold $ string $ progName<>" script validate --required 'all"
+            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+            , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
             , indent 4 $ bold $ string "]'"
             , indent 2 $ string "Validated."
+            , string ""
+            , indent 2 $ bold $ string $ progName<>" script validate --recommended 'all []'"
+            , indent 2 $ string "Not validated: The list inside a script is empty."
+            , string ""
+            , indent 2 $ bold $ string $ progName<>" script validate --required --tx-valid-from 10 --tx-valid-to 15 'at_least 1 [active_from 11, active_until 16]'"
+            , indent 2 $ string "Validated."
+            , string ""
+            , indent 2 $ bold $ string $ progName<>" script validate --recommended --tx-valid-from 10 --tx-valid-to 15 'at_least 1 [active_from 11, active_until 16]'"
+            , indent 2 $ string "Not validated: At least's number must not be larger than the non-timelock elements in the list."
             ])
   where
     parser = Cmd
