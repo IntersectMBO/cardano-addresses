@@ -438,10 +438,10 @@ validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do
         Left DuplicateXPubs
     let allCosigners = Set.fromList $ foldScript (:) [] script
     let unknownCosigners =
-            allCosigners `difference` (Set.fromList $ Map.keys cosigners')
+            allCosigners `difference` Set.fromList (Map.keys cosigners')
     unless (Set.null unknownCosigners) $ Left UnknownCosigner
     let unusedCosigners =
-            (Set.fromList $ Map.keys cosigners') `difference` allCosigners
+            Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
     mapLeft WrongScript $ do
         unless (requiredValidation interval script)
@@ -482,13 +482,13 @@ prettyErrValidateScript
     -> String
 prettyErrValidateScript = \case
     LedgerIncompatible ->
-        "The script is ill-formed and not going to be accepted by ledger."
+        "The script is ill-formed and is not going to be accepted by ledger."
     EmptyList ->
         "The list inside a script is empty."
     MZero ->
-        "At least number must be not smaller than 1."
+        "At least's number must be not smaller than 1."
     ListTooSmall ->
-        "At least number must not be larger than the non-timelock elements in the list."
+        "At least's number must not be larger than the non-timelock elements in the list."
     DuplicateSignatures ->
         "The list inside a script has duplicate keys."
     WrongKeyHash ->
@@ -497,8 +497,8 @@ prettyErrValidateScript = \case
         "Timelocks used are either redundant or contradictory."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
-        \lists, the verification keys should be either encoded as bech32 or as hex, \
-        \timelocks must use non-negative numbers as slot."
+        \lists, the verification keys should be either bech32- or hex-encoded, \
+        \timelocks must use non-negative numbers as slots."
 
 -- | Pretty-print a script template validation error.
 --

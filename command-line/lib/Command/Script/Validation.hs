@@ -40,7 +40,7 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Script
     ( levelOpt, scriptArg, txValidOpt )
 import System.IO
-    ( stdout )
+    ( stderr, stdout )
 import System.IO.Extra
     ( hPutString, progName )
 
@@ -52,19 +52,23 @@ data Cmd = Cmd
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
-mod liftCmd = command "hash" $
+mod liftCmd = command "validate" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Validate a script"
-        <> header "Provide either required or recommended validation of a script given validation interval."
+        <> header "Choose a required or recommended validation of a script for a given transaction validation interval."
         <> footerDoc (Just $ vsep
-            [ string "The script is taken as argument."
+            [ string "The script is taken as argument. To have required validation pass '--required'."
+            , string "To have recommended validation pass '--recommended'. Recommended validation includes also"
+            , string "required one. Moreover, specify transaction validity interval by specifying two slots."
+            , string "Use '--tx_valid_from SLOT' and '--tx_valid_to SLOT'. Missing any one of them result in "
+            , string "setting lower and upper bound, respectively."
             , string ""
             , string "Example:"
-            , indent 2 $ bold $ string $ progName<>" script validate 'all "
+            , indent 2 $ bold $ string $ progName<>" script validate --required 'all "
             , indent 4 $ bold $ string "[ 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
             , indent 4 $ bold $ string ", 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
+            , indent 2 $ string "Validated."
             ])
   where
     parser = Cmd
@@ -77,5 +81,5 @@ run :: Cmd -> IO ()
 run Cmd{script,validationLevel,txValidFrom,txValidTo} = do
     let txValidity = TxValidity (fromIntegral <$> txValidFrom) (fromIntegral <$> txValidTo)
     case validateScript validationLevel txValidity script of
-        Left err -> hPutString stdout $ "Not validated: " <> prettyErrValidateScript err
+        Left err -> hPutString stderr $ "Not validated: " <> prettyErrValidateScript err
         Right _ -> hPutString stdout "Validated."
