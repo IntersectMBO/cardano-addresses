@@ -224,7 +224,7 @@ spec = do
                 "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
 
     describe "validateScript - expectations for RequiredValidation" $ do
-        let validity = TxValidity Nothing Nothing
+        let validity = Nothing
         it "incorrect RequireSignatureOf" $ do
             let script = RequireSignatureOf (KeyHash "<wrong key hash>")
             validateScript RequiredValidation validity script `shouldBe` (Left WrongKeyHash)
@@ -258,35 +258,37 @@ spec = do
             validateScript RequiredValidation validity script  `shouldBe`(Right ())
 
         it "timelocks are incorrect if the validity is not contained in it - 1" $ do
+            let validity' = Just $ TxValidity Nothing Nothing
             let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
-            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity' script `shouldBe` (Left LedgerIncompatible)
 
         it "timelocks are incorrect if the validity is not contained in it - 2" $ do
+            let validity' = Just $ TxValidity Nothing Nothing
             let script = RequireAllOf [ActiveFromSlot 1 , ActiveFromSlot 10, ActiveUntilSlot 15 ]
-            validateScript RequiredValidation validity script `shouldBe` (Left LedgerIncompatible)
+            validateScript RequiredValidation validity' script `shouldBe` (Left LedgerIncompatible)
 
         it "timelocks are correct if the validity is contained in it - 1" $ do
             let script = RequireSomeOf 2 [verKeyHash1, ActiveFromSlot 1 ]
-            let validity' = TxValidity (Just 1) (Just 10)
+            let validity' = Just $ TxValidity (Just 1) (Just 10)
             validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
         it "timelocks are correct if the validity is contained in it - 2" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 11 ]
-            let validity' = TxValidity (Just 1) (Just 10)
+            let validity' = Just $ TxValidity (Just 1) (Just 10)
             validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
         it "timelocks are correct if the validity is contained in it - 3" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 1, ActiveUntilSlot 101, ActiveFromSlot 4]
-            let validity' = TxValidity (Just 10) (Just 100)
+            let validity' = Just $ TxValidity (Just 10) (Just 100)
             validateScript RequiredValidation validity' script `shouldBe` (Right ())
 
         it "timelocks are incorrect if timelocks disjoint - 2" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
-            let validity' = TxValidity (Just 10) (Just 100)
+            let validity' = Just $ TxValidity (Just 10) (Just 100)
             validateScript RequiredValidation validity' script `shouldBe` (Left LedgerIncompatible)
 
     describe "validateScript - expectations for RecomendedValidation" $ do
-        let validity = TxValidity (Just 10) (Just 100)
+        let validity = Nothing
         it "incorrect RequireAllOf []" $ do
             let script = RequireAllOf []
             validateScript RecommendedValidation validity script `shouldBe` (Left EmptyList)
@@ -372,7 +374,7 @@ spec = do
             validateScript RecommendedValidation validity script `shouldBe` Right ()
 
     describe "validateScriptTemplate - errors" $ do
-        let validity = TxValidity (Just 10) (Just 20)
+        let validity = Nothing
         let accXpub0 =
                 "7eebe6dfa9a1530248400eb6a1adaca166ab1d723e9618d989d22a9219a364\
                 \cb4c745e128fdc98a5039893f704cf67f58c59cea97241a5c7ec7b4606253e5523"
@@ -469,13 +471,14 @@ spec = do
                     ])
             validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` Left (WrongScript DuplicateSignatures)
 
+        let validity' = Just $ TxValidity (Just 10) (Just 20)
         it "invalid timelocks - too many" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 25])
-            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` Left (WrongScript RedundantTimelocks)
+            validateScriptTemplate RecommendedValidation validity' scriptTemplate `shouldBe` Left (WrongScript RedundantTimelocks)
 
         it "invalid timelocks - contradictory 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 11, ActiveUntilSlot 15])
-            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` Left (WrongScript LedgerIncompatible)
+            validateScriptTemplate RecommendedValidation validity' scriptTemplate `shouldBe` Left (WrongScript LedgerIncompatible)
 
         it "invalid timelocks - contradictory 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
@@ -484,14 +487,17 @@ spec = do
                                    , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 20]
                                    ]
                     ])
-            validateScriptTemplate RecommendedValidation validity scriptTemplate `shouldBe` Left (WrongScript RedundantTimelocks)
+            validateScriptTemplate RecommendedValidation validity' scriptTemplate `shouldBe` Left (WrongScript RedundantTimelocks)
 
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $
         property (prop_jsonRoundtrip @(Script KeyHash))
-    describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated" $
+    describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated with tx validity" $
         it "fromJSON . toJSON === pure" $
-        property (prop_jsonRoundtripWithValidation (validateScript RequiredValidation (TxValidity (Just 10) (Just 11))))
+        property (prop_jsonRoundtripWithValidation (validateScript RequiredValidation Nothing))
+    describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash validated with tx validity" $
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtripWithValidation (validateScript RequiredValidation (Just $ TxValidity (Just 10) (Just 11))))
     describe "can perform roundtrip JSON serialization & deserialization - Script Cosigner" $
         it "fromJSON . toJSON === pure" $
         property (prop_jsonRoundtrip @(Script Cosigner))
@@ -500,7 +506,10 @@ spec = do
         property (prop_jsonRoundtrip @ScriptTemplate)
     describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate validated" $
         it "fromJSON . toJSON === pure" $
-        property (prop_jsonRoundtripWithValidation (validateScriptTemplate RequiredValidation (TxValidity (Just 10) (Just 11))))
+        property (prop_jsonRoundtripWithValidation (validateScriptTemplate RequiredValidation Nothing))
+    describe "can perform roundtrip JSON serialization & deserialization - ScriptTemplate validated with tx validity" $
+        it "fromJSON . toJSON === pure" $
+        property (prop_jsonRoundtripWithValidation (validateScriptTemplate RequiredValidation (Just $ TxValidity (Just 10) (Just 11))))
 
     describe "some JSON parsing error" $ do
         it "Invalid type" $ do

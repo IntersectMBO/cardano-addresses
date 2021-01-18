@@ -330,7 +330,7 @@ foldScript fn zero = \case
 -- @since 3.0.0
 validateScript
     :: ValidationLevel
-    -> TxValidity
+    -> Maybe TxValidity
     -> Script KeyHash
     -> Either ErrValidateScript ()
 validateScript level interval script = do
@@ -345,7 +345,7 @@ validateScript level interval script = do
 
 requiredValidation
     :: Eq elem
-    => TxValidity
+    => Maybe TxValidity
     -> Script elem
     -> Bool
 requiredValidation validity = \case
@@ -360,13 +360,17 @@ requiredValidation validity = \case
     RequireSomeOf m xs ->
         m <= sum (fmap (\x -> if requiredValidation validity x then 1 else 0) xs)
 
-    ActiveFromSlot lockStart ->
-        let (TxValidity txStart _) = validity
-        in lockStart `lteZero` txStart
+    ActiveFromSlot lockStart -> case validity of
+        Just validity' ->
+            let (TxValidity txStart _) = validity'
+            in lockStart `lteZero` txStart
+        Nothing -> True
 
-    ActiveUntilSlot lockExpiry ->
-        let (TxValidity _ txExpiry) = validity
-        in txExpiry `ltePosInfty` lockExpiry
+    ActiveUntilSlot lockExpiry -> case validity of
+        Just validity' ->
+            let (TxValidity _ txExpiry) = validity'
+            in txExpiry `ltePosInfty` lockExpiry
+        Nothing -> True
   where
       lteZero :: Natural -> Maybe Natural -> Bool
       lteZero i Nothing = i==0
@@ -429,7 +433,7 @@ recommendedValidation = \case
 -- @since 3.2.0
 validateScriptTemplate
     :: ValidationLevel
-    -> TxValidity
+    -> Maybe TxValidity
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
 validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do

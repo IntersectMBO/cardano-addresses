@@ -9,7 +9,7 @@ module Command.Script.ValidationSpec
 import Prelude
 
 import Cardano.Address.Script
-    ( TxValidity (..), ValidationLevel (..) )
+    ( ValidationLevel (..) )
 import Cardano.Address.Script.Parser
     ( ErrValidateScript (..), prettyErrValidateScript )
 import Data.String.Interpolate
@@ -22,55 +22,55 @@ import Test.Utils
 spec :: Spec
 spec = do
     describeCmd [ "script", "validate"] $ do
-        specScriptValidated RequiredValidation (TxValidity Nothing Nothing)
+        specScriptValidated RequiredValidation
             [iii|#{verKey4}|]
 
-        specScriptValidated RequiredValidation (TxValidity Nothing Nothing)
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 10, active_until 25]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 6, active_until 15]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 6, active_until 25]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|all []|]
 
-        specScriptNotValidated Malformed RequiredValidation (TxValidity Nothing Nothing)
+        specScriptNotValidated Malformed RequiredValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, active_from a]|]
 
-        specScriptNotValidated EmptyList RecommendedValidation (TxValidity Nothing Nothing)
+        specScriptNotValidated EmptyList RecommendedValidation
             [iii|all []|]
 
-        specScriptNotValidated LedgerIncompatible RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ active_from 11, active_until 25]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
-        specScriptNotValidated ListTooSmall RecommendedValidation (TxValidity (Just 10) (Just 15))
+        specScriptNotValidated ListTooSmall RecommendedValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
-        specScriptNotValidated RedundantTimelocks RecommendedValidation (TxValidity (Just 10) (Just 15))
+        specScriptNotValidated RedundantTimelocks RecommendedValidation
             [iii|at_least 1 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH2}]|]
 
-        specScriptNotValidated DuplicateSignatures RecommendedValidation (TxValidity (Just 10) (Just 15))
+        specScriptNotValidated DuplicateSignatures RecommendedValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH2}]|]
 
-        specScriptValidated RequiredValidation (TxValidity (Just 10) (Just 15))
+        specScriptValidated RequiredValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
-        specScriptNotValidated MZero RecommendedValidation (TxValidity (Just 10) (Just 15))
+        specScriptNotValidated MZero RecommendedValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
 levelStr :: ValidationLevel -> String
@@ -78,21 +78,14 @@ levelStr = \case
     RequiredValidation -> "--required"
     RecommendedValidation -> "--recommended"
 
-validityStr :: TxValidity -> [String]
-validityStr = \case
-    TxValidity Nothing Nothing -> []
-    TxValidity (Just i) Nothing -> ["--tx-valid-from",show i]
-    TxValidity Nothing (Just i) -> ["--tx-valid-to",show i]
-    TxValidity (Just i) (Just j) -> ["--tx-valid-from",show i,"--tx-valid-to",show j]
-
-specScriptValidated :: ValidationLevel -> TxValidity -> String -> SpecWith ()
-specScriptValidated level validity script = it (script <> " => Validated.") $ do
-    out <- cli (["script", "validate", levelStr level] ++ validityStr validity ++ [script]) ""
+specScriptValidated :: ValidationLevel -> String -> SpecWith ()
+specScriptValidated level script = it (script <> " => Validated.") $ do
+    out <- cli (["script", "validate", levelStr level, script]) ""
     out `shouldBe` "Validated.\n"
 
-specScriptNotValidated :: ErrValidateScript -> ValidationLevel -> TxValidity -> String -> SpecWith ()
-specScriptNotValidated errMsg level validity script = it (script <> " => " <> show errMsg) $ do
-    (out, err) <- cli (["script", "validate", levelStr level] ++ validityStr validity ++ [script]) ""
+specScriptNotValidated :: ErrValidateScript -> ValidationLevel -> String -> SpecWith ()
+specScriptNotValidated errMsg level script = it (script <> " => " <> show errMsg) $ do
+    (out, err) <- cli (["script", "validate", levelStr level, script]) ""
     out `shouldBe` ("" :: String)
     err `shouldContain` prettyErrValidateScript errMsg
 
