@@ -11,11 +11,6 @@ module Cardano.Address.Script.Parser
       scriptFromString
     , scriptParser
 
-    -- ** Script Validator
-    , validateScript
-    , ErrValidateScript (..)
-    , prettyErrValidateScript
-
     -- Internal
     , requireSignatureOfParser
     , requireAllOfParser
@@ -31,8 +26,6 @@ import Cardano.Address.Script
     , Script (..)
     , keyHashFromText
     , prettyErrKeyHashFromText
-    , prettyErrValidateScript
-    , validateScript
     )
 import Data.Char
     ( isDigit, isLetter )

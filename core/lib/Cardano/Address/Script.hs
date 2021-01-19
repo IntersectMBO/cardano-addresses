@@ -27,6 +27,7 @@ module Cardano.Address.Script
     -- * Validation
     , ValidationLevel (..)
     , ErrValidateScript (..)
+    , ErrRecommendedValidateScript (..)
     , ErrValidateScriptTemplate (..)
     , TxValidity (..)
     , validateScript
@@ -338,52 +339,55 @@ validateScript level interval script = do
             (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
-    unless (requiredValidation interval script)
-        $ Left LedgerIncompatible
-    when (level == RecommendedValidation ) $
-        recommendedValidation script
+
+    requiredValidation interval script
+
+    when (level == RecommendedValidation) $
+        mapLeft NotRecommended (recommendedValidation script)
 
 requiredValidation
-    :: Eq elem
-    => Maybe TxValidity
+    :: Maybe TxValidity
     -> Script elem
-    -> Bool
-requiredValidation validity = \case
-    RequireSignatureOf _ -> True
-
-    RequireAllOf xs ->
-        L.all (requiredValidation validity) xs
-
-    RequireAnyOf xs ->
-        L.any (requiredValidation validity) xs
-
-    RequireSomeOf m xs ->
-        m <= sum (fmap (\x -> if requiredValidation validity x then 1 else 0) xs)
-
-    ActiveFromSlot lockStart -> case validity of
-        Just validity' ->
-            let (TxValidity txStart _) = validity'
-            in lockStart `lteZero` txStart
-        Nothing -> True
-
-    ActiveUntilSlot lockExpiry -> case validity of
-        Just validity' ->
-            let (TxValidity _ txExpiry) = validity'
-            in txExpiry `ltePosInfty` lockExpiry
-        Nothing -> True
+    -> Either ErrValidateScript ()
+requiredValidation validity script =
+    unless (check script) $ Left LedgerIncompatible
   where
-      lteZero :: Natural -> Maybe Natural -> Bool
-      lteZero i Nothing = i==0
-      lteZero i (Just j) = i <= j
+    check = \case
+        RequireSignatureOf _ -> True
 
-      ltePosInfty :: Maybe Natural -> Natural -> Bool
-      ltePosInfty Nothing _ = False -- ∞ > j
-      ltePosInfty (Just i) j = i <= j
+        RequireAllOf xs ->
+            L.all check xs
+
+        RequireAnyOf xs ->
+            L.any check xs
+
+        RequireSomeOf m xs ->
+            m <= sum (fmap (\x -> if check x then 1 else 0) xs)
+
+        ActiveFromSlot lockStart -> case validity of
+            Just validity' ->
+                let (TxValidity txStart _) = validity'
+                in lockStart `lteZero` txStart
+            Nothing -> True
+
+        ActiveUntilSlot lockExpiry -> case validity of
+            Just validity' ->
+                let (TxValidity _ txExpiry) = validity'
+                in txExpiry `ltePosInfty` lockExpiry
+            Nothing -> True
+
+    lteZero :: Natural -> Maybe Natural -> Bool
+    lteZero i Nothing = i==0
+    lteZero i (Just j) = i <= j
+
+    ltePosInfty :: Maybe Natural -> Natural -> Bool
+    ltePosInfty Nothing _ = False -- ∞ > j
+    ltePosInfty (Just i) j = i <= j
 
 recommendedValidation
     :: Eq elem
     => Script elem
-    -> Either ErrValidateScript ()
+    -> Either ErrRecommendedValidateScript ()
 recommendedValidation = \case
     RequireSignatureOf _ -> pure ()
 
@@ -448,26 +452,32 @@ validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
     mapLeft WrongScript $ do
-        unless (requiredValidation interval script)
-            $ Left LedgerIncompatible
+        requiredValidation interval script
         when (level == RecommendedValidation ) $
-            recommendedValidation script
+            mapLeft NotRecommended (recommendedValidation script)
 
 -- | Possible validation errors when validating a script
 --
 -- @since 3.0.0
 data ErrValidateScript
     = LedgerIncompatible
-    | EmptyList
+    | WrongKeyHash
+    | Malformed
+    | NotRecommended ErrRecommendedValidateScript
+    deriving (Eq, Show)
+
+-- | Possible recommended validation errors when validating a script
+--
+-- @since 3.2.0
+data ErrRecommendedValidateScript
+    = EmptyList
     | ListTooSmall
     | MZero
     | DuplicateSignatures
-    | WrongKeyHash
-    | Malformed
     | RedundantTimelocks
     deriving (Eq, Show)
 
--- | Possible validation errors when validating a script
+-- | Possible validation errors when validating a script template
 --
 -- @since 3.2.0
 data ErrValidateScriptTemplate
@@ -487,22 +497,25 @@ prettyErrValidateScript
 prettyErrValidateScript = \case
     LedgerIncompatible ->
         "The script is ill-formed and is not going to be accepted by ledger."
-    EmptyList ->
-        "The list inside a script is empty."
-    MZero ->
-        "At least's number must be not smaller than 1."
-    ListTooSmall ->
-        "At least's number must not be larger than the non-timelock elements in the list."
-    DuplicateSignatures ->
-        "The list inside a script has duplicate keys."
     WrongKeyHash ->
-        "The hash of verification key is expected to have "<>show credentialHashSize<>" bytes."
-    RedundantTimelocks ->
-        "Timelocks used are either redundant or contradictory."
+        "The hash of verification key is expected to have "
+        <> show credentialHashSize <> " bytes."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \
         \timelocks must use non-negative numbers as slots."
+    NotRecommended EmptyList ->
+        "The list inside a script is empty or only contains timelocks \
+        \(which is not recommended)."
+    NotRecommended MZero ->
+        "At least's coefficient is 0 (which is not recommended)."
+    NotRecommended ListTooSmall ->
+        "At least's coefficient is larger than the number of non-timelock \
+        \elements in the list (which is not recommended)."
+    NotRecommended DuplicateSignatures ->
+        "The list inside a script has duplicate keys (which is not recommended)."
+    NotRecommended RedundantTimelocks ->
+        "Some timelocks used are redundant (which is not recommended)."
 
 -- | Pretty-print a script template validation error.
 --

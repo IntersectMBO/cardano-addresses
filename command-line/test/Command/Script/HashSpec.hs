@@ -8,7 +8,7 @@ module Command.Script.HashSpec
 
 import Prelude
 
-import Cardano.Address.Script.Parser
+import Cardano.Address.Script
     ( ErrValidateScript (..), prettyErrValidateScript )
 import Data.String.Interpolate
     ( iii )

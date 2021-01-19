@@ -131,14 +131,23 @@ script1dnt66jufkgx8rqxypxtz0hcrxs6hhayuj9cqh0eca82lcpwawd4
 </details>
 
 <details>
+  <summary>How to construct a multisig script hash with timelocks</summary>
+
+```console
+$  cardano-address script hash "all [$(cat script.1.xvk), $(cat script.2.xvk), active_from 100, active_until 120]"
+```
+</details>
+
+
+<details>
   <summary>How to validate a script</summary>
 
 ```console
-$  cardano-address script validate --required  "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
+$  cardano-address script validate "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
 Validated.
 
 $  cardano-address script validate --recommended  "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
-Not validated: The list inside a script has duplicate keys.
+Not validated: The list inside a script has duplicate keys (which is not recommended)..
 ```
 </details>
 

@@ -19,10 +19,11 @@ import Cardano.Address.Script
     , Script (..)
     , ScriptHash
     , ValidationLevel (..)
+    , prettyErrValidateScript
     , scriptHashFromBytes
     )
 import Cardano.Address.Script.Parser
-    ( prettyErrValidateScript, scriptFromString )
+    ( scriptFromString )
 import Control.Applicative
     ( (<|>) )
 import Control.Arrow

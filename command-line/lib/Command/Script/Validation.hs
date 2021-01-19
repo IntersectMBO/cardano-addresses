@@ -79,7 +79,7 @@ mod liftCmd = command "validate" $
             , indent 2 $ string "Validated."
             , string ""
             , indent 2 $ bold $ string $ progName<>" script validate --recommended 'all []'"
-            , indent 2 $ string "Not validated: The list inside a script is empty."
+            , indent 2 $ string "Not validated: The list inside a script is empty or only contains timelocks (which is not recommended)."
             , string ""
             , indent 2 $ bold $ string $ progName<>" script validate 'at_least 1 [active_from 11, active_until 16]'"
             , indent 2 $ string "Validated."
@@ -94,7 +94,7 @@ mod liftCmd = command "validate" $
             , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
             , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "Not validated: The list inside a script has duplicate keys."
+            , indent 2 $ string "Not validated: The list inside a script has duplicate keys (which is not recommended)."
             ])
   where
     parser = Cmd

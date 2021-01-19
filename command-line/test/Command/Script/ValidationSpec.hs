@@ -9,9 +9,11 @@ module Command.Script.ValidationSpec
 import Prelude
 
 import Cardano.Address.Script
-    ( ValidationLevel (..) )
-import Cardano.Address.Script.Parser
-    ( ErrValidateScript (..), prettyErrValidateScript )
+    ( ErrRecommendedValidateScript (..)
+    , ErrValidateScript (..)
+    , ValidationLevel (..)
+    , prettyErrValidateScript
+    )
 import Data.String.Interpolate
     ( iii )
 import Test.Hspec
@@ -43,7 +45,7 @@ spec = do
         specScriptNotValidated Malformed RequiredValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, active_from a]|]
 
-        specScriptNotValidated EmptyList RecommendedValidation
+        specScriptNotValidated (NotRecommended EmptyList) RecommendedValidation
             [iii|all []|]
 
         specScriptValidated RequiredValidation
@@ -52,25 +54,25 @@ spec = do
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
-        specScriptNotValidated ListTooSmall RecommendedValidation
+        specScriptNotValidated (NotRecommended ListTooSmall) RecommendedValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
-        specScriptNotValidated RedundantTimelocks RecommendedValidation
+        specScriptNotValidated (NotRecommended RedundantTimelocks) RecommendedValidation
             [iii|at_least 1 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
         specScriptValidated RequiredValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH2}]|]
 
-        specScriptNotValidated DuplicateSignatures RecommendedValidation
+        specScriptNotValidated (NotRecommended DuplicateSignatures) RecommendedValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH2}]|]
 
         specScriptValidated RequiredValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
-        specScriptNotValidated MZero RecommendedValidation
+        specScriptNotValidated (NotRecommended MZero) RecommendedValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
 levelStr :: ValidationLevel -> String
