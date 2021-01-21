@@ -1,12 +1,39 @@
-## [3.1.1] - UNRELEASED
+## [3.2.0] - 2020-01-22
 
 ### Added
 
-N/A
+- Added definition for 'Cosigner'.
+
+- Added definition for 'ScriptTemplate', `ToJSON` and `FromJSON` instances added.
+
+- Added validation of 'ScriptTemplate'.
+
+- Added command-line for 'cardano-address script validate'
+
+- Introduced 'foldScript' function.
 
 ### Changed
 
-- Fix `cardano-address --version` reporting.
+- Fixed `cardano-address --version` reporting.
+
+- Added Ord instance for 'ScriptHash'.
+
+- Extended script to account for ActiveFromSlot and ActiveUntilSlot, ie., introducing timelocks. `ToJSON` and `FromJSON` instances were updated. Also command-line supports
+  timelocks now via 'active_from' and 'active_until`.
+
+- Introduced Required and Recommended validation and adjusted the current one.
+
+- Fixed cardano-address address bootstrap example in command-line help.
+
+- Add missing crc32 integrity check when decoding Byron/Icarus addresses.
+
+- Parametrized 'Script', and use it with 'ScriptHash' and 'Cosigner'.
+
+- Better error reporting upon validation.
+
+- Correcting cardano-address hash example in command-line help.
+
+- Adding more examples to README.md
 
 ### Removed
 
