@@ -80,7 +80,7 @@ script_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40
 
 <details>
   <summary>How to generate a payment address from a payment key (<strong>payment.addr</strong>)</summary>
-  
+
 ```console
 $ cardano-address address payment --network-tag testnet < addr.xvk > payment.addr
 addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
@@ -89,7 +89,7 @@ addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 
 <details>
   <summary>How to generate a delegated payment address from a stake key (<strong>payment-delegated.addr</strong>)</summary>
-  
+
 ```console
 $ cardano-address address delegation $(cat stake.xvk) < payment.addr > payment-delegated.addr
 addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
@@ -98,7 +98,7 @@ addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz
 
 <details>
   <summary>How to generate a stake address from a stake key (<strong>stake.addr</strong>)</summary>
-  
+
 ```console
 $ cardano-address address stake --network-tag testnet < stake.xvk > stake.addr
 stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat%
@@ -118,21 +118,42 @@ script1qzzzlvn435jzdpm9dz5sk5helh6u2n5wa7g49m03sk4lzxhsxgt
 This script requires the signature from both signing keys corresponding to `script.1.xvk` and `script.2.xvk` in order to be valid. Similarly, we could require only one of the two signatures:
 
 ```console
-$ cardano-address script hash "any [$(cat script.1.xvk), $(cat script.2.xvk)]" 
+$ cardano-address script hash "any [$(cat script.1.xvk), $(cat script.2.xvk)]"
 script19raudr366cluzcwjxu67v7w50dazvxc0xtyfjy99wvmd593squy
 ```
 
 which is equivalent to:
 
 ```console
-$ cardano-address script hash "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk)]" 
+$ cardano-address script hash "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk)]"
 script1dnt66jufkgx8rqxypxtz0hcrxs6hhayuj9cqh0eca82lcpwawd4
 ```
 </details>
 
 <details>
+  <summary>How to construct a multisig script hash with timelocks</summary>
+
+```console
+$  cardano-address script hash "all [$(cat script.1.xvk), $(cat script.2.xvk), active_from 100, active_until 120]"
+```
+</details>
+
+
+<details>
+  <summary>How to validate a script</summary>
+
+```console
+$  cardano-address script validate "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
+Validated.
+
+$  cardano-address script validate --recommended  "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
+Not validated: The list inside a script has duplicate keys (which is not recommended)..
+```
+</details>
+
+<details>
   <summary>How to generate a payment script address from a script hash (<strong>script.addr</strong>)</summary>
-  
+
 ```console
 $ cardano-address address payment --network-tag testnet < script.hash > script.addr
 addr_test1wqqggtajwkxjgf58v452jz6jl87lt32w3mhez5hd7xz6hugp80tta

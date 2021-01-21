@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9933cf6f1c921e46ee293b618ee32235c9990b464ad93568e02554e73e3e2f6a
+-- hash: dcfc08dda8fafdfa322f155a2aad0123798f58d944336c6a227e8871becb7dde
 
 name:           cardano-addresses
 version:        3.1.1
@@ -60,6 +60,7 @@ library
     , bytestring
     , cardano-crypto
     , cborg
+    , containers
     , cryptonite
     , deepseq
     , digest
@@ -69,6 +70,7 @@ library
     , fmt
     , memory
     , text
+    , unordered-containers
   if flag(release)
     ghc-options: -Werror
   default-language: Haskell2010
@@ -105,6 +107,7 @@ test-suite unit
     , bytestring
     , cardano-addresses
     , cardano-crypto
+    , containers
     , hspec
     , memory
     , text

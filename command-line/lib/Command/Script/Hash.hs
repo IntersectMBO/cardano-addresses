@@ -15,7 +15,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Script
-    ( Script (..), ScriptHash (..), toScriptHash )
+    ( KeyHash, Script (..), ScriptHash (..), toScriptHash )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
@@ -32,7 +32,7 @@ import System.IO.Extra
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 newtype Cmd = Cmd
-    { script :: Script
+    { script :: Script KeyHash
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -45,10 +45,10 @@ mod liftCmd = command "hash" $
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string $ progName<>" script hash 'all "
-            , indent 4 $ bold $ string "[ 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
-            , indent 4 $ bold $ string ", 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+            , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
+            , indent 2 $ string "script15q26ucg8tcju8kf9p0wtcdwx24e8yyneylk09gkhzm3f70947hv"
             ])
   where
     parser = Cmd
