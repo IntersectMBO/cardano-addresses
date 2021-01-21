@@ -7,7 +7,7 @@ cabal-version: 1.12
 -- hash: dcfc08dda8fafdfa322f155a2aad0123798f58d944336c6a227e8871becb7dde
 
 name:           cardano-addresses
-version:        3.1.1
+version:        3.2.0
 synopsis:       Library utilities for mnemonic generation and address derivation.
 description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 category:       Cardano
