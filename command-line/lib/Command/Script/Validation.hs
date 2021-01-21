@@ -62,8 +62,7 @@ mod liftCmd = command "validate" $
             , string " - check if there are no duplicated verification keys in a given level"
             , string " - check if 'at_least' coeffcient is positive"
             , string " - check if 'all', 'any' are non-empty and `'at_least' has no less elements in the list than the coeffcient after timelocks are filtered out. "
-            , string "The validation of the script does not take into account transaction validity. We assume that the wallet will take care of this upon sending"
-            , string "transaction with a given script."
+            , string "The validation of the script does not take into account transaction validity. We assume that the user will take care of this."
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string $ progName<>" script validate 'all"
@@ -103,6 +102,6 @@ mod liftCmd = command "validate" $
 
 run :: Cmd -> IO ()
 run Cmd{script,validationLevel} =
-    case validateScript (fromMaybe RequiredValidation validationLevel) Nothing script of
+    case validateScript (fromMaybe RequiredValidation validationLevel) script of
         Left err -> hPutString stderr $ "Not validated: " <> prettyErrValidateScript err
         Right _ -> hPutString stdout "Validated."

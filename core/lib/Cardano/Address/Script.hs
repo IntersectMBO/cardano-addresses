@@ -29,7 +29,6 @@ module Cardano.Address.Script
     , ErrValidateScript (..)
     , ErrRecommendedValidateScript (..)
     , ErrValidateScriptTemplate (..)
-    , TxValidity (..)
     , validateScript
     , validateScriptTemplate
     , prettyErrValidateScript
@@ -256,20 +255,6 @@ keyHashFromText txt = do
         | hrp == CIP5.script_xvk = Right $ hashCredential $ BS.take 32 bytes
         | otherwise = Left ErrKeyHashFromTextWrongHrp
 
--- The validity of transaction. It depicts the interval during which tx
--- can be accommodated in the ledger and is expressed in slot unit when specified.
--- Nothing means the current bound is not specified. It is closed on the bottom,
--- open on the top.
---
--- Eg., TxValidity (Just 10) (Just 20)  ->  <10,20)
---      TxValidity (Just 10) Nothing    ->  <10, ∞)
---      TxValidity Nothing (Just 25)    ->  <0, 25)
---
--- @since 3.2.0
-data TxValidity = TxValidity (Maybe Natural) (Maybe Natural)
-    deriving (Show, Eq, Generic)
-instance NFData TxValidity
-
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
 -- warn about dangerous, unwise and redundant things present in the script.
@@ -331,25 +316,23 @@ foldScript fn zero = \case
 -- @since 3.0.0
 validateScript
     :: ValidationLevel
-    -> Maybe TxValidity
     -> Script KeyHash
     -> Either ErrValidateScript ()
-validateScript level interval script = do
+validateScript level script = do
     let validateKeyHash (KeyHash bytes) =
             (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
 
-    requiredValidation interval script
+    requiredValidation script
 
     when (level == RecommendedValidation) $
         mapLeft NotRecommended (recommendedValidation script)
 
 requiredValidation
-    :: Maybe TxValidity
-    -> Script elem
+    :: Script elem
     -> Either ErrValidateScript ()
-requiredValidation validity script =
+requiredValidation script =
     unless (check script) $ Left LedgerIncompatible
   where
     check = \case
@@ -364,25 +347,9 @@ requiredValidation validity script =
         RequireSomeOf m xs ->
             m <= sum (fmap (\x -> if check x then 1 else 0) xs)
 
-        ActiveFromSlot lockStart -> case validity of
-            Just validity' ->
-                let (TxValidity txStart _) = validity'
-                in lockStart `lteZero` txStart
-            Nothing -> True
+        ActiveFromSlot _ -> True
 
-        ActiveUntilSlot lockExpiry -> case validity of
-            Just validity' ->
-                let (TxValidity _ txExpiry) = validity'
-                in txExpiry `ltePosInfty` lockExpiry
-            Nothing -> True
-
-    lteZero :: Natural -> Maybe Natural -> Bool
-    lteZero i Nothing = i==0
-    lteZero i (Just j) = i <= j
-
-    ltePosInfty :: Maybe Natural -> Natural -> Bool
-    ltePosInfty Nothing _ = False -- ∞ > j
-    ltePosInfty (Just i) j = i <= j
+        ActiveUntilSlot _ -> True
 
 recommendedValidation
     :: Eq elem
@@ -437,10 +404,9 @@ recommendedValidation = \case
 -- @since 3.2.0
 validateScriptTemplate
     :: ValidationLevel
-    -> Maybe TxValidity
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
-validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do
+validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
@@ -452,7 +418,7 @@ validateScriptTemplate level interval (ScriptTemplate cosigners' script) = do
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
     mapLeft WrongScript $ do
-        requiredValidation interval script
+        requiredValidation script
         when (level == RecommendedValidation ) $
             mapLeft NotRecommended (recommendedValidation script)
 
