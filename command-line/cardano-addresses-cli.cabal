@@ -7,7 +7,7 @@ cabal-version: 1.12
 -- hash: 760b5078a801614684c70c1319f50e4becadfaeaf0f81a393327dad583cae837
 
 name:           cardano-addresses-cli
-version:        3.1.1
+version:        3.2.0
 synopsis:       Utils for constructing a command-line on top of cardano-addresses.
 description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 category:       Cardano
