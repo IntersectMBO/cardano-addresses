@@ -1,0 +1,731 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE BangPatterns #-}
+<span class="lineno">    2 </span>{-# LANGUAGE BlockArguments #-}
+<span class="lineno">    3 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    4 </span>{-# LANGUAGE DeriveGeneric #-}
+<span class="lineno">    5 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    6 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    7 </span>{-# LANGUAGE FlexibleInstances #-}
+<span class="lineno">    8 </span>{-# LANGUAGE KindSignatures #-}
+<span class="lineno">    9 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">   10 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">   11 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">   12 </span>{-# LANGUAGE UndecidableInstances #-}
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>{-# OPTIONS_HADDOCK prune #-}
+<span class="lineno">   15 </span>
+<span class="lineno">   16 </span>module Cardano.Address.Script
+<span class="lineno">   17 </span>    (
+<span class="lineno">   18 </span>    -- * Script
+<span class="lineno">   19 </span>      Script (..)
+<span class="lineno">   20 </span>    , serializeScript
+<span class="lineno">   21 </span>    , foldScript
+<span class="lineno">   22 </span>
+<span class="lineno">   23 </span>    -- * Script template
+<span class="lineno">   24 </span>    , ScriptTemplate (..)
+<span class="lineno">   25 </span>    , Cosigner (..)
+<span class="lineno">   26 </span>
+<span class="lineno">   27 </span>    -- * Validation
+<span class="lineno">   28 </span>    , ValidationLevel (..)
+<span class="lineno">   29 </span>    , ErrValidateScript (..)
+<span class="lineno">   30 </span>    , ErrRecommendedValidateScript (..)
+<span class="lineno">   31 </span>    , ErrValidateScriptTemplate (..)
+<span class="lineno">   32 </span>    , validateScript
+<span class="lineno">   33 </span>    , validateScriptTemplate
+<span class="lineno">   34 </span>    , prettyErrValidateScript
+<span class="lineno">   35 </span>    , prettyErrValidateScriptTemplate
+<span class="lineno">   36 </span>
+<span class="lineno">   37 </span>    -- * Hashing
+<span class="lineno">   38 </span>    , ScriptHash (..)
+<span class="lineno">   39 </span>    , toScriptHash
+<span class="lineno">   40 </span>    , scriptHashFromBytes
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>    , KeyHash (..)
+<span class="lineno">   43 </span>    , keyHashFromBytes
+<span class="lineno">   44 </span>    , keyHashFromText
+<span class="lineno">   45 </span>    , keyHashToText
+<span class="lineno">   46 </span>    , ErrKeyHashFromText
+<span class="lineno">   47 </span>    , prettyErrKeyHashFromText
+<span class="lineno">   48 </span>    ) where
+<span class="lineno">   49 </span>
+<span class="lineno">   50 </span>import Prelude
+<span class="lineno">   51 </span>
+<span class="lineno">   52 </span>import Cardano.Address.Derivation
+<span class="lineno">   53 </span>    ( XPub, credentialHashSize, hashCredential, xpubFromBytes, xpubToBytes )
+<span class="lineno">   54 </span>import Codec.Binary.Encoding
+<span class="lineno">   55 </span>    ( AbstractEncoding (..), encode, fromBase16 )
+<span class="lineno">   56 </span>import Control.Applicative
+<span class="lineno">   57 </span>    ( (&lt;|&gt;) )
+<span class="lineno">   58 </span>import Control.DeepSeq
+<span class="lineno">   59 </span>    ( NFData )
+<span class="lineno">   60 </span>import Control.Monad
+<span class="lineno">   61 </span>    ( foldM, unless, when )
+<span class="lineno">   62 </span>import Data.Aeson
+<span class="lineno">   63 </span>    ( FromJSON (..)
+<span class="lineno">   64 </span>    , ToJSON (..)
+<span class="lineno">   65 </span>    , Value (..)
+<span class="lineno">   66 </span>    , object
+<span class="lineno">   67 </span>    , withObject
+<span class="lineno">   68 </span>    , withText
+<span class="lineno">   69 </span>    , (.:)
+<span class="lineno">   70 </span>    , (.:?)
+<span class="lineno">   71 </span>    , (.=)
+<span class="lineno">   72 </span>    )
+<span class="lineno">   73 </span>import Data.Aeson.Types
+<span class="lineno">   74 </span>    ( Parser )
+<span class="lineno">   75 </span>import Data.ByteString
+<span class="lineno">   76 </span>    ( ByteString )
+<span class="lineno">   77 </span>import Data.Either.Combinators
+<span class="lineno">   78 </span>    ( mapLeft, maybeToRight )
+<span class="lineno">   79 </span>import Data.Foldable
+<span class="lineno">   80 </span>    ( asum, foldl', traverse_ )
+<span class="lineno">   81 </span>import Data.Functor.Identity
+<span class="lineno">   82 </span>    ( Identity (..) )
+<span class="lineno">   83 </span>import Data.Map.Strict
+<span class="lineno">   84 </span>    ( Map )
+<span class="lineno">   85 </span>import Data.Set
+<span class="lineno">   86 </span>    ( difference )
+<span class="lineno">   87 </span>import Data.Text
+<span class="lineno">   88 </span>    ( Text )
+<span class="lineno">   89 </span>import Data.Traversable
+<span class="lineno">   90 </span>    ( for )
+<span class="lineno">   91 </span>import Data.Word
+<span class="lineno">   92 </span>    ( Word8 )
+<span class="lineno">   93 </span>import GHC.Generics
+<span class="lineno">   94 </span>    ( Generic )
+<span class="lineno">   95 </span>import Numeric.Natural
+<span class="lineno">   96 </span>    ( Natural )
+<span class="lineno">   97 </span>
+<span class="lineno">   98 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   99 </span>import qualified Cardano.Codec.Cbor as CBOR
+<span class="lineno">  100 </span>import qualified Codec.Binary.Bech32 as Bech32
+<span class="lineno">  101 </span>import qualified Codec.CBOR.Encoding as CBOR
+<span class="lineno">  102 </span>import qualified Data.Aeson.Types as Json
+<span class="lineno">  103 </span>import qualified Data.ByteString as BS
+<span class="lineno">  104 </span>import qualified Data.HashMap.Strict as HM
+<span class="lineno">  105 </span>import qualified Data.List as L
+<span class="lineno">  106 </span>import qualified Data.Map.Strict as Map
+<span class="lineno">  107 </span>import qualified Data.Set as Set
+<span class="lineno">  108 </span>import qualified Data.Text as T
+<span class="lineno">  109 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">  110 </span>import qualified Data.Text.Read as T
+<span class="lineno">  111 </span>
+<span class="lineno">  112 </span>-- | A 'Script' type represents multi signature script. The script embodies conditions
+<span class="lineno">  113 </span>-- that need to be satisfied to make it valid.
+<span class="lineno">  114 </span>--
+<span class="lineno">  115 </span>-- @since 3.0.0
+<span class="lineno">  116 </span>data Script (elem :: *)
+<span class="lineno">  117 </span>    = RequireSignatureOf !elem
+<span class="lineno">  118 </span>    | RequireAllOf ![Script elem]
+<span class="lineno">  119 </span>    | RequireAnyOf ![Script elem]
+<span class="lineno">  120 </span>    | RequireSomeOf Word8 ![Script elem]
+<span class="lineno">  121 </span>    | ActiveFromSlot Natural
+<span class="lineno">  122 </span>    | ActiveUntilSlot Natural
+<span class="lineno">  123 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  124 </span>instance NFData elem =&gt; NFData (Script elem)
+<span class="lineno">  125 </span>
+<span class="lineno">  126 </span>-- | This function realizes what cardano-node's `Api.serialiseToCBOR script` realizes
+<span class="lineno">  127 </span>-- This is basically doing the symbolically following:
+<span class="lineno">  128 </span>-- toCBOR [0,multisigScript]
+<span class="lineno">  129 </span>--
+<span class="lineno">  130 </span>-- @since 3.0.0
+<span class="lineno">  131 </span>serializeScript :: Script KeyHash -&gt; ByteString
+<span class="lineno">  132 </span><span class="decl"><span class="istickedoff">serializeScript script =</span>
+<span class="lineno">  133 </span><span class="spaces">    </span><span class="istickedoff">multisigTag &lt;&gt; CBOR.toStrictByteString (toCBOR script)</span>
+<span class="lineno">  134 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  135 </span><span class="spaces">    </span><span class="istickedoff">-- | Magic number representing the tag of the native multi-signature script</span>
+<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">-- language. For each script language included, a new tag is chosen.</span>
+<span class="lineno">  137 </span><span class="spaces">    </span><span class="istickedoff">multisigTag :: ByteString</span>
+<span class="lineno">  138 </span><span class="spaces">    </span><span class="istickedoff">multisigTag = &quot;\00&quot;</span>
+<span class="lineno">  139 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  140 </span><span class="spaces">    </span><span class="istickedoff">toCBOR :: Script KeyHash -&gt; CBOR.Encoding</span>
+<span class="lineno">  141 </span><span class="spaces">    </span><span class="istickedoff">toCBOR = \case</span>
+<span class="lineno">  142 </span><span class="spaces">        </span><span class="istickedoff">RequireSignatureOf (KeyHash verKeyHash) -&gt;</span>
+<span class="lineno">  143 </span><span class="spaces">            </span><span class="istickedoff">encodeMultiscriptCtr 0 2 &lt;&gt; CBOR.encodeBytes verKeyHash</span>
+<span class="lineno">  144 </span><span class="spaces">        </span><span class="istickedoff">RequireAllOf contents -&gt;</span>
+<span class="lineno">  145 </span><span class="spaces">            </span><span class="istickedoff">encodeMultiscriptCtr 1 2 &lt;&gt; encodeFoldable toCBOR contents</span>
+<span class="lineno">  146 </span><span class="spaces">        </span><span class="istickedoff">RequireAnyOf contents -&gt;</span>
+<span class="lineno">  147 </span><span class="spaces">            </span><span class="istickedoff">encodeMultiscriptCtr 2 2 &lt;&gt; encodeFoldable toCBOR contents</span>
+<span class="lineno">  148 </span><span class="spaces">        </span><span class="istickedoff">RequireSomeOf m contents -&gt; mconcat</span>
+<span class="lineno">  149 </span><span class="spaces">            </span><span class="istickedoff">[ encodeMultiscriptCtr 3 3</span>
+<span class="lineno">  150 </span><span class="spaces">            </span><span class="istickedoff">, CBOR.encodeInt (fromInteger $ toInteger m)</span>
+<span class="lineno">  151 </span><span class="spaces">            </span><span class="istickedoff">, encodeFoldable toCBOR contents</span>
+<span class="lineno">  152 </span><span class="spaces">            </span><span class="istickedoff">]</span>
+<span class="lineno">  153 </span><span class="spaces">        </span><span class="istickedoff">ActiveFromSlot slotNum -&gt;</span>
+<span class="lineno">  154 </span><span class="spaces">            </span><span class="istickedoff">encodeMultiscriptCtr 4 2 &lt;&gt; CBOR.encodeWord64 (fromInteger $ toInteger slotNum)</span>
+<span class="lineno">  155 </span><span class="spaces">        </span><span class="istickedoff">ActiveUntilSlot slotNum -&gt;</span>
+<span class="lineno">  156 </span><span class="spaces">            </span><span class="istickedoff">encodeMultiscriptCtr 5 2 &lt;&gt; CBOR.encodeWord64 (fromInteger $ toInteger slotNum)</span>
+<span class="lineno">  157 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  158 </span><span class="spaces">    </span><span class="istickedoff">encodeMultiscriptCtr :: Word -&gt; Word -&gt; CBOR.Encoding</span>
+<span class="lineno">  159 </span><span class="spaces">    </span><span class="istickedoff">encodeMultiscriptCtr ctrIndex listLen =</span>
+<span class="lineno">  160 </span><span class="spaces">        </span><span class="istickedoff">CBOR.encodeListLen listLen &lt;&gt; CBOR.encodeWord ctrIndex</span>
+<span class="lineno">  161 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  162 </span><span class="spaces">    </span><span class="istickedoff">encodeFoldable :: (Foldable f) =&gt; (a -&gt; CBOR.Encoding) -&gt; f a -&gt; CBOR.Encoding</span>
+<span class="lineno">  163 </span><span class="spaces">    </span><span class="istickedoff">encodeFoldable encode' xs = wrapArray len contents</span>
+<span class="lineno">  164 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  165 </span><span class="spaces">        </span><span class="istickedoff">(len, contents) = foldl' go (0, mempty) xs</span>
+<span class="lineno">  166 </span><span class="spaces">        </span><span class="istickedoff">go (!l, !enc) next = (l + 1, enc &lt;&gt; encode' next)</span>
+<span class="lineno">  167 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  168 </span><span class="spaces">        </span><span class="istickedoff">wrapArray :: Word -&gt; CBOR.Encoding -&gt; CBOR.Encoding</span>
+<span class="lineno">  169 </span><span class="spaces">        </span><span class="istickedoff">wrapArray len' contents'</span>
+<span class="lineno">  170 </span><span class="spaces">            </span><span class="istickedoff">| <span class="tickonlytrue">len' &lt;= 23</span> = CBOR.encodeListLen len' &lt;&gt; contents'</span>
+<span class="lineno">  171 </span><span class="spaces">            </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span>  = <span class="nottickedoff">CBOR.encodeListLenIndef &lt;&gt; contents' &lt;&gt; CBOR.encodeBreak</span></span></span>
+<span class="lineno">  172 </span>
+<span class="lineno">  173 </span>-- | Represents the cosigner of the script, ie., party that co-shares the script.
+<span class="lineno">  174 </span>--
+<span class="lineno">  175 </span>-- @since 3.2.0
+<span class="lineno">  176 </span>newtype Cosigner = Cosigner Word8
+<span class="lineno">  177 </span>    deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>)
+<span class="lineno">  178 </span>instance NFData Cosigner
+<span class="lineno">  179 </span>
+<span class="lineno">  180 </span>-- | Represents the script template that show the structure of the script and determines
+<span class="lineno">  181 </span>-- the expected place of verification keys corresponding to given cosigners.
+<span class="lineno">  182 </span>--
+<span class="lineno">  183 </span>-- @since 3.2.0
+<span class="lineno">  184 </span>data ScriptTemplate = ScriptTemplate
+<span class="lineno">  185 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">cosigners</span></span></span> :: Map Cosigner XPub
+<span class="lineno">  186 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">template</span></span></span> :: Script Cosigner
+<span class="lineno">  187 </span>    } deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  188 </span>instance NFData ScriptTemplate
+<span class="lineno">  189 </span>
+<span class="lineno">  190 </span>-- | Computes the hash of a given script, by first serializing it to CBOR.
+<span class="lineno">  191 </span>--
+<span class="lineno">  192 </span>-- @since 3.0.0
+<span class="lineno">  193 </span>toScriptHash :: Script KeyHash -&gt; ScriptHash
+<span class="lineno">  194 </span><span class="decl"><span class="istickedoff">toScriptHash = ScriptHash . hashCredential . serializeScript</span></span>
+<span class="lineno">  195 </span>
+<span class="lineno">  196 </span>-- | A 'ScriptHash' type represents script hash. The hash is expected to have size of
+<span class="lineno">  197 </span>-- 28-byte.
+<span class="lineno">  198 </span>--
+<span class="lineno">  199 </span>-- @since 3.0.0
+<span class="lineno">  200 </span>newtype ScriptHash = ScriptHash { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">unScriptHash</span></span></span> :: ByteString }
+<span class="lineno">  201 </span>    deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>)
+<span class="lineno">  202 </span>instance NFData ScriptHash
+<span class="lineno">  203 </span>
+<span class="lineno">  204 </span>-- | Construct an 'ScriptHash' from raw 'ByteString' (28 bytes).
+<span class="lineno">  205 </span>--
+<span class="lineno">  206 </span>-- @since 3.0.0
+<span class="lineno">  207 </span>scriptHashFromBytes :: ByteString -&gt; Maybe ScriptHash
+<span class="lineno">  208 </span><span class="decl"><span class="istickedoff">scriptHashFromBytes bytes</span>
+<span class="lineno">  209 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlyfalse">BS.length bytes /= credentialHashSize</span> = <span class="nottickedoff">Nothing</span></span>
+<span class="lineno">  210 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = Just $ ScriptHash bytes</span></span>
+<span class="lineno">  211 </span>
+<span class="lineno">  212 </span>-- | A 'KeyHash' type represents verification key hash that participate in building
+<span class="lineno">  213 </span>-- multi-signature script. The hash is expected to have size of 28-byte.
+<span class="lineno">  214 </span>--
+<span class="lineno">  215 </span>-- @since 3.0.0
+<span class="lineno">  216 </span>newtype KeyHash = KeyHash { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">unKeyHash</span></span></span> :: ByteString }
+<span class="lineno">  217 </span>    deriving (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">Eq</span></span></span></span>)
+<span class="lineno">  218 </span>instance NFData KeyHash
+<span class="lineno">  219 </span>
+<span class="lineno">  220 </span>-- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
+<span class="lineno">  221 </span>--
+<span class="lineno">  222 </span>-- @since 3.0.0
+<span class="lineno">  223 </span>keyHashFromBytes :: ByteString -&gt; Maybe KeyHash
+<span class="lineno">  224 </span><span class="decl"><span class="istickedoff">keyHashFromBytes bytes</span>
+<span class="lineno">  225 </span><span class="spaces">    </span><span class="istickedoff">| BS.length bytes /= credentialHashSize = Nothing</span>
+<span class="lineno">  226 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = Just $ KeyHash bytes</span></span>
+<span class="lineno">  227 </span>
+<span class="lineno">  228 </span>-- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
+<span class="lineno">  229 </span>--
+<span class="lineno">  230 </span>-- @since 3.0.0
+<span class="lineno">  231 </span>keyHashToText :: KeyHash -&gt; Text
+<span class="lineno">  232 </span><span class="decl"><span class="istickedoff">keyHashToText (KeyHash keyHash) =</span>
+<span class="lineno">  233 </span><span class="spaces">    </span><span class="istickedoff">T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash</span></span>
+<span class="lineno">  234 </span>
+<span class="lineno">  235 </span>-- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
+<span class="lineno">  236 </span>-- Bech32 encoded text with `script_vkh`, `script_vk` or `script_xvk` hrp are
+<span class="lineno">  237 </span>-- expected. Raw keys will be hashed on the fly, whereas hash that are directly
+<span class="lineno">  238 </span>-- provided will remain as such.
+<span class="lineno">  239 </span>--
+<span class="lineno">  240 </span>-- @since 3.1.0
+<span class="lineno">  241 </span>keyHashFromText :: Text -&gt; Either ErrKeyHashFromText KeyHash
+<span class="lineno">  242 </span><span class="decl"><span class="istickedoff">keyHashFromText txt = do</span>
+<span class="lineno">  243 </span><span class="spaces">    </span><span class="istickedoff">(hrp, dp) &lt;- either</span>
+<span class="lineno">  244 </span><span class="spaces">        </span><span class="istickedoff">(const $ Left <span class="nottickedoff">ErrKeyHashFromTextInvalidString</span>)</span>
+<span class="lineno">  245 </span><span class="spaces">        </span><span class="istickedoff">Right</span>
+<span class="lineno">  246 </span><span class="spaces">        </span><span class="istickedoff">(Bech32.decodeLenient txt)</span>
+<span class="lineno">  247 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  248 </span><span class="spaces">    </span><span class="istickedoff">maybeToRight <span class="nottickedoff">ErrKeyHashFromTextWrongDataPart</span> (Bech32.dataPartToBytes dp)</span>
+<span class="lineno">  249 </span><span class="spaces">        </span><span class="istickedoff">&gt;&gt;= convertBytes hrp</span>
+<span class="lineno">  250 </span><span class="spaces">        </span><span class="istickedoff">&gt;&gt;= maybeToRight <span class="nottickedoff">ErrKeyHashFromTextWrongPayload</span> . keyHashFromBytes</span>
+<span class="lineno">  251 </span><span class="spaces"> </span><span class="istickedoff">where</span>
+<span class="lineno">  252 </span><span class="spaces">    </span><span class="istickedoff">convertBytes hrp bytes</span>
+<span class="lineno">  253 </span><span class="spaces">        </span><span class="istickedoff">| hrp == CIP5.script_vkh = Right bytes</span>
+<span class="lineno">  254 </span><span class="spaces">        </span><span class="istickedoff">| hrp == CIP5.script_vk  = Right $ hashCredential bytes</span>
+<span class="lineno">  255 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">hrp == CIP5.script_xvk</span> = Right $ hashCredential $ BS.take 32 bytes</span>
+<span class="lineno">  256 </span><span class="spaces">        </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">Left ErrKeyHashFromTextWrongHrp</span></span></span>
+<span class="lineno">  257 </span>
+<span class="lineno">  258 </span>-- Validation level. Required level does basic check that will make sure the script
+<span class="lineno">  259 </span>-- is accepted in ledger. Recommended level collects a number of checks that will
+<span class="lineno">  260 </span>-- warn about dangerous, unwise and redundant things present in the script.
+<span class="lineno">  261 </span>--
+<span class="lineno">  262 </span>-- @since 3.2.0
+<span class="lineno">  263 </span>data ValidationLevel = RequiredValidation | RecommendedValidation
+<span class="lineno">  264 </span>    deriving (<span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, Generic)
+<span class="lineno">  265 </span>instance NFData ValidationLevel
+<span class="lineno">  266 </span>
+<span class="lineno">  267 </span>-- Possible errors when deserializing a key hash from text.
+<span class="lineno">  268 </span>--
+<span class="lineno">  269 </span>-- @since 3.0.0
+<span class="lineno">  270 </span>data ErrKeyHashFromText
+<span class="lineno">  271 </span>    = ErrKeyHashFromTextInvalidString
+<span class="lineno">  272 </span>    | ErrKeyHashFromTextWrongPayload
+<span class="lineno">  273 </span>    | ErrKeyHashFromTextWrongHrp
+<span class="lineno">  274 </span>    | ErrKeyHashFromTextWrongDataPart
+<span class="lineno">  275 </span>    deriving (<span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="nottickedoff">Eq</span></span>)
+<span class="lineno">  276 </span>
+<span class="lineno">  277 </span>-- Possible errors when deserializing a key hash from text.
+<span class="lineno">  278 </span>--
+<span class="lineno">  279 </span>-- @since 3.0.0
+<span class="lineno">  280 </span>prettyErrKeyHashFromText :: ErrKeyHashFromText -&gt; String
+<span class="lineno">  281 </span><span class="decl"><span class="nottickedoff">prettyErrKeyHashFromText = \case</span>
+<span class="lineno">  282 </span><span class="spaces">    </span><span class="nottickedoff">ErrKeyHashFromTextInvalidString -&gt;</span>
+<span class="lineno">  283 </span><span class="spaces">        </span><span class="nottickedoff">&quot;Invalid encoded string: must be bech32-encoded.&quot;</span>
+<span class="lineno">  284 </span><span class="spaces">    </span><span class="nottickedoff">ErrKeyHashFromTextWrongPayload -&gt;</span>
+<span class="lineno">  285 </span><span class="spaces">        </span><span class="nottickedoff">&quot;Verification key hash must contain exactly 28 bytes.&quot;</span>
+<span class="lineno">  286 </span><span class="spaces">    </span><span class="nottickedoff">ErrKeyHashFromTextWrongHrp -&gt;</span>
+<span class="lineno">  287 </span><span class="spaces">        </span><span class="nottickedoff">&quot;Invalid human-readable prefix: must be 'script_vkh'.&quot;</span>
+<span class="lineno">  288 </span><span class="spaces">    </span><span class="nottickedoff">ErrKeyHashFromTextWrongDataPart -&gt;</span>
+<span class="lineno">  289 </span><span class="spaces">        </span><span class="nottickedoff">&quot;Verification key hash is Bech32-encoded but has an invalid data part.&quot;</span></span>
+<span class="lineno">  290 </span>
+<span class="lineno">  291 </span>--
+<span class="lineno">  292 </span>-- Script folding
+<span class="lineno">  293 </span>--
+<span class="lineno">  294 </span>
+<span class="lineno">  295 </span>-- | 'Script' folding
+<span class="lineno">  296 </span>--
+<span class="lineno">  297 </span>-- @since 3.2.0
+<span class="lineno">  298 </span>foldScript :: (a -&gt; b -&gt; b) -&gt; b -&gt; Script a -&gt; b
+<span class="lineno">  299 </span><span class="decl"><span class="istickedoff">foldScript fn zero = \case</span>
+<span class="lineno">  300 </span><span class="spaces">    </span><span class="istickedoff">RequireSignatureOf k -&gt; fn k zero</span>
+<span class="lineno">  301 </span><span class="spaces">    </span><span class="istickedoff">RequireAllOf xs      -&gt; foldMScripts xs</span>
+<span class="lineno">  302 </span><span class="spaces">    </span><span class="istickedoff">RequireAnyOf xs      -&gt; foldMScripts xs</span>
+<span class="lineno">  303 </span><span class="spaces">    </span><span class="istickedoff">RequireSomeOf _ xs   -&gt; foldMScripts xs</span>
+<span class="lineno">  304 </span><span class="spaces">    </span><span class="istickedoff">ActiveFromSlot _     -&gt; zero</span>
+<span class="lineno">  305 </span><span class="spaces">    </span><span class="istickedoff">ActiveUntilSlot _    -&gt; zero</span>
+<span class="lineno">  306 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  307 </span><span class="spaces">    </span><span class="istickedoff">foldMScripts =</span>
+<span class="lineno">  308 </span><span class="spaces">        </span><span class="istickedoff">runIdentity . foldM (\acc -&gt; Identity . foldScript fn acc) zero</span></span>
+<span class="lineno">  309 </span>
+<span class="lineno">  310 </span>--
+<span class="lineno">  311 </span>-- Script validation
+<span class="lineno">  312 </span>--
+<span class="lineno">  313 </span>
+<span class="lineno">  314 </span>-- | Validate a 'Script', semantically
+<span class="lineno">  315 </span>--
+<span class="lineno">  316 </span>-- @since 3.0.0
+<span class="lineno">  317 </span>validateScript
+<span class="lineno">  318 </span>    :: ValidationLevel
+<span class="lineno">  319 </span>    -&gt; Script KeyHash
+<span class="lineno">  320 </span>    -&gt; Either ErrValidateScript ()
+<span class="lineno">  321 </span><span class="decl"><span class="istickedoff">validateScript level script = do</span>
+<span class="lineno">  322 </span><span class="spaces">    </span><span class="istickedoff">let validateKeyHash (KeyHash bytes) =</span>
+<span class="lineno">  323 </span><span class="spaces">            </span><span class="istickedoff">(BS.length bytes == credentialHashSize)</span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">let allSigs = foldScript (:) [] script</span>
+<span class="lineno">  325 </span><span class="spaces">    </span><span class="istickedoff">unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash</span>
+<span class="lineno">  326 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  327 </span><span class="spaces">    </span><span class="istickedoff">requiredValidation script</span>
+<span class="lineno">  328 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  329 </span><span class="spaces">    </span><span class="istickedoff">when (level == RecommendedValidation) $</span>
+<span class="lineno">  330 </span><span class="spaces">        </span><span class="istickedoff">mapLeft NotRecommended (recommendedValidation script)</span></span>
+<span class="lineno">  331 </span>
+<span class="lineno">  332 </span>requiredValidation
+<span class="lineno">  333 </span>    :: Script elem
+<span class="lineno">  334 </span>    -&gt; Either ErrValidateScript ()
+<span class="lineno">  335 </span><span class="decl"><span class="istickedoff">requiredValidation script =</span>
+<span class="lineno">  336 </span><span class="spaces">    </span><span class="istickedoff">unless (check script) $ Left LedgerIncompatible</span>
+<span class="lineno">  337 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  338 </span><span class="spaces">    </span><span class="istickedoff">check = \case</span>
+<span class="lineno">  339 </span><span class="spaces">        </span><span class="istickedoff">RequireSignatureOf _ -&gt; True</span>
+<span class="lineno">  340 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  341 </span><span class="spaces">        </span><span class="istickedoff">RequireAllOf xs -&gt;</span>
+<span class="lineno">  342 </span><span class="spaces">            </span><span class="istickedoff">L.all check xs</span>
+<span class="lineno">  343 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  344 </span><span class="spaces">        </span><span class="istickedoff">RequireAnyOf xs -&gt;</span>
+<span class="lineno">  345 </span><span class="spaces">            </span><span class="istickedoff">L.any check xs</span>
+<span class="lineno">  346 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  347 </span><span class="spaces">        </span><span class="istickedoff">RequireSomeOf m xs -&gt;</span>
+<span class="lineno">  348 </span><span class="spaces">            </span><span class="istickedoff">m &lt;= sum (fmap (\x -&gt; if check x then 1 else 0) xs)</span>
+<span class="lineno">  349 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  350 </span><span class="spaces">        </span><span class="istickedoff">ActiveFromSlot _ -&gt; True</span>
+<span class="lineno">  351 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  352 </span><span class="spaces">        </span><span class="istickedoff">ActiveUntilSlot _ -&gt; True</span></span>
+<span class="lineno">  353 </span>
+<span class="lineno">  354 </span>recommendedValidation
+<span class="lineno">  355 </span>    :: Eq elem
+<span class="lineno">  356 </span>    =&gt; Script elem
+<span class="lineno">  357 </span>    -&gt; Either ErrRecommendedValidateScript ()
+<span class="lineno">  358 </span><span class="decl"><span class="istickedoff">recommendedValidation = \case</span>
+<span class="lineno">  359 </span><span class="spaces">    </span><span class="istickedoff">RequireSignatureOf _ -&gt; pure <span class="nottickedoff">()</span></span>
+<span class="lineno">  360 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  361 </span><span class="spaces">    </span><span class="istickedoff">RequireAllOf script -&gt; do</span>
+<span class="lineno">  362 </span><span class="spaces">        </span><span class="istickedoff">when (L.null (omitTimelocks script)) $ Left EmptyList</span>
+<span class="lineno">  363 </span><span class="spaces">        </span><span class="istickedoff">when (hasDuplicate script) $ Left DuplicateSignatures</span>
+<span class="lineno">  364 </span><span class="spaces">        </span><span class="istickedoff">when (redundantTimelocks script) $ Left RedundantTimelocks</span>
+<span class="lineno">  365 </span><span class="spaces">        </span><span class="istickedoff">traverse_ recommendedValidation script</span>
+<span class="lineno">  366 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  367 </span><span class="spaces">    </span><span class="istickedoff">RequireAnyOf script -&gt; do</span>
+<span class="lineno">  368 </span><span class="spaces">        </span><span class="istickedoff">when (hasDuplicate script) $ Left DuplicateSignatures</span>
+<span class="lineno">  369 </span><span class="spaces">        </span><span class="istickedoff">when (redundantTimelocks script) $ <span class="nottickedoff">Left RedundantTimelocks</span></span>
+<span class="lineno">  370 </span><span class="spaces">        </span><span class="istickedoff">traverse_ recommendedValidation script</span>
+<span class="lineno">  371 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  372 </span><span class="spaces">    </span><span class="istickedoff">RequireSomeOf m script -&gt; do</span>
+<span class="lineno">  373 </span><span class="spaces">        </span><span class="istickedoff">when (m == 0) $ Left MZero</span>
+<span class="lineno">  374 </span><span class="spaces">        </span><span class="istickedoff">when (length (omitTimelocks script) &lt; fromIntegral m) $ Left ListTooSmall</span>
+<span class="lineno">  375 </span><span class="spaces">        </span><span class="istickedoff">when (hasDuplicate script) $ Left DuplicateSignatures</span>
+<span class="lineno">  376 </span><span class="spaces">        </span><span class="istickedoff">when (redundantTimelocks script) $ Left RedundantTimelocks</span>
+<span class="lineno">  377 </span><span class="spaces">        </span><span class="istickedoff">traverse_ recommendedValidation script</span>
+<span class="lineno">  378 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  379 </span><span class="spaces">    </span><span class="istickedoff">ActiveFromSlot _ -&gt; pure <span class="nottickedoff">()</span></span>
+<span class="lineno">  380 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  381 </span><span class="spaces">    </span><span class="istickedoff">ActiveUntilSlot _ -&gt; pure <span class="nottickedoff">()</span></span>
+<span class="lineno">  382 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  383 </span><span class="spaces">    </span><span class="istickedoff">hasDuplicate xs =</span>
+<span class="lineno">  384 </span><span class="spaces">        </span><span class="istickedoff">length sigs /= length (L.nub sigs)</span>
+<span class="lineno">  385 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  386 </span><span class="spaces">        </span><span class="istickedoff">sigs = [ sig | RequireSignatureOf sig &lt;- xs ]</span>
+<span class="lineno">  387 </span><span class="spaces">    </span><span class="istickedoff">hasTimelocks = \case</span>
+<span class="lineno">  388 </span><span class="spaces">        </span><span class="istickedoff">ActiveFromSlot _ -&gt; True</span>
+<span class="lineno">  389 </span><span class="spaces">        </span><span class="istickedoff">ActiveUntilSlot _ -&gt; True</span>
+<span class="lineno">  390 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; False</span>
+<span class="lineno">  391 </span><span class="spaces">    </span><span class="istickedoff">redundantTimelocks xs = case L.filter hasTimelocks xs of</span>
+<span class="lineno">  392 </span><span class="spaces">        </span><span class="istickedoff">[] -&gt; False</span>
+<span class="lineno">  393 </span><span class="spaces">        </span><span class="istickedoff">[_] -&gt; <span class="nottickedoff">False</span></span>
+<span class="lineno">  394 </span><span class="spaces">        </span><span class="istickedoff">[ActiveFromSlot s1, ActiveUntilSlot s2] -&gt; s2 &lt;= s1</span>
+<span class="lineno">  395 </span><span class="spaces">        </span><span class="istickedoff">[ActiveUntilSlot s2, ActiveFromSlot s1] -&gt; <span class="nottickedoff">s2 &lt;= s1</span></span>
+<span class="lineno">  396 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; True</span>
+<span class="lineno">  397 </span><span class="spaces">    </span><span class="istickedoff">omitTimelocks = filter (not . hasTimelocks)</span></span>
+<span class="lineno">  398 </span>--
+<span class="lineno">  399 </span>-- ScriptTemplate validation
+<span class="lineno">  400 </span>--
+<span class="lineno">  401 </span>
+<span class="lineno">  402 </span>-- | Validate a 'ScriptTemplate', semantically
+<span class="lineno">  403 </span>--
+<span class="lineno">  404 </span>-- @since 3.2.0
+<span class="lineno">  405 </span>validateScriptTemplate
+<span class="lineno">  406 </span>    :: ValidationLevel
+<span class="lineno">  407 </span>    -&gt; ScriptTemplate
+<span class="lineno">  408 </span>    -&gt; Either ErrValidateScriptTemplate ()
+<span class="lineno">  409 </span><span class="decl"><span class="istickedoff">validateScriptTemplate level (ScriptTemplate cosigners' script) = do</span>
+<span class="lineno">  410 </span><span class="spaces">    </span><span class="istickedoff">when (Map.size cosigners' == 0) $ Left NoCosigner</span>
+<span class="lineno">  411 </span><span class="spaces">    </span><span class="istickedoff">when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $</span>
+<span class="lineno">  412 </span><span class="spaces">        </span><span class="istickedoff">Left DuplicateXPubs</span>
+<span class="lineno">  413 </span><span class="spaces">    </span><span class="istickedoff">let allCosigners = Set.fromList $ foldScript (:) [] script</span>
+<span class="lineno">  414 </span><span class="spaces">    </span><span class="istickedoff">let unknownCosigners =</span>
+<span class="lineno">  415 </span><span class="spaces">            </span><span class="istickedoff">allCosigners `difference` Set.fromList (Map.keys cosigners')</span>
+<span class="lineno">  416 </span><span class="spaces">    </span><span class="istickedoff">unless (Set.null unknownCosigners) $ Left UnknownCosigner</span>
+<span class="lineno">  417 </span><span class="spaces">    </span><span class="istickedoff">let unusedCosigners =</span>
+<span class="lineno">  418 </span><span class="spaces">            </span><span class="istickedoff">Set.fromList (Map.keys cosigners') `difference` allCosigners</span>
+<span class="lineno">  419 </span><span class="spaces">    </span><span class="istickedoff">unless (Set.null unusedCosigners) $ Left UnusedCosigner</span>
+<span class="lineno">  420 </span><span class="spaces">    </span><span class="istickedoff">mapLeft WrongScript $ do</span>
+<span class="lineno">  421 </span><span class="spaces">        </span><span class="istickedoff">requiredValidation script</span>
+<span class="lineno">  422 </span><span class="spaces">        </span><span class="istickedoff">when (level == RecommendedValidation ) $</span>
+<span class="lineno">  423 </span><span class="spaces">            </span><span class="istickedoff">mapLeft NotRecommended (recommendedValidation script)</span></span>
+<span class="lineno">  424 </span>
+<span class="lineno">  425 </span>-- | Possible validation errors when validating a script
+<span class="lineno">  426 </span>--
+<span class="lineno">  427 </span>-- @since 3.0.0
+<span class="lineno">  428 </span>data ErrValidateScript
+<span class="lineno">  429 </span>    = LedgerIncompatible
+<span class="lineno">  430 </span>    | WrongKeyHash
+<span class="lineno">  431 </span>    | Malformed
+<span class="lineno">  432 </span>    | NotRecommended ErrRecommendedValidateScript
+<span class="lineno">  433 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">  434 </span>
+<span class="lineno">  435 </span>-- | Possible recommended validation errors when validating a script
+<span class="lineno">  436 </span>--
+<span class="lineno">  437 </span>-- @since 3.2.0
+<span class="lineno">  438 </span>data ErrRecommendedValidateScript
+<span class="lineno">  439 </span>    = EmptyList
+<span class="lineno">  440 </span>    | ListTooSmall
+<span class="lineno">  441 </span>    | MZero
+<span class="lineno">  442 </span>    | DuplicateSignatures
+<span class="lineno">  443 </span>    | RedundantTimelocks
+<span class="lineno">  444 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">  445 </span>
+<span class="lineno">  446 </span>-- | Possible validation errors when validating a script template
+<span class="lineno">  447 </span>--
+<span class="lineno">  448 </span>-- @since 3.2.0
+<span class="lineno">  449 </span>data ErrValidateScriptTemplate
+<span class="lineno">  450 </span>    = WrongScript ErrValidateScript
+<span class="lineno">  451 </span>    | DuplicateXPubs
+<span class="lineno">  452 </span>    | UnknownCosigner
+<span class="lineno">  453 </span>    | NoCosigner
+<span class="lineno">  454 </span>    | UnusedCosigner
+<span class="lineno">  455 </span>    deriving (<span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">  456 </span>
+<span class="lineno">  457 </span>-- | Pretty-print a script validation error.
+<span class="lineno">  458 </span>--
+<span class="lineno">  459 </span>-- @since 3.0.0
+<span class="lineno">  460 </span>prettyErrValidateScript
+<span class="lineno">  461 </span>    :: ErrValidateScript
+<span class="lineno">  462 </span>    -&gt; String
+<span class="lineno">  463 </span><span class="decl"><span class="istickedoff">prettyErrValidateScript = \case</span>
+<span class="lineno">  464 </span><span class="spaces">    </span><span class="istickedoff">LedgerIncompatible -&gt;</span>
+<span class="lineno">  465 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&quot;The script is ill-formed and is not going to be accepted by ledger.&quot;</span></span>
+<span class="lineno">  466 </span><span class="spaces">    </span><span class="istickedoff">WrongKeyHash -&gt;</span>
+<span class="lineno">  467 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&quot;The hash of verification key is expected to have &quot;</span></span>
+<span class="lineno">  468 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&lt;&gt; show credentialHashSize &lt;&gt; &quot; bytes.&quot;</span></span>
+<span class="lineno">  469 </span><span class="spaces">    </span><span class="istickedoff">Malformed -&gt;</span>
+<span class="lineno">  470 </span><span class="spaces">        </span><span class="istickedoff">&quot;Parsing of the script failed. The script should be composed of nested \</span>
+<span class="lineno">  471 </span><span class="spaces">        </span><span class="istickedoff">\lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \</span>
+<span class="lineno">  472 </span><span class="spaces">        </span><span class="istickedoff">\timelocks must use non-negative numbers as slots.&quot;</span>
+<span class="lineno">  473 </span><span class="spaces">    </span><span class="istickedoff">NotRecommended EmptyList -&gt;</span>
+<span class="lineno">  474 </span><span class="spaces">        </span><span class="istickedoff">&quot;The list inside a script is empty or only contains timelocks \</span>
+<span class="lineno">  475 </span><span class="spaces">        </span><span class="istickedoff">\(which is not recommended).&quot;</span>
+<span class="lineno">  476 </span><span class="spaces">    </span><span class="istickedoff">NotRecommended MZero -&gt;</span>
+<span class="lineno">  477 </span><span class="spaces">        </span><span class="istickedoff">&quot;At least's coefficient is 0 (which is not recommended).&quot;</span>
+<span class="lineno">  478 </span><span class="spaces">    </span><span class="istickedoff">NotRecommended ListTooSmall -&gt;</span>
+<span class="lineno">  479 </span><span class="spaces">        </span><span class="istickedoff">&quot;At least's coefficient is larger than the number of non-timelock \</span>
+<span class="lineno">  480 </span><span class="spaces">        </span><span class="istickedoff">\elements in the list (which is not recommended).&quot;</span>
+<span class="lineno">  481 </span><span class="spaces">    </span><span class="istickedoff">NotRecommended DuplicateSignatures -&gt;</span>
+<span class="lineno">  482 </span><span class="spaces">        </span><span class="istickedoff">&quot;The list inside a script has duplicate keys (which is not recommended).&quot;</span>
+<span class="lineno">  483 </span><span class="spaces">    </span><span class="istickedoff">NotRecommended RedundantTimelocks -&gt;</span>
+<span class="lineno">  484 </span><span class="spaces">        </span><span class="istickedoff">&quot;Some timelocks used are redundant (which is not recommended).&quot;</span></span>
+<span class="lineno">  485 </span>
+<span class="lineno">  486 </span>-- | Pretty-print a script template validation error.
+<span class="lineno">  487 </span>--
+<span class="lineno">  488 </span>-- @since 3.2.0
+<span class="lineno">  489 </span>prettyErrValidateScriptTemplate
+<span class="lineno">  490 </span>    :: ErrValidateScriptTemplate
+<span class="lineno">  491 </span>    -&gt; String
+<span class="lineno">  492 </span><span class="decl"><span class="nottickedoff">prettyErrValidateScriptTemplate = \case</span>
+<span class="lineno">  493 </span><span class="spaces">    </span><span class="nottickedoff">WrongScript err -&gt; prettyErrValidateScript err</span>
+<span class="lineno">  494 </span><span class="spaces">    </span><span class="nottickedoff">DuplicateXPubs -&gt;</span>
+<span class="lineno">  495 </span><span class="spaces">        </span><span class="nottickedoff">&quot;The cosigners in a script template must stand behind an unique extended public key.&quot;</span>
+<span class="lineno">  496 </span><span class="spaces">    </span><span class="nottickedoff">UnknownCosigner -&gt;</span>
+<span class="lineno">  497 </span><span class="spaces">        </span><span class="nottickedoff">&quot;The script must use a cosigner present in a script template.&quot;</span>
+<span class="lineno">  498 </span><span class="spaces">    </span><span class="nottickedoff">NoCosigner -&gt;</span>
+<span class="lineno">  499 </span><span class="spaces">        </span><span class="nottickedoff">&quot;The script template must have at least one cosigner defined.&quot;</span>
+<span class="lineno">  500 </span><span class="spaces">    </span><span class="nottickedoff">UnusedCosigner -&gt;</span>
+<span class="lineno">  501 </span><span class="spaces">        </span><span class="nottickedoff">&quot;Each cosigner predefined must be used in a script template&quot;</span></span>
+<span class="lineno">  502 </span>--
+<span class="lineno">  503 </span>-- Internal
+<span class="lineno">  504 </span>--
+<span class="lineno">  505 </span>
+<span class="lineno">  506 </span>-- Examples of Script jsons:
+<span class="lineno">  507 </span>--&quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a&quot;
+<span class="lineno">  508 </span>--{ &quot;all&quot; : [ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a&quot;
+<span class="lineno">  509 </span>--          , &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b&quot;
+<span class="lineno">  510 </span>--          ]
+<span class="lineno">  511 </span>--}
+<span class="lineno">  512 </span>--{ &quot;all&quot; : [ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a&quot;
+<span class="lineno">  513 </span>--          , {&quot;any&quot;: [ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b&quot;
+<span class="lineno">  514 </span>--                    , &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c&quot;
+<span class="lineno">  515 </span>--                    ]
+<span class="lineno">  516 </span>--            }
+<span class="lineno">  517 </span>--          ]
+<span class="lineno">  518 </span>--}
+<span class="lineno">  519 </span>--{ &quot;all&quot; : [ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a&quot;
+<span class="lineno">  520 </span>--          , {&quot;some&quot;: { &quot;from&quot; :[ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b&quot;
+<span class="lineno">  521 </span>--                               , &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c&quot;
+<span class="lineno">  522 </span>--                               , &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d&quot;
+<span class="lineno">  523 </span>--                               ]
+<span class="lineno">  524 </span>--                     , &quot;at_least&quot; : 2
+<span class="lineno">  525 </span>--                     }
+<span class="lineno">  526 </span>--            }
+<span class="lineno">  527 </span>--          ]
+<span class="lineno">  528 </span>--}
+<span class="lineno">  529 </span>--{ &quot;all&quot; : [ &quot;e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a&quot;
+<span class="lineno">  530 </span>--          , {&quot;active_from&quot;: 120 }
+<span class="lineno">  531 </span>--          ]
+<span class="lineno">  532 </span>--}
+<span class="lineno">  533 </span>
+<span class="lineno">  534 </span>instance ToJSON elem =&gt; ToJSON (Script elem) where
+<span class="lineno">  535 </span>    <span class="decl"><span class="istickedoff">toJSON (RequireSignatureOf content) = toJSON content</span>
+<span class="lineno">  536 </span><span class="spaces">    </span><span class="istickedoff">toJSON (RequireAllOf content) =</span>
+<span class="lineno">  537 </span><span class="spaces">        </span><span class="istickedoff">object [&quot;all&quot; .= fmap toJSON content]</span>
+<span class="lineno">  538 </span><span class="spaces">    </span><span class="istickedoff">toJSON (RequireAnyOf content) =</span>
+<span class="lineno">  539 </span><span class="spaces">        </span><span class="istickedoff">object [&quot;any&quot; .= fmap toJSON content]</span>
+<span class="lineno">  540 </span><span class="spaces">    </span><span class="istickedoff">toJSON (RequireSomeOf count scripts) =</span>
+<span class="lineno">  541 </span><span class="spaces">        </span><span class="istickedoff">object [&quot;some&quot; .= object [&quot;at_least&quot; .= count, &quot;from&quot; .= scripts]]</span>
+<span class="lineno">  542 </span><span class="spaces">    </span><span class="istickedoff">toJSON (ActiveFromSlot slot) =</span>
+<span class="lineno">  543 </span><span class="spaces">        </span><span class="istickedoff">object [&quot;active_from&quot; .= slot]</span>
+<span class="lineno">  544 </span><span class="spaces">    </span><span class="istickedoff">toJSON (ActiveUntilSlot slot) =</span>
+<span class="lineno">  545 </span><span class="spaces">        </span><span class="istickedoff">object [&quot;active_until&quot; .= slot]</span></span>
+<span class="lineno">  546 </span>
+<span class="lineno">  547 </span>instance ToJSON KeyHash where
+<span class="lineno">  548 </span>    <span class="decl"><span class="istickedoff">toJSON = String . keyHashToText</span></span>
+<span class="lineno">  549 </span>
+<span class="lineno">  550 </span>instance FromJSON (Script KeyHash) where
+<span class="lineno">  551 </span>    <span class="decl"><span class="istickedoff">parseJSON v =</span>
+<span class="lineno">  552 </span><span class="spaces">        </span><span class="istickedoff">fromScriptJson parseKey backtrack v</span>
+<span class="lineno">  553 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  554 </span><span class="spaces">        </span><span class="istickedoff">parseKey = withText <span class="nottickedoff">&quot;Script KeyHash&quot;</span> $</span>
+<span class="lineno">  555 </span><span class="spaces">            </span><span class="istickedoff">either</span>
+<span class="lineno">  556 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(fail . prettyErrKeyHashFromText)</span></span>
+<span class="lineno">  557 </span><span class="spaces">                </span><span class="istickedoff">(pure . RequireSignatureOf)</span>
+<span class="lineno">  558 </span><span class="spaces">                </span><span class="istickedoff">. keyHashFromText</span>
+<span class="lineno">  559 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  560 </span><span class="spaces">        </span><span class="istickedoff">-- NOTE: Because we use an alternative sum to define all parsers, in</span>
+<span class="lineno">  561 </span><span class="spaces">        </span><span class="istickedoff">-- case all parser fails, only the last error is returned which can be</span>
+<span class="lineno">  562 </span><span class="spaces">        </span><span class="istickedoff">-- very misleading. For example, sending {&quot;any&quot;: []} yields an error</span>
+<span class="lineno">  563 </span><span class="spaces">        </span><span class="istickedoff">-- telling us that the key `&quot;some&quot;` is missing.</span>
+<span class="lineno">  564 </span><span class="spaces">        </span><span class="istickedoff">--</span>
+<span class="lineno">  565 </span><span class="spaces">        </span><span class="istickedoff">-- To cope with this, we add a last parser 'backtrack' which always</span>
+<span class="lineno">  566 </span><span class="spaces">        </span><span class="istickedoff">-- fail but with a more helpful error which tries its best at</span>
+<span class="lineno">  567 </span><span class="spaces">        </span><span class="istickedoff">-- identifying the right constructor.</span>
+<span class="lineno">  568 </span><span class="spaces">        </span><span class="istickedoff">backtrack = \case</span>
+<span class="lineno">  569 </span><span class="spaces">            </span><span class="istickedoff">Object o -&gt; do</span>
+<span class="lineno">  570 </span><span class="spaces">                </span><span class="istickedoff">mAny  &lt;- o .:? &quot;any&quot;  :: Parser (Maybe Value)</span>
+<span class="lineno">  571 </span><span class="spaces">                </span><span class="istickedoff">mAll  &lt;- o .:? &quot;all&quot;  :: Parser (Maybe Value)</span>
+<span class="lineno">  572 </span><span class="spaces">                </span><span class="istickedoff">mSome &lt;- o .:? &quot;some&quot; :: Parser (Maybe Value)</span>
+<span class="lineno">  573 </span><span class="spaces">                </span><span class="istickedoff">case (mAny, mAll, mSome) of</span>
+<span class="lineno">  574 </span><span class="spaces">                    </span><span class="istickedoff">(Just{}, Nothing, Nothing)  -&gt; parseAnyOf v</span>
+<span class="lineno">  575 </span><span class="spaces">                    </span><span class="istickedoff">(Nothing, Just{}, Nothing)  -&gt; parseAllOf v</span>
+<span class="lineno">  576 </span><span class="spaces">                    </span><span class="istickedoff">(Nothing, Nothing, Just{})  -&gt; <span class="nottickedoff">parseAtLeast v</span></span>
+<span class="lineno">  577 </span><span class="spaces">                    </span><span class="istickedoff">(Nothing, Nothing, Nothing) -&gt; fail</span>
+<span class="lineno">  578 </span><span class="spaces">                        </span><span class="istickedoff">&quot;Found object with no known key 'any', 'all' or 'some'&quot;</span>
+<span class="lineno">  579 </span><span class="spaces">                    </span><span class="istickedoff">(      _,       _,      _)  -&gt; fail</span>
+<span class="lineno">  580 </span><span class="spaces">                        </span><span class="istickedoff">&quot;Found multiple keys 'any', 'all' and/or 'some' at the same level&quot;</span>
+<span class="lineno">  581 </span><span class="spaces">            </span><span class="istickedoff">String{} -&gt;</span>
+<span class="lineno">  582 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">parseKey v</span></span>
+<span class="lineno">  583 </span><span class="spaces">            </span><span class="istickedoff">_ -&gt;</span>
+<span class="lineno">  584 </span><span class="spaces">                </span><span class="istickedoff">Json.typeMismatch &quot;Object or String&quot; v</span></span>
+<span class="lineno">  585 </span>
+<span class="lineno">  586 </span>fromScriptJson
+<span class="lineno">  587 </span>    :: FromJSON (Script elem)
+<span class="lineno">  588 </span>    =&gt; (Value -&gt; Parser (Script elem))
+<span class="lineno">  589 </span>    -&gt; (Value -&gt; Parser (Script elem))
+<span class="lineno">  590 </span>    -&gt; Value
+<span class="lineno">  591 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  592 </span><span class="decl"><span class="istickedoff">fromScriptJson parseElem backtrack v =</span>
+<span class="lineno">  593 </span><span class="spaces">    </span><span class="istickedoff">asum</span>
+<span class="lineno">  594 </span><span class="spaces">        </span><span class="istickedoff">[ parseElem v</span>
+<span class="lineno">  595 </span><span class="spaces">        </span><span class="istickedoff">, parseAnyOf v</span>
+<span class="lineno">  596 </span><span class="spaces">        </span><span class="istickedoff">, parseAllOf v</span>
+<span class="lineno">  597 </span><span class="spaces">        </span><span class="istickedoff">, parseAtLeast v</span>
+<span class="lineno">  598 </span><span class="spaces">        </span><span class="istickedoff">, parseActiveFrom v</span>
+<span class="lineno">  599 </span><span class="spaces">        </span><span class="istickedoff">, parseActiveUntil v</span>
+<span class="lineno">  600 </span><span class="spaces">        </span><span class="istickedoff">] &lt;|&gt; backtrack v</span></span>
+<span class="lineno">  601 </span>
+<span class="lineno">  602 </span>parseAnyOf
+<span class="lineno">  603 </span>    :: FromJSON (Script elem)
+<span class="lineno">  604 </span>    =&gt; Value
+<span class="lineno">  605 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  606 </span><span class="decl"><span class="istickedoff">parseAnyOf = withObject <span class="nottickedoff">&quot;Script AnyOf&quot;</span> $ \o -&gt;</span>
+<span class="lineno">  607 </span><span class="spaces">    </span><span class="istickedoff">RequireAnyOf &lt;$&gt; o .: &quot;any&quot;</span></span>
+<span class="lineno">  608 </span>
+<span class="lineno">  609 </span>parseAllOf
+<span class="lineno">  610 </span>    :: FromJSON (Script elem)
+<span class="lineno">  611 </span>    =&gt; Value
+<span class="lineno">  612 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  613 </span><span class="decl"><span class="istickedoff">parseAllOf = withObject <span class="nottickedoff">&quot;Script AllOf&quot;</span> $ \o -&gt;</span>
+<span class="lineno">  614 </span><span class="spaces">    </span><span class="istickedoff">RequireAllOf &lt;$&gt; o .: &quot;all&quot;</span></span>
+<span class="lineno">  615 </span>
+<span class="lineno">  616 </span>parseAtLeast
+<span class="lineno">  617 </span>    :: FromJSON (Script elem)
+<span class="lineno">  618 </span>    =&gt; Value
+<span class="lineno">  619 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  620 </span><span class="decl"><span class="istickedoff">parseAtLeast = withObject <span class="nottickedoff">&quot;Script SomeOf&quot;</span> $ \o -&gt; do</span>
+<span class="lineno">  621 </span><span class="spaces">    </span><span class="istickedoff">some &lt;- o .: &quot;some&quot;</span>
+<span class="lineno">  622 </span><span class="spaces">    </span><span class="istickedoff">RequireSomeOf &lt;$&gt; some .: &quot;at_least&quot; &lt;*&gt; some .: &quot;from&quot;</span></span>
+<span class="lineno">  623 </span>
+<span class="lineno">  624 </span>parseActiveFrom
+<span class="lineno">  625 </span>    :: Value
+<span class="lineno">  626 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  627 </span><span class="decl"><span class="istickedoff">parseActiveFrom = withObject <span class="nottickedoff">&quot;Script ActiveFrom&quot;</span> $ \o -&gt;</span>
+<span class="lineno">  628 </span><span class="spaces">    </span><span class="istickedoff">ActiveFromSlot &lt;$&gt; o .: &quot;active_from&quot;</span></span>
+<span class="lineno">  629 </span>
+<span class="lineno">  630 </span>parseActiveUntil
+<span class="lineno">  631 </span>    :: Value
+<span class="lineno">  632 </span>    -&gt; Parser (Script elem)
+<span class="lineno">  633 </span><span class="decl"><span class="istickedoff">parseActiveUntil = withObject <span class="nottickedoff">&quot;Script ActiveUntil&quot;</span> $ \o -&gt;</span>
+<span class="lineno">  634 </span><span class="spaces">    </span><span class="istickedoff">ActiveUntilSlot &lt;$&gt; o .: &quot;active_until&quot;</span></span>
+<span class="lineno">  635 </span>
+<span class="lineno">  636 </span>cosignerToText :: Cosigner -&gt; Text
+<span class="lineno">  637 </span><span class="decl"><span class="istickedoff">cosignerToText (Cosigner ix) = &quot;cosigner#&quot;&lt;&gt; T.pack (show ix)</span></span>
+<span class="lineno">  638 </span>
+<span class="lineno">  639 </span>instance ToJSON Cosigner where
+<span class="lineno">  640 </span>    <span class="decl"><span class="istickedoff">toJSON = String . cosignerToText</span></span>
+<span class="lineno">  641 </span>
+<span class="lineno">  642 </span>instance FromJSON Cosigner where
+<span class="lineno">  643 </span>    <span class="decl"><span class="istickedoff">parseJSON = withText <span class="nottickedoff">&quot;Cosigner&quot;</span> $ \txt -&gt; case T.splitOn &quot;cosigner#&quot; txt of</span>
+<span class="lineno">  644 </span><span class="spaces">        </span><span class="istickedoff">[&quot;&quot;,numTxt] -&gt;  case T.decimal numTxt of</span>
+<span class="lineno">  645 </span><span class="spaces">            </span><span class="istickedoff">Right (num,&quot;&quot;) -&gt; do</span>
+<span class="lineno">  646 </span><span class="spaces">                </span><span class="istickedoff">when (num &lt; minBound @Word8 || num &gt; maxBound @Word8) $</span>
+<span class="lineno">  647 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Cosigner number should be between '0' and '255'&quot;</span></span>
+<span class="lineno">  648 </span><span class="spaces">                </span><span class="istickedoff">pure $ Cosigner num</span>
+<span class="lineno">  649 </span><span class="spaces">            </span><span class="istickedoff">_ -&gt; <span class="nottickedoff">fail &quot;Cosigner should be enumerated with number&quot;</span></span>
+<span class="lineno">  650 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; <span class="nottickedoff">fail &quot;Cosigner should be of form: cosigner#num&quot;</span></span></span>
+<span class="lineno">  651 </span>
+<span class="lineno">  652 </span>encodeXPub :: XPub -&gt; Value
+<span class="lineno">  653 </span><span class="decl"><span class="istickedoff">encodeXPub = String . T.decodeUtf8 . encode EBase16 . xpubToBytes</span></span>
+<span class="lineno">  654 </span>
+<span class="lineno">  655 </span>parseXPub :: Value -&gt; Parser XPub
+<span class="lineno">  656 </span><span class="decl"><span class="istickedoff">parseXPub = withText <span class="nottickedoff">&quot;XPub&quot;</span> $ \txt -&gt;</span>
+<span class="lineno">  657 </span><span class="spaces">    </span><span class="istickedoff">case fromBase16 (T.encodeUtf8 txt) of</span>
+<span class="lineno">  658 </span><span class="spaces">        </span><span class="istickedoff">Left err -&gt; <span class="nottickedoff">fail err</span></span>
+<span class="lineno">  659 </span><span class="spaces">        </span><span class="istickedoff">Right hex -&gt; case xpubFromBytes hex of</span>
+<span class="lineno">  660 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">fail &quot;Extended public key cannot be retrieved from a given hex bytestring&quot;</span></span>
+<span class="lineno">  661 </span><span class="spaces">            </span><span class="istickedoff">Just validXPub -&gt; pure validXPub</span></span>
+<span class="lineno">  662 </span>
+<span class="lineno">  663 </span>instance ToJSON ScriptTemplate where
+<span class="lineno">  664 </span>    <span class="decl"><span class="istickedoff">toJSON (ScriptTemplate cosigners' template') =</span>
+<span class="lineno">  665 </span><span class="spaces">        </span><span class="istickedoff">object [ &quot;cosigners&quot; .= object (fmap toPair (Map.toList cosigners'))</span>
+<span class="lineno">  666 </span><span class="spaces">               </span><span class="istickedoff">, &quot;template&quot; .= toJSON template']</span>
+<span class="lineno">  667 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  668 </span><span class="spaces">        </span><span class="istickedoff">toPair (cosigner', xpub) =</span>
+<span class="lineno">  669 </span><span class="spaces">            </span><span class="istickedoff">( cosignerToText cosigner'</span>
+<span class="lineno">  670 </span><span class="spaces">            </span><span class="istickedoff">, encodeXPub xpub )</span></span>
+<span class="lineno">  671 </span>
+<span class="lineno">  672 </span>instance FromJSON (Script Cosigner) where
+<span class="lineno">  673 </span>    <span class="decl"><span class="istickedoff">parseJSON v = fromScriptJson parserCosigner <span class="nottickedoff">backtrack</span> v</span>
+<span class="lineno">  674 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  675 </span><span class="spaces">        </span><span class="istickedoff">parserCosigner o = do</span>
+<span class="lineno">  676 </span><span class="spaces">            </span><span class="istickedoff">cosigner &lt;- parseJSON @Cosigner o</span>
+<span class="lineno">  677 </span><span class="spaces">            </span><span class="istickedoff">pure $ RequireSignatureOf cosigner</span>
+<span class="lineno">  678 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">backtrack = \case</span></span>
+<span class="lineno">  679 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">Object o -&gt; do</span></span>
+<span class="lineno">  680 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">mAny  &lt;- o .:? &quot;any&quot;  :: Parser (Maybe Value)</span></span>
+<span class="lineno">  681 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">mAll  &lt;- o .:? &quot;all&quot;  :: Parser (Maybe Value)</span></span>
+<span class="lineno">  682 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">mSome &lt;- o .:? &quot;some&quot; :: Parser (Maybe Value)</span></span>
+<span class="lineno">  683 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">mCos &lt;- o .:? &quot;cosigner&quot; :: Parser (Maybe Value)</span></span>
+<span class="lineno">  684 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">case (mAny, mAll, mSome, mCos) of</span></span>
+<span class="lineno">  685 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(Just{}, Nothing, Nothing, Nothing)  -&gt; parseAnyOf v</span></span>
+<span class="lineno">  686 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(Nothing, Just{}, Nothing, Nothing)  -&gt; parseAllOf v</span></span>
+<span class="lineno">  687 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(Nothing, Nothing, Just{}, Nothing)  -&gt; parseAtLeast v</span></span>
+<span class="lineno">  688 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(Nothing, Nothing, Nothing, Just{})  -&gt; parserCosigner v</span></span>
+<span class="lineno">  689 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(Nothing, Nothing, Nothing, Nothing) -&gt; fail</span></span>
+<span class="lineno">  690 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">&quot;Found object with no known key 'any', 'all', 'some' or 'cosigner'&quot;</span></span>
+<span class="lineno">  691 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">(      _,       _,      _,       _)  -&gt; fail</span></span>
+<span class="lineno">  692 </span><span class="spaces">                        </span><span class="istickedoff"><span class="nottickedoff">&quot;Found multiple keys 'any', 'all', 'cosigner' and/or 'some' at the same level&quot;</span></span>
+<span class="lineno">  693 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">_ -&gt;</span></span>
+<span class="lineno">  694 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Json.typeMismatch &quot;Object only&quot; v</span></span></span>
+<span class="lineno">  695 </span>
+<span class="lineno">  696 </span>instance FromJSON ScriptTemplate where
+<span class="lineno">  697 </span>    <span class="decl"><span class="istickedoff">parseJSON = withObject <span class="nottickedoff">&quot;ScriptTemplate&quot;</span> $ \o -&gt; do</span>
+<span class="lineno">  698 </span><span class="spaces">        </span><span class="istickedoff">template' &lt;- parseJSON &lt;$&gt; o .: &quot;template&quot;</span>
+<span class="lineno">  699 </span><span class="spaces">        </span><span class="istickedoff">cosigners' &lt;- parseCosignerPairs &lt;$&gt; o .: &quot;cosigners&quot;</span>
+<span class="lineno">  700 </span><span class="spaces">        </span><span class="istickedoff">ScriptTemplate &lt;$&gt; (Map.fromList &lt;$&gt; cosigners') &lt;*&gt; template'</span>
+<span class="lineno">  701 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  702 </span><span class="spaces">        </span><span class="istickedoff">parseCosignerPairs = withObject <span class="nottickedoff">&quot;Cosigner pairs&quot;</span> $ \o -&gt;</span>
+<span class="lineno">  703 </span><span class="spaces">            </span><span class="istickedoff">case HM.toList o of</span>
+<span class="lineno">  704 </span><span class="spaces">                </span><span class="istickedoff">[] -&gt; <span class="nottickedoff">fail &quot;Cosigners object array should not be empty&quot;</span></span>
+<span class="lineno">  705 </span><span class="spaces">                </span><span class="istickedoff">cs -&gt; for (reverse cs) $ \(numTxt, str) -&gt; do</span>
+<span class="lineno">  706 </span><span class="spaces">                    </span><span class="istickedoff">cosigner' &lt;- parseJSON @Cosigner (String numTxt)</span>
+<span class="lineno">  707 </span><span class="spaces">                    </span><span class="istickedoff">xpub &lt;- parseXPub str</span>
+<span class="lineno">  708 </span><span class="spaces">                    </span><span class="istickedoff">pure (cosigner', xpub)</span></span>
+
+</pre>
+</body>
+</html>

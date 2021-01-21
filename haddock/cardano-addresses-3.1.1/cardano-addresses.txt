@@ -354,36 +354,69 @@ module Cardano.Address.Script
 
 -- | A <a>Script</a> type represents multi signature script. The script
 --   embodies conditions that need to be satisfied to make it valid.
-data Script
-RequireSignatureOf :: !KeyHash -> Script
-RequireAllOf :: ![Script] -> Script
-RequireAnyOf :: ![Script] -> Script
-RequireSomeOf :: Word8 -> ![Script] -> Script
+data Script (elem :: *)
+RequireSignatureOf :: !elem -> Script
+RequireAllOf :: ![Script elem] -> Script
+RequireAnyOf :: ![Script elem] -> Script
+RequireSomeOf :: Word8 -> ![Script elem] -> Script
 ActiveFromSlot :: Natural -> Script
 ActiveUntilSlot :: Natural -> Script
 
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR
 --   script` realizes This is basically doing the symbolically following:
 --   toCBOR [0,multisigScript]
-serializeScript :: Script -> ByteString
+serializeScript :: Script KeyHash -> ByteString
 
 -- | <a>Script</a> folding
-foldScript :: (KeyHash -> b -> b) -> b -> Script -> b
+foldScript :: (a -> b -> b) -> b -> Script a -> b
 
--- | Validate a <a>Script</a>, semantically
-validateScript :: Script -> Either ErrValidateScript ()
+-- | Represents the script template that show the structure of the script
+--   and determines the expected place of verification keys corresponding
+--   to given cosigners.
+data ScriptTemplate
+ScriptTemplate :: Map Cosigner XPub -> Script Cosigner -> ScriptTemplate
+[cosigners] :: ScriptTemplate -> Map Cosigner XPub
+[template] :: ScriptTemplate -> Script Cosigner
+
+-- | Represents the cosigner of the script, ie., party that co-shares the
+--   script.
+newtype Cosigner
+Cosigner :: Word8 -> Cosigner
 
 -- | Possible validation errors when validating a script
 data ErrValidateScript
-EmptyList :: ErrValidateScript
-ListTooSmall :: ErrValidateScript
-MZero :: ErrValidateScript
-DuplicateSignatures :: ErrValidateScript
+LedgerIncompatible :: ErrValidateScript
 WrongKeyHash :: ErrValidateScript
 Malformed :: ErrValidateScript
+NotRecommended :: ErrRecommendedValidateScript -> ErrValidateScript
 
--- | Pretty-print a validation error.
+-- | Possible recommended validation errors when validating a script
+data ErrRecommendedValidateScript
+EmptyList :: ErrRecommendedValidateScript
+ListTooSmall :: ErrRecommendedValidateScript
+MZero :: ErrRecommendedValidateScript
+DuplicateSignatures :: ErrRecommendedValidateScript
+RedundantTimelocks :: ErrRecommendedValidateScript
+
+-- | Possible validation errors when validating a script template
+data ErrValidateScriptTemplate
+WrongScript :: ErrValidateScript -> ErrValidateScriptTemplate
+DuplicateXPubs :: ErrValidateScriptTemplate
+UnknownCosigner :: ErrValidateScriptTemplate
+NoCosigner :: ErrValidateScriptTemplate
+UnusedCosigner :: ErrValidateScriptTemplate
+
+-- | Validate a <a>Script</a>, semantically
+validateScript :: ValidationLevel -> Script KeyHash -> Either ErrValidateScript ()
+
+-- | Validate a <a>ScriptTemplate</a>, semantically
+validateScriptTemplate :: ValidationLevel -> ScriptTemplate -> Either ErrValidateScriptTemplate ()
+
+-- | Pretty-print a script validation error.
 prettyErrValidateScript :: ErrValidateScript -> String
+
+-- | Pretty-print a script template validation error.
+prettyErrValidateScriptTemplate :: ErrValidateScriptTemplate -> String
 
 -- | A <a>ScriptHash</a> type represents script hash. The hash is expected
 --   to have size of 28-byte.
@@ -392,7 +425,7 @@ ScriptHash :: ByteString -> ScriptHash
 [unScriptHash] :: ScriptHash -> ByteString
 
 -- | Computes the hash of a given script, by first serializing it to CBOR.
-toScriptHash :: Script -> ScriptHash
+toScriptHash :: Script KeyHash -> ScriptHash
 
 -- | Construct an <a>ScriptHash</a> from raw <a>ByteString</a> (28 bytes).
 scriptHashFromBytes :: ByteString -> Maybe ScriptHash
@@ -416,13 +449,17 @@ keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 -- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
 --   <tt>script_vkh</tt> as a human readable prefix.
 keyHashToText :: KeyHash -> Text
+instance GHC.Show.Show Cardano.Address.Script.ErrValidateScriptTemplate
+instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScriptTemplate
 instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
 instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
+instance GHC.Show.Show Cardano.Address.Script.ErrRecommendedValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.ErrRecommendedValidateScript
 instance GHC.Classes.Eq Cardano.Address.Script.ErrKeyHashFromText
 instance GHC.Show.Show Cardano.Address.Script.ErrKeyHashFromText
-instance GHC.Classes.Eq Cardano.Address.Script.Script
-instance GHC.Show.Show Cardano.Address.Script.Script
-instance GHC.Generics.Generic Cardano.Address.Script.Script
+instance GHC.Generics.Generic Cardano.Address.Script.ValidationLevel
+instance GHC.Classes.Eq Cardano.Address.Script.ValidationLevel
+instance GHC.Show.Show Cardano.Address.Script.ValidationLevel
 instance GHC.Classes.Eq Cardano.Address.Script.KeyHash
 instance GHC.Classes.Ord Cardano.Address.Script.KeyHash
 instance GHC.Show.Show Cardano.Address.Script.KeyHash
@@ -431,16 +468,35 @@ instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
 instance GHC.Classes.Ord Cardano.Address.Script.ScriptHash
 instance GHC.Show.Show Cardano.Address.Script.ScriptHash
 instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
-instance Control.DeepSeq.NFData Cardano.Address.Script.Script
-instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.Script
-instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.Script
+instance GHC.Classes.Eq Cardano.Address.Script.ScriptTemplate
+instance GHC.Show.Show Cardano.Address.Script.ScriptTemplate
+instance GHC.Generics.Generic Cardano.Address.Script.ScriptTemplate
+instance GHC.Classes.Eq Cardano.Address.Script.Cosigner
+instance GHC.Classes.Ord Cardano.Address.Script.Cosigner
+instance GHC.Show.Show Cardano.Address.Script.Cosigner
+instance GHC.Generics.Generic Cardano.Address.Script.Cosigner
+instance GHC.Classes.Eq elem => GHC.Classes.Eq (Cardano.Address.Script.Script elem)
+instance GHC.Show.Show elem => GHC.Show.Show (Cardano.Address.Script.Script elem)
+instance GHC.Generics.Generic (Cardano.Address.Script.Script elem)
+instance Control.DeepSeq.NFData Cardano.Address.Script.ValidationLevel
 instance Control.DeepSeq.NFData Cardano.Address.Script.KeyHash
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.KeyHash
+instance Data.Aeson.Types.FromJSON.FromJSON (Cardano.Address.Script.Script Cardano.Address.Script.KeyHash)
 instance Control.DeepSeq.NFData Cardano.Address.Script.ScriptHash
+instance Control.DeepSeq.NFData Cardano.Address.Script.ScriptTemplate
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.ScriptTemplate
+instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.ScriptTemplate
+instance Control.DeepSeq.NFData Cardano.Address.Script.Cosigner
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.Cosigner
+instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.Cosigner
+instance Data.Aeson.Types.FromJSON.FromJSON (Cardano.Address.Script.Script Cardano.Address.Script.Cosigner)
+instance Control.DeepSeq.NFData elem => Control.DeepSeq.NFData (Cardano.Address.Script.Script elem)
+instance Data.Aeson.Types.ToJSON.ToJSON elem => Data.Aeson.Types.ToJSON.ToJSON (Cardano.Address.Script.Script elem)
 
 module Cardano.Address.Script.Parser
 
 -- | Run <a>scriptParser</a> on string input.
-scriptFromString :: String -> Either ErrValidateScript Script
+scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
 
 -- | The script embodies combination of signing keys that need to be met to
 --   make it valid. We assume here that the script could delivered from
@@ -474,22 +530,7 @@ scriptFromString :: String -> Either ErrValidateScript Script
 --   </ol>
 --   
 --   Parser is insensitive to whitespaces.
-scriptParser :: ReadP Script
-
--- | Validate a <a>Script</a>, semantically
-validateScript :: Script -> Either ErrValidateScript ()
-
--- | Possible validation errors when validating a script
-data ErrValidateScript
-EmptyList :: ErrValidateScript
-ListTooSmall :: ErrValidateScript
-MZero :: ErrValidateScript
-DuplicateSignatures :: ErrValidateScript
-WrongKeyHash :: ErrValidateScript
-Malformed :: ErrValidateScript
-
--- | Pretty-print a validation error.
-prettyErrValidateScript :: ErrValidateScript -> String
+scriptParser :: ReadP (Script KeyHash)
 
 module Cardano.Address
 
