@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b8a18e5cc140d637a3f210d61835eebb300457a048afffed09247e33b1086dd
+-- hash: 8b5fb27f5e4a0e594e99acfbb79799ecc51b868044c9d6acef10aa4f1dc11416
 
 name:           cardano-addresses-cli
 version:        3.2.0
@@ -127,6 +127,7 @@ test-suite unit
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
       Command.Script.HashSpec
+      Command.Script.PreimageSpec
       Command.Script.ValidationSpec
       CommandSpec
       Options.Applicative.DerivationSpec
