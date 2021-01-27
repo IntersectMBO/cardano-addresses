@@ -59,6 +59,8 @@ mod liftCmd = command "script" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key public | " <>progName<>" key hash > verKey2.hash"
             , indent 2 $ string ""
             , indent 2 $ bold $ string $ "$ "<>progName<>" script hash \"all [$(cat verKey1.hash),$(cat verKey2.hash)]\""
+            , indent 2 $ string ""
+            , indent 2 $ bold $ string $ "$ "<>progName<>" script preimage \"all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms, active_from 100, active_until 150]\""
             ])
   where
     parser = subparser $ mconcat

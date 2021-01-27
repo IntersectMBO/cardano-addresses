@@ -47,6 +47,12 @@ mod liftCmd = command "preimage" $
             , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
             , indent 4 $ bold $ string "]'"
             , indent 2 $ string "008201828200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+            , string ""
+            , indent 2 $ bold $ string $ progName<>" script preimage 'all "
+            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+            , indent 4 $ bold $ string ", active_from 100, active_until 150"
+            , indent 4 $ bold $ string "]'"
+            , indent 2 $ string "008201838200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8204186482051896"
             ])
   where
     parser = Cmd
