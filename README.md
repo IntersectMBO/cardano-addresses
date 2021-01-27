@@ -152,6 +152,18 @@ Not validated: The list inside a script has duplicate keys (which is not recomme
 </details>
 
 <details>
+  <summary>How to get preimage for a script</summary>
+
+```console
+$ cardano-address script preimage "all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms, script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj]"
+008201828200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333
+
+$  cardano-address script preimage "all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms, active_from 100, active_until 150]"
+008201838200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8204186482051896
+```
+</details>
+
+<details>
   <summary>How to generate a payment script address from a script hash (<strong>script.addr</strong>)</summary>
 
 ```console
