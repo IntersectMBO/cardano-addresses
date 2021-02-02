@@ -1,15 +1,15 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-{ lib
+{ pkgs
+, lib
 , stdenv
 , haskell-nix
 , buildPackages
-, config ? {}
 # GHC attribute name
-, compiler ? config.haskellNix.compiler or "ghc865"
+, compiler
 # Enable profiling
-, profiling ? config.haskellNix.profiling or false
+, profiling ? false
 }:
 let
 
@@ -23,17 +23,15 @@ let
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
-  pkgSet = haskell-nix.cabalProject  (lib.optionalAttrs stdenv.hostPlatform.isWindows {
+  pkgSet = haskell-nix.cabalProject  ({
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
-    # Encountered missing dependencies: unix >=2.5.1 && <2.9
-    ghc = buildPackages.haskell-nix.compiler.${compiler};
   } // {
     inherit src;
-    #ghc = buildPackages.haskell-nix.compiler.${compiler};
+    compiler-nix-name = compiler;
     modules = [
-      { compiler.nix-name = compiler; }
       # Allow reinstallation of Win32
-      { nonReinstallablePkgs =
+      ({ pkgs, ... }: lib.mkIf pkgs.stdenv.hostPlatform.isWindows {
+        nonReinstallablePkgs =
         [ "rts" "ghc-heap" "ghc-prim" "integer-gmp" "integer-simple" "base"
           "deepseq" "array" "ghc-boot-th" "pretty" "template-haskell"
           # ghcjs custom packages
@@ -47,7 +45,7 @@ let
           "xhtml"
           # "stm" "terminfo"
         ];
-      }
+      })
       {
         packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
         packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
@@ -67,6 +65,13 @@ let
           doHaddock = false;
         }
       ))
+
+      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
+        # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
+        packages.Win32.components.library.build-tools = lib.mkForce [];
+        packages.terminal-size.components.library.build-tools = lib.mkForce [];
+        packages.network.components.library.build-tools = lib.mkForce [];
+      })
 
       (lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
         # Make sure we use a buildPackages version of happy
