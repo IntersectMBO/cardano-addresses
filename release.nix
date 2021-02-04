@@ -68,7 +68,7 @@ let
   # Remove build jobs for which cross compiling does not make sense.
   filterJobsCross = filterAttrs (n: _: n != "dockerImage" && n != "shell" && n != "checkCabalProject");
 
-  inherit (systems.examples) mingwW64 musl64i raspberryPi;
+  inherit (systems.examples) mingwW64 musl64 raspberryPi;
 
   jobs = {
     native = mapTestOn (__trace (__toJSON (packagePlatforms project)) (packagePlatforms project));
