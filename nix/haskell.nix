@@ -19,7 +19,7 @@ let
   };
 
   projectPackages = lib.attrNames (haskell-nix.haskellLib.selectProjectPackages
-    (haskell-nix.cabalProject { inherit src; }));
+    (haskell-nix.cabalProject { inherit src; compiler-nix-name = compiler; }));
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
@@ -46,10 +46,14 @@ let
           # "stm" "terminfo"
         ];
       })
-      {
+      ({ config, ... }: {
         packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
         packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
-      }
+        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+          config.hsPkgs.buildPackages.hspec-discover
+          config.hsPkgs.buildPackages.cardano-addresses-cli.components.exes.cardano-address
+        ];
+      })
       # Musl libc fully static build
       (lib.optionalAttrs stdenv.hostPlatform.isMusl (let
         # Module options which adds GHC flags and libraries for a fully static build
