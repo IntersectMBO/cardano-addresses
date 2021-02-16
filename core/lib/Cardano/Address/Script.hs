@@ -391,8 +391,8 @@ recommendedValidation = \case
     redundantTimelocks xs = case L.filter hasTimelocks xs of
         [] -> False
         [_] -> False
-        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
-        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
+        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 > s1
+        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 > s1
         _ -> True
     omitTimelocks = filter (not . hasTimelocks)
 --

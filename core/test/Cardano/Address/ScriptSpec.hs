@@ -447,14 +447,14 @@ spec = do
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
 
         it "valid timelocks" $ do
-            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 11, ActiveUntilSlot 15])
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 11, ActiveUntilSlot 11])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
 
         it "invalid timelocks - contradictory 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
-                                   , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 20]
+                                   , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 25]
                                    ]
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
