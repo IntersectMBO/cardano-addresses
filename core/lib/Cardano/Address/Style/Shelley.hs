@@ -426,27 +426,27 @@ deriveMultisigPublicKey accPub addrIx =
 --
 -- === Generating a 'PaymentAddress' from script credential
 --
--- > import Cardano.ScriptParser ( scriptFromString )
--- > import Cardano.Script ( toScriptHash )
--- > import Codec.Binary.Encoding ( encode, )
+-- > import Cardano.Address.Script.Parser ( scriptFromString )
+-- > import Cardano.Address.Script ( toScriptHash )
+-- > import Codec.Binary.Encoding ( encode )
 -- > import Data.Text.Encoding ( decodeUtf8 )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let verKey1 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe"
--- > let verKey2 = "3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+-- > let verKey1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+-- > let verKey2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 -- > let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
--- > let (Just script) = scriptFromString scriptStr
+-- > let (Right script) = scriptFromString scriptStr
 -- > let scriptHash@(ScriptHash bytes) = toScriptHash script
 -- > decodeUtf8 (encode EBase16 bytes)
 -- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (FromScript scriptHash)
+-- > bech32 $ paymentAddress tag (PaymentFromScript scriptHash)
 -- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
 --
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
--- > let delegationCredential = StakeFromKey $ (toXPub <$> stakeK)
+-- > let delegationCredential = DelegationFromKey $ (toXPub <$> stakeK)
 -- > bech32 $ delegationAddress tag paymentCredential delegationCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
@@ -459,6 +459,11 @@ deriveMultisigPublicKey accPub addrIx =
 -- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
 -- > bech32 $ pointerAddress tag paymentCredential ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
+--
+-- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
+-- > bech32 $ delegationAddress tag (PaymentFromScript scriptHash) (DelegationFromScript scriptHash)
+-- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
+
 
 -- | Possible errors from inspecting a Shelley address
 --
