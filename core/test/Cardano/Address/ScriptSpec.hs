@@ -450,11 +450,56 @@ spec = do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 11, ActiveUntilSlot 11])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
 
-        it "invalid timelocks - contradictory 1" $ do
+        it "valid timelocks when using all 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 25]
+                                   ]
+                    ])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
+
+        it "valid timelocks when using all 2" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 21]
+                                   ]
+                    ])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
+
+        it "invalid timelocks when using all" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireAllOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 25, ActiveUntilSlot 21]
+                                   ]
+                    ])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended TimelockTrap)
+
+        it "valid timelocks when using any" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 25, ActiveUntilSlot 21]
+                                   ]
+                    ])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
+
+        it "invalid timelocks when using any 1" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 25]
+                                   ]
+                    ])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
+
+        it "invalid timelocks when using any 2" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
+                    [ cosigner1
+                    , RequireAnyOf [ cosigner2
+                                   , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 21]
                                    ]
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
