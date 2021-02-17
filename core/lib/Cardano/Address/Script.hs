@@ -486,7 +486,7 @@ prettyErrValidateScript
     -> String
 prettyErrValidateScript = \case
     LedgerIncompatible ->
-        "The script is ill-formed and is not going to be accepted by ledger."
+        "The script is ill-formed and is not going to be accepted by the ledger."
     WrongKeyHash ->
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
@@ -507,7 +507,7 @@ prettyErrValidateScript = \case
     NotRecommended RedundantTimelocks ->
         "Some timelocks used are redundant (which is not recommended)."
     NotRecommended TimelockTrap ->
-        "The timelocks used are contradictory when used with all (which is not recommended)."
+        "The timelocks used are contradictory when used with 'all' (which is not recommended)."
 
 -- | Pretty-print a script template validation error.
 --
