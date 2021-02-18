@@ -362,11 +362,13 @@ recommendedValidation = \case
         when (L.null (omitTimelocks script)) $ Left EmptyList
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (redundantTimelocks script) $ Left RedundantTimelocks
+        when (timelockTrap script) $ Left TimelockTrap
         traverse_ recommendedValidation script
 
     RequireAnyOf script -> do
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (redundantTimelocks script) $ Left RedundantTimelocks
+        when (redundantTimelocksInAny script) $ Left RedundantTimelocks
         traverse_ recommendedValidation script
 
     RequireSomeOf m script -> do
@@ -391,9 +393,30 @@ recommendedValidation = \case
     redundantTimelocks xs = case L.filter hasTimelocks xs of
         [] -> False
         [_] -> False
-        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 <= s1
-        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 <= s1
+        [_, _] -> False
         _ -> True
+    -- situation where any [active_until slot1, active_from slot2]
+    -- (a) acceptable when slot1 < slot2 as either it is satisfied
+    --    (0, slot1) or <slot2, +inf)
+    -- (b) otherwise redundant as it is always satified
+    redundantTimelocksInAny xs = case L.filter hasTimelocks xs of
+        [] -> False
+        [_] -> False
+        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 >= s1
+        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 >= s1
+        _ -> True
+    -- situation where all [active_until slot1, active_from slot2]
+    -- (a) trap when slot1 < slot2 as both can never be satisfied
+    --    (0, slot1)
+    --               (slot2, +inf)
+    -- (b) acceptable when slot1 == slot2
+    --    then all satisfied at slot1
+    -- (c) acceptable when slot1 >= slot2
+    --    then all satisfied at <slot2, slot1)
+    timelockTrap xs =  case L.filter hasTimelocks xs of
+        [ActiveFromSlot s1, ActiveUntilSlot s2] -> s2 < s1
+        [ActiveUntilSlot s2, ActiveFromSlot s1] -> s2 < s1
+        _ -> False
     omitTimelocks = filter (not . hasTimelocks)
 --
 -- ScriptTemplate validation
@@ -441,6 +464,7 @@ data ErrRecommendedValidateScript
     | MZero
     | DuplicateSignatures
     | RedundantTimelocks
+    | TimelockTrap
     deriving (Eq, Show)
 
 -- | Possible validation errors when validating a script template
@@ -462,7 +486,7 @@ prettyErrValidateScript
     -> String
 prettyErrValidateScript = \case
     LedgerIncompatible ->
-        "The script is ill-formed and is not going to be accepted by ledger."
+        "The script is ill-formed and is not going to be accepted by the ledger."
     WrongKeyHash ->
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
@@ -482,6 +506,8 @@ prettyErrValidateScript = \case
         "The list inside a script has duplicate keys (which is not recommended)."
     NotRecommended RedundantTimelocks ->
         "Some timelocks used are redundant (which is not recommended)."
+    NotRecommended TimelockTrap ->
+        "The timelocks used are contradictory when used with 'all' (which is not recommended)."
 
 -- | Pretty-print a script template validation error.
 --
@@ -504,30 +530,34 @@ prettyErrValidateScriptTemplate = \case
 --
 
 -- Examples of Script jsons:
---"e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
---{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
---          , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
+--"script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+--{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+--          , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 --          ]
 --}
---{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
---          , {"any": [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
---                    , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
+--{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+--          , {"any": [ "script_vkh18srsxr3khll7vl3w9mqfu55n7wzxxlxj7qzr2mhnyrenxv223vj"
+--                    , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vw"
 --                    ]
 --            }
 --          ]
 --}
---{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
---          , {"some": { "from" :[ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735b"
---                               , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735c"
---                               , "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735d"
+--{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+--          , {"some": { "from" :[ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+--                               , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+--                               , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223ll"
 --                               ]
 --                     , "at_least" : 2
 --                     }
 --            }
 --          ]
 --}
---{ "all" : [ "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+--{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 --          , {"active_from": 120 }
+--          ]
+--}
+--{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+--          , any [{"active_until": 100 }, {"active_from": 120 }]
 --          ]
 --}
 

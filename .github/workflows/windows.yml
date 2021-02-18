@@ -22,7 +22,7 @@ jobs:
       uses: actions/checkout@v1
 
     - name: 🧰 Setup Stack
-      uses: mstksg/setup-stack@69e4283f
+      uses: mstksg/setup-stack@69e4283faeb7a89f26326daa36e9cc0fa7a023bd
 
     - name: 💾 Cache Dependencies
       id: cache
