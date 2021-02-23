@@ -18,15 +18,34 @@ let
       src = ../.;
   };
 
+  # Constraints not in `cabal.project.freeze for cross platform support
+  cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
+    constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
+  '';
+
+  # For some reason windows cross compilation needs process 1.6.10.0 as well.
+  # (it might be a build tool dependency?)
+  cabalProjectFreeze =
+    (if stdenv.hostPlatform.isWindows
+      then builtins.replaceStrings ["any.process ==1.6.5.0,"] ["any.process ==1.6.5.0 || ==1.6.10.0,"]
+      else x: x) (__readFile ../cabal.project.freeze);
+
+  # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
+  # not build for windows on a per package bases (rather than using --disable-tests).
+  # configureArgs = lib.optionalString stdenv.targetPlatform.isWindows "--disable-tests";
+  configureArgs = "";
+
+  # Arguments used as inputs for `cabal configure` (like `configureArgs` and `cabalProjectLocal`)
+  # should be passed to this `cabalProject` call as well or `cabal configure` will have to run twice.
   projectPackages = lib.attrNames (haskell-nix.haskellLib.selectProjectPackages
-    (haskell-nix.cabalProject { inherit src; }));
+    (haskell-nix.cabalProject { inherit src cabalProjectLocal cabalProjectFreeze configureArgs; compiler-nix-name = compiler; }));
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
   pkgSet = haskell-nix.cabalProject  ({
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
-    inherit src;
+    inherit src cabalProjectLocal cabalProjectFreeze configureArgs;
     compiler-nix-name = compiler;
     modules = [
       # Allow reinstallation of Win32
@@ -46,25 +65,23 @@ let
           # "stm" "terminfo"
         ];
       })
-      {
+      ({ config, ... }: {
         packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
         packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
-      }
-      # Musl libc fully static build
-      (lib.optionalAttrs stdenv.hostPlatform.isMusl (let
-        # Module options which adds GHC flags and libraries for a fully static build
-        fullyStaticOptions = {
-          enableShared = false;
-          enableStatic = true;
-        };
-      in
-        {
-          packages = lib.genAttrs projectPackages (name: fullyStaticOptions);
 
-          # Haddock not working and not needed for cross builds
-          doHaddock = false;
-        }
-      ))
+        # This works around an issue with `cardano-addresses-cli.cabal`
+        # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
+        # cardano-address package instead of the `cardano-addresses-cli`.
+        # For some reason `cabal configure` fails if it is changed to:
+        # `build-tool-depends: cardano-address-cli:cardano-address
+        # Explicitly overriding the `build-tools` allows `build-tool: cardano-address`
+        # for now.  A better fix would be to work out why cabal fails when
+        # `build-tool-depends` is used.
+        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+          config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
+          config.hsPkgs.buildPackages.cardano-addresses-cli.components.exes.cardano-address
+        ];
+      })
 
       ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
         # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
@@ -73,7 +90,7 @@ let
         packages.network.components.library.build-tools = lib.mkForce [];
       })
 
-      (lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
+      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
         # Make sure we use a buildPackages version of happy
         packages.pretty-show.components.library.build-tools = [ buildPackages.haskell-nix.haskellPackages.happy ];
 
@@ -90,9 +107,6 @@ let
         packages.semigroupoids.package.buildType = lib.mkForce "Simple";
       })
     ];
-    # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
-    # not build for windows on a per package bases (rather than using --disable-tests).
-    # configureArgs = lib.optionalString stdenv.hostPlatform.isWindows "--disable-tests";
   });
 in
   pkgSet
