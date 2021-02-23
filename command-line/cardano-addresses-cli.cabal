@@ -153,7 +153,7 @@ test-suite unit
     , cardano-addresses
     , cardano-addresses-cli
     , containers
-    , hjsonschema
+    , hjsonschema >= 1.10.0
     , hspec
     , process
     , string-interpolate

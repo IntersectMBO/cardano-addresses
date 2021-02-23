@@ -14,8 +14,11 @@ source-repository-package
     tag: 2547ad1e80aeabca2899951601079408becbc92c
     --sha256: 1p2kg2w02q5w1cvqzhfhqmxviy4xrzada3mmb096j2n6hfr20kri
 
-allow-older: *
-allow-newer: *
+-- Relax overly strict bounds in hjsonschema and hjsonpointer
+allow-newer:
+    hjsonschema:aeson
+  , hjsonschema:hjsonpointer
+  , hjsonpointer:aeson
 
 package cardano-addresses
     ghc-options: -ddump-to-file -ddump-hi
