@@ -22,5 +22,17 @@
         "type": "tarball",
         "url": "https://github.com/input-output-hk/iohk-nix/archive/4efc38924c64c23a582c84950c8c25f72ff049cc.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "nixpkgs-20.03-darwin",
+        "description": "Nix Packages collection",
+        "homepage": "",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "732684b720f829056dcb62380c2c17e4d3ebd947",
+        "sha256": "1fyrgpgpn906c96bhm4ad5n4qq27flhnfpiv395iryk3zsyig4dk",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/732684b720f829056dcb62380c2c17e4d3ebd947.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
