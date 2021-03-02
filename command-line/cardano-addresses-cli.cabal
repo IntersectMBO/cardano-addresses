@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8b5fb27f5e4a0e594e99acfbb79799ecc51b868044c9d6acef10aa4f1dc11416
+-- hash: 24a4af2b2bdebd919fb0abcfe27bc2da2a39eaaf82c5ebc9e6247f1431e28c82
 
 name:           cardano-addresses-cli
 version:        3.2.0
@@ -153,7 +153,7 @@ test-suite unit
     , cardano-addresses
     , cardano-addresses-cli
     , containers
-    , hjsonschema
+    , hjsonschema >=1.10.0
     , hspec
     , process
     , string-interpolate
