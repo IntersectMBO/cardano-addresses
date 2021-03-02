@@ -23,13 +23,6 @@ let
     constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
   '';
 
-  # For some reason windows cross compilation needs process 1.6.10.0 as well.
-  # (it might be a build tool dependency?)
-  cabalProjectFreeze =
-    (if stdenv.hostPlatform.isWindows
-      then builtins.replaceStrings ["any.process ==1.6.5.0,"] ["any.process ==1.6.5.0 || ==1.6.10.0,"]
-      else x: x) (__readFile ../cabal.project.freeze);
-
   # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
   # not build for windows on a per package bases (rather than using --disable-tests).
   # configureArgs = lib.optionalString stdenv.targetPlatform.isWindows "--disable-tests";
@@ -38,14 +31,14 @@ let
   # Arguments used as inputs for `cabal configure` (like `configureArgs` and `cabalProjectLocal`)
   # should be passed to this `cabalProject` call as well or `cabal configure` will have to run twice.
   projectPackages = lib.attrNames (haskell-nix.haskellLib.selectProjectPackages
-    (haskell-nix.cabalProject { inherit src cabalProjectLocal cabalProjectFreeze configureArgs; compiler-nix-name = compiler; }));
+    (haskell-nix.cabalProject { inherit src cabalProjectLocal configureArgs; compiler-nix-name = compiler; }));
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
   pkgSet = haskell-nix.cabalProject  ({
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
-    inherit src cabalProjectLocal cabalProjectFreeze configureArgs;
+    inherit src cabalProjectLocal configureArgs;
     compiler-nix-name = compiler;
     modules = [
       # Allow reinstallation of Win32
