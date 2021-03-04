@@ -68,12 +68,13 @@ let
   # Remove build jobs for which cross compiling does not make sense.
   filterJobsCross = filterAttrs (n: _: n != "dockerImage" && n != "shell" && n != "checkCabalProject");
 
-  inherit (systems.examples) mingwW64 musl64;
+  inherit (systems.examples) mingwW64 musl64 ghcjs;
 
   jobs = {
     native = mapTestOn (__trace (__toJSON (packagePlatforms project)) (packagePlatforms project));
     "${mingwW64.config}" = recursiveUpdate (mapTestOnCross mingwW64 (packagePlatformsCross (filterJobsCross project))) disabledMingwW64Tests;
     musl64 = mapTestOnCross musl64 (packagePlatformsCross (filterJobsCross project));
+    ghcjs = mapTestOnCross ghcjs (packagePlatformsCross (filterJobsCross project));
   } // (mkRequiredJob (concatLists [
     (collectJobs jobs."${mingwW64.config}".checks.tests)
     #(collectJobs jobs.native.checks)
