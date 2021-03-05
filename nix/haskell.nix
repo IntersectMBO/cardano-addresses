@@ -99,6 +99,11 @@ let
         packages.nonempty-vector.package.buildType = lib.mkForce "Simple";
         packages.semigroupoids.package.buildType = lib.mkForce "Simple";
       })
+
+      ({pkgs, config, ... }: lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+      })
     ];
   });
 in
