@@ -23,8 +23,7 @@ import Cardano.Address
     ( Address
     , ChainPointer (..)
     , HasNetworkDiscriminant (..)
-    , bech32
-    , bech32With
+    , HasNetworkDiscriminant (NetworkDiscriminant)
     , fromBech32
     , unsafeMkAddress
     )
@@ -40,9 +39,7 @@ import Cardano.Address.Derivation
     , indexFromWord32
     , toXPub
     , unsafeMkIndex
-    , xprvToBytes
     , xpubFromBytes
-    , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
@@ -61,6 +58,9 @@ import Cardano.Address.Style.Shelley
     , roleFromIndex
     , roleToIndex
     )
+
+import Cardano.Codec.Bech32
+    ( bech32 )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -99,9 +99,10 @@ import Text.Pretty.Simple
     ( defaultOutputOptionsNoColor, pShowOpt )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
-import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
+import Data.Either.Extra
+    ( eitherToMaybe )
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
@@ -130,13 +131,13 @@ spec = do
 
     describe "Text Encoding Roundtrips" $ do
         prop "bech32 . fromBech32 - Shelley - payment address" $
-            prop_roundtripTextEncoding bech32 fromBech32
+            prop_roundtripTextEncoding bech32 (eitherToMaybe . fromBech32)
 
         prop "bech32 . fromBech32 - Shelley - delegation address" $
-            prop_roundtripTextEncodingDelegation bech32 fromBech32
+            prop_roundtripTextEncodingDelegation bech32 (eitherToMaybe . fromBech32)
 
         prop "bech32 . fromBech32 - Shelley - pointer address" $
-            prop_roundtripTextEncodingPointer bech32 fromBech32
+            prop_roundtripTextEncodingPointer bech32 (eitherToMaybe . fromBech32)
 
     describe "Golden tests" $ do
         goldenTestPointerAddress GoldenTestPointerAddress
@@ -144,16 +145,14 @@ spec = do
             ,  stakePtr = ChainPointer 128 2 3
             ,  netTag = 0
             ,  expectedAddr =
-                    "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
-                    \81000203"
+                    "408a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d481000203"
             }
         goldenTestPointerAddress GoldenTestPointerAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
             ,  stakePtr = ChainPointer 128 2 3
             ,  netTag = 1
             ,  expectedAddr =
-                    "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
-                    \81000203"
+                    "418a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d481000203"
             }
         goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
@@ -172,16 +171,14 @@ spec = do
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
             ,  netTag = 0
             ,  expectedAddr =
-                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
-                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
             }
         goldenTestBaseAddress GoldenTestBaseAddress
             {  verKeyPayment = "1a2a3a4a5a6a7a8a"
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
             ,  netTag = 1
             ,  expectedAddr =
-                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4\
-                    \08b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
             }
 
     describe "Test vectors" $ do
@@ -379,31 +376,31 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
 
 data TestVector = TestVector
     {
-      -- | The extended root private key, bech32 encoded prefixed with 'root_xprv'
+      -- | The extended root private key, bech32 encoded prefixed with 'root_xsk'
       rootXPrv :: Text
 
-      -- | The extended 0th account private key, bech32 encoded prefixed with 'acct_xprv'
+      -- | The extended 0th account private key, bech32 encoded prefixed with 'acct_xsk'
     , accXPrv0 :: Text
 
-      -- | The extended 1st account private key, bech32 encoded prefixed with 'acct_xprv'
+      -- | The extended 1st account private key, bech32 encoded prefixed with 'acct_xsk'
     , accXPrv1 :: Text
 
-      -- | The extended 0th address private key, bech32 encoded prefixed with 'addr_xprv'
+      -- | The extended 0th address private key, bech32 encoded prefixed with 'addr_xsk'
     , addrXPrv0 :: Text
 
-      -- | The extended 0th address public key, bech32 encoded prefixed with 'addr_xpub'
+      -- | The extended 0th address public key, bech32 encoded prefixed with 'addr_xvk'
     , addrXPub0 :: Text
 
-      -- | The extended 1st address private key, bech32 encoded prefixed with 'addr_xprv'
+      -- | The extended 1st address private key, bech32 encoded prefixed with 'addr_xsk'
     , addrXPrv1 :: Text
 
-      -- | The extended 1st address public key, bech32 encoded prefixed with 'addr_xpub'
+      -- | The extended 1st address public key, bech32 encoded prefixed with 'addr_xvk'
     , addrXPub1 :: Text
 
-      -- | The extended 1442nd address private key, bech32 encoded prefixed with 'addr_xprv'
+      -- | The extended 1442nd address private key, bech32 encoded prefixed with 'addr_xsk'
     , addrXPrv1442 :: Text
 
-      -- | The extended 1442nd address public key, bech32 encoded prefixed with 'addr_xpub'
+      -- | The extended 1442nd address public key, bech32 encoded prefixed with 'addr_xvk'
     , addrXPub1442 :: Text
 
       -- | The payment address for 0th address key, with a networking tag 0, 3 and 6, respectively.
@@ -461,32 +458,31 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    let (Right hrpRoot) = Bech32.humanReadablePartFromText "root_xprv"
-    let rootXPrv = bech32With hrpRoot $ getExtendedKeyAddr rootK
+    let rootXPrv = bech32 rootK
 
-    let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
     let Just accIx0 = indexFromWord32 @(Index 'Hardened _) 0x80000000
     let acctK0 = deriveAccountPrivateKey rootK accIx0
-    let accXPrv0 = bech32With hrp $ getExtendedKeyAddr acctK0
+    let accXPrv0 = bech32 acctK0
     let Just accIx1 = indexFromWord32 @(Index 'Hardened _) 0x80000001
     let acctK1 = deriveAccountPrivateKey rootK accIx1
-    let accXPrv1 = bech32With hrp $ getExtendedKeyAddr acctK1
+    let accXPrv1 = bech32 acctK1
 
-    let (Right hrpPrv) = Bech32.humanReadablePartFromText "addr_xprv"
-    let (Right hrpPub) = Bech32.humanReadablePartFromText "addr_xpub"
     let Just addIx0 = indexFromWord32 @(Index 'Soft _) 0x00000000
     let addrK0prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx0
-    let addrXPrv0 = bech32With hrpPrv $ getExtendedKeyAddr addrK0prv
-    let addrXPub0 = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
+    let addrXPrv0 = bech32 addrK0prv
+    let addrXPub0' = toXPub <$> addrK0prv
+    let addrXPub0 = bech32 addrXPub0'
 
     let Just addIx1 = indexFromWord32 @(Index 'Soft _) 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
-    let addrXPrv1 = bech32With hrpPrv $ getExtendedKeyAddr addrK1prv
-    let addrXPub1 = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1prv
+    let addrXPrv1 = bech32 addrK1prv
+    let addrXPub1' = toXPub <$> addrK1prv
+    let addrXPub1 = bech32 addrXPub1'
     let Just addIx1442 = indexFromWord32 @(Index 'Soft _) 0x000005a2
     let addrK1442prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1442
-    let addrXPrv1442 = bech32With hrpPrv $ getExtendedKeyAddr addrK1442prv
-    let addrXPub1442 = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1442prv
+    let addrXPrv1442 = bech32 addrK1442prv
+    let addrXPub1442' = toXPub <$> addrK1442prv
+    let addrXPub1442 = bech32 addrXPub1442'
 
     let networkTags = rights $ mkNetworkDiscriminant <$> [0,3,6]
     let paymentAddr0 = getPaymentAddr addrK0prv <$> networkTags
@@ -509,8 +505,6 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let vec = TestVector {..}
     goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
   where
-    getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
-    getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =

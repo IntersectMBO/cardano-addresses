@@ -23,9 +23,6 @@ module Cardano.Address
       -- * Conversion From / To Text
     , base58
     , fromBase58
-    , bech32
-    , bech32With
-    , fromBech32
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -33,7 +30,11 @@ module Cardano.Address
     , NetworkTag (..)
     , invariantSize
     , invariantNetworkTag
-    ) where
+    , StakeVerificationKeyHash(..)
+    , AddressVerificationKeyHash(..)
+    , bech32
+    , fromBech32
+    , addressHrp) where
 
 import Prelude
 
@@ -43,16 +44,22 @@ import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
+import Codec.Binary.Bech32.Internal
+    ( humanReadablePartToText )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
+import Data.Bits
+    ( Bits (testBit) )
 import Data.ByteString
-    ( ByteString )
+    ( ByteString, uncons )
 import Data.Either.Extra
     ( eitherToMaybe )
+import Data.Foldable
+    ( fold )
 import Data.Text
     ( Text )
 import Data.Word
@@ -64,6 +71,8 @@ import GHC.Stack
 import Numeric.Natural
     ( Natural )
 
+import Cardano.Codec.Bech32
+    ( ToBech32 (..), bech32With )
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Codec.Binary.Encoding as E
 import qualified Data.ByteString as BS
@@ -77,6 +86,29 @@ newtype Address = Address
     { unAddress :: ByteString
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData Address
+
+instance ToBech32 Address where
+    bech32 addr = bech32With (addressHrp addr) $ unAddress addr
+
+-- | Decode a bech32-encoded  'Text' into an 'Address'
+--
+-- @since 1.0.0
+fromBech32 :: Text -> Either String Address
+fromBech32 text = do
+  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
+  if hrp `elem` [CIP5.addr, CIP5.addr_test] then
+    pure $ Address bs
+  else
+    Left $ fold
+        [ "Human Readable Part should be addr or addr_test but is "
+        , show (humanReadablePartToText hrp)
+        ]
+
+addressHrp :: Address -> HumanReadablePart
+addressHrp (Address bs) =
+    case uncons bs of
+        Just (w8, _) | testBit w8 0 -> CIP5.addr
+        _ -> CIP5.addr_test
 
 -- Unsafe constructor for easily lifting bytes inside an 'Address'.
 --
@@ -98,26 +130,6 @@ fromBase58 =
     deserialiseCbor (unsafeMkAddress <$> decodeAddress)
    <=<
     eitherToMaybe . E.fromBase58 . T.encodeUtf8
-
--- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
---
--- @since 1.0.0
-bech32 :: Address -> Text
-bech32 = bech32With CIP5.addr
-
--- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
---
--- @since 2.0.0
-bech32With :: HumanReadablePart -> Address -> Text
-bech32With hrp =
-    T.decodeUtf8 . encode (EBech32 hrp) . unAddress
-
--- | Decode a bech32-encoded  'Text' into an 'Address'
---
--- @since 1.0.0
-fromBech32 :: Text -> Maybe Address
-fromBech32 =
-    eitherToMaybe . fmap (unsafeMkAddress . snd) . E.fromBech32 (const id) . T.encodeUtf8
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
@@ -237,3 +249,12 @@ invariantNetworkTag limit (NetworkTag num)
       ++ show num
       ++ ", but expected to be less than "
       ++ show limit
+
+newtype AddressVerificationKeyHash =
+    AddressVerificationKeyHash { unAddressVerificationKeyHash :: ByteString }
+instance ToBech32 AddressVerificationKeyHash where
+    bech32 (AddressVerificationKeyHash kh) = bech32With CIP5.addr_vkh kh
+newtype StakeVerificationKeyHash =
+    StakeVerificationKeyHash { unStakeVerificationKeyHash :: ByteString }
+instance ToBech32 StakeVerificationKeyHash where
+    bech32 (StakeVerificationKeyHash kh) = bech32With CIP5.stake_vkh kh
