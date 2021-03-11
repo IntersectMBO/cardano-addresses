@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0c3e3192f31d19b6d6e8fd2c67a8b1042f18821f85127750a7647228e440a158
+-- hash: 2cb4ebcb589b12db26e8739f49ff13f4ad8a5c02eef7ba375392192101d27da0
 
 name:           cardano-addresses
 version:        3.2.0
@@ -47,7 +47,8 @@ library
       Paths_cardano_addresses
   hs-source-dirs:
       lib
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
       aeson
@@ -73,6 +74,8 @@ library
     , unordered-containers
   if flag(release)
     ghc-options: -Werror
+  if impl(ghcjs) || os(ghcjs)
+    ghc-options: jsbits/cardano-crypto.js
   default-language: Haskell2010
 
 test-suite unit
@@ -94,7 +97,8 @@ test-suite unit
       Paths_cardano_addresses
   hs-source-dirs:
       test
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-tool-depends:
       hspec-discover:hspec-discover
