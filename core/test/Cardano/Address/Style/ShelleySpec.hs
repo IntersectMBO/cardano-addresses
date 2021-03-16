@@ -23,7 +23,6 @@ import Cardano.Address
     ( Address
     , ChainPointer (..)
     , HasNetworkDiscriminant (..)
-    , HasNetworkDiscriminant (NetworkDiscriminant)
     , bech32
     , bech32With
     , fromBech32
@@ -35,8 +34,7 @@ import Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index
-    , hardenedIndex
-    , softIndex
+    , Indexed (..)
     , SoftDerivation (..)
     , XPrv
     , XPub
@@ -72,10 +70,12 @@ import Data.Either
     ( rights )
 import Data.Function
     ( (&) )
+import Data.Maybe
+    ( isNothing )
 import Data.Text
     ( Text )
 import Test.Arbitrary
-    ()
+    ( arbitraryIndexed, shrinkIndexed )
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
 import Test.Hspec.QuickCheck
@@ -83,15 +83,12 @@ import Test.Hspec.QuickCheck
 import Test.QuickCheck
     ( Arbitrary (..)
     , Property
-    , arbitraryBoundedEnum
     , choose
     , counterexample
-    , expectFailure
     , label
     , property
     , vector
     , (===)
-    , (==>)
     )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
@@ -113,12 +110,12 @@ spec = do
         it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for multisig for delegation credential" $
             property prop_publicMultisigForDelegationDerivation
 
-    describe "Bounded / Enum relationship" $ do
-        it "Calling toEnum for invalid value gives a runtime err (Role)"
-            (property prop_toEnumRole)
+    describe "Bounded / Indexed relationship" $ do
+        it "Calling fromWord32 for invalid value fails (Role)" $
+            property prop_fromWord32Role
 
-    describe "Enum Roundtrip" $ do
-        it "Role" (property prop_roundtripEnumRole)
+    describe "Indexed Roundtrip" $ do
+        it "Role" $ property prop_roundtripIndexedRole
 
     describe "Proper pointer addresses construction" $ do
         it "Using different numbers in DelegationPointerAddress does not fail"
@@ -897,14 +894,14 @@ prop_accountKeyDerivation (mw, (SndFactor sndFactor)) ix =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
 
-prop_toEnumRole :: Int -> Property
-prop_toEnumRole n =
-    n > fromEnum UTxOInternal ==> expectFailure $ property $
-        (toEnum n :: Role) `seq` ()
+prop_fromWord32Role :: Int -> Property
+prop_fromWord32Role n =
+    (isNothing (fromWord32 @Role (fromIntegral n)))
+    ===
+    (n > fromIntegral (toWord32 MultisigForDelegation) || n < 0)
 
-prop_roundtripEnumRole :: Role -> Property
-prop_roundtripEnumRole ix =
-    (toEnum . fromEnum) ix === ix
+prop_roundtripIndexedRole :: Role -> Property
+prop_roundtripIndexedRole ix = (fromWord32 . toWord32) ix === Just ix
 
 prop_pointerAddressConstruction
     :: (SomeMnemonic, SndFactor)
@@ -1099,31 +1096,31 @@ testVectors TestVector{..} = it (show $ T.unpack <$> mnemonic) $ do
     rootXPrv' `shouldBe` rootXPrv
 
     let (Right hrp) = Bech32.humanReadablePartFromText "acct_xprv"
-    let Just accIx0 = hardenedIndex 0x80000000
+    let Just accIx0 = fromWord32 @(Index 'Hardened _) 0x80000000
     let acctK0 = deriveAccountPrivateKey rootK accIx0
     let accXPrv0' = bech32With hrp $ getExtendedKeyAddr acctK0
     accXPrv0' `shouldBe` accXPrv0
-    let Just accIx1 = hardenedIndex 0x80000001
+    let Just accIx1 = fromWord32 @(Index 'Hardened _) 0x80000001
     let acctK1 = deriveAccountPrivateKey rootK accIx1
     let accXPrv1' = bech32With hrp $ getExtendedKeyAddr acctK1
     accXPrv1' `shouldBe` accXPrv1
 
     let (Right hrpPrv) = Bech32.humanReadablePartFromText "addr_xprv"
     let (Right hrpPub) = Bech32.humanReadablePartFromText "addr_xpub"
-    let Just addIx0 = softIndex 0x00000000
+    let Just addIx0 = fromWord32 @(Index 'Soft _) 0x00000000
     let addrK0prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx0
     let addrXPrv0' = bech32With hrpPrv $ getExtendedKeyAddr addrK0prv
     addrXPrv0' `shouldBe` addrXPrv0
     let addrXPub0' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK0prv
     addrXPub0' `shouldBe` addrXPub0
 
-    let Just addIx1 = softIndex 0x00000001
+    let Just addIx1 = fromWord32 @(Index 'Soft _) 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
     let addrXPrv1' = bech32With hrpPrv $ getExtendedKeyAddr addrK1prv
     addrXPrv1' `shouldBe` addrXPrv1
     let addrXPub1' = bech32With hrpPub $ getPublicKeyAddr $ toXPub <$> addrK1prv
     addrXPub1' `shouldBe` addrXPub1
-    let Just addIx1442 = softIndex 0x000005a2
+    let Just addIx1442 = fromWord32 @(Index 'Soft _) 0x000005a2
     let addrK1442prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1442
     let addrXPrv1442' = bech32With hrpPrv $ getExtendedKeyAddr addrK1442prv
     addrXPrv1442' `shouldBe` addrXPrv1442
@@ -1255,5 +1252,5 @@ b16decode :: Text -> Either String ByteString
 b16decode = fromBase16 . T.encodeUtf8
 
 instance Arbitrary Role where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
+    shrink = shrinkIndexed
+    arbitrary = arbitraryIndexed

@@ -90,8 +90,7 @@ import Cardano.Address.Derivation
     , DerivationScheme (..)
     , DerivationType (..)
     , Index
-    , hardenedIndex
-    , softIndex
+    , Indexed (..)
     , XPrv
     , XPub
     , credentialHashSize
@@ -211,32 +210,20 @@ data Role
 
 instance NFData Role
 
--- Not deriving 'Enum' because this could have a dramatic impact if we were
--- to assign the wrong index to the corresponding constructor (by swapping
--- around the constructor above for instance).
-
--- XXX we should probably remove this instance
-instance Enum Role where
-    toEnum = \case
-        0 -> UTxOExternal
-        1 -> UTxOInternal
-        2 -> Stake
-        3 -> MultisigForPayment
-        4 -> MultisigForDelegation
-        _ -> error "Role.toEnum: bad argument"
-    fromEnum = \case
+instance Indexed Role where
+    fromWord32 = \case
+        0 -> Just UTxOExternal
+        1 -> Just UTxOInternal
+        2 -> Just Stake
+        3 -> Just MultisigForPayment
+        4 -> Just MultisigForDelegation
+        _ -> Nothing
+    toWord32 = \case
         UTxOExternal -> 0
         UTxOInternal -> 1
         Stake -> 2
         MultisigForPayment -> 3
         MultisigForDelegation -> 4
-
-roleIndex :: Role -> Word32
-roleIndex UTxOExternal = 0
-roleIndex UTxOInternal = 1
-roleIndex Stake = 2
-roleIndex MultisigForPayment = 3
-roleIndex MultisigForDelegation = 4
 
 --
 -- Key Derivation
@@ -257,10 +244,10 @@ roleIndex MultisigForDelegation = 4
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > let accIx = toEnum 0x80000000
+-- > let Just accIx = fromWord32 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
--- > let addIx = toEnum 0x00000014
+-- > let Just addIx = fromWord32 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
 -- > let stakeK = deriveDelegationPrivateKey acctK
@@ -284,8 +271,8 @@ instance Internal.HardDerivation Shelley where
 
     deriveAccountPrivateKey (Shelley rootXPrv) accIx =
         let
-            Just purposeIx = hardenedIndex purposeIndex
-            Just coinTypeIx = hardenedIndex coinTypeIndex
+            Just purposeIx = fromWord32 @(Index 'Hardened _) purposeIndex
+            Just coinTypeIx = fromWord32 @(Index 'Hardened _) coinTypeIndex
             purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
                 deriveXPrv DerivationScheme2 rootXPrv purposeIx
             coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
@@ -297,9 +284,9 @@ instance Internal.HardDerivation Shelley where
 
     deriveAddressPrivateKey (Shelley accXPrv) role addrIx =
         let
-            Just roleCode = softIndex (roleIndex role)
+            Just roleIx = fromWord32 @(Index 'Soft _) (toWord32 role)
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv roleCode
+                deriveXPrv DerivationScheme2 accXPrv roleIx
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
@@ -308,9 +295,9 @@ instance Internal.HardDerivation Shelley where
 instance Internal.SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            roleCode <- softIndex (roleIndex role)
+            let Just roleIx = fromWord32 @(Index 'Soft _) (toWord32 role)
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub roleCode
+                deriveXPub DerivationScheme2 accXPub roleIx
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Shelley addrXPub

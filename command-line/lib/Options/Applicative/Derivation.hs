@@ -38,12 +38,7 @@ module Options.Applicative.Derivation
 import Prelude
 
 import Cardano.Address.Derivation
-    ( DerivationType (..)
-    , Index
-    , wholeDomainIndex
-    , XPub
-    , xpubFromBytes
-    )
+    ( DerivationType (..), Index, XPub, wholeDomainIndex, xpubFromBytes )
 import Codec.Binary.Bech32
     ( HumanReadablePart, humanReadablePartToText )
 import Codec.Binary.Encoding
@@ -114,7 +109,7 @@ derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
 
 newtype DerivationIndex = DerivationIndex { getDerivationIndex :: Word32 }
     deriving stock   (Show, Eq)
-    deriving newtype (Bounded, Enum, Ord)
+    deriving newtype (Bounded, Ord)
 
 -- | Safely cast a 'DerivationIndex' to an 'Integer'.
 indexToInteger :: DerivationIndex -> Integer

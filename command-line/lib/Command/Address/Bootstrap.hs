@@ -16,7 +16,7 @@ import Prelude hiding
 import Cardano.Address
     ( AddressDiscrimination (..), NetworkDiscriminant, base58 )
 import Cardano.Address.Derivation
-    ( Index, castWholeDomainIndex, XPub )
+    ( XPub, coerceWholeDomainIndex )
 import Cardano.Address.Style.Byron
     ( Byron )
 import Options.Applicative
@@ -89,7 +89,7 @@ run Cmd{networkTag,rootXPub,derivationPath} = do
                 (fail "A root public key must be provided when --path is provided") pure rootXPub
             case castDerivationPath untypedPath of
                 [acctIx, addrIx] -> do
-                    let path = (acctIx, castWholeDomainIndex addrIx)
+                    let path = (acctIx, coerceWholeDomainIndex addrIx)
                         xkey = Byron.liftXPub root path xpub
                     pure $ Byron.paymentAddress discriminant xkey
                 _ -> do

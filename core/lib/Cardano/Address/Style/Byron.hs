@@ -74,7 +74,8 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationScheme (DerivationScheme1)
     , DerivationType (..)
-    , Index (..)
+    , Index
+    , Indexed (..)
     , XPrv
     , XPub
     , deriveXPrv
@@ -205,10 +206,10 @@ type family DerivationPath (depth :: Depth) :: * where
 --
 -- === Deriving child keys
 --
--- > let accIx = toEnum 0x80000000
+-- > let Just accIx = fromWord32 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
--- > let addIx = toEnum 0x80000014
+-- > let Just addIx = fromWord32 0x80000014
 -- > let addrK = deriveAddressPrivateKey acctK addIx
 
 instance Internal.GenMasterKey Byron where
@@ -401,7 +402,7 @@ instance Internal.PaymentAddress Byron where
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        (acctIx, addrIx) = bimap getIndex getIndex $ derivationPath k
+        (acctIx, addrIx) = bimap toWord32 toWord32 $ derivationPath k
         pwd = payloadPassphrase k
         NetworkTag magic = networkTag @Byron discrimination
         attrs = case addressDiscrimination @Byron discrimination of
@@ -553,4 +554,3 @@ hdPassphrase masterKey =
     (PBKDF2.Parameters 500 32)
     (xpubToBytes masterKey)
     ("address-hashing" :: ByteString)
-

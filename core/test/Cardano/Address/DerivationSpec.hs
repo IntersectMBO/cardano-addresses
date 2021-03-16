@@ -16,7 +16,12 @@ module Cardano.Address.DerivationSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( XPrv
+    ( Depth (..)
+    , DerivationType (..)
+    , Index
+    , Indexed (..)
+    , XPrv
+    , nextIndex
     , sign
     , toXPub
     , verify
@@ -34,33 +39,27 @@ import Data.ByteString
 import Data.String
     ( IsString (..) )
 import Test.Hspec
-    ( Spec, describe )
+    ( Spec, describe, it, shouldBe )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Arbitrary (..), Property, (===) )
+    ( Arbitrary (..), Property, property, (===) )
 
 import Test.Arbitrary
     ()
 
 spec :: Spec
 spec = describe "Checking auxiliary address derivations types" $ do
-{-
-    XXX should we have new tests here?
-    describe "Bounded / Enum relationship" $ do
-        it "The calls Index.succ maxBound should result in a runtime err (hard)"
-            prop_succMaxBoundHardIx
-        it "The calls Index.pred minBound should result in a runtime err (hard)"
-            prop_predMinBoundHardIx
-        it "The calls Index.succ maxBound should result in a runtime err (soft)"
-            prop_succMaxBoundSoftIx
-        it "The calls Index.pred minBound should result in a runtime err (soft)"
-            prop_predMinBoundSoftIx
+    describe "Bounded / Indexed relationship" $ do
+        it "nextIndex maxBound for Hardened indices should result in failure" $
+            nextIndex (maxBound @(Index 'Hardened _)) `shouldBe` Nothing
+        it "nextIndex maxBound for Soft indices should result in failure" $
+            nextIndex (maxBound @(Index 'Soft _)) `shouldBe` Nothing
 
-    describe "Enum Roundtrip" $ do
-        it "Index @'Hardened _" (property prop_roundtripEnumIndexHard)
-        it "Index @'Soft _" (property prop_roundtripEnumIndexSoft)
--}
+    describe "Indexed Roundtrip" $ do
+        it "Index @'Hardened _" (property prop_roundtripIndexedHard)
+        it "Index @'Soft _" (property prop_roundtripIndexedSoft)
+
     describe "XPub / XPrv properties" $ do
         prop "roundtripping: xpubToBytes . xpubFromBytes" $
             prop_roundtripBytes xpubToBytes xpubFromBytes
@@ -97,10 +96,15 @@ prop_roundtripBytes
 prop_roundtripBytes encode decode a =
     decode (encode a) === pure a
 
+prop_roundtripIndexedHard :: Index 'WholeDomain 'AccountK -> Property
+prop_roundtripIndexedHard ix = (fromWord32 . toWord32) ix === Just ix
+
+prop_roundtripIndexedSoft :: Index 'Soft 'PaymentK -> Property
+prop_roundtripIndexedSoft ix = (fromWord32 . toWord32) ix === Just ix
+
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
 -------------------------------------------------------------------------------}
 
 instance Arbitrary ScrubbedBytes where
     arbitrary = fromString <$> arbitrary
-

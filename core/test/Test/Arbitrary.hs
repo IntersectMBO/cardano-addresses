@@ -15,6 +15,8 @@ module Test.Arbitrary
     ( unsafeMkMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
+    , arbitraryIndexed
+    , shrinkIndexed
     ) where
 
 import Prelude
@@ -23,13 +25,10 @@ import Cardano.Address
     ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( Depth (..)
-    , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index (getIndex)
-    , softIndex
-    , hardenedIndex
-    , wholeDomainIndex
+    , Index
+    , Indexed (..)
     , XPrv
     , XPub
     , generate
@@ -64,13 +63,13 @@ import Data.ByteString
 import Data.Function
     ( on )
 import Data.Maybe
-    ( fromMaybe )
+    ( fromMaybe, mapMaybe )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32, Word64 )
+    ( Word64 )
 import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
@@ -78,7 +77,7 @@ import GHC.TypeLits
 import Numeric.Natural
     ( Natural )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
+    ( Arbitrary (..), Gen, choose, oneof, vector )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
@@ -118,33 +117,19 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
-instance Arbitrary (Index 'Soft 'PaymentK) where
-    shrink _ = []
-    arbitrary = let err = error "Arbitrary (Index 'Soft 'PaymentK)"
-                in  arbitraryIndex (fromMaybe err . softIndex)
+-- | Use the 'Word32' shrink fun
+shrinkIndexed :: Indexed ix => ix -> [ix]
+shrinkIndexed = mapMaybe fromWord32 . shrink . toWord32
 
-instance Arbitrary (Index 'Hardened 'AccountK) where
-    shrink _ = []
-    arbitrary = let err = error "Arbitrary (Index 'Hardened 'AccountK)"
-                in  arbitraryIndex (fromMaybe err . hardenedIndex)
+arbitraryIndexed :: forall ix. (Bounded ix, Indexed ix) => Gen ix
+arbitraryIndexed = fromMaybe err . fromWord32 <$> gen
+  where
+    gen = choose (toWord32 (minBound @ix), toWord32 (maxBound @ix))
+    err = error "arbitraryIndexed"
 
-instance Arbitrary (Index 'Hardened 'PaymentK) where
-    shrink _ = []
-    arbitrary = let err = error "Arbitrary (Index 'Hardened 'PaymentK)"
-                in  arbitraryIndex (fromMaybe err . hardenedIndex)
-
-instance Arbitrary (Index 'WholeDomain 'PaymentK) where
-    shrink _ = []
-    arbitrary = arbitraryIndex wholeDomainIndex
-
-instance Arbitrary (Index 'WholeDomain 'AccountK) where
-    shrink _ = []
-    arbitrary = arbitraryIndex wholeDomainIndex
-
-arbitraryIndex :: forall ix ty depth . (Bounded ix, ix ~ Index ty depth)
-               => (Word32 -> ix) -> Gen ix
-arbitraryIndex f = f <$> choose ( getIndex (minBound @ix)
-                                , getIndex (maxBound @ix))
+instance (Bounded ix, Indexed ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
+    shrink = shrinkIndexed
+    arbitrary = arbitraryIndexed
 
 instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12
@@ -175,7 +160,7 @@ instance Arbitrary (Icarus 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen =  arbitraryBoundedEnum
+        let roleGen = arbitraryIndexed
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
@@ -186,7 +171,7 @@ instance Arbitrary (Shelley 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen = arbitraryBoundedEnum
+        let roleGen = arbitraryIndexed
         addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
         pure $ toXPub <$> addrK
 
