@@ -117,7 +117,10 @@ let
         '';
 
         # Disable CLI running tests under ghcjs
-        packages.cardano-addresses-cli.components.tests.unit.doCheck = false;
+        packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
+          echo "CLI tests disabled under ghcjs"
+          exit 0
+        '';
       })
     ];
   });
