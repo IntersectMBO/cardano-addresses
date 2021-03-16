@@ -92,6 +92,10 @@ tests:
     - condition: flag(release)
       ghc-options:
       - -Werror
+    - condition: '!(impl(ghcjs) || os(ghcjs))'
+      cpp-options: -DHJSONSCHEMA
+      dependencies:
+      - hjsonschema >= 1.10.0
     build-tools:
     - hspec-discover
     - cardano-address
@@ -103,7 +107,6 @@ tests:
     - cardano-addresses
     - cardano-addresses-cli
     - containers
-    - hjsonschema >= 1.10.0
     - hspec
     - process
     - QuickCheck

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP #-}
 
 module Test.Utils
     ( cli
@@ -15,14 +16,15 @@ import Data.String
     ( IsString )
 import Data.Text
     ( Text )
+#ifdef HJSONSCHEMA
 import JSONSchema.Draft4
     ( Schema (..)
     , SchemaWithURI (..)
-    , ValidatorFailure (..)
     , checkSchema
     , emptySchema
     , referencesViaFilesystem
     )
+#endif
 import System.Process
     ( readProcess, readProcessWithExitCode )
 import Test.Hspec
@@ -77,12 +79,16 @@ newtype SchemaRef = SchemaRef
     { getSchemaRef :: Text
     } deriving (Show, IsString)
 
-validateJSON :: SchemaRef -> Json.Value -> IO [ValidatorFailure]
+validateJSON :: SchemaRef -> Json.Value -> IO [String]
+#ifdef HJSONSCHEMA
 validateJSON (SchemaRef ref) value = do
     let schema = SchemaWithURI (emptySchema { _schemaRef = Just ref }) Nothing
     refs <- unsafeIO =<< referencesViaFilesystem schema
     validate <- unsafeIO (checkSchema refs schema)
-    pure $ validate value
+    pure $ map show $ validate value
   where
     unsafeIO :: Show e => Either e a -> IO a
     unsafeIO = either (fail . show) pure
+#else
+validateJSON _ _ = pure []
+#endif

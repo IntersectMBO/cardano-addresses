@@ -98,7 +98,7 @@ specInspectAddress mustHave args addr = it addr $ do
         Left e -> expectationFailure $ "malformed JSON: " <> show e
         Right json -> validateJSON schema json >>= \case
             [] -> forM_ mustHave (shouldContain out)
-            es -> expectationFailure $ "invalid JSON: " <> unlines (show <$> es)
+            es -> expectationFailure $ "invalid JSON: " <> unlines es
   where
     schema :: SchemaRef
     schema = "./schemas/address-inspect.json"

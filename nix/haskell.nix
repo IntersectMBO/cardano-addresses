@@ -115,6 +115,9 @@ let
           mkdir -p jsbits
           cp $script/cardano-crypto.js jsbits/cardano-crypto.js
         '';
+
+        # Disable CLI running tests under ghcjs
+        packages.cardano-addresses-cli.components.tests.unit.doCheck = false;
       })
     ];
   });

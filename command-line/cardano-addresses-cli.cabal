@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 24a4af2b2bdebd919fb0abcfe27bc2da2a39eaaf82c5ebc9e6247f1431e28c82
+-- hash: 10d263d86e1bbf44d0e057e9947daf427b7888efe29dc3bb3dabb97ad4e3b54b
 
 name:           cardano-addresses-cli
 version:        3.2.0
@@ -67,7 +67,8 @@ library
       Paths_cardano_addresses_cli
   hs-source-dirs:
       lib
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
       aeson
@@ -137,7 +138,8 @@ test-suite unit
       Paths_cardano_addresses_cli
   hs-source-dirs:
       test
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-tools:
       cardano-address
@@ -153,7 +155,6 @@ test-suite unit
     , cardano-addresses
     , cardano-addresses-cli
     , containers
-    , hjsonschema >=1.10.0
     , hspec
     , process
     , string-interpolate
@@ -161,4 +162,8 @@ test-suite unit
     , text
   if flag(release)
     ghc-options: -Werror
+  if !(impl(ghcjs) || os(ghcjs))
+    cpp-options: -DHJSONSCHEMA
+    build-depends:
+        hjsonschema >=1.10.0
   default-language: Haskell2010
