@@ -30,6 +30,9 @@ library:
   - condition: flag(release)
     ghc-options:
     - -Werror
+  - condition: impl(ghcjs) || os(ghcjs)
+    ghc-options:
+      - jsbits/cardano-crypto.js
   default-extensions:
   - NoImplicitPrelude
   dependencies:
