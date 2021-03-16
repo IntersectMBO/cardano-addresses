@@ -1,3 +1,14 @@
+## [3.3.0] - 2021-03-17
+
+### Added
+
+- The library now builds with ghcjs and passes tests running on nodejs.
+
+### Changed
+
+- The `Index` type no longer has an `Enum` instance. Use
+  `indexFromWord32` and `indexToWord32` instead.
+
 ## [3.2.0] - 2020-01-22
 
 ### Added
