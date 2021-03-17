@@ -15,7 +15,6 @@ module Test.Arbitrary
     ( unsafeMkMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
-    , shrinkIndex
     ) where
 
 import Prelude
@@ -27,11 +26,11 @@ import Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index (..)
-    , IndexFromWord32 (..)
     , XPrv
     , XPub
     , generate
     , generateNew
+    , indexFromWord32
     , toXPub
     , xprvToBytes
     )
@@ -117,21 +116,14 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
--- | Use the 'Word32' shrink fun
-shrinkIndex :: IndexFromWord32 (Index ty depth) => Index ty depth -> [Index ty depth]
-shrinkIndex = mapMaybe indexFromWord32 . shrink . indexToWord32
-
-arbitraryRole
-    :: forall ix ty depth. (Bounded ix, IndexFromWord32 ix, ix ~ Index ty depth)
-    => Gen ix
-arbitraryRole = fromMaybe err . indexFromWord32 <$> gen
-  where
-    gen = choose (indexToWord32 (minBound @ix), indexToWord32 (maxBound @ix))
-    err = error "arbitraryRole"
-
-instance (Bounded ix, IndexFromWord32 ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
-    shrink = shrinkIndex
-    arbitrary = arbitraryRole
+instance (Bounded ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
+    -- Use the Word32 shrink fun.
+    shrink = mapMaybe indexFromWord32 . shrink . indexToWord32
+    -- Use convert Index bounds to Word32 and choose from that range.
+    arbitrary = fromMaybe err . indexFromWord32 <$> choose bounds
+      where
+        bounds = (indexToWord32 (minBound @ix), indexToWord32 (maxBound @ix))
+        err = error "Arbitrary Index"
 
 instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12

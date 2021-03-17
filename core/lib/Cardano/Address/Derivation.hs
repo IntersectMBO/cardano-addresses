@@ -18,7 +18,7 @@ module Cardano.Address.Derivation
     -- ** Types
       Index
     , indexToWord32
-    , IndexFromWord32 (..)
+    , indexFromWord32
     , wholeDomainIndex
     , coerceWholeDomainIndex
     , nextIndex
@@ -352,27 +352,12 @@ instance Bounded (Index 'WholeDomain depth) where
 unsafeMkIndex :: Word32 -> Index ty depth
 unsafeMkIndex = Index
 
--- | Class for constructing derivation path indices from raw 'Word32' values.
---
--- @since 3.3.0
-class IndexFromWord32 ix where
-    indexFromWord32 :: Word32 -> Maybe ix
-
-instance IndexFromWord32 (Index 'Soft depth) where
-    indexFromWord32 = rangedIndex
-
-instance IndexFromWord32 (Index 'Hardened depth) where
-    indexFromWord32 = rangedIndex
-
-instance IndexFromWord32 (Index 'WholeDomain depth) where
-    indexFromWord32 = Just . Index
-
--- | Helper function to construct 'Index' from a valid word.
-rangedIndex
-    :: forall ix derivationType depth .
+-- | Construct derivation path indices from raw 'Word32' values.
+indexFromWord32
+    :: forall ix derivationType depth.
        (ix ~ Index derivationType depth, Bounded ix)
     => Word32 -> Maybe ix
-rangedIndex ix
+indexFromWord32 ix
     | ix >= indexToWord32 (minBound @ix) && ix <= indexToWord32 (maxBound @ix) =
         Just (Index ix)
     | otherwise =
@@ -381,7 +366,10 @@ rangedIndex ix
 -- | Increment an index, if possible.
 --
 -- @since 3.3.0
-nextIndex :: IndexFromWord32 (Index derivationType depth) => Index derivationType depth -> Maybe (Index derivationType depth)
+nextIndex
+    :: forall ix derivationType depth.
+       (ix ~ Index derivationType depth, Bounded ix)
+    => ix -> Maybe ix
 nextIndex (Index ix) = indexFromWord32 (ix + 1)
 
 -- | Constructs a full domain 'Index'. This can't fail, unlike 'fromWord32'.

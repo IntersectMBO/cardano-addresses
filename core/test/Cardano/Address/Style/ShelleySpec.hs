@@ -34,10 +34,10 @@ import Cardano.Address.Derivation
     , GenMasterKey (..)
     , HardDerivation (..)
     , Index (..)
-    , IndexFromWord32 (..)
     , SoftDerivation (..)
     , XPrv
     , XPub
+    , indexFromWord32
     , toXPub
     , unsafeMkIndex
     , xprvToBytes
