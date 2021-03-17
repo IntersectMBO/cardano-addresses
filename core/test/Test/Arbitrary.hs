@@ -23,14 +23,14 @@ import Cardano.Address
     ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
 import Cardano.Address.Derivation
     ( Depth (..)
-    , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index
+    , Index (..)
     , XPrv
     , XPub
     , generate
     , generateNew
+    , indexFromWord32
     , toXPub
     , xprvToBytes
     )
@@ -60,6 +60,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Function
     ( on )
+import Data.Maybe
+    ( fromMaybe, mapMaybe )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
@@ -73,8 +75,9 @@ import GHC.TypeLits
 import Numeric.Natural
     ( Natural )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, arbitraryBoundedEnum, choose, oneof, vector )
+    ( Arbitrary (..), Gen, choose, elements, genericShrink, oneof, vector )
 
+import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -113,25 +116,14 @@ instance
     arbitrary =
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
-instance Arbitrary (Index 'Soft 'PaymentK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'Hardened 'AccountK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'Hardened 'PaymentK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'WholeDomain 'PaymentK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary (Index 'WholeDomain 'AccountK) where
-    shrink _ = []
-    arbitrary = arbitraryBoundedEnum
+instance (Bounded ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
+    -- Use the Word32 shrink fun.
+    shrink = mapMaybe indexFromWord32 . shrink . indexToWord32
+    -- Use convert Index bounds to Word32 and choose from that range.
+    arbitrary = fromMaybe err . indexFromWord32 <$> choose bounds
+      where
+        bounds = (indexToWord32 (minBound @ix), indexToWord32 (maxBound @ix))
+        err = error "Arbitrary Index"
 
 instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12
@@ -162,8 +154,7 @@ instance Arbitrary (Icarus 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen =  arbitraryBoundedEnum
-        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
+        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'PaymentK XPub) where
@@ -173,8 +164,7 @@ instance Arbitrary (Shelley 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen = arbitraryBoundedEnum
-        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
+        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'DelegationK XPub) where
@@ -214,6 +204,23 @@ instance Arbitrary ChainPointer where
         ix1 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         ix2 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         pure $ ChainPointer slot ix1 ix2
+
+instance Arbitrary Shelley.Role where
+    shrink = genericShrink
+    arbitrary = elements
+        [ Shelley.UTxOExternal
+        , Shelley.UTxOInternal
+        , Shelley.Stake
+        , Shelley.MultisigForPayment
+        , Shelley.MultisigForDelegation
+        ]
+
+instance Arbitrary Icarus.Role where
+    shrink = genericShrink
+    arbitrary = elements
+        [ Icarus.UTxOExternal
+        , Icarus.UTxOInternal
+        ]
 
 --
 -- Extra Instances

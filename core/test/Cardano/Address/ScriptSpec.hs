@@ -17,10 +17,13 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( Depth (..)
+    , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
+    , Index
     , XPrv
     , XPub
+    , indexFromWord32
     , toXPub
     , xpubFromBytes
     )
@@ -94,17 +97,17 @@ spec = do
     -- "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
     let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
 
-    let index2 = toEnum 0x00000001
+    let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
     let multisigXPub2 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index2
     -- "60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
     let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
 
-    let index3 = toEnum 0x00000002
+    let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
     let multisigXPub3 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index3
     -- "ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
     let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
 
-    let index4 = toEnum 0x00000003
+    let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
     let multisigXPub4 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index4
     -- "96834025cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
     let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4

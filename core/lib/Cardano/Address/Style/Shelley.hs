@@ -26,6 +26,8 @@ module Cardano.Address.Style.Shelley
       Shelley
     , getKey
     , Role (..)
+    , roleFromIndex
+    , roleToIndex
     , Credential (..)
     , CredentialType (..)
 
@@ -89,7 +91,7 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
-    , Index
+    , Index (..)
     , XPrv
     , XPub
     , credentialHashSize
@@ -97,6 +99,8 @@ import Cardano.Address.Derivation
     , deriveXPub
     , generateNew
     , hashCredential
+    , indexFromWord32
+    , unsafeMkIndex
     , xpubPublicKey
     )
 import Cardano.Address.Script
@@ -209,23 +213,22 @@ data Role
 
 instance NFData Role
 
--- Not deriving 'Enum' because this could have a dramatic impact if we were
--- to assign the wrong index to the corresponding constructor (by swapping
--- around the constructor above for instance).
-instance Enum Role where
-    toEnum = \case
-        0 -> UTxOExternal
-        1 -> UTxOInternal
-        2 -> Stake
-        3 -> MultisigForPayment
-        4 -> MultisigForDelegation
-        _ -> error "Role.toEnum: bad argument"
-    fromEnum = \case
-        UTxOExternal -> 0
-        UTxOInternal -> 1
-        Stake -> 2
-        MultisigForPayment -> 3
-        MultisigForDelegation -> 4
+roleFromIndex :: Index 'Soft depth -> Maybe Role
+roleFromIndex ix = case indexToWord32 ix of
+    0 -> Just UTxOExternal
+    1 -> Just UTxOInternal
+    2 -> Just Stake
+    3 -> Just MultisigForPayment
+    4 -> Just MultisigForDelegation
+    _ -> Nothing
+
+roleToIndex :: Role -> Index 'Soft depth
+roleToIndex = unsafeMkIndex . \case
+    UTxOExternal -> 0
+    UTxOInternal -> 1
+    Stake -> 2
+    MultisigForPayment -> 3
+    MultisigForDelegation -> 4
 
 --
 -- Key Derivation
@@ -246,10 +249,10 @@ instance Enum Role where
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > let accIx = toEnum 0x80000000
+-- > let Just accIx = indexFromWord32 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
--- > let addIx = toEnum 0x00000014
+-- > let Just addIx = indexFromWord32 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
 -- > let stakeK = deriveDelegationPrivateKey acctK
@@ -273,10 +276,10 @@ instance Internal.HardDerivation Shelley where
 
     deriveAccountPrivateKey (Shelley rootXPrv) accIx =
         let
-            purposeIx =
-                toEnum @(Index 'Hardened _) $ fromEnum purposeIndex
-            coinTypeIx =
-                toEnum @(Index 'Hardened _) $ fromEnum coinTypeIndex
+            Just purposeIx =
+                indexFromWord32 @(Index 'Hardened _) purposeIndex
+            Just coinTypeIx =
+                indexFromWord32 @(Index 'Hardened _) coinTypeIndex
             purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
                 deriveXPrv DerivationScheme2 rootXPrv purposeIx
             coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
@@ -288,9 +291,8 @@ instance Internal.HardDerivation Shelley where
 
     deriveAddressPrivateKey (Shelley accXPrv) role addrIx =
         let
-            roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv roleCode
+                deriveXPrv DerivationScheme2 accXPrv (roleToIndex role)
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
@@ -299,9 +301,8 @@ instance Internal.HardDerivation Shelley where
 instance Internal.SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let roleCode = toEnum @(Index 'Soft _) $ fromEnum role
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub roleCode
+                deriveXPub DerivationScheme2 accXPub (roleToIndex role)
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Shelley addrXPub

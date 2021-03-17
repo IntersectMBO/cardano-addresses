@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -16,6 +17,11 @@ module Cardano.Address.Derivation
     -- * Key Derivation
     -- ** Types
       Index
+    , indexToWord32
+    , indexFromWord32
+    , wholeDomainIndex
+    , coerceWholeDomainIndex
+    , nextIndex
     , Depth (..)
     , DerivationType (..)
 
@@ -53,6 +59,7 @@ module Cardano.Address.Derivation
     , generateNew
     , hashCredential
     , credentialHashSize
+    , unsafeMkIndex
     ------------------
     ) where
 
@@ -76,6 +83,8 @@ import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Coerce
+    ( coerce )
 import Data.Either.Extra
     ( eitherToMaybe )
 import Data.String
@@ -316,7 +325,10 @@ data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK
 --
 -- @since 1.0.0
 newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
-    { getIndex :: Word32 }
+    { indexToWord32 :: Word32
+    -- ^ Get the index as a 'Word32'
+    -- @since 3.3.0
+    }
     deriving stock (Generic, Show, Eq, Ord)
 
 instance NFData (Index derivationType depth)
@@ -333,29 +345,44 @@ instance Bounded (Index 'WholeDomain depth) where
     minBound = Index minBound
     maxBound = Index maxBound
 
-instance Enum (Index 'Hardened depth) where
-    fromEnum (Index ix) = fromIntegral ix
-    toEnum ix
-        | Index (fromIntegral ix) < minBound @(Index 'Hardened _) =
-            error "Index@Hardened.toEnum: bad argument"
-        | otherwise =
-            Index (fromIntegral ix)
+-- Construct an 'Index' from any Word32 value, without any validation, for
+-- internal use only.
+--
+-- Always use 'indexFromWord32' or 'wholeDomainIndex' instead of this function.
+unsafeMkIndex :: Word32 -> Index ty depth
+unsafeMkIndex = Index
 
-instance Enum (Index 'Soft depth) where
-    fromEnum (Index ix) = fromIntegral ix
-    toEnum ix
-        | Index (fromIntegral ix) > maxBound @(Index 'Soft _) =
-            error "Index@Soft.toEnum: bad argument"
-        | otherwise =
-            Index (fromIntegral ix)
+-- | Construct derivation path indices from raw 'Word32' values.
+indexFromWord32
+    :: forall ix derivationType depth.
+       (ix ~ Index derivationType depth, Bounded ix)
+    => Word32 -> Maybe ix
+indexFromWord32 ix
+    | ix >= indexToWord32 (minBound @ix) && ix <= indexToWord32 (maxBound @ix) =
+        Just (Index ix)
+    | otherwise =
+        Nothing
 
-instance Enum (Index 'WholeDomain depth) where
-    fromEnum (Index ix) = fromIntegral ix
-    toEnum ix
-        | Index (fromIntegral ix) > maxBound @(Index 'WholeDomain _) =
-            error "Index@WholeDomain.toEnum: bad argument"
-        | otherwise =
-            Index (fromIntegral ix)
+-- | Increment an index, if possible.
+--
+-- @since 3.3.0
+nextIndex
+    :: forall ix derivationType depth.
+       (ix ~ Index derivationType depth, Bounded ix)
+    => ix -> Maybe ix
+nextIndex (Index ix) = indexFromWord32 (ix + 1)
+
+-- | Constructs a full domain 'Index'. This can't fail, unlike 'fromWord32'.
+--
+-- @since 3.3.0
+wholeDomainIndex :: Word32 -> Index 'WholeDomain depth
+wholeDomainIndex = Index
+
+-- | Upcasts an 'Index' to one with the full 'Word32' domain.
+--
+-- @since 3.3.0
+coerceWholeDomainIndex :: Index ty depth0 -> Index 'WholeDomain depth1
+coerceWholeDomainIndex = coerce
 
 instance Buildable (Index derivationType depth) where
     build (Index ix) = fromString (show ix)
