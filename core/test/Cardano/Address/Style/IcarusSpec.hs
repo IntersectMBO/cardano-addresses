@@ -24,16 +24,18 @@ import Cardano.Address.Derivation
     , DerivationType (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index
-    , Indexed (..)
+    , Index (..)
     , SoftDerivation (..)
     , XPrv
+    , indexFromWord32
     , toXPub
+    , unsafeMkIndex
     )
 import Cardano.Address.Style.Icarus
     ( Icarus (..)
     , Role (..)
     , icarusMainnet
+    , roleToIndex
     , unsafeGenerateKeyFromHardwareLedger
     )
 import Cardano.Mnemonic
@@ -45,18 +47,18 @@ import Cardano.Mnemonic
     )
 import Control.Monad
     ( forM_ )
-import Data.Maybe
-    ( fromJust )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word32 )
 import Test.Arbitrary
-    ( arbitraryIndexed, shrinkIndexed, unsafeMkSomeMnemonicFromEntropy )
+    ( unsafeMkSomeMnemonicFromEntropy )
 import Test.Hspec
     ( Spec, describe, it, shouldBe )
 import Test.QuickCheck
-    ( Arbitrary (..), Property, property, (===) )
+    ( Property, property, (===) )
 
 import qualified Data.Text as T
 
@@ -71,19 +73,19 @@ spec = do
     describe "Golden Tests - Icarus' style addresses" $ do
         let seed0 = unsafeMkSomeMnemonicFromEntropy (Proxy @15)
                 "4\175\242L\184\243\191 \169]\171 \207\r\v\233\NUL~&\ETB"
-            justSoftIx = fromJust . fromWord32 @(Index 'Soft _)
-            justHardIx = fromJust . fromWord32 @(Index 'Hardened _)
+            mkSoftIx = unsafeMkIndex :: Word32 -> Index 'Soft depth
+            mkHardIx = unsafeMkIndex :: Word32 -> Index 'Hardened depth
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed0 (justHardIx 0x80000000) UTxOExternal (justSoftIx 0x00000000)
+            seed0 (mkHardIx 0x80000000) UTxOExternal (mkSoftIx 0x00000000)
             "Ae2tdPwUPEZGQVrA6qKreDzdtYxcWMMrpTFYCpFcuJfhJBEfoeiuW4MtaXZ"
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed0 (justHardIx 0x80000000) UTxOExternal (justSoftIx 0x0000000E)
+            seed0 (mkHardIx 0x80000000) UTxOExternal (mkSoftIx 0x0000000E)
             "Ae2tdPwUPEZDLWQQEBR1UW7HeXJVaqUnuw8DUFu52TDWCJbxbkCyQYyxckP"
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed0 (justHardIx 0x8000000E) UTxOInternal (justSoftIx 0x0000002A)
+            seed0 (mkHardIx 0x8000000E) UTxOInternal (mkSoftIx 0x0000002A)
             "Ae2tdPwUPEZFRbyhz3cpfC2CumGzNkFBN2L42rcUc2yjQpEkxDbkPodpMAi"
 
         let (Right seed1) = mkSomeMnemonic @'[12]
@@ -92,15 +94,15 @@ spec = do
               ]
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed1 (justHardIx 0x80000000) UTxOExternal (justSoftIx 0x00000000)
+            seed1 (mkHardIx 0x80000000) UTxOExternal (mkSoftIx 0x00000000)
             "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed1 (justHardIx 0x80000000) UTxOExternal (justSoftIx 0x00000001)
+            seed1 (mkHardIx 0x80000000) UTxOExternal (mkSoftIx 0x00000001)
             "Ae2tdPwUPEZCJUCuVgnysar8ZJeyKuhjXU35VNgKMMTcXWmS9zzYycmwKa4"
 
         goldenAddressGeneration $ GoldenAddressGeneration
-            seed1 (justHardIx 0x80000000) UTxOExternal (justSoftIx 0x00000002)
+            seed1 (mkHardIx 0x80000000) UTxOExternal (mkSoftIx 0x00000002)
             "Ae2tdPwUPEZFJtMH1m5HvsaQZrmgLcVcyuk5TxYtdRHZFo8yV7yEnnJyqTs"
 
     describe "Hardware Ledger" $ do
@@ -240,11 +242,11 @@ goldenAddressGeneration test = it title $ do
     -- e.g. m/.../0'/0/0
     fmtPath p3 p4 p5 = mconcat
         [ "m/.../"
-        , show (toWord32 p3 - toWord32 (minBound @(Index 'Hardened _)))
+        , show (indexToWord32 p3 - indexToWord32 (minBound @(Index 'Hardened _)))
         , "'/"
-        , show (toWord32 p4)
+        , show (indexToWord32 (roleToIndex p4))
         , "/"
-        , show (toWord32 p5)
+        , show (indexToWord32 p5)
         ]
 
 goldenHardwareLedger
@@ -265,7 +267,7 @@ goldenHardwareLedger sentence addrs =
         let deriveAddr = deriveAddressPrivateKey acctXPrv UTxOExternal
 
         forM_ (zip [0..] addrs) $ \(ix, addr) -> do
-            let Just softIx = fromWord32 @(Index 'Soft _) ix
+            let Just softIx = indexFromWord32 @(Index 'Soft _) ix
                 addrXPrv = deriveAddr softIx
             base58 (paymentAddress icarusMainnet $ toXPub <$> addrXPrv)
                 `shouldBe` addr
@@ -273,7 +275,3 @@ goldenHardwareLedger sentence addrs =
     title = T.unpack
         $ T.unwords
         $ take 3 sentence ++ [ "..." ] ++ drop (length sentence - 3) sentence
-
-instance Arbitrary Role where
-    shrink = shrinkIndexed
-    arbitrary = arbitraryIndexed

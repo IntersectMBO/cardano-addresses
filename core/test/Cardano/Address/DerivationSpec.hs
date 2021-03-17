@@ -18,9 +18,9 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
-    , Index
-    , Indexed (..)
+    , Index (..)
     , XPrv
+    , indexFromWord32
     , nextIndex
     , sign
     , toXPub
@@ -97,10 +97,10 @@ prop_roundtripBytes encode decode a =
     decode (encode a) === pure a
 
 prop_roundtripIndexedHard :: Index 'WholeDomain 'AccountK -> Property
-prop_roundtripIndexedHard ix = (fromWord32 . toWord32) ix === Just ix
+prop_roundtripIndexedHard ix = (indexFromWord32 . indexToWord32) ix === Just ix
 
 prop_roundtripIndexedSoft :: Index 'Soft 'PaymentK -> Property
-prop_roundtripIndexedSoft ix = (fromWord32 . toWord32) ix === Just ix
+prop_roundtripIndexedSoft ix = (indexFromWord32 . indexToWord32) ix === Just ix
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances

@@ -7,7 +7,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
@@ -26,6 +25,8 @@ module Cardano.Address.Style.Icarus
       Icarus
     , getKey
     , Role (..)
+    , roleFromIndex
+    , roleToIndex
 
       -- * Key Derivation
       -- $keyDerivation
@@ -71,13 +72,14 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationScheme (..)
     , DerivationType (..)
-    , Index
-    , Indexed (..)
+    , Index (..)
     , XPrv
     , XPub
     , deriveXPrv
     , deriveXPub
     , generateNew
+    , indexFromWord32
+    , unsafeMkIndex
     , xprvFromBytes
     )
 import Cardano.Address.Style.Byron
@@ -175,14 +177,16 @@ data Role
 
 instance NFData Role
 
-instance Indexed Role where
-    fromWord32 = \case
-        0 -> Just UTxOExternal
-        1 -> Just UTxOInternal
-        _ -> Nothing
-    toWord32 = \case
-        UTxOExternal -> 0
-        UTxOInternal -> 1
+roleFromIndex :: Index 'Soft depth -> Maybe Role
+roleFromIndex ix = case indexToWord32 ix of
+    0 -> Just UTxOExternal
+    1 -> Just UTxOInternal
+    _ -> Nothing
+
+roleToIndex :: Role -> Index 'Soft depth
+roleToIndex = unsafeMkIndex . \case
+    UTxOExternal -> 0
+    UTxOInternal -> 1
 
 --
 -- Key Derivation
@@ -203,10 +207,10 @@ instance Indexed Role where
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > let Just accIx = fromWord32 0x80000000
+-- > let Just accIx = indexFromWord32 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
--- > let Just addIx = fromWord32 0x00000014
+-- > let Just addIx = indexFromWord32 0x00000014
 -- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 
 instance Internal.GenMasterKey Icarus where
@@ -229,9 +233,9 @@ instance Internal.HardDerivation Icarus where
     deriveAccountPrivateKey (Icarus rootXPrv) accIx =
         let
             Just purposeIx =
-                fromWord32 @(Index 'Hardened _) purposeIndex
+                indexFromWord32 @(Index 'Hardened _) purposeIndex
             Just coinTypeIx =
-                fromWord32 @(Index 'Hardened _) coinTypeIndex
+                indexFromWord32 @(Index 'Hardened _) coinTypeIndex
             purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
                 deriveXPrv DerivationScheme2 rootXPrv purposeIx
             coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
@@ -243,9 +247,8 @@ instance Internal.HardDerivation Icarus where
 
     deriveAddressPrivateKey (Icarus accXPrv) role addrIx =
         let
-            Just roleCode = fromWord32 @(Index 'Soft _) (toWord32 role)
             changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv roleCode
+                deriveXPrv DerivationScheme2 accXPrv (roleToIndex role)
             addrXPrv = -- lvl5 derivation; soft derivation of address index
                 deriveXPrv DerivationScheme2 changeXPrv addrIx
         in
@@ -254,9 +257,8 @@ instance Internal.HardDerivation Icarus where
 instance Internal.SoftDerivation Icarus where
     deriveAddressPublicKey (Icarus accXPub) role addrIx =
         fromMaybe errWrongIndex $ do
-            let Just roleCode = fromWord32 @(Index 'Soft _) (toWord32 role)
             changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub roleCode
+                deriveXPub DerivationScheme2 accXPub (roleToIndex role)
             addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
                 deriveXPub DerivationScheme2 changeXPub addrIx
             return $ Icarus addrXPub

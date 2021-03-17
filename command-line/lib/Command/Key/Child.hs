@@ -17,9 +17,9 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( DerivationScheme (..)
-    , Indexed (..)
     , deriveXPrv
     , deriveXPub
+    , indexToWord32
     , xprvToBytes
     , xpubToBytes
     )
@@ -64,7 +64,7 @@ run Child{path} = do
             let ixs = castDerivationPath path
             case foldM (deriveXPub DerivationScheme2) xpub ixs of
                 Just child ->
-                    (,xpubToBytes child) <$> childHrpFor (toWord32 <$> ixs) hrp
+                    (,xpubToBytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp
                 Nothing ->
                     fail
                         "Couldn't derive child key. If you're trying to derive \
@@ -76,7 +76,7 @@ run Child{path} = do
                     then DerivationScheme1
                     else DerivationScheme2
             let Identity child = foldM (\k -> pure . deriveXPrv scheme k) xprv ixs
-            (,xprvToBytes child) <$> childHrpFor (toWord32 <$> ixs) hrp
+            (,xprvToBytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp
 
     hPutBytes stdout child (EBech32 hrp)
   where

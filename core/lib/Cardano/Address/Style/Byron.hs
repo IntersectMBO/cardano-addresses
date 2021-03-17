@@ -74,8 +74,7 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationScheme (DerivationScheme1)
     , DerivationType (..)
-    , Index
-    , Indexed (..)
+    , Index (..)
     , XPrv
     , XPub
     , deriveXPrv
@@ -402,7 +401,7 @@ instance Internal.PaymentAddress Byron where
         $ CBOR.toStrictByteString
         $ CBOR.encodeAddress (getKey k) attrs
       where
-        (acctIx, addrIx) = bimap toWord32 toWord32 $ derivationPath k
+        (acctIx, addrIx) = bimap indexToWord32 indexToWord32 $ derivationPath k
         pwd = payloadPassphrase k
         NetworkTag magic = networkTag @Byron discrimination
         attrs = case addressDiscrimination @Byron discrimination of

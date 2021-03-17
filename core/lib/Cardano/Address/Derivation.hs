@@ -6,7 +6,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -18,7 +17,8 @@ module Cardano.Address.Derivation
     -- * Key Derivation
     -- ** Types
       Index
-    , Indexed (..)
+    , indexToWord32
+    , IndexFromWord32 (..)
     , wholeDomainIndex
     , coerceWholeDomainIndex
     , nextIndex
@@ -59,6 +59,7 @@ module Cardano.Address.Derivation
     , generateNew
     , hashCredential
     , credentialHashSize
+    , unsafeMkIndex
     ------------------
     ) where
 
@@ -324,7 +325,10 @@ data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK
 --
 -- @since 1.0.0
 newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
-    { getIndex :: Word32 }
+    { indexToWord32 :: Word32
+    -- ^ Get the index as a 'Word32'
+    -- @since 3.3.0
+    }
     deriving stock (Generic, Show, Eq, Ord)
 
 instance NFData (Index derivationType depth)
@@ -341,24 +345,27 @@ instance Bounded (Index 'WholeDomain depth) where
     minBound = Index minBound
     maxBound = Index maxBound
 
--- | Serialization of 'Index' to and from 'Word32'.
+-- Construct an 'Index' from any Word32 value, without any validation, for
+-- internal use only.
+--
+-- Always use 'indexFromWord32' or 'wholeDomainIndex' instead of this function.
+unsafeMkIndex :: Word32 -> Index ty depth
+unsafeMkIndex = Index
+
+-- | Class for constructing derivation path indices from raw 'Word32' values.
 --
 -- @since 3.3.0
-class Indexed a where
-    fromWord32 :: Word32 -> Maybe a
-    toWord32 :: a -> Word32
+class IndexFromWord32 ix where
+    indexFromWord32 :: Word32 -> Maybe ix
 
-instance Indexed (Index 'Soft depth) where
-    fromWord32 = rangedIndex
-    toWord32 = getIndex
+instance IndexFromWord32 (Index 'Soft depth) where
+    indexFromWord32 = rangedIndex
 
-instance Indexed (Index 'Hardened depth) where
-    fromWord32 = rangedIndex
-    toWord32 = getIndex
+instance IndexFromWord32 (Index 'Hardened depth) where
+    indexFromWord32 = rangedIndex
 
-instance Indexed (Index 'WholeDomain depth) where
-    fromWord32 = Just . Index
-    toWord32 = getIndex
+instance IndexFromWord32 (Index 'WholeDomain depth) where
+    indexFromWord32 = Just . Index
 
 -- | Helper function to construct 'Index' from a valid word.
 rangedIndex
@@ -366,7 +373,7 @@ rangedIndex
        (ix ~ Index derivationType depth, Bounded ix)
     => Word32 -> Maybe ix
 rangedIndex ix
-    | ix >= getIndex (minBound @ix) && ix <= getIndex (maxBound @ix) =
+    | ix >= indexToWord32 (minBound @ix) && ix <= indexToWord32 (maxBound @ix) =
         Just (Index ix)
     | otherwise =
         Nothing
@@ -374,10 +381,8 @@ rangedIndex ix
 -- | Increment an index, if possible.
 --
 -- @since 3.3.0
-nextIndex :: Indexed ix => ix -> Maybe ix
-nextIndex (toWord32 -> ix)
-    | ix < maxBound = fromWord32 (ix + 1)
-    | otherwise = Nothing
+nextIndex :: IndexFromWord32 (Index derivationType depth) => Index derivationType depth -> Maybe (Index derivationType depth)
+nextIndex (Index ix) = indexFromWord32 (ix + 1)
 
 -- | Constructs a full domain 'Index'. This can't fail, unlike 'fromWord32'.
 --

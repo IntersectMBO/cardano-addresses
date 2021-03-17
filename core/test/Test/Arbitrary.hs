@@ -15,8 +15,7 @@ module Test.Arbitrary
     ( unsafeMkMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
-    , arbitraryIndexed
-    , shrinkIndexed
+    , shrinkIndex
     ) where
 
 import Prelude
@@ -27,8 +26,8 @@ import Cardano.Address.Derivation
     ( Depth (..)
     , GenMasterKey (..)
     , HardDerivation (..)
-    , Index
-    , Indexed (..)
+    , Index (..)
+    , IndexFromWord32 (..)
     , XPrv
     , XPub
     , generate
@@ -77,8 +76,9 @@ import GHC.TypeLits
 import Numeric.Natural
     ( Natural )
 import Test.QuickCheck
-    ( Arbitrary (..), Gen, choose, oneof, vector )
+    ( Arbitrary (..), Gen, choose, elements, genericShrink, oneof, vector )
 
+import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -118,18 +118,20 @@ instance
         entropyToMnemonic <$> arbitrary @(Entropy n)
 
 -- | Use the 'Word32' shrink fun
-shrinkIndexed :: Indexed ix => ix -> [ix]
-shrinkIndexed = mapMaybe fromWord32 . shrink . toWord32
+shrinkIndex :: IndexFromWord32 (Index ty depth) => Index ty depth -> [Index ty depth]
+shrinkIndex = mapMaybe indexFromWord32 . shrink . indexToWord32
 
-arbitraryIndexed :: forall ix. (Bounded ix, Indexed ix) => Gen ix
-arbitraryIndexed = fromMaybe err . fromWord32 <$> gen
+arbitraryRole
+    :: forall ix ty depth. (Bounded ix, IndexFromWord32 ix, ix ~ Index ty depth)
+    => Gen ix
+arbitraryRole = fromMaybe err . indexFromWord32 <$> gen
   where
-    gen = choose (toWord32 (minBound @ix), toWord32 (maxBound @ix))
-    err = error "arbitraryIndexed"
+    gen = choose (indexToWord32 (minBound @ix), indexToWord32 (maxBound @ix))
+    err = error "arbitraryRole"
 
-instance (Bounded ix, Indexed ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
-    shrink = shrinkIndexed
-    arbitrary = arbitraryIndexed
+instance (Bounded ix, IndexFromWord32 ix, ix ~ Index ty depth) => Arbitrary (Index ty depth) where
+    shrink = shrinkIndex
+    arbitrary = arbitraryRole
 
 instance Arbitrary SomeMnemonic where
     arbitrary = SomeMnemonic <$> genMnemonic @12
@@ -160,8 +162,7 @@ instance Arbitrary (Icarus 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen = arbitraryIndexed
-        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
+        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'PaymentK XPub) where
@@ -171,8 +172,7 @@ instance Arbitrary (Shelley 'PaymentK XPub) where
         bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
         let rootK = genMasterKeyFromMnemonic mw bytes
         acctK <- deriveAccountPrivateKey rootK <$> arbitrary
-        let roleGen = arbitraryIndexed
-        addrK <- deriveAddressPrivateKey acctK <$> roleGen <*> arbitrary
+        addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
 instance Arbitrary (Shelley 'DelegationK XPub) where
@@ -212,6 +212,23 @@ instance Arbitrary ChainPointer where
         ix1 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         ix2 <- fromIntegral <$> choose (1 :: Word64, 1000000)
         pure $ ChainPointer slot ix1 ix2
+
+instance Arbitrary Shelley.Role where
+    shrink = genericShrink
+    arbitrary = elements
+        [ Shelley.UTxOExternal
+        , Shelley.UTxOInternal
+        , Shelley.Stake
+        , Shelley.MultisigForPayment
+        , Shelley.MultisigForDelegation
+        ]
+
+instance Arbitrary Icarus.Role where
+    shrink = genericShrink
+    arbitrary = elements
+        [ Icarus.UTxOExternal
+        , Icarus.UTxOInternal
+        ]
 
 --
 -- Extra Instances
