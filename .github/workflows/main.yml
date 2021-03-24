@@ -51,7 +51,7 @@ jobs:
         mkdir -p .coverage && touch .coverage/template.overlay
         DESTDIR=dist/coverage make report && DESTDIR=dist/coverage make badge
         echo "Checking for updated cabal files"
-        git diff --exit-code -- '*.cabal' && echo OK
+        git diff --exit-code -- '**/*.cabal' && echo OK
 
     - name: 📎 Upload Artifact
       uses: actions/upload-artifact@v1
