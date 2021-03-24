@@ -104,8 +104,8 @@ import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TL
 
 spec :: Spec
 spec = do
@@ -507,7 +507,7 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let delegationAddr1Stake1 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub1) <$> networkTags
     let delegationAddr1442Stake1 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub1) <$> networkTags
     let vec = TestVector {..}
-    goldenText (T.unpack $ T.intercalate "_" mnemonic) (LT.toStrict $ pShowOpt defaultOutputOptionsNoColor vec)
+    goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
@@ -583,17 +583,17 @@ prop_roundtripTextEncodingPointer encode' decode addXPub ptr discrimination =
     address = pointerAddress discrimination (PaymentFromKey addXPub) ptr
     result  = decode (encode' address)
 
-goldenText :: String -> Text -> Golden Text
-goldenText name actualOutput =
-  Golden {
-    output = actualOutput,
-    encodePretty = show,
-    writeToFile = T.writeFile,
-    readFromFile = T.readFile,
-    testName = name,
-    directory = "test/golden",
-    failFirstTime = False
-  }
+goldenTextLazy :: Text -> TL.Text -> Golden TL.Text
+goldenTextLazy name output =
+    Golden
+    { output = output
+    , encodePretty = TL.unpack
+    , writeToFile = TL.writeFile
+    , readFromFile = TL.readFile
+    , testName = T.unpack name
+    , directory = "test/golden"
+    , failFirstTime = False
+    }
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
