@@ -15,6 +15,7 @@ extra-deps:
 - hjsonpointer-1.5.0
 - hjsonschema-1.10.0
 - string-interpolate-0.3.0.2
+- hspec-golden-0.1.0.3
 
 allow-newer: true
 
