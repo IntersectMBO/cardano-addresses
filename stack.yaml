@@ -28,21 +28,3 @@ flags:
 # Generate files required by Weeder.
 # See https://github.com/ndmitchell/weeder/issues/53
 ghc-options: {"$locals": -ddump-to-file -ddump-hi}
-
-
-# !!! This can be dropped when cabal-3.4.0.0 is released !!!
-#
-#+BEGIN_STACK2CABAL
-# -- -------------------------------------------------------------------------
-# -- Disable all tests by default, then enable tests for local packages
-# 
-# tests: False
-# 
-# test-show-details: direct
-# 
-# package cardano-addresses
-#   tests: True
-# 
-# package cardano-addresses-cli
-#   tests: True
-#+END_STACK2CABAL
