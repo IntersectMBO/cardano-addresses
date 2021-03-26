@@ -19,13 +19,15 @@ cabal.sandbox.config
 *.eventlog
 .stack-work/
 cabal.project.local
-cabal.project.local~
 .HTF/
 .ghc.environment.*
 .ghci
 *.tix
 *.lock
 hie.yaml
+
+# hspec-golden generated files
+core/test/golden/*/actual
 
 ### Nix ###
 result*
