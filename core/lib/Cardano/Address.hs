@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -30,8 +31,8 @@ module Cardano.Address
     , NetworkTag (..)
     , invariantSize
     , invariantNetworkTag
-    , StakeVerificationKeyHash(..)
-    , AddressVerificationKeyHash(..)
+    -- , StakeVerificationKeyHash(..)
+    -- , AddressVerificationKeyHash(..)
     , bech32
     , fromBech32
     , addressHrp) where
@@ -72,7 +73,7 @@ import Numeric.Natural
     ( Natural )
 
 import Cardano.Codec.Bech32
-    ( ToBech32 (..), bech32With )
+    ( bech32With )
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Codec.Binary.Encoding as E
 import qualified Data.ByteString as BS
@@ -87,8 +88,8 @@ newtype Address = Address
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData Address
 
-instance ToBech32 Address where
-    bech32 addr = bech32With (addressHrp addr) $ unAddress addr
+bech32 :: Address -> Text
+bech32 addr = bech32With (addressHrp addr) $ unAddress addr
 
 -- | Decode a bech32-encoded  'Text' into an 'Address'
 --
@@ -249,12 +250,3 @@ invariantNetworkTag limit (NetworkTag num)
       ++ show num
       ++ ", but expected to be less than "
       ++ show limit
-
-newtype AddressVerificationKeyHash =
-    AddressVerificationKeyHash { unAddressVerificationKeyHash :: ByteString }
-instance ToBech32 AddressVerificationKeyHash where
-    bech32 (AddressVerificationKeyHash kh) = bech32With CIP5.addr_vkh kh
-newtype StakeVerificationKeyHash =
-    StakeVerificationKeyHash { unStakeVerificationKeyHash :: ByteString }
-instance ToBech32 StakeVerificationKeyHash where
-    bech32 (StakeVerificationKeyHash kh) = bech32With CIP5.stake_vkh kh

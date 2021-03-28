@@ -24,6 +24,7 @@ import Cardano.Address
     , ChainPointer (..)
     , HasNetworkDiscriminant (..)
     , HasNetworkDiscriminant (NetworkDiscriminant)
+    , bech32
     , fromBech32
     , unsafeMkAddress
     )
@@ -39,7 +40,9 @@ import Cardano.Address.Derivation
     , indexFromWord32
     , toXPub
     , unsafeMkIndex
+    , xprvToBytes
     , xpubFromBytes
+    , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
@@ -59,8 +62,6 @@ import Cardano.Address.Style.Shelley
     , roleToIndex
     )
 
-import Cardano.Codec.Bech32
-    ( bech32 )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -71,6 +72,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Either
     ( rights )
+import Data.Either.Extra
+    ( eitherToMaybe )
 import Data.Function
     ( (&) )
 import Data.Maybe
@@ -99,10 +102,11 @@ import Text.Pretty.Simple
     ( defaultOutputOptionsNoColor, pShowOpt )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
+import Cardano.Codec.Bech32
+    ( bech32With )
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
-import Data.Either.Extra
-    ( eitherToMaybe )
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
@@ -458,31 +462,28 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    let rootXPrv = bech32 rootK
+    let rootXPrv = bech32With CIP5.root_xsk $ getExtendedKeyAddr rootK
 
     let Just accIx0 = indexFromWord32 @(Index 'Hardened _) 0x80000000
     let acctK0 = deriveAccountPrivateKey rootK accIx0
-    let accXPrv0 = bech32 acctK0
+    let accXPrv0 = bech32With CIP5.acct_xsk  $ getExtendedKeyAddr acctK0
     let Just accIx1 = indexFromWord32 @(Index 'Hardened _) 0x80000001
     let acctK1 = deriveAccountPrivateKey rootK accIx1
-    let accXPrv1 = bech32 acctK1
+    let accXPrv1 = bech32With CIP5.acct_xsk $ getExtendedKeyAddr acctK1
 
     let Just addIx0 = indexFromWord32 @(Index 'Soft _) 0x00000000
     let addrK0prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx0
-    let addrXPrv0 = bech32 addrK0prv
-    let addrXPub0' = toXPub <$> addrK0prv
-    let addrXPub0 = bech32 addrXPub0'
+    let addrXPrv0 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK0prv
+    let addrXPub0 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK0prv
 
     let Just addIx1 = indexFromWord32 @(Index 'Soft _) 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
-    let addrXPrv1 = bech32 addrK1prv
-    let addrXPub1' = toXPub <$> addrK1prv
-    let addrXPub1 = bech32 addrXPub1'
+    let addrXPrv1 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK1prv
+    let addrXPub1 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1prv
     let Just addIx1442 = indexFromWord32 @(Index 'Soft _) 0x000005a2
     let addrK1442prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1442
-    let addrXPrv1442 = bech32 addrK1442prv
-    let addrXPub1442' = toXPub <$> addrK1442prv
-    let addrXPub1442 = bech32 addrXPub1442'
+    let addrXPrv1442 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK1442prv
+    let addrXPub1442 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1442prv
 
     let networkTags = rights $ mkNetworkDiscriminant <$> [0,3,6]
     let paymentAddr0 = getPaymentAddr addrK0prv <$> networkTags
@@ -505,6 +506,8 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let vec = TestVector {..}
     goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
   where
+    getExtendedKeyAddr = xprvToBytes . getKey
+    getPublicKeyAddr = xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =

@@ -16,6 +16,7 @@ import Cardano.Address
     , HasNetworkDiscriminant (..)
     , PaymentAddress (..)
     , base58
+    , bech32
     , fromBase58
     , fromBech32
     )
@@ -25,8 +26,6 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
-import Cardano.Codec.Bech32
-    ( ToBech32 (bech32) )
 import Data.Function
     ( (&) )
 import Data.Text

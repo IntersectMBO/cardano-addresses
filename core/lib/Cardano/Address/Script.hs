@@ -51,8 +51,6 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( XPub, credentialHashSize, hashCredential, xpubFromBytes, xpubToBytes )
-import Cardano.Codec.Bech32
-    ( ToBech32 (..), bech32With )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Control.Applicative
@@ -218,9 +216,6 @@ scriptHashFromBytes bytes
 newtype KeyHash = KeyHash { unKeyHash :: ByteString }
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
-instance ToBech32 KeyHash where
-    bech32 (KeyHash kh) = bech32With CIP5.script_vkh kh
-
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
 --
 -- @since 3.0.0

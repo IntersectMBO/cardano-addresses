@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Cardano.Codec.Bech32 (bech32With,fromBech32With,ToBech32(..)) where
+module Cardano.Codec.Bech32 (bech32With,fromBech32With) where
 
 import Prelude
 
@@ -20,9 +20,6 @@ import qualified Data.Text.Encoding as T
 -- | Encode an address to bech32 'Text', with a prefix depending on type.
 --
 -- @since 3.4.0
-class ToBech32 a where
-    bech32 :: a -> Text
-
 bech32With :: HumanReadablePart -> ByteString -> Text
 bech32With hrp =
     T.decodeUtf8 . encode (EBech32 hrp)
