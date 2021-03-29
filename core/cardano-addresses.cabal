@@ -38,7 +38,6 @@ library
       Cardano.Address.Style.Byron
       Cardano.Address.Style.Icarus
       Cardano.Address.Style.Shelley
-      Cardano.Codec.Bech32
       Cardano.Codec.Bech32.Prefixes
       Cardano.Codec.Cbor
       Cardano.Mnemonic

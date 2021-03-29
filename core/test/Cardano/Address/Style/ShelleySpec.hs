@@ -25,6 +25,7 @@ import Cardano.Address
     , HasNetworkDiscriminant (..)
     , HasNetworkDiscriminant (NetworkDiscriminant)
     , bech32
+    , bech32With
     , fromBech32
     , unsafeMkAddress
     )
@@ -62,14 +63,18 @@ import Cardano.Address.Style.Shelley
     , roleToIndex
     )
 
+import qualified Cardano.Address.Style.Shelley as Shelley
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
+import qualified Data.ByteArray as BA
 import Data.ByteString
     ( ByteString )
+import qualified Data.ByteString as BS
 import Data.Either
     ( rights )
 import Data.Either.Extra
@@ -80,6 +85,10 @@ import Data.Maybe
     ( isNothing )
 import Data.Text
     ( Text )
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TL
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -100,17 +109,6 @@ import Test.QuickCheck
     )
 import Text.Pretty.Simple
     ( defaultOutputOptionsNoColor, pShowOpt )
-
-import qualified Cardano.Address.Style.Shelley as Shelley
-import Cardano.Codec.Bech32
-    ( bech32With )
-import qualified Cardano.Codec.Bech32.Prefixes as CIP5
-import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.IO as TL
 
 spec :: Spec
 spec = do

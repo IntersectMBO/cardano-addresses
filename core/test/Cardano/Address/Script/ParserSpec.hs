@@ -23,7 +23,7 @@ import Test.Hspec
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S )
 
-import Cardano.Codec.Bech32
+import Cardano.Address
     ( fromBech32With )
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Text as T

@@ -83,6 +83,7 @@ import Cardano.Address
     , ChainPointer (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
+    , bech32With
     , invariantNetworkTag
     , invariantSize
     , unAddress
@@ -107,8 +108,6 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Script
     ( KeyHash (..), ScriptHash (..) )
-import Cardano.Codec.Bech32
-    ( bech32With )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding

@@ -31,11 +31,12 @@ module Cardano.Address
     , NetworkTag (..)
     , invariantSize
     , invariantNetworkTag
-    -- , StakeVerificationKeyHash(..)
-    -- , AddressVerificationKeyHash(..)
     , bech32
     , fromBech32
-    , addressHrp) where
+    , addressHrp
+    , bech32With
+    , fromBech32With
+    ) where
 
 import Prelude
 
@@ -72,8 +73,6 @@ import GHC.Stack
 import Numeric.Natural
     ( Natural )
 
-import Cardano.Codec.Bech32
-    ( bech32With )
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Codec.Binary.Encoding as E
 import qualified Data.ByteString as BS
@@ -110,6 +109,26 @@ addressHrp (Address bs) =
     case uncons bs of
         Just (w8, _) | testBit w8 0 -> CIP5.addr
         _ -> CIP5.addr_test
+
+-- | Encode an address to bech32 'Text', with a prefix depending on type.
+--
+-- @since 3.4.0
+bech32With :: HumanReadablePart -> ByteString -> Text
+bech32With hrp =
+    T.decodeUtf8 . encode (EBech32 hrp)
+
+fromBech32With :: HumanReadablePart -> (ByteString -> b) -> Text -> Either String b
+fromBech32With hrn con text = do
+  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
+  if hrp == hrn then
+    pure $ con bs
+  else
+    Left $ fold
+        [ "Human Readable Part should be "
+        , show (humanReadablePartToText hrn)
+        , " but we parsed "
+        , show (humanReadablePartToText hrp)
+        ]
 
 -- Unsafe constructor for easily lifting bytes inside an 'Address'.
 --
