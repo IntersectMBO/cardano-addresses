@@ -1,13 +1,26 @@
-## [3.3.0] - 2021-03-17
+## [3.3.0] - 2021-03-30
 
 ### Added
 
 - The library now builds with ghcjs and passes tests running on nodejs.
 
+- The `cardano-address inspect` command now includes bech32
+  encodings. In the output, the JSON attribute will have a `_bech32`
+  suffix. For example, `stake_key_hash_bech32`.
+
 ### Changed
 
 - The `Index` type no longer has an `Enum` instance. Use
   `indexFromWord32` and `indexToWord32` instead.
+
+- (Breaking change) The `Cardano.Address.bech32` function will now use
+  the `addr_test` prefix instead of `addr`, if the given address is
+  not a mainnet address.
+
+### Removed
+
+N/A
+
 
 ## [3.2.0] - 2020-01-22
 
