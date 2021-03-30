@@ -112,7 +112,6 @@ test-suite unit
     , cardano-addresses
     , cardano-crypto
     , containers
-    , extra
     , hspec
     , hspec-golden
     , memory

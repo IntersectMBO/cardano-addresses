@@ -44,8 +44,6 @@ import Cardano.Codec.Cbor
     ( decodeAddress, deserialiseCbor )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
-import Codec.Binary.Bech32.Internal
-    ( humanReadablePartToText )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.DeepSeq
@@ -58,8 +56,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Either.Extra
     ( eitherToMaybe )
-import Data.Foldable
-    ( fold )
 import Data.Text
     ( Text )
 import Data.Word
@@ -111,28 +107,23 @@ fromBase58 =
 --
 -- @since 1.0.0
 bech32 :: Address -> Text
-bech32 addr = bech32With (addressHrp addr) $ unAddress addr
+bech32 addr = bech32With (addressHrp addr) addr
 
 -- | Encode an 'Address' to bech32 'Text', using the specified human readable
 -- prefix.
 --
 -- @since 2.0.0
-bech32With :: HumanReadablePart -> ByteString -> Text
-bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
+bech32With :: HumanReadablePart -> Address -> Text
+bech32With hrp = T.decodeLatin1 . encode (EBech32 hrp) . unAddress
 
--- | Decode a bech32-encoded  'Text' into an 'Address'
+-- | Decode a bech32-encoded 'Text' into an 'Address'
 --
 -- @since 1.0.0
-fromBech32 :: Text -> Either String Address
-fromBech32 text = do
-  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
-  if hrp `elem` [CIP5.addr, CIP5.addr_test] then
-    pure $ Address bs
-  else
-    Left $ fold
-        [ "Human Readable Part should be addr or addr_test but is "
-        , show (humanReadablePartToText hrp)
-        ]
+fromBech32 :: Text -> Maybe Address
+fromBech32 = eitherToMaybe
+    . fmap (unsafeMkAddress . snd)
+    . E.fromBech32 (const id)
+    . T.encodeUtf8
 
 -- | Returns the HRP for a shelley address, using the network tag.
 addressHrp :: Address -> HumanReadablePart

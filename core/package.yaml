@@ -88,6 +88,5 @@ tests:
     - memory
     - QuickCheck
     - text
-    - extra
     - hspec-golden
     - pretty-simple

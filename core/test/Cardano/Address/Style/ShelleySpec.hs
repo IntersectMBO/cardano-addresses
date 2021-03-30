@@ -71,8 +71,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Either
     ( rights )
-import Data.Either.Extra
-    ( eitherToMaybe )
 import Data.Function
     ( (&) )
 import Data.Maybe
@@ -132,13 +130,13 @@ spec = do
 
     describe "Text Encoding Roundtrips" $ do
         prop "bech32 . fromBech32 - Shelley - payment address" $
-            prop_roundtripTextEncoding bech32 (eitherToMaybe . fromBech32)
+            prop_roundtripTextEncoding bech32 fromBech32
 
         prop "bech32 . fromBech32 - Shelley - delegation address" $
-            prop_roundtripTextEncodingDelegation bech32 (eitherToMaybe . fromBech32)
+            prop_roundtripTextEncodingDelegation bech32 fromBech32
 
         prop "bech32 . fromBech32 - Shelley - pointer address" $
-            prop_roundtripTextEncodingPointer bech32 (eitherToMaybe . fromBech32)
+            prop_roundtripTextEncodingPointer bech32 fromBech32
 
     describe "Golden tests" $ do
         goldenTestPointerAddress GoldenTestPointerAddress
@@ -503,8 +501,8 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let vec = TestVector {..}
     goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
   where
-    getExtendedKeyAddr = xprvToBytes . getKey
-    getPublicKeyAddr = xpubToBytes . getKey
+    getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
+    getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =

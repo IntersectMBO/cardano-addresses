@@ -39,8 +39,6 @@ import Test.Hspec.QuickCheck
 import Test.QuickCheck
     ( Property, counterexample, label )
 
-import Data.Either.Extra
-    ( eitherToMaybe )
 import qualified Data.Text as T
 
 spec :: Spec
@@ -52,10 +50,10 @@ spec = describe "Text Encoding Roundtrips" $ do
         prop_roundtripTextEncoding @Icarus base58 fromBase58
 
     prop "bech32 . fromBech32 - Byron" $
-        prop_roundtripTextEncoding @Byron bech32 (eitherToMaybe . fromBech32)
+        prop_roundtripTextEncoding @Byron bech32 fromBech32
 
     prop "bech32 . fromBech32 - Icarus" $
-        prop_roundtripTextEncoding @Icarus bech32 (eitherToMaybe . fromBech32)
+        prop_roundtripTextEncoding @Icarus bech32 fromBech32
 
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
