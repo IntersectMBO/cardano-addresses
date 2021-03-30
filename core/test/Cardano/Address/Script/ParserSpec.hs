@@ -16,26 +16,27 @@ import Cardano.Address.Script.Parser
     , requireSignatureOfParser
     , scriptParser
     )
+import Data.ByteString
+    ( ByteString )
 import Data.Text
     ( Text )
 import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S )
-import Cardano.Address
-    ( fromBech32With )
 
-import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Codec.Binary.Encoding as E
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
     let verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms" :: Text
-    let (Right kh1) = fromBech32With CIP5.script_vkh KeyHash verKeyH1
+    let kh1 = KeyHash $ unBech32 verKeyH1
     let verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj" :: Text
-    let (Right kh2) = fromBech32With CIP5.script_vkh KeyHash verKeyH2
+    let kh2 = KeyHash $ unBech32 verKeyH2
     let verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2" :: Text
-    let (Right kh3) = fromBech32With CIP5.script_vkh KeyHash verKeyH3
+    let kh3 = KeyHash $ unBech32 verKeyH3
 
     let script1 = "all ["<>verKeyH1<>"]"
     let script2 = " all   [ "<>verKeyH1<>"  ] "
@@ -178,3 +179,9 @@ valuesParserUnitTest parser inp expected = it title $ do
     where
         title :: String
         title = mempty <> " input=" <> show inp
+
+-- | Unsafe function to get bech32 data part from test data.
+unBech32 :: Text -> ByteString
+unBech32 = either (error "Incorrect bech32 in test data") snd
+    . E.fromBech32 (const id)
+    . T.encodeUtf8

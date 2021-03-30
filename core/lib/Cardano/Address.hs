@@ -27,8 +27,6 @@ module Cardano.Address
     , bech32
     , bech32With
     , fromBech32
-    , fromBech32With
-    , addressHrp
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -108,14 +106,17 @@ fromBase58 =
    <=<
     eitherToMaybe . E.fromBase58 . T.encodeUtf8
 
--- | Encode an 'Address' to bech32 'Text', using @addr@ or @addr_test@ as a
--- human readable prefix.  @since 1.0.0
+-- | Encode a Shelley 'Address' to bech32 'Text', using @addr@ or @addr_test@ as
+-- a human readable prefix (depending on the network tag in the address).
+--
+-- @since 1.0.0
 bech32 :: Address -> Text
 bech32 addr = bech32With (addressHrp addr) $ unAddress addr
 
--- | Encode an address to bech32 'Text', with a prefix depending on type.
+-- | Encode an 'Address' to bech32 'Text', using the specified human readable
+-- prefix.
 --
--- @since 3.4.0
+-- @since 2.0.0
 bech32With :: HumanReadablePart -> ByteString -> Text
 bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
 
@@ -133,28 +134,11 @@ fromBech32 text = do
         , show (humanReadablePartToText hrp)
         ]
 
--- | Decode a bech32-encoded 'Text' into an 'Address', and fail if the
--- 'HumanReadablePart' was incorrect.
---
--- @since 3.4.0
-fromBech32With :: HumanReadablePart -> (ByteString -> b) -> Text -> Either String b
-fromBech32With hrn con text = do
-  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
-  if hrp == hrn then
-    pure $ con bs
-  else
-    Left $ fold
-        [ "Human Readable Part should be "
-        , show (humanReadablePartToText hrn)
-        , " but we parsed "
-        , show (humanReadablePartToText hrp)
-        ]
-
+-- | Returns the HRP for a shelley address, using the network tag.
 addressHrp :: Address -> HumanReadablePart
-addressHrp (Address bs) =
-    case BS.uncons bs of
-        Just (w8, _) | testBit w8 0 -> CIP5.addr
-        _ -> CIP5.addr_test
+addressHrp (Address bs) = case BS.uncons bs of
+    Just (w8, _) | testBit w8 0 -> CIP5.addr
+    _ -> CIP5.addr_test
 
 -- | Encoding of addresses for certain key types and backend targets.
 --
