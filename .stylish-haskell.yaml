@@ -4,7 +4,10 @@
 # https://github.com/jaspervdj/stylish-haskell/blob/master/data/stylish-haskell.yaml
 # for usage.
 
-columns: 80 # Should match .editorconfig
+# Settings which should match .editorconfig
+columns: 80
+newline: lf
+
 steps:
   - imports:
       align: none

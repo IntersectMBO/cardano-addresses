@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -49,6 +50,8 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
+import Data.Bits
+    ( Bits (testBit) )
 import Data.ByteString
     ( ByteString )
 import Data.Either.Extra
@@ -99,25 +102,34 @@ fromBase58 =
    <=<
     eitherToMaybe . E.fromBase58 . T.encodeUtf8
 
--- | Encode an 'Address' to bech32 'Text', using @addr@ as a human readable prefix.
+-- | Encode a Shelley 'Address' to bech32 'Text', using @addr@ or @addr_test@ as
+-- a human readable prefix (depending on the network tag in the address).
 --
 -- @since 1.0.0
 bech32 :: Address -> Text
-bech32 = bech32With CIP5.addr
+bech32 addr = bech32With (addressHrp addr) addr
 
--- | Encode an 'Address' to bech32 'Text', using a specified human readable prefix.
+-- | Encode an 'Address' to bech32 'Text', using the specified human readable
+-- prefix.
 --
 -- @since 2.0.0
 bech32With :: HumanReadablePart -> Address -> Text
-bech32With hrp =
-    T.decodeUtf8 . encode (EBech32 hrp) . unAddress
+bech32With hrp = T.decodeLatin1 . encode (EBech32 hrp) . unAddress
 
--- | Decode a bech32-encoded  'Text' into an 'Address'
+-- | Decode a bech32-encoded 'Text' into an 'Address'
 --
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
-fromBech32 =
-    eitherToMaybe . fmap (unsafeMkAddress . snd) . E.fromBech32 (const id) . T.encodeUtf8
+fromBech32 = eitherToMaybe
+    . fmap (unsafeMkAddress . snd)
+    . E.fromBech32 (const id)
+    . T.encodeUtf8
+
+-- | Returns the HRP for a shelley address, using the network tag.
+addressHrp :: Address -> HumanReadablePart
+addressHrp (Address bs) = case BS.uncons bs of
+    Just (w8, _) | testBit w8 0 -> CIP5.addr
+    _ -> CIP5.addr_test
 
 -- | Encoding of addresses for certain key types and backend targets.
 --

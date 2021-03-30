@@ -16,8 +16,8 @@ import Cardano.Address.Script.Parser
     , requireSignatureOfParser
     , scriptParser
     )
-import Codec.Binary.Encoding
-    ( fromBech32 )
+import Data.ByteString
+    ( ByteString )
 import Data.Text
     ( Text )
 import Test.Hspec
@@ -25,17 +25,18 @@ import Test.Hspec
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S )
 
+import qualified Codec.Binary.Encoding as E
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
     let verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms" :: Text
-    let (Right (_, bytes1)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH1
+    let kh1 = KeyHash $ unBech32 verKeyH1
     let verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj" :: Text
-    let (Right (_, bytes2)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH2
+    let kh2 = KeyHash $ unBech32 verKeyH2
     let verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2" :: Text
-    let (Right (_, bytes3)) = fromBech32 (const id) $ T.encodeUtf8 verKeyH3
+    let kh3 = KeyHash $ unBech32 verKeyH3
 
     let script1 = "all ["<>verKeyH1<>"]"
     let script2 = " all   [ "<>verKeyH1<>"  ] "
@@ -56,17 +57,17 @@ spec = do
 
     describe "requireSignatureOfParser : unit tests" $ do
         valuesParserUnitTest requireSignatureOfParser verKeyH1
-            (RequireSignatureOf $ KeyHash bytes1)
+            (RequireSignatureOf kh1)
         valuesParserUnitTest requireSignatureOfParser (verKeyH1 <> " ")
-            (RequireSignatureOf $ KeyHash bytes1)
+            (RequireSignatureOf kh1)
         valuesParserUnitTest requireSignatureOfParser (verKeyH1 <>", ")
-            (RequireSignatureOf $ KeyHash bytes1)
+            (RequireSignatureOf kh1)
         valuesParserUnitTest requireSignatureOfParser ("        " <> verKeyH1 <>", ")
-            (RequireSignatureOf $ KeyHash bytes1)
+            (RequireSignatureOf kh1)
 
     describe "requireAllOfParser : unit tests" $ do
         let expected1 = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1 ]
+                [ RequireSignatureOf kh1 ]
         valuesParserUnitTest requireAllOfParser script1 expected1
         valuesParserUnitTest scriptParser script1 expected1
 
@@ -74,15 +75,15 @@ spec = do
         valuesParserUnitTest scriptParser script2 expected1
 
         let expected2 = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1
-                , RequireSignatureOf $ KeyHash bytes2 ]
+                [ RequireSignatureOf kh1
+                , RequireSignatureOf kh2 ]
         valuesParserUnitTest requireAllOfParser script3 expected2
         valuesParserUnitTest scriptParser script3 expected2
 
         let expected3 = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1
-                , RequireSignatureOf $ KeyHash bytes2
-                , RequireSignatureOf $ KeyHash bytes3 ]
+                [ RequireSignatureOf kh1
+                , RequireSignatureOf kh2
+                , RequireSignatureOf kh3 ]
         valuesParserUnitTest requireAllOfParser script4 expected3
         valuesParserUnitTest scriptParser script4 expected3
 
@@ -92,7 +93,7 @@ spec = do
 
     describe "requireAnyOfParser : unit tests" $ do
         let expected1 = RequireAnyOf
-                [ RequireSignatureOf $ KeyHash bytes1 ]
+                [ RequireSignatureOf kh1 ]
         valuesParserUnitTest requireAnyOfParser script5 expected1
         valuesParserUnitTest scriptParser script5 expected1
 
@@ -100,29 +101,29 @@ spec = do
         valuesParserUnitTest scriptParser script6 expected1
 
         let expected2 = RequireAnyOf
-                [ RequireSignatureOf $ KeyHash bytes1
-                , RequireSignatureOf $ KeyHash bytes2 ]
+                [ RequireSignatureOf kh1
+                , RequireSignatureOf kh2 ]
         valuesParserUnitTest requireAnyOfParser script7 expected2
         valuesParserUnitTest scriptParser script7 expected2
 
         let expected3 = RequireAnyOf
-                [ RequireSignatureOf $ KeyHash bytes1
-                , RequireSignatureOf $ KeyHash bytes2
-                , RequireSignatureOf $ KeyHash bytes3 ]
+                [ RequireSignatureOf kh1
+                , RequireSignatureOf kh2
+                , RequireSignatureOf kh3 ]
         valuesParserUnitTest requireAnyOfParser script8 expected3
         valuesParserUnitTest scriptParser script8 expected3
 
         let expected4 = RequireAnyOf
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , RequireAllOf
-                  [ RequireSignatureOf $ KeyHash bytes2
-                  , RequireSignatureOf $ KeyHash bytes3 ]
+                  [ RequireSignatureOf kh2
+                  , RequireSignatureOf kh3 ]
                 ]
         valuesParserUnitTest requireAnyOfParser script9 expected4
         valuesParserUnitTest scriptParser script9 expected4
 
         let expected5 = RequireAnyOf
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , RequireAllOf []
                 ]
         valuesParserUnitTest requireAnyOfParser script13 expected5
@@ -130,36 +131,36 @@ spec = do
 
     describe "requireAtLeastOfParser : unit tests" $ do
         let expected1 = RequireSomeOf 1
-                [ RequireSignatureOf $ KeyHash bytes1
-                , RequireSignatureOf $ KeyHash bytes2
-                , RequireSignatureOf $ KeyHash bytes3 ]
+                [ RequireSignatureOf kh1
+                , RequireSignatureOf kh2
+                , RequireSignatureOf kh3 ]
         valuesParserUnitTest requireAtLeastOfParser script10 expected1
         valuesParserUnitTest scriptParser script10 expected1
 
         let expected2 = RequireSomeOf 1
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , RequireAllOf
-                  [ RequireSignatureOf $ KeyHash bytes2
-                  , RequireSignatureOf $ KeyHash bytes3 ]
+                  [ RequireSignatureOf kh2
+                  , RequireSignatureOf kh3 ]
                 ]
         valuesParserUnitTest requireAtLeastOfParser script11 expected2
         valuesParserUnitTest scriptParser script11 expected2
 
     describe "validFromSlot unit test" $ do
         let expected = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , ActiveFromSlot 120 ]
         valuesParserUnitTest scriptParser script14 expected
 
     describe "validUntilSlot unit test" $ do
         let expected = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , ActiveUntilSlot 150 ]
         valuesParserUnitTest scriptParser script15 expected
 
     describe "validUntilSlot and validFromSlot unit test" $ do
         let expected = RequireAllOf
-                [ RequireSignatureOf $ KeyHash bytes1
+                [ RequireSignatureOf kh1
                 , ActiveFromSlot 120
                 , ActiveUntilSlot 125 ]
         valuesParserUnitTest scriptParser script16 expected
@@ -178,3 +179,9 @@ valuesParserUnitTest parser inp expected = it title $ do
     where
         title :: String
         title = mempty <> " input=" <> show inp
+
+-- | Unsafe function to get bech32 data part from test data.
+unBech32 :: Text -> ByteString
+unBech32 = either (error "Incorrect bech32 in test data") snd
+    . E.fromBech32 (const id)
+    . T.encodeUtf8

@@ -16,7 +16,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address
-    ( ChainPointer (..), bech32With, unsafeMkAddress )
+    ( ChainPointer (..), bech32, unsafeMkAddress )
 import Cardano.Address.Style.Shelley
     ( Credential (..), ErrExtendAddress (..) )
 import Numeric.Natural
@@ -83,14 +83,14 @@ mod liftCmd = command "pointer" $
 
 run :: Cmd -> IO ()
 run Cmd{slotNum,transactionIndex,outputIndex} = do
-    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
+    (_, bytes) <- hGetBech32 stdin allowedPrefixes
     case Shelley.extendAddress (unsafeMkAddress bytes) (DelegationFromPointer ptr) of
         Left (ErrInvalidAddressStyle msg) ->
             fail msg
         Left (ErrInvalidAddressType  msg) ->
             fail msg
         Right addr ->
-            B8.hPutStr stdout $ T.encodeUtf8 $ bech32With hrp addr
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
   where
     allowedPrefixes =
         [ CIP5.addr
