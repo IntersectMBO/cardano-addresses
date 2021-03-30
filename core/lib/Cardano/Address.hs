@@ -24,6 +24,11 @@ module Cardano.Address
       -- * Conversion From / To Text
     , base58
     , fromBase58
+    , bech32
+    , bech32With
+    , fromBech32
+    , fromBech32With
+    , addressHrp
 
       -- Internal / Network Discrimination
     , HasNetworkDiscriminant (..)
@@ -31,11 +36,6 @@ module Cardano.Address
     , NetworkTag (..)
     , invariantSize
     , invariantNetworkTag
-    , bech32
-    , fromBech32
-    , addressHrp
-    , bech32With
-    , fromBech32With
     ) where
 
 import Prelude
@@ -57,7 +57,7 @@ import Control.Monad
 import Data.Bits
     ( Bits (testBit) )
 import Data.ByteString
-    ( ByteString, uncons )
+    ( ByteString )
 import Data.Either.Extra
     ( eitherToMaybe )
 import Data.Foldable
@@ -87,49 +87,6 @@ newtype Address = Address
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData Address
 
-bech32 :: Address -> Text
-bech32 addr = bech32With (addressHrp addr) $ unAddress addr
-
--- | Decode a bech32-encoded  'Text' into an 'Address'
---
--- @since 1.0.0
-fromBech32 :: Text -> Either String Address
-fromBech32 text = do
-  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
-  if hrp `elem` [CIP5.addr, CIP5.addr_test] then
-    pure $ Address bs
-  else
-    Left $ fold
-        [ "Human Readable Part should be addr or addr_test but is "
-        , show (humanReadablePartToText hrp)
-        ]
-
-addressHrp :: Address -> HumanReadablePart
-addressHrp (Address bs) =
-    case uncons bs of
-        Just (w8, _) | testBit w8 0 -> CIP5.addr
-        _ -> CIP5.addr_test
-
--- | Encode an address to bech32 'Text', with a prefix depending on type.
---
--- @since 3.4.0
-bech32With :: HumanReadablePart -> ByteString -> Text
-bech32With hrp =
-    T.decodeUtf8 . encode (EBech32 hrp)
-
-fromBech32With :: HumanReadablePart -> (ByteString -> b) -> Text -> Either String b
-fromBech32With hrn con text = do
-  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
-  if hrp == hrn then
-    pure $ con bs
-  else
-    Left $ fold
-        [ "Human Readable Part should be "
-        , show (humanReadablePartToText hrn)
-        , " but we parsed "
-        , show (humanReadablePartToText hrp)
-        ]
-
 -- Unsafe constructor for easily lifting bytes inside an 'Address'.
 --
 -- /!\ Use at your own risks.
@@ -150,6 +107,54 @@ fromBase58 =
     deserialiseCbor (unsafeMkAddress <$> decodeAddress)
    <=<
     eitherToMaybe . E.fromBase58 . T.encodeUtf8
+
+-- | Encode an 'Address' to bech32 'Text', using @addr@ or @addr_test@ as a
+-- human readable prefix.  @since 1.0.0
+bech32 :: Address -> Text
+bech32 addr = bech32With (addressHrp addr) $ unAddress addr
+
+-- | Encode an address to bech32 'Text', with a prefix depending on type.
+--
+-- @since 3.4.0
+bech32With :: HumanReadablePart -> ByteString -> Text
+bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
+
+-- | Decode a bech32-encoded  'Text' into an 'Address'
+--
+-- @since 1.0.0
+fromBech32 :: Text -> Either String Address
+fromBech32 text = do
+  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
+  if hrp `elem` [CIP5.addr, CIP5.addr_test] then
+    pure $ Address bs
+  else
+    Left $ fold
+        [ "Human Readable Part should be addr or addr_test but is "
+        , show (humanReadablePartToText hrp)
+        ]
+
+-- | Decode a bech32-encoded 'Text' into an 'Address', and fail if the
+-- 'HumanReadablePart' was incorrect.
+--
+-- @since 3.4.0
+fromBech32With :: HumanReadablePart -> (ByteString -> b) -> Text -> Either String b
+fromBech32With hrn con text = do
+  (hrp, bs) <- E.fromBech32 (const id) $ T.encodeUtf8 text
+  if hrp == hrn then
+    pure $ con bs
+  else
+    Left $ fold
+        [ "Human Readable Part should be "
+        , show (humanReadablePartToText hrn)
+        , " but we parsed "
+        , show (humanReadablePartToText hrp)
+        ]
+
+addressHrp :: Address -> HumanReadablePart
+addressHrp (Address bs) =
+    case BS.uncons bs of
+        Just (w8, _) | testBit w8 0 -> CIP5.addr
+        _ -> CIP5.addr_test
 
 -- | Encoding of addresses for certain key types and backend targets.
 --

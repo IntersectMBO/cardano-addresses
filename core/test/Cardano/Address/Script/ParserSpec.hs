@@ -8,7 +8,7 @@ module Cardano.Address.Script.ParserSpec
 import Prelude
 
 import Cardano.Address.Script
-    ( KeyHash (KeyHash), Script (..) )
+    ( KeyHash (..), Script (..) )
 import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
@@ -22,9 +22,9 @@ import Test.Hspec
     ( Spec, SpecWith, describe, it, shouldBe )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S )
-
 import Cardano.Address
     ( fromBech32With )
+
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Text as T
 

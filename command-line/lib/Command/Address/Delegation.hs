@@ -77,7 +77,7 @@ run Cmd{credential} = do
         Left (ErrInvalidAddressType  msg) ->
             fail msg
         Right addr ->
-           B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
+            B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
   where
     allowedPrefixes =
         [ CIP5.addr

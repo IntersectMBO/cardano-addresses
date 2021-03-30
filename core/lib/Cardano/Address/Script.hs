@@ -216,6 +216,7 @@ scriptHashFromBytes bytes
 newtype KeyHash = KeyHash { unKeyHash :: ByteString }
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
+
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
 --
 -- @since 3.0.0
