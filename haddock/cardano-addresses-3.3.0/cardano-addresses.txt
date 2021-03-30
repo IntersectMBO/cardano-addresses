@@ -611,11 +611,12 @@ base58 :: Address -> Text
 -- | Decode a base58-encoded <a>Text</a> into an <a>Address</a>
 fromBase58 :: Text -> Maybe Address
 
--- | Encode an <a>Address</a> to bech32 <a>Text</a>, using <tt>addr</tt> as
---   a human readable prefix.
+-- | Encode a Shelley <a>Address</a> to bech32 <a>Text</a>, using
+--   <tt>addr</tt> or <tt>addr_test</tt> as a human readable prefix
+--   (depending on the network tag in the address).
 bech32 :: Address -> Text
 
--- | Encode an <a>Address</a> to bech32 <a>Text</a>, using a specified
+-- | Encode an <a>Address</a> to bech32 <a>Text</a>, using the specified
 --   human readable prefix.
 bech32With :: HumanReadablePart -> Address -> Text
 
