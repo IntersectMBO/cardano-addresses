@@ -7,6 +7,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
@@ -38,6 +39,8 @@ module Cardano.Address.Style.Icarus
 
       -- * Addresses
       -- $addresses
+    , AddressInfo (..)
+    , eitherInspectAddress
     , inspectAddress
     , inspectIcarusAddress
     , paymentAddress
@@ -88,16 +91,12 @@ import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
-import Control.Arrow
-    ( first )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception
     ( Exception, displayException )
 import Control.Exception.Base
     ( assert )
-import Control.Monad
-    ( when )
 import Control.Monad.Catch
     ( MonadThrow, throwM )
 import Crypto.Hash.Algorithms
@@ -105,7 +104,9 @@ import Crypto.Hash.Algorithms
 import Crypto.MAC.HMAC
     ( HMAC, hmac )
 import Data.Aeson
-    ( toJSON, (.=) )
+    ( ToJSON (..), (.=) )
+import Data.Bifunctor
+    ( bimap, first )
 import Data.Bits
     ( clearBit, setBit, testBit )
 import Data.ByteArray
@@ -349,6 +350,9 @@ data ErrInspectAddress
 
 deriving instance Show ErrInspectAddress
 
+instance Eq ErrInspectAddress where
+    a == b = show a == show b
+
 instance Exception ErrInspectAddress where
   displayException = prettyErrInspectAddress
 
@@ -362,44 +366,66 @@ prettyErrInspectAddress = \case
     DeserialiseError e ->
         format "Deserialisation error (was: {})" (show e)
 
--- Analyze an 'Address' to know whether it's an Icarus address or not.
--- Throws 'IcarusAddrError' if the address isn't a byron address, or return a
--- structured JSON that gives information about an address.
+-- Determines whether an 'Address' is an Icarus address.
+--
+-- Returns a JSON object with information about the address, or throws
+-- 'ErrInspectAddress' if the address isn't an icarus address.
 --
 -- @since 2.0.0
 inspectIcarusAddress :: MonadThrow m => Address -> m Json.Value
 inspectIcarusAddress = inspectAddress
 {-# DEPRECATED inspectIcarusAddress "use qualified 'inspectAddress' instead." #-}
 
--- | Analyze an 'Address' to know whether it's an Icarus address or not.
--- Throws 'IcarusAddrError' if the address isn't a byron address, or return a
--- structured JSON that gives information about an address.
+-- | Determines whether an 'Address' is an Icarus address.
 --
--- @since 3.0.0
+-- Returns a JSON object with information about the address, or throws
+-- 'ErrInspectAddress' if the address isn't an icarus address.
+--
+-- @since 2.0.0
 inspectAddress :: MonadThrow m => Address -> m Json.Value
-inspectAddress addr = do
-    payload <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
-    (root, attrs) <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor decodePayload payload
-    when (elem 1 . fmap fst $ attrs) $ throwM UnexpectedDerivationPath
-    ntwrk <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
-    pure $ Json.object
-        [ "address_style"   .= Json.String "Icarus"
-        , "stake_reference" .= Json.String "none"
-        , "address_root"    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "network_tag"     .= maybe Json.Null toJSON ntwrk
-        ]
-  where
-    bytes :: ByteString
-    bytes = unAddress addr
+inspectAddress = either throwM (pure . toJSON) . eitherInspectAddress
 
+-- | Determines whether an 'Address' is an Icarus address.
+--
+-- Returns either details about the 'Address', or 'ErrInspectAddress' if it's
+-- not a valid icarus address.
+--
+-- @since 3.4.0
+eitherInspectAddress :: Address -> Either ErrInspectAddress AddressInfo
+eitherInspectAddress addr = do
+    payload <- first DeserialiseError $
+        CBOR.deserialiseCbor CBOR.decodeAddressPayload $
+        unAddress addr
+    ntwrk <- bimap DeserialiseError (fmap NetworkTag) $
+        CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    (root, attrs) <- first DeserialiseError $
+        CBOR.deserialiseCbor decodePayload payload
+    if (elem 1 $ fst <$> attrs)
+        then Left UnexpectedDerivationPath
+        else Right AddressInfo
+            { infoAddressRoot = root
+            , infoNetworkTag = ntwrk
+            }
+  where
     decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])
     decodePayload = do
         _ <- CBOR.decodeListLenCanonicalOf 3
         root <- CBOR.decodeBytes
         (root,) <$> CBOR.decodeAllAttributes
+
+-- | The result of 'eitherInspectAddress' for Icarus addresses.
+--
+-- @since 3.4.0
+data AddressInfo = AddressInfo
+    { infoAddressRoot :: !ByteString
+    , infoNetworkTag :: !(Maybe NetworkTag)
+    } deriving (Generic, Show, Eq)
+
+instance ToJSON AddressInfo where
+    toJSON AddressInfo{..} = Json.object
+        [ "network_tag" .= maybe Json.Null toJSON infoNetworkTag
+        , "address_root" .= T.decodeUtf8 (encode EBase16 infoAddressRoot)
+        ]
 
 instance Internal.PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress

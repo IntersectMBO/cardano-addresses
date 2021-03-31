@@ -4,14 +4,16 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -42,6 +44,9 @@ module Cardano.Address.Style.Shelley
 
       -- * Addresses
       -- $addresses
+    , InspectAddress (..)
+    , AddressInfo (..)
+    , eitherInspectAddress
     , inspectAddress
     , inspectShelleyAddress
     , paymentAddress
@@ -50,7 +55,9 @@ module Cardano.Address.Style.Shelley
     , stakeAddress
     , extendAddress
     , ErrExtendAddress (..)
+    , ErrInspectAddressOnlyShelley (..)
     , ErrInspectAddress (..)
+    , prettyErrInspectAddressOnlyShelley
     , prettyErrInspectAddress
 
       -- * Network Discrimination
@@ -76,14 +83,13 @@ module Cardano.Address.Style.Shelley
 import Prelude
 
 import Cardano.Address
-    ( Address
+    ( Address (..)
     , AddressDiscrimination (..)
     , ChainPointer (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , invariantNetworkTag
     , invariantSize
-    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -109,9 +115,7 @@ import Cardano.Mnemonic
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.Applicative
-    ( Alternative, (<|>) )
-import Control.Arrow
-    ( first )
+    ( Alternative )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception
@@ -119,11 +123,13 @@ import Control.Exception
 import Control.Exception.Base
     ( assert )
 import Control.Monad
-    ( guard, unless, when )
+    ( unless, when )
 import Control.Monad.Catch
     ( MonadThrow, throwM )
 import Data.Aeson
-    ( (.=) )
+    ( ToJSON (..), (.=) )
+import Data.Bifunctor
+    ( bimap, first )
 import Data.Binary.Get
     ( runGetOrFail )
 import Data.Binary.Put
@@ -134,8 +140,6 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
-import Data.Functor
-    ( ($>) )
 import Data.Maybe
     ( fromMaybe, isNothing )
 import Data.Typeable
@@ -374,10 +378,10 @@ deriveDelegationPrivateKey accXPrv =
 -- > let verKey2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 -- > let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
 -- > let (Right script) = scriptFromString scriptStr
--- > let scriptHash@(ScriptHash bytes) = toScriptHash script
+-- > let infoScriptHash@(ScriptHash bytes) = toScriptHash script
 -- > decodeUtf8 (encode EBase16 bytes)
 -- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (PaymentFromScript scriptHash)
+-- > bech32 $ paymentAddress tag (PaymentFromScript infoScriptHash)
 -- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
@@ -399,35 +403,54 @@ deriveDelegationPrivateKey accXPrv =
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 --
 -- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
--- > bech32 $ delegationAddress tag (PaymentFromScript scriptHash) (DelegationFromScript scriptHash)
+-- > bech32 $ delegationAddress tag (PaymentFromScript infoScriptHash) (DelegationFromScript infoScriptHash)
 -- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
 
-
--- | Possible errors from inspecting a Shelley address
+-- | Possible errors from inspecting a Shelley, Icarus, or Byron address.
 --
--- @since 3.0.0
+-- @since 3.4.0
 data ErrInspectAddress
-    = UnknownAddrType
-    | WrongInputSize Int -- ^ Actual size
-    | PtrRetrieveError String -- ^ Human readable error of underlying operation
+    = WrongInputSize Int -- ^ Unexpected size
+    | ErrShelley ErrInspectAddressOnlyShelley
+    | ErrIcarus Icarus.ErrInspectAddress
+    | ErrByron Byron.ErrInspectAddress
     deriving (Eq, Show)
 
 instance Exception ErrInspectAddress where
     displayException = prettyErrInspectAddress
+
+-- | Possible errors from inspecting a Shelley address
+--
+-- @since 3.4.0
+data ErrInspectAddressOnlyShelley
+    = PtrRetrieveError String -- ^ Human readable error of underlying operation
+    | UnknownType Word8 -- ^ Unknown value in address type field
+    deriving (Eq, Show)
+
+instance Exception ErrInspectAddressOnlyShelley where
+    displayException = prettyErrInspectAddressOnlyShelley
+
+-- | Pretty-print an 'ErrInspectAddressOnlyShelley'
+--
+-- @since 3.4.0
+prettyErrInspectAddressOnlyShelley :: ErrInspectAddressOnlyShelley -> String
+prettyErrInspectAddressOnlyShelley = \case
+    PtrRetrieveError s ->
+        format "Failed to retrieve pointer (underlying errors was: {})" s
+    UnknownType t ->
+        format "Unknown address type {}" t
 
 -- | Pretty-print an 'ErrInspectAddress'
 --
 -- @since 3.0.0
 prettyErrInspectAddress :: ErrInspectAddress -> String
 prettyErrInspectAddress = \case
-    UnknownAddrType ->
-        "Unknown address type"
-    WrongInputSize i ->
-        format "Wrong input size of {}" i
-    PtrRetrieveError s ->
-        format "Failed to retrieve pointer (underlying errors was: {})" s
+    WrongInputSize i -> format "Wrong input size of {}" i
+    ErrShelley e -> prettyErrInspectAddressOnlyShelley e
+    ErrIcarus e -> Icarus.prettyErrInspectAddress e
+    ErrByron e -> Byron.prettyErrInspectAddress e
 
--- Analyze an 'Address' to know whether it's a Shelley address or not.
+-- Determines whether an 'Address' a Shelley address.
 --
 -- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
 -- string giving details about the 'Address'.
@@ -441,10 +464,12 @@ inspectShelleyAddress
 inspectShelleyAddress = inspectAddress
 {-# DEPRECATED inspectShelleyAddress "use qualified 'inspectAddress' instead." #-}
 
--- | Analyze an 'Address' to know whether it's a Shelley address or not.
+-- | Analyze an 'Address' to know whether it's a valid address for the Cardano
+-- Shelley era. Shelley format addresses, as well as old-style Byron and Icarus
+-- addresses can be parsed by this function.
 --
--- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
--- string giving details about the 'Address'.
+-- Returns a JSON value containing details about the 'Address', or throws
+-- 'ErrInspectAddress' if it's not a valid address.
 --
 -- @since 3.0.0
 inspectAddress
@@ -452,127 +477,106 @@ inspectAddress
     => Maybe XPub
     -> Address
     -> m Json.Value
-inspectAddress mRootPub addr
-    | BS.length bytes < 1 + credentialHashSize = throwM (WrongInputSize (BS.length bytes))
-    | otherwise =
-        let
-            (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
-            addrType = fstByte .&. 0b11110000
-            network  = fstByte .&. 0b00001111
+inspectAddress mRootPub addr = either throwM (pure . toJSON) $
+    eitherInspectAddress mRootPub addr
 
-            (fstHash, sndHash) = BS.splitAt credentialHashSize rest
-        in
-            case addrType of
-               -- 0000: base address: keyhash28,keyhash28
-                0b00000000 | BS.length rest == 2 * credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 fstHash
-                        , "spending_key_hash_bech32" .= bech32Spending fstHash
-                        , "stake_key_hash"    .= base16 sndHash
-                        , "stake_key_hash_bech32" .= bech32Stake sndHash
-                        , "network_tag"       .= network
-                        ]
-               -- 0001: base address: scripthash32,keyhash28
-                0b00010000 | BS.length rest == credentialHashSize + credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 fstHash
-                        , "script_hash_bech32".= bech32Script fstHash
-                        , "stake_key_hash"    .= base16 sndHash
-                        , "stake_key_hash_bech32" .= bech32Stake sndHash
-                        , "network_tag"       .= network
-                        ]
-               -- 0010: base address: keyhash28,scripthash32
-                0b00100000 | BS.length rest == credentialHashSize + credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "spending_key_hash" .= base16 fstHash
-                        , "spending_key_hash_bech32" .= bech32Spending fstHash
-                        , "stake_script_hash" .= base16 sndHash
-                        , "stake_script_hash_bech32" .= bech32Stake sndHash
-                        , "network_tag"       .= network
-                        ]
-               -- 0011: base address: scripthash32,scripthash32
-                0b00110000 | BS.length rest == 2 * credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 fstHash
-                        , "script_hash_bech32".= bech32Script sndHash
-                        , "stake_script_hash" .= base16 sndHash
-                        , "stake_script_hash_bech32" .= bech32Stake sndHash
-                        , "network_tag"       .= network
-                        ]
-               -- 0100: pointer address: keyhash28, 3 variable length uint
-               -- TODO Could fo something better for pointer and try decoding
-               --      the pointer
-                0b01000000 | BS.length rest > credentialHashSize -> do
-                    ptr <- getPtr sndHash
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by pointer"
-                        , "spending_key_hash" .= base16 fstHash
-                        , "spending_key_hash_bech32" .= bech32Spending fstHash
-                        , "pointer"           .= ptrToJSON ptr
-                        , "network_tag"       .= network
-                        ]
-               -- 0101: pointer address: scripthash32, 3 variable length uint
-               -- TODO Could fo something better for pointer and try decoding
-               --      the pointer
-                0b01010000 | BS.length rest > credentialHashSize -> do
-                    ptr <- getPtr sndHash
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by pointer"
-                        , "script_hash"       .= base16 fstHash
-                        , "script_hash_bech32" .= bech32Script fstHash
-                        , "pointer"           .= ptrToJSON ptr
-                        , "network_tag"       .= network
-                        ]
-               -- 0110: enterprise address: keyhash28
-                0b01100000 | BS.length rest == credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "none"
-                        , "spending_key_hash" .= base16 fstHash
-                        , "spending_key_hash_bech32" .= bech32Spending fstHash
-                        , "network_tag"       .= network
-                        ]
-               -- 0111: enterprise address: scripthash32
-                0b01110000 | BS.length rest == credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "none"
-                        , "script_hash"       .= base16 fstHash
-                        , "script_hash_bech32" .= bech32Script fstHash
-                        , "network_tag"       .= network
-                        ]
-               -- 1000: byron address
-                0b10000000 ->
-                    Icarus.inspectAddress addr <|> Byron.inspectAddress mRootPub addr
-               -- 1110: reward account: keyhash28
-                0b11100000 | BS.length rest == credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "stake_key_hash"    .= base16 fstHash
-                        , "stake_key_hash_bech32" .= bech32Stake fstHash
-                        , "network_tag"       .= network
-                        ]
-               -- 1111: reward account: scripthash32
-                0b11110000 | BS.length rest == credentialHashSize ->
-                    pure $ Json.object
-                        [ "address_style"     .= Json.String "Shelley"
-                        , "stake_reference"   .= Json.String "by value"
-                        , "script_hash"       .= base16 fstHash
-                        , "script_hash_bech32" .= bech32Script fstHash
-                        , "network_tag"       .= network
-                        ]
-                _ -> throwM UnknownAddrType
+-- | Determines whether an 'Address' is a valid address for the Cardano Shelley
+-- era. Shelley format addresses, as well as old-style Byron and Icarus
+-- addresses can be parsed by this function.
+--
+-- Returns either details about the 'Address', or 'ErrInspectAddress' if it's
+-- not a valid address.
+--
+-- @since 3.4.0
+eitherInspectAddress
+    :: Maybe XPub
+    -> Address
+    -> Either ErrInspectAddress InspectAddress
+eitherInspectAddress mRootPub addr = unpackAddress addr >>= parseInfo
+  where
+    parseInfo :: AddressParts -> Either ErrInspectAddress InspectAddress
+    parseInfo parts = case addrType parts of
+        -- 1000: byron address
+        0b10000000 ->
+            (bimap ErrIcarus InspectAddressIcarus (Icarus.eitherInspectAddress addr))
+            `orElse`
+            (bimap ErrByron InspectAddressByron (Byron.eitherInspectAddress mRootPub addr))
+        -- Anything else: shelley address
+        _ -> bimap ErrShelley InspectAddressShelley (parseAddressInfoShelley parts)
+
+-- | Returns either details about the 'Address', or
+-- 'ErrInspectAddressOnlyShelley' if it's not a valid Shelley address.
+parseAddressInfoShelley :: AddressParts -> Either ErrInspectAddressOnlyShelley AddressInfo
+parseAddressInfoShelley AddressParts{..} = case addrType of
+    -- 0000: base address: keyhash28,keyhash28
+    -- fixme: 28 byte hashes ????
+    0b00000000 | addrRestLength == credentialHashSize + credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoSpendingKeyHash = Just addrHash1
+            , infoStakeKeyHash = Just addrHash2
+            }
+    -- 0001: base address: scripthash32,keyhash28
+    0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoScriptHash = Just addrHash1
+            , infoStakeKeyHash = Just addrHash2
+            }
+    -- 0010: base address: keyhash28,scripthash32
+    0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoSpendingKeyHash = Just addrHash1
+            , infoStakeScriptHash = Just addrHash2
+            }
+    -- 0011: base address: scripthash32,scripthash32
+    0b00110000 | addrRestLength == 2 * credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoScriptHash = Just addrHash1
+            , infoStakeScriptHash = Just addrHash2
+            }
+    -- 0100: pointer address: keyhash28, 3 variable length uint
+    0b01000000 | addrRestLength > credentialHashSize -> do
+        ptr <- getPtr addrHash2
+        pure addressInfo
+            { infoStakeReference = Just $ ByPointer ptr
+            , infoSpendingKeyHash = Just addrHash1
+            }
+    -- 0101: pointer address: scripthash32, 3 variable length uint
+    0b01010000 | addrRestLength > credentialHashSize -> do
+        ptr <- getPtr addrHash2
+        pure addressInfo
+            { infoStakeReference = Just $ ByPointer ptr
+            , infoScriptHash = Just addrHash1
+            }
+    -- 0110: enterprise address: keyhash28
+    0b01100000 | addrRestLength == credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Nothing
+            , infoSpendingKeyHash = Just addrHash1
+            }
+    -- 0111: enterprise address: scripthash32
+    0b01110000 | addrRestLength == credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Nothing
+            , infoScriptHash = Just addrHash1
+            }
+    -- 1110: reward account: keyhash28
+    0b11100000 | addrRestLength == credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoStakeKeyHash = Just addrHash1
+            }
+    -- 1111: reward account: scripthash32
+    0b11110000 | addrRestLength == credentialHashSize ->
+        Right addressInfo
+            { infoStakeReference = Just ByValue
+            , infoScriptHash = Just addrHash1
+            }
+    unknown -> Left (UnknownType unknown)
+
   where
     bytes  = unAddress addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
@@ -589,15 +593,128 @@ inspectAddress mRootPub addr
         , "output_index" .= outputIndex
         ]
 
-    getPtr :: (Alternative m, MonadThrow m) => ByteString -> m ChainPointer
+    addressInfo = AddressInfo
+        { infoNetworkTag = NetworkTag $ fromIntegral addrNetwork
+        , infoStakeReference = Nothing
+        , infoSpendingKeyHash = Nothing
+        , infoStakeKeyHash = Nothing
+        , infoScriptHash = Nothing
+        , infoStakeScriptHash = Nothing
+        }
+
+    getPtr :: ByteString -> Either ErrInspectAddressOnlyShelley ChainPointer
     getPtr source = case runGetOrFail get (BL.fromStrict source) of
-        Left (_, _, e) -> throwM (PtrRetrieveError e)
-        Right (rest, _, a) -> guard (BL.null rest) $> a
+        Right ("", _, a) -> Right a
+        Right _ -> err "Unconsumed bytes after pointer"
+        Left (_, _, e) -> err e
       where
         get = ChainPointer
             <$> getVariableLengthNat
             <*> getVariableLengthNat
             <*> getVariableLengthNat
+        err = Left . PtrRetrieveError
+
+orElse :: Either e a -> Either e a -> Either e a
+orElse (Right a) _ = Right a
+orElse (Left _) ea = ea
+
+-- | The result of 'eitherInspectAddress'.
+--
+-- @since 3.4.0
+data InspectAddress
+    = InspectAddressShelley AddressInfo
+    | InspectAddressIcarus Icarus.AddressInfo
+    | InspectAddressByron Byron.AddressInfo
+    deriving (Generic, Show, Eq)
+
+instance ToJSON InspectAddress where
+    toJSON addr = combine (styleProp <> missingProp) (toJSON addr')
+      where
+        addr' = case addr of
+          InspectAddressShelley s -> toJSON s
+          InspectAddressIcarus i -> toJSON i
+          InspectAddressByron b -> toJSON b
+
+        styleProp = "address_style" .= Json.String styleName
+        styleName = case addr of
+            InspectAddressShelley _ -> "Shelley"
+            InspectAddressIcarus _ -> "Icarus"
+            InspectAddressByron _ -> "Byron"
+        missingProp = case addr of
+            InspectAddressShelley _ -> mempty
+            InspectAddressIcarus _ -> noStakeRef
+            InspectAddressByron _ -> noStakeRef
+        noStakeRef = "stake_reference" .= Json.String "none"
+
+        combine extra = \case
+            Json.Object props -> Json.Object (extra <> props)
+            otherValue -> otherValue -- not expected to happen
+
+-- | An inspected Shelley address.
+--
+-- @since 3.4.0
+data AddressInfo = AddressInfo
+    { infoStakeReference  :: !(Maybe ReferenceInfo)
+    , infoSpendingKeyHash :: !(Maybe ByteString)
+    , infoStakeKeyHash    :: !(Maybe ByteString)
+    , infoScriptHash      :: !(Maybe ByteString)
+    , infoStakeScriptHash :: !(Maybe ByteString)
+    , infoNetworkTag      :: !NetworkTag
+    } deriving (Generic, Show, Eq)
+
+-- | Info from 'Address' about how delegation keys are located.
+--
+-- @since 3.3.0
+data ReferenceInfo
+    = ByValue
+    | ByPointer ChainPointer
+    deriving (Generic, Show, Eq)
+
+instance ToJSON AddressInfo where
+    toJSON AddressInfo{..} = Json.object $
+        [ "network_tag" .= infoNetworkTag
+        , "stake_reference" .= Json.String (maybe "none" refName infoStakeReference)
+        ]
+        ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
+        ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
+        ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
+        ++ jsonHash "script_hash" CIP5.script_vkh infoScriptHash
+        ++ jsonHash "stake_script_hash" CIP5.stake_vkh infoStakeScriptHash
+      where
+        getPointer ByValue = Nothing
+        getPointer (ByPointer ptr) = Just ptr
+
+        jsonHash _ _ Nothing = []
+        jsonHash key hrp (Just bs) =
+            [ key .= base16 bs , (key <> "_bech32") .= bech32With hrp bs ]
+
+        base16 = T.unpack . T.decodeUtf8 . encode EBase16
+        bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
+
+        refName ByValue = "by value"
+        refName (ByPointer _) = "by pointer"
+
+-- | Structure containing the result of 'unpackAddress', the constituent parts
+-- of an address. Internal to this module.
+data AddressParts = AddressParts
+    { addrType :: Word8
+    , addrNetwork :: Word8
+    , addrHash1 :: ByteString
+    , addrHash2 :: ByteString
+    , addrRestLength :: Int
+    } deriving (Show)
+
+-- | Split fields out of a Shelley encoded address.
+unpackAddress :: Address -> Either ErrInspectAddress AddressParts
+unpackAddress (unAddress -> bytes)
+    | BS.length bytes >= 1 + credentialHashSize = Right AddressParts{..}
+    | otherwise = Left $ WrongInputSize $ BS.length bytes
+  where
+    (fstByte, rest) = first BS.head $ BS.splitAt 1 bytes
+    addrType = fstByte .&. 0b11110000
+    addrNetwork = fstByte .&. 0b00001111
+    (addrHash1, addrHash2) = BS.splitAt credentialHashSize rest
+    addrRestLength = BS.length rest
 
 -- | Shelley offers several ways to identify ownership of entities on chain.
 --
@@ -709,8 +826,8 @@ extendAddress
     :: Address
     -> Credential 'DelegationK
     -> Either ErrExtendAddress Address
-extendAddress addr stakeReference = do
-    when (isNothing (inspectShelleyAddress Nothing addr)) $
+extendAddress addr infoStakeReference = do
+    when (isNothing (inspectAddress Nothing addr)) $
         Left $ ErrInvalidAddressStyle "Given address isn't a Shelley address"
 
     let bytes = unAddress addr
@@ -724,7 +841,7 @@ extendAddress addr stakeReference = do
     unless (paymentFirstByte `elem` extendableTypes) $ do
         Left $ ErrInvalidAddressType "Only payment addresses can be extended"
 
-    case stakeReference of
+    case infoStakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
         -- base address: scripthash32,keyhash28 : 00010000 -> 16
         DelegationFromKey delegationKey -> do
@@ -807,14 +924,9 @@ mkNetworkDiscriminant nTag
 inspectNetworkDiscriminant
     :: Address
     -> Maybe (NetworkDiscriminant Shelley)
-inspectNetworkDiscriminant addr =
-    inspectShelleyAddress Nothing addr $>
-        let
-            bytes = unAddress addr
-            (fstByte, _) = first BS.head $ BS.splitAt 1 bytes
-            network  = fstByte .&. 0b00001111
-        in
-            NetworkTag $ fromIntegral network
+inspectNetworkDiscriminant addr = case eitherInspectAddress Nothing addr of
+    Right (InspectAddressShelley info) -> Just (infoNetworkTag info)
+    _ -> Nothing
 
 -- | 'NetworkDicriminant' for Cardano MainNet & Shelley
 --

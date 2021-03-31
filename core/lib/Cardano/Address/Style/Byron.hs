@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -9,6 +10,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
@@ -41,6 +43,8 @@ module Cardano.Address.Style.Byron
 
       -- * Addresses
       -- $addresses
+    , AddressInfo (..)
+    , eitherInspectAddress
     , inspectAddress
     , inspectByronAddress
     , paymentAddress
@@ -99,9 +103,9 @@ import Crypto.Hash
 import Crypto.Hash.Algorithms
     ( Blake2b_256, SHA512 (..) )
 import Data.Aeson
-    ( toJSON, (.=) )
+    ( ToJSON (..), (.=) )
 import Data.Bifunctor
-    ( bimap )
+    ( bimap, first )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -122,7 +126,6 @@ import qualified Codec.CBOR.Decoding as CBOR
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 -- $overview
@@ -311,6 +314,9 @@ data ErrInspectAddress
 
 deriving instance Show ErrInspectAddress
 
+instance Eq ErrInspectAddress where
+    a == b = show a == show b
+
 instance Exception ErrInspectAddress where
   displayException = prettyErrInspectAddress
 
@@ -326,47 +332,55 @@ prettyErrInspectAddress = \case
     FailedToDecryptPath ->
         "Failed to decrypt derivation path"
 
--- Analyze an 'Address' to know whether it's a Byron address or not.
--- Throws 'ByronAddrError' if the address isn't a byron address, or return a
--- structured JSON that gives information about an address.
+-- Determines whether an 'Address' is a Byron address.
+--
+-- Returns a JSON object with information about the address, or throws
+-- 'ErrInspectAddress' if the address isn't a byron address.
 --
 -- @since 2.0.0
 inspectByronAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Json.Value
 inspectByronAddress = inspectAddress
 {-# DEPRECATED inspectByronAddress "use qualified 'inspectAddress' instead." #-}
 
--- | Analyze an 'Address' to know whether it's a Byron address or not.
--- Throws 'ByronAddrError' if the address isn't a byron address, or return a
--- structured JSON that gives information about an address.
+-- | Determines whether an 'Address' is a Byron address.
+--
+-- Returns a JSON object with information about the address, or throws
+-- 'ErrInspectAddress' if the address isn't a byron address.
 --
 -- @since 3.0.0
 inspectAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Json.Value
-inspectAddress mRootPub addr = do
-    payload <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+inspectAddress mRootPub addr = either throwM (pure . toJSON) $
+    eitherInspectAddress mRootPub addr
 
-    (root, attrs) <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor decodePayload payload
+-- | Determines whether an 'Address' is a Byron address.
+--
+-- Returns either details about the 'Address', or 'ErrInspectAddress' if it's
+-- not a valid address.
+--
+-- @since 3.4.0
+eitherInspectAddress :: Maybe XPub -> Address -> Either ErrInspectAddress AddressInfo
+eitherInspectAddress mRootPub addr = do
+    payload <- first DeserialiseError $
+        CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes
+
+    (root, attrs) <- first DeserialiseError $
+        CBOR.deserialiseCbor decodePayload payload
 
     path <- do
-        attr <- maybe (throwM MissingExpectedDerivationPath) pure
-            (find ((== 1) . fst) attrs)
+        attr <- maybe (Left MissingExpectedDerivationPath) Right $
+            find ((== 1) . fst) attrs
         case mRootPub of
-            Nothing ->
-                pure $ toJSON $ T.unpack $ T.decodeUtf8 $ encode EBase16 $ snd attr
-            Just rootPub ->
-                decryptPath rootPub attr
+            Nothing -> Right $ EncryptedDerivationPath $ snd attr
+            Just rootPub -> decryptPath attr rootPub
 
-    ntwrk <- either (throwM . DeserialiseError) pure
-        $ CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
+    ntwrk <- bimap DeserialiseError (fmap NetworkTag) $
+        CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload
 
-    pure $ Json.object
-        [ "address_style"   .= Json.String "Byron"
-        , "stake_reference" .= Json.String "none"
-        , "address_root"    .= T.unpack (T.decodeUtf8 $ encode EBase16 root)
-        , "derivation_path" .= path
-        , "network_tag"     .= maybe Json.Null toJSON ntwrk
-        ]
+    pure AddressInfo
+        { infoAddressRoot = root
+        , infoPayload = path
+        , infoNetworkTag = ntwrk
+        }
   where
     bytes :: ByteString
     bytes = unAddress addr
@@ -377,24 +391,58 @@ inspectAddress mRootPub addr = do
         root <- CBOR.decodeBytes
         (root,) <$> CBOR.decodeAllAttributes
 
-    decryptPath :: XPub -> (Word8, ByteString) -> m Json.Value
-    decryptPath rootPub attr = do
+    decryptPath :: (Word8, ByteString) -> XPub -> Either ErrInspectAddress PayloadInfo
+    decryptPath attr rootPub = do
         let pwd = hdPassphrase rootPub
-        path <- either (const (throwM FailedToDecryptPath)) pure
-            $ CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) mempty
+        path <- first (const FailedToDecryptPath) $
+            CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) mempty
         case path of
-            Nothing -> throwM FailedToDecryptPath
-            Just (acctIx, addrIx) -> pure $ Json.object
-                [ "account_index" .= prettyIndex acctIx
-                , "address_index" .= prettyIndex addrIx
-                ]
+            Nothing -> Left FailedToDecryptPath
+            Just (accountIndex, addressIndex) -> Right PayloadDerivationPath{..}
 
-    prettyIndex :: Word32 -> String
-    prettyIndex ix
-        | ix >= firstHardened = show (ix - firstHardened) <> "H"
-        | otherwise = show ix
+-- | The result of 'eitherInspectAddress' for Byron addresses.
+--
+-- @since 3.4.0
+data AddressInfo = AddressInfo
+    { infoAddressRoot :: !ByteString
+    , infoPayload :: !PayloadInfo
+    , infoNetworkTag :: !(Maybe NetworkTag)
+    } deriving (Generic, Show, Eq)
+
+-- | The derivation path in a Byron address payload.
+--
+-- @since 3.4.0
+data PayloadInfo
+    = PayloadDerivationPath
+        { accountIndex :: !Word32
+        , addressIndex :: !Word32
+        }
+    | EncryptedDerivationPath
+        { encryptedDerivationPath :: !ByteString
+        }
+    deriving (Generic, Show, Eq)
+
+instance ToJSON AddressInfo where
+    toJSON AddressInfo{..} = Json.object
+        [ "address_root"    .= T.decodeUtf8 (encode EBase16 infoAddressRoot)
+        , "derivation_path" .= infoPayload
+        , "network_tag"     .= maybe Json.Null toJSON infoNetworkTag
+        ]
+
+instance ToJSON PayloadInfo where
+    toJSON PayloadDerivationPath{..} = Json.object
+        [ "account_index" .= prettyIndex accountIndex
+        , "address_index" .= prettyIndex addressIndex
+        ]
       where
-        firstHardened = 0x80000000
+        prettyIndex :: Word32 -> String
+        prettyIndex ix
+            | ix >= firstHardened = show (ix - firstHardened) <> "H"
+            | otherwise = show ix
+          where
+            firstHardened = 0x80000000
+    toJSON EncryptedDerivationPath{..} = Json.String $
+        T.decodeUtf8 $ encode EBase16 encryptedDerivationPath
 
 instance Internal.PaymentAddress Byron where
     paymentAddress discrimination k = unsafeMkAddress

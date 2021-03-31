@@ -6,6 +6,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -50,6 +51,8 @@ import Control.DeepSeq
     ( NFData )
 import Control.Monad
     ( (<=<) )
+import Data.Aeson
+    ( ToJSON (..), Value (..), object, (.=) )
 import Data.Bits
     ( Bits (testBit) )
 import Data.ByteString
@@ -188,6 +191,13 @@ data ChainPointer = ChainPointer
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData ChainPointer
 
+instance ToJSON ChainPointer where
+    toJSON ChainPointer{..} = object
+        [ "slot_num" .= slotNum
+        , "transaction_index" .= transactionIndex
+        , "output_index" .= outputIndex
+        ]
+
 -- | Encoding of pointer addresses for payment key type, pointer to delegation
 -- certificate in the blockchain and backend targets.
 --
@@ -224,6 +234,9 @@ newtype NetworkTag
     = NetworkTag { unNetworkTag :: Word32 }
     deriving (Generic, Show, Eq)
 instance NFData NetworkTag
+
+instance ToJSON NetworkTag where
+    toJSON (NetworkTag net) = Number (fromIntegral net)
 
 -- Describe requirements for address discrimination on the Byron era.
 data AddressDiscrimination
