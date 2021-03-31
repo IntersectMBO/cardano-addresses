@@ -1,86 +1,1211 @@
-TestVector
-    { rootXPrv = "root_xsk1az4qjp85qunj75m8krdvdygmv6u4ceqj8vnwaf38wfd69ycksa0fwt7n0cfp5zwmht9u0j9dzxxnfssjmkh4vn3dwxvddsle6m2vkm8q8p7addwq8y7q3s3eekd3ate40rfr6rpjakctcn2p54cpr3kjmy2hdej2"
-    , accXPrv0 = "acct_xsk1vzjuw65sf27s478y8ndz2jpan4rev52h0fdh9z3tdwcplgqksa0wa9wntpw4d74rhj8rs2unf6rfujxu90mstt8ztnjrn80r8sz0edzf22jznx2n63qdalqm2tphlfn7k6qxtm0pg85z4ptk639vyjjufcagrnw9"
-    , accXPrv1 = "acct_xsk1uq5jz089v7pjc76lqcac9lkl9d8fntc53h00ajlhr7msm8sksa0xljllgc5c2n5ruklwnkauxvlxsmcwat223rakj5dmfz2j9xxzvmpcqc0z9ekuywfhkm8w4k507caj4rv4qjhmnhafs8tkmsx6vtstduh0grq4"
-    , addrXPrv0 = "addr_xsk17zj2lhjk379klp40xfzsad0yzygqe45uaggnkzf4ld3emgsksa00ftq88fnfjxg245kjjqcukyjfg4lwmf3r2qqymyyqennch3y8llyg0d629pdx0pp0l69lerjz75kxmk5e6cr2d82kafp7a25y0qy5fvj06w0u"
-    , addrXPub0 = "addr_xvk1fwgdh5vv6akdc3rjpeq57xxq4lc9m84xcrt6q827mq7u20wuw54gs7m552z6v7zzll5tlj8y9afvdhdfn4sx56w4d6jra64gg7qfgjc8e8sau"
-    , addrXPrv1 = "addr_xsk1wz99hznmt96crxthcmnxqttaul6caq4hv5jwttd5lly2mfsksa08q68skn2ggclu6vf40phx3wnj4e8fvxed6at8xxekwa49rg4c3ec8kp2nwcxfw6sgxphzckg5v0dausldvya0w6jy5k3cxwrqdjsthqls7zxn"
-    , addrXPub1 = "addr_xvk135hqmkaqydnxnq6wmjkkhasvwjprpnqnzsrwwes6mql45enlcsqs0vz4xasvja4qsvrw93v3gc7mmep76cf67a4yffdrsvuxqm9qhwqlvnay5"
-    , addrXPrv1442 = "addr_xsk15pjw7rg5ywgfe4js8dufp6ul4kccpn9gdxtw0hnt4nk2h2gksa09e6p79my6p4k4wggyt482s88zzdhg0fkjgv3ts63z32k9rxc022t0054563zytwgcd6x5g8zvsrxkgyldr559ydtz98s3p5tavtdy6ysmwecy"
-    , addrXPub1442 = "addr_xvk1kvsa8pjxlg93nk87tdp08tauy2uc4hdy36xufkjlgdz2dm7p6pxx7lftf4zygku3sm5dgswyeqxdvsf768fg2g6ky20pzrgh6ck6f5grmcsny"
-    , paymentAddr0 =
-        [ "addr_test1vptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcdjvdac"
-        , "addr1vdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zckh36jn"
-        , "addr_test1vetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcd9hsa2"
-        ]
-    , paymentAddr1 =
-        [ "addr_test1vr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822gcu7ava"
-        , "addr1v03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822grer2rk"
-        , "addr_test1vm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822gct9qv0"
-        ]
-    , paymentAddr1442 =
-        [ "addr_test1vpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq0fvf3g"
-        , "addr1vddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq5v377r"
-        , "addr_test1vedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq07h536"
-        ]
-    , delegationAddr0Stake0 =
-        [ "addr_test1qptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qzrtqf4"
-        , "addr1qdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q2sywge"
-        , "addr_test1qetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qlv5j7f"
-        ]
-    , delegationAddr1Stake0 =
-        [ "addr_test1qr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q2p2upa"
-        , "addr1q03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qzj9jq3"
-        , "addr_test1qm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qhw4wkp"
-        ]
-    , delegationAddr1442Stake0 =
-        [ "addr_test1qpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q0gtl08"
-        , "addr1qddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q8my3wt"
-        , "addr_test1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qj85dcm"
-        ]
-    , delegationAddr0Stake1 =
-        [ "addr_test1qptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sa2ewyj"
-        , "addr1qdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s4ekq97"
-        , "addr_test1qetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sq9xunw"
-        ]
-    , delegationAddr1Stake1 =
-        [ "addr_test1qr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s4gcjv6"
-        , "addr1q03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47samhudk"
-        , "addr_test1qm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sg88qmx"
-        ]
-    , delegationAddr1442Stake1 =
-        [ "addr_test1qpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sspe3zq"
-        , "addr1qddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47scjklrv"
-        , "addr_test1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sdwxr4u"
-        ]
-    , pointerAddr0Slot1 =
-        [ "addr_test1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsf9esgq"
-        , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsupln03"
-        , "addr_test1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsa3zlxs"
-        ]
-    , pointerAddr0Slot2 =
-        [ "addr_test1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2mf4nrs"
-        , "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2u4mjml"
-        , "addr_test1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2rkftk7"
-        ]
-    , mnemonic =
-        [ "churn"
-        , "shaft"
-        , "spoon"
-        , "second"
-        , "erode"
-        , "useless"
-        , "thrive"
-        , "burst"
-        , "group"
-        , "seed"
-        , "element"
-        , "sign"
-        , "scrub"
-        , "buffalo"
-        , "jelly"
-        , "grace"
-        , "neck"
-        , "useless"
-        ]
-    }
+TestVector 
+    { rootXPrv = "root_xsk1az4qjp85qunj75m8krdvdygmv6u4ceqj8vnwaf38wfd69ycksa0fwt7n0cfp5zwmht9u0j9dzxxnfssjmkh4vn3dwxvddsle6m2vkm8q8p7addwq8y7q3s3eekd3ate40rfr6rpjakctcn2p54cpr3kjmy2hdej2" 
+    , accXPrv0 = "acct_xsk1vzjuw65sf27s478y8ndz2jpan4rev52h0fdh9z3tdwcplgqksa0wa9wntpw4d74rhj8rs2unf6rfujxu90mstt8ztnjrn80r8sz0edzf22jznx2n63qdalqm2tphlfn7k6qxtm0pg85z4ptk639vyjjufcagrnw9" 
+    , accXPrv1 = "acct_xsk1uq5jz089v7pjc76lqcac9lkl9d8fntc53h00ajlhr7msm8sksa0xljllgc5c2n5ruklwnkauxvlxsmcwat223rakj5dmfz2j9xxzvmpcqc0z9ekuywfhkm8w4k507caj4rv4qjhmnhafs8tkmsx6vtstduh0grq4" 
+    , addrXPrv0 = "addr_xsk17zj2lhjk379klp40xfzsad0yzygqe45uaggnkzf4ld3emgsksa00ftq88fnfjxg245kjjqcukyjfg4lwmf3r2qqymyyqennch3y8llyg0d629pdx0pp0l69lerjz75kxmk5e6cr2d82kafp7a25y0qy5fvj06w0u" 
+    , addrXPub0 = 
+        ( "addr_xvk1fwgdh5vv6akdc3rjpeq57xxq4lc9m84xcrt6q827mq7u20wuw54gs7m552z6v7zzll5tlj8y9afvdhdfn4sx56w4d6jra64gg7qfgjc8e8sau" 
+        , String "couldn't inspect" 
+        ) 
+    , addrXPrv1 = "addr_xsk1wz99hznmt96crxthcmnxqttaul6caq4hv5jwttd5lly2mfsksa08q68skn2ggclu6vf40phx3wnj4e8fvxed6at8xxekwa49rg4c3ec8kp2nwcxfw6sgxphzckg5v0dausldvya0w6jy5k3cxwrqdjsthqls7zxn" 
+    , addrXPub1 = 
+        ( "addr_xvk135hqmkaqydnxnq6wmjkkhasvwjprpnqnzsrwwes6mql45enlcsqs0vz4xasvja4qsvrw93v3gc7mmep76cf67a4yffdrsvuxqm9qhwqlvnay5" 
+        , String "couldn't inspect" 
+        ) 
+    , addrXPrv1442 = "addr_xsk15pjw7rg5ywgfe4js8dufp6ul4kccpn9gdxtw0hnt4nk2h2gksa09e6p79my6p4k4wggyt482s88zzdhg0fkjgv3ts63z32k9rxc022t0054563zytwgcd6x5g8zvsrxkgyldr559ydtz98s3p5tavtdy6ysmwecy" 
+    , addrXPub1442 = 
+        ( "addr_xvk1kvsa8pjxlg93nk87tdp08tauy2uc4hdy36xufkjlgdz2dm7p6pxx7lftf4zygku3sm5dgswyeqxdvsf768fg2g6ky20pzrgh6ck6f5grmcsny" 
+        , String "couldn't inspect" 
+        ) 
+    , paymentAddr0 = 
+        [ 
+            ( "addr_test1vptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcdjvdac" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1vdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zckh36jn" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1vetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcd9hsa2" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , paymentAddr1 = 
+        [ 
+            ( "addr_test1vr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822gcu7ava" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1v03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822grer2rk" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1vm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822gct9qv0" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , paymentAddr1442 = 
+        [ 
+            ( "addr_test1vpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq0fvf3g" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1vddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq5v377r" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1vedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvq07h536" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "none" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr0Stake0 = 
+        [ 
+            ( "addr_test1qptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qzrtqf4" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1qdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q2sywge" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qlv5j7f" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr1Stake0 = 
+        [ 
+            ( "addr_test1qr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q2p2upa" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1q03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qzj9jq3" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822vv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qhw4wkp" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr1442Stake0 = 
+        [ 
+            ( "addr_test1qpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q0gtl08" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1qddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5q8my3wt" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvyv4te5ey3ksjyq3z0cq8k8pu57rek4qsvpxkc7gyzcnu5qj85dcm" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh13j40xnyjx6zgszyflqq7cu8jnc0x65zpsy6mreqstz0js5ngf25" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "8caaf34c923684880889f801ec70f29e1e6d50418135b1e410589f28" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr0Stake1 = 
+        [ 
+            ( "addr_test1qptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sa2ewyj" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1qdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s4ekq97" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qetvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245z7uclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sq9xunw" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr1Stake1 = 
+        [ 
+            ( "addr_test1qr3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47s4gcjv6" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1q03nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47samhudk" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qm3nq3kyg9c9t4nn6a5zymz3at3zsmcr9lkqxghxh5v822wuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sg88qmx" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1uvcyd3zpwp2avu7hdq3xc502ug5x7qe0aspj9e4arp6jjesuess" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "e33046c4417055d673d768226c51eae2286f032fec0322e6bd187529" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , delegationAddr1442Stake1 = 
+        [ 
+            ( "addr_test1qpdgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sspe3zq" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1qddgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47scjklrv" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1qedgf8g4dhpmhqwpy2u6nvtmarxczj3qmszc3rhgwpw2tvxuclvarqhtzqxk5tc7t9jkmeyawmt2exyacrh6vg5hn47sdwxr4u" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by value" 
+                        ) 
+                    , 
+                        ( "stake_key_hash_bech32" 
+                        , String "stake_vkh1mnran5vzavgq6630revk2m0yn4mddtycnhqwlf3zj7wh6af8sn5" 
+                        ) 
+                    , 
+                        ( "stake_key_hash" 
+                        , String "dcc7d9d182eb100d6a2f1e59656de49d76d6ac989dc0efa622979d7d" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test1t2zf69tdcwacrsfzhx5mz7lgekq55gxuqkyga6rstjjmqu5hnz9" 
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "5a849d156dc3bb81c122b9a9b17be8cd814a20dc05888ee8705ca5b0" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , pointerAddr0Slot1 = 
+        [ 
+            ( "addr_test1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsf9esgq" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 1.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 3.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 2.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsupln03" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 1.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 3.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 2.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zcpqgpsa3zlxs" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 1.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 3.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 2.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , pointerAddr0Slot2 = 
+        [ 
+            ( "addr_test1gptvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2mf4nrs" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 24157.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 42.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 177.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 0.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr1gdtvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2u4mjml" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 24157.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 42.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 177.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 3.0
+                        ) 
+                    ] 
+                )
+            ) 
+        , 
+            ( "addr_test1getvyjfjvs7wdn583rv3th3fvf9fauv5f6gylkhh5k245zuph3wczvf2rkftk7" 
+            , Object 
+                ( fromList 
+                    [ 
+                        ( "stake_reference" 
+                        , String "by pointer" 
+                        ) 
+                    , 
+                        ( "spending_key_hash_bech32" 
+                        , String "addr_test12mpyjvny8nnvapugmy2au2tzf200r9zwjp8a4aa9j4dqk3le8xx" 
+                        ) 
+                    , 
+                        ( "pointer" 
+                        , Object 
+                            ( fromList 
+                                [ 
+                                    ( "slot_num" 
+                                    , Number 24157.0
+                                    ) 
+                                , 
+                                    ( "output_index" 
+                                    , Number 42.0
+                                    ) 
+                                , 
+                                    ( "transaction_index" 
+                                    , Number 177.0
+                                    ) 
+                                ] 
+                            )
+                        ) 
+                    , 
+                        ( "address_style" 
+                        , String "Shelley" 
+                        ) 
+                    , 
+                        ( "spending_key_hash" 
+                        , String "56c24932643ce6ce8788d915de29624a9ef1944e904fdaf7a5955a0b" 
+                        ) 
+                    , 
+                        ( "network_tag" 
+                        , Number 6.0
+                        ) 
+                    ] 
+                )
+            ) 
+        ] 
+    , mnemonic = 
+        [ "churn" 
+        , "shaft" 
+        , "spoon" 
+        , "second" 
+        , "erode" 
+        , "useless" 
+        , "thrive" 
+        , "burst" 
+        , "group" 
+        , "seed" 
+        , "element" 
+        , "sign" 
+        , "scrub" 
+        , "buffalo" 
+        , "jelly" 
+        , "grace" 
+        , "neck" 
+        , "useless" 
+        ] 
+    } 

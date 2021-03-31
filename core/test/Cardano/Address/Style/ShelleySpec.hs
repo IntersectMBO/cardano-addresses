@@ -65,6 +65,8 @@ import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
+import Data.Aeson
+    ( ToJSON (toJSON), Value )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
@@ -74,7 +76,7 @@ import Data.Either
 import Data.Function
     ( (&) )
 import Data.Maybe
-    ( isNothing )
+    ( fromJust, fromMaybe, isNothing )
 import Data.Text
     ( Text )
 import Test.Arbitrary
@@ -388,68 +390,69 @@ data TestVector = TestVector
     , addrXPrv0 :: Text
 
       -- | The extended 0th address public key, bech32 encoded prefixed with 'addr_xvk'
-    , addrXPub0 :: Text
+    , addrXPub0 :: (Text, Value)
 
       -- | The extended 1st address private key, bech32 encoded prefixed with 'addr_xsk'
     , addrXPrv1 :: Text
 
       -- | The extended 1st address public key, bech32 encoded prefixed with 'addr_xvk'
-    , addrXPub1 :: Text
+    , addrXPub1 :: (Text, Value)
 
       -- | The extended 1442nd address private key, bech32 encoded prefixed with 'addr_xsk'
     , addrXPrv1442 :: Text
 
       -- | The extended 1442nd address public key, bech32 encoded prefixed with 'addr_xvk'
-    , addrXPub1442 :: Text
+    , addrXPub1442 :: (Text, Value)
 
       -- | The payment address for 0th address key, with a networking tag 0, 3 and 6, respectively.
       -- Each bech32 encoded prefixed with 'addr'
-    , paymentAddr0 :: [Text]
+    , paymentAddr0 :: [(Text, Value)]
 
       -- | The payment address for 1st address key, with a networking tag 0, 3 and 6, respectively.
       -- Each bech32 encoded prefixed with 'addr'
-    , paymentAddr1 :: [Text]
+    , paymentAddr1 :: [(Text, Value)]
 
       -- | The payment address for 1442nd address key, with a networking tag 0, 3 and 6, respectively.
       -- Each bech32 encoded prefixed with 'addr'
-    , paymentAddr1442 :: [Text]
+    , paymentAddr1442 :: [(Text, Value)]
 
       -- | Delegation addresses for the 0th address key and the 0th account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr0Stake0 :: [Text]
+     , delegationAddr0Stake0 :: [(Text, Value)]
 
       -- | Delegation addresses for the 1st address key and the 0th account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr1Stake0 :: [Text]
+     , delegationAddr1Stake0 :: [(Text, Value)]
 
       -- | Delegation addresses for the 1442nd address key and the 0th account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr1442Stake0 :: [Text]
+     , delegationAddr1442Stake0 :: [(Text, Value)]
 
       -- | Delegation addresses for the 0th address key and the 1st account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr0Stake1 :: [Text]
+     , delegationAddr0Stake1 :: [(Text, Value)]
 
       -- | Delegation addresses for the 1st address key and the 1st account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr1Stake1 :: [Text]
+     , delegationAddr1Stake1 :: [(Text, Value)]
 
       -- | Delegation addresses for the 1442nd address key and the 1st account delegation key,
       -- with a networking tag 0, 3 and 6, respectively. Each bech32 encoded prefixed with 'addr'
-     , delegationAddr1442Stake1 :: [Text]
+     , delegationAddr1442Stake1 :: [(Text, Value)]
 
       -- | Pointer addresses for the 0th address key and the delegation certificate located in slot 1,
       -- transaction index 2, certificte list index 3, with a networking tag 0, 3 and 6, respectively.
       -- Each bech32 encoded prefixed with 'addr'
-     , pointerAddr0Slot1 :: [Text]
+     , pointerAddr0Slot1 :: [(Text, Value)]
 
       -- | Pointer addresses for the 0th address key and the delegation certificate located in slot 24157,
       -- transaction index 177, certificte list index 42, with a networking tag 0, 3 and 6, respectively.
       -- Each bech32 encoded prefixed with 'addr'
-     , pointerAddr0Slot2 :: [Text]
+     , pointerAddr0Slot2 :: [(Text, Value)]
 
       -- | Corresponding Mnemonic
     , mnemonic :: [Text]
+
     } deriving Show
 
 testVectors :: [Text] -> SpecWith ()
@@ -469,35 +472,35 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let Just addIx0 = indexFromWord32 @(Index 'Soft _) 0x00000000
     let addrK0prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx0
     let addrXPrv0 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK0prv
-    let addrXPub0 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK0prv
+    let addrXPub0 = withInspect $ bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK0prv
 
     let Just addIx1 = indexFromWord32 @(Index 'Soft _) 0x00000001
     let addrK1prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1
     let addrXPrv1 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK1prv
-    let addrXPub1 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1prv
+    let addrXPub1 = withInspect $ bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1prv
     let Just addIx1442 = indexFromWord32 @(Index 'Soft _) 0x000005a2
     let addrK1442prv = deriveAddressPrivateKey acctK0 UTxOExternal addIx1442
     let addrXPrv1442 = bech32With CIP5.addr_xsk $ getExtendedKeyAddr addrK1442prv
-    let addrXPub1442 = bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1442prv
+    let addrXPub1442 = withInspect $ bech32With CIP5.addr_xvk $ getPublicKeyAddr $ toXPub <$> addrK1442prv
 
     let networkTags = rights $ mkNetworkDiscriminant <$> [0,3,6]
-    let paymentAddr0 = getPaymentAddr addrK0prv <$> networkTags
-    let paymentAddr1 = getPaymentAddr addrK1prv <$> networkTags
-    let paymentAddr1442 = getPaymentAddr addrK1442prv <$> networkTags
+    let paymentAddr0 = withInspect . getPaymentAddr addrK0prv <$> networkTags
+    let paymentAddr1 = withInspect . getPaymentAddr addrK1prv <$> networkTags
+    let paymentAddr1442 = withInspect . getPaymentAddr addrK1442prv <$> networkTags
 
     let slot1 = ChainPointer 1 2 3
-    let pointerAddr0Slot1 = getPointerAddr addrK0prv slot1 <$> networkTags
+    let pointerAddr0Slot1 = withInspect . getPointerAddr addrK0prv slot1 <$> networkTags
     let slot2 = ChainPointer 24157 177 42
-    let pointerAddr0Slot2 = getPointerAddr addrK0prv slot2 <$> networkTags
+    let pointerAddr0Slot2 = withInspect . getPointerAddr addrK0prv slot2 <$> networkTags
 
     let stakeKPub0 = toXPub <$> deriveDelegationPrivateKey acctK0
-    let delegationAddr0Stake0 = getDelegationAddr addrK0prv (DelegationFromKey stakeKPub0) <$> networkTags
-    let delegationAddr1Stake0 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub0) <$> networkTags
-    let delegationAddr1442Stake0 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub0) <$> networkTags
+    let delegationAddr0Stake0 = withInspect . getDelegationAddr addrK0prv (DelegationFromKey stakeKPub0) <$> networkTags
+    let delegationAddr1Stake0 = withInspect . getDelegationAddr addrK1prv (DelegationFromKey stakeKPub0) <$> networkTags
+    let delegationAddr1442Stake0 = withInspect . getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub0) <$> networkTags
     let stakeKPub1 = toXPub <$> deriveDelegationPrivateKey acctK1
-    let delegationAddr0Stake1 = getDelegationAddr addrK0prv (DelegationFromKey stakeKPub1) <$> networkTags
-    let delegationAddr1Stake1 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub1) <$> networkTags
-    let delegationAddr1442Stake1 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub1) <$> networkTags
+    let delegationAddr0Stake1 = withInspect . getDelegationAddr addrK0prv (DelegationFromKey stakeKPub1) <$> networkTags
+    let delegationAddr1Stake1 = withInspect . getDelegationAddr addrK1prv (DelegationFromKey stakeKPub1) <$> networkTags
+    let delegationAddr1442Stake1 = withInspect . getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub1) <$> networkTags
     let vec = TestVector {..}
     goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
   where
@@ -507,6 +510,9 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
         bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
+    withInspect :: Text -> (Text, Value)
+    withInspect a = (a, fromMaybe (toJSON ("couldn't inspect" :: Text)) $
+        Shelley.inspectAddress Nothing (fromJust $ fromBech32 a))
 
 prop_roundtripTextEncoding
     :: (Address -> Text)
