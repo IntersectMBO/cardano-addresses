@@ -558,7 +558,9 @@ inspectAddress mRootPub addr
 
             (fstHash, sndHash) = BS.splitAt credentialHashSize rest
 
-            addrHrp = if network == 0 then CIP5.addr else CIP5.addr_test
+            addrHrp = if NetworkTag (fromIntegral network)  == shelleyMainnet
+                then CIP5.addr
+                else CIP5.addr_test
             bech32Spending = bech32With addrHrp
         in
             case addrType of
