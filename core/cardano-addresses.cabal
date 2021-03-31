@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 233eddf98bf6dc0d7e198be664ea908e7413d75fe7d724857f155734c6db8bc1
+-- hash: 8ec1e3537ee88a6ed72484c2898349a7866ac0574883676914ab091caea934ed
 
 name:           cardano-addresses
 version:        3.3.0
@@ -105,6 +105,7 @@ test-suite unit
   build-depends:
       QuickCheck
     , aeson
+    , aeson-pretty
     , base >=4.7 && <5
     , bech32
     , binary

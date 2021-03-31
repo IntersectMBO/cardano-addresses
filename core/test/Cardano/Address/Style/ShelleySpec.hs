@@ -1,5 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -65,6 +67,8 @@ import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
+import Data.Aeson
+    ( ToJSON (toJSON), Value, defaultOptions, genericToJSON )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
@@ -74,7 +78,7 @@ import Data.Either
 import Data.Function
     ( (&) )
 import Data.Maybe
-    ( isNothing )
+    ( fromJust, fromMaybe, isNothing )
 import Data.Text
     ( Text )
 import Test.Arbitrary
@@ -100,12 +104,17 @@ import Text.Pretty.Simple
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.Aeson.Encode.Pretty as Aeson
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Text.Lazy.IO as TL
+import GHC.Generics
+    ( Generic )
 
 spec :: Spec
 spec = do
@@ -450,10 +459,29 @@ data TestVector = TestVector
 
       -- | Corresponding Mnemonic
     , mnemonic :: [Text]
+
     } deriving Show
 
+data InspectVector a = InspectVector
+    { addrXPub0 :: a
+    , addrXPub1 :: a
+    , addrXPub1442 :: a
+    , paymentAddr0 :: [a]
+    , paymentAddr1 :: [a]
+    , paymentAddr1442 :: [a]
+    , delegationAddr0Stake0 :: [a]
+    , delegationAddr1Stake0 :: [a]
+    , delegationAddr1442Stake0 :: [a]
+    , delegationAddr0Stake1 :: [a]
+    , delegationAddr1Stake1 :: [a]
+    , delegationAddr1442Stake1 :: [a]
+    , pointerAddr0Slot1 :: [a]
+    , pointerAddr0Slot2 :: [a]
+    } deriving (Generic, Show, Functor)
+
+
 testVectors :: [Text] -> SpecWith ()
-testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
+testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
     let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
@@ -499,7 +527,13 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     let delegationAddr1Stake1 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub1) <$> networkTags
     let delegationAddr1442Stake1 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub1) <$> networkTags
     let vec = TestVector {..}
-    goldenTextLazy (T.intercalate "_" mnemonic) (pShowOpt defaultOutputOptionsNoColor vec)
+    let inspectVec = InspectVector {..}
+    it "should generate correct addresses" $ do
+        goldenTextLazy ("addresses_" <> T.intercalate "_" mnemonic)
+            (pShowOpt defaultOutputOptionsNoColor vec)
+    it "should inspect correctly" $ do
+        goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic)
+            (Aeson.encodePretty $ genericToJSON defaultOptions $ toInspect <$> inspectVec)
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
@@ -507,6 +541,9 @@ testVectors mnemonic = it (show $ T.unpack <$> mnemonic) $ do
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
         bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
+    toInspect :: Text -> Value
+    toInspect a = fromMaybe (toJSON ("couldn't inspect" :: Text)) $
+        Shelley.inspectAddress Nothing (fromJust $ fromBech32 a)
 
 prop_roundtripTextEncoding
     :: (Address -> Text)
@@ -582,6 +619,18 @@ goldenTextLazy name output =
     , encodePretty = TL.unpack
     , writeToFile = TL.writeFile
     , readFromFile = TL.readFile
+    , testName = T.unpack name
+    , directory = "test/golden"
+    , failFirstTime = False
+    }
+
+goldenByteStringLazy :: Text -> BL.ByteString -> Golden BL.ByteString
+goldenByteStringLazy name output =
+    Golden
+    { output = output
+    , encodePretty = TL.unpack . TLE.decodeUtf8
+    , writeToFile = BL.writeFile
+    , readFromFile = BL.readFile
     , testName = T.unpack name
     , directory = "test/golden"
     , failFirstTime = False

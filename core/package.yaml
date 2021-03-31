@@ -90,3 +90,4 @@ tests:
     - text
     - hspec-golden
     - pretty-simple
+    - aeson-pretty

@@ -1,0 +1,324 @@
+{
+    "addrXPub0": "couldn't inspect",
+    "addrXPub1442": "couldn't inspect",
+    "paymentAddr1442": [
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 6
+        }
+    ],
+    "addrXPub1": "couldn't inspect",
+    "delegationAddr0Stake1": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 6
+        }
+    ],
+    "delegationAddr1Stake0": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 6
+        }
+    ],
+    "delegationAddr0Stake0": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 6
+        }
+    ],
+    "delegationAddr1Stake1": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 6
+        }
+    ],
+    "delegationAddr1442Stake0": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh1esee5d0eurlq8884zrrkr4xa9yzqcj8fv4la43lfcqweg22x6sq",
+            "stake_key_hash": "cc339a35f9e0fe039cf510c761d4dd29040c48e9657fdac7e9c01d94",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 6
+        }
+    ],
+    "pointerAddr0Slot1": [
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 1,
+                "output_index": 3,
+                "transaction_index": 2
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 1,
+                "output_index": 3,
+                "transaction_index": 2
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 1,
+                "output_index": 3,
+                "transaction_index": 2
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 6
+        }
+    ],
+    "paymentAddr1": [
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test1rl2h6xzktcap0ngefuvs6dyu9desn6hhpulnh7yykr4d5c7usp5",
+            "address_style": "Shelley",
+            "spending_key_hash": "1fd57d18565e3a17cd194f190d349c2b7309eaf70f3f3bf884b0eada",
+            "network_tag": 6
+        }
+    ],
+    "delegationAddr1442Stake1": [
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by value",
+            "stake_key_hash_bech32": "stake_vkh17ggasyph6cwgw9p6qzswu5wu6f6a4ksprhph02cng9fvcxrhwla",
+            "stake_key_hash": "f211d81037d61c87143a00a0ee51dcd275dada011dc377ab134152cc",
+            "spending_key_hash_bech32": "addr_test13unhg7tdqh5swp5g5c7ln7x8h7a7mazretfdgtrqawaluh4l5dt",
+            "address_style": "Shelley",
+            "spending_key_hash": "8f2774796d05e9070688a63df9f8c7bfbbedf443cad2d42c60ebbbfe",
+            "network_tag": 6
+        }
+    ],
+    "pointerAddr0Slot2": [
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 24157,
+                "output_index": 42,
+                "transaction_index": 177
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 24157,
+                "output_index": 42,
+                "transaction_index": 177
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "by pointer",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "pointer": {
+                "slot_num": 24157,
+                "output_index": 42,
+                "transaction_index": 177
+            },
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 6
+        }
+    ],
+    "paymentAddr0": [
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 0
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 3
+        },
+        {
+            "stake_reference": "none",
+            "spending_key_hash_bech32": "addr_test109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx2z46n6e",
+            "address_style": "Shelley",
+            "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
+            "network_tag": 6
+        }
+    ]
+}
