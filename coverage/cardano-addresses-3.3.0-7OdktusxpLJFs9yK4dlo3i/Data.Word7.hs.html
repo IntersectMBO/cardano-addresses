@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>
+<span class="lineno">    3 </span>-- |
+<span class="lineno">    4 </span>-- Copyright: © 2018-2020 IOHK
+<span class="lineno">    5 </span>-- License: Apache-2.0
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Data.Word7
+<span class="lineno">    8 </span>    (
+<span class="lineno">    9 </span>      -- * Types
+<span class="lineno">   10 </span>      Word7
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>      -- * Conversions
+<span class="lineno">   13 </span>    , toWord7
+<span class="lineno">   14 </span>    , toWord8
+<span class="lineno">   15 </span>    , toWord7s
+<span class="lineno">   16 </span>    , toNatural
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>      -- * Encode / Decode
+<span class="lineno">   19 </span>    , putVariableLengthNat
+<span class="lineno">   20 </span>    , getVariableLengthNat
+<span class="lineno">   21 </span>    ) where
+<span class="lineno">   22 </span>
+<span class="lineno">   23 </span>import Prelude
+<span class="lineno">   24 </span>
+<span class="lineno">   25 </span>import Data.Binary.Get
+<span class="lineno">   26 </span>    ( Get, getWord8 )
+<span class="lineno">   27 </span>import Data.Binary.Put
+<span class="lineno">   28 </span>    ( Put, putWord8 )
+<span class="lineno">   29 </span>import Data.Bits
+<span class="lineno">   30 </span>    ( shiftL, shiftR, (.&amp;.), (.|.) )
+<span class="lineno">   31 </span>import Data.List
+<span class="lineno">   32 </span>    ( foldl' )
+<span class="lineno">   33 </span>import Data.Word
+<span class="lineno">   34 </span>    ( Word8 )
+<span class="lineno">   35 </span>import Numeric.Natural
+<span class="lineno">   36 </span>    ( Natural )
+<span class="lineno">   37 </span>
+<span class="lineno">   38 </span>
+<span class="lineno">   39 </span>-- | A 'Word7' algebraic data-type.
+<span class="lineno">   40 </span>-- @since 2.0.0
+<span class="lineno">   41 </span>newtype Word7 = Word7 Word8
+<span class="lineno">   42 </span>  deriving (<span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>, <span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   43 </span>
+<span class="lineno">   44 </span>
+<span class="lineno">   45 </span>--
+<span class="lineno">   46 </span>-- Conversions
+<span class="lineno">   47 </span>--
+<span class="lineno">   48 </span>-- &gt; toWord7 1
+<span class="lineno">   49 </span>-- &gt; Word7 1
+<span class="lineno">   50 </span>-- &gt; toWord7 127
+<span class="lineno">   51 </span>-- &gt; Word7 127
+<span class="lineno">   52 </span>-- &gt; toWord7 128
+<span class="lineno">   53 </span>-- &gt; Word7 0
+<span class="lineno">   54 </span>toWord7 :: Word8 -&gt; Word7
+<span class="lineno">   55 </span><span class="decl"><span class="istickedoff">toWord7 x = Word7 (x .&amp;. 0x7F)</span></span>
+<span class="lineno">   56 </span>
+<span class="lineno">   57 </span>toWord8 :: Word7 -&gt; Word8
+<span class="lineno">   58 </span><span class="decl"><span class="istickedoff">toWord8 (Word7 x) = x</span></span>
+<span class="lineno">   59 </span>
+<span class="lineno">   60 </span>-- &gt; toWord7s 1
+<span class="lineno">   61 </span>-- &gt; [Word7 1]
+<span class="lineno">   62 </span>-- &gt; toWord7s 128
+<span class="lineno">   63 </span>-- &gt; [Word7 1,Word7 0]
+<span class="lineno">   64 </span>-- &gt; toWord7s 19099
+<span class="lineno">   65 </span>-- &gt; [Word7 1,Word7 21,Word7 27]
+<span class="lineno">   66 </span>toWord7s :: Natural -&gt; [Word7]
+<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">toWord7s = reverse . go</span>
+<span class="lineno">   68 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">go n</span>
+<span class="lineno">   70 </span><span class="spaces">        </span><span class="istickedoff">| n &lt;= 0x7F = [Word7 . fromIntegral $ n]</span>
+<span class="lineno">   71 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = (toWord7 . fromIntegral) n : go (shiftR n 7)</span></span>
+<span class="lineno">   72 </span>
+<span class="lineno">   73 </span>word7sToNat :: [Word7] -&gt; Natural
+<span class="lineno">   74 </span><span class="decl"><span class="istickedoff">word7sToNat = foldl' f 0</span>
+<span class="lineno">   75 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">f n (Word7 r) = shiftL n 7 .|. (fromIntegral r)</span></span>
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>toNatural :: [Word7] -&gt; Natural
+<span class="lineno">   79 </span><span class="decl"><span class="istickedoff">toNatural =</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">fst .</span>
+<span class="lineno">   81 </span><span class="spaces">    </span><span class="istickedoff">foldr (\(Word7 x) (res, pow) -&gt;</span>
+<span class="lineno">   82 </span><span class="spaces">               </span><span class="istickedoff">(res + (fromIntegral x)*(limit pow + 1), pow + 7)</span>
+<span class="lineno">   83 </span><span class="spaces">          </span><span class="istickedoff">)</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">(0,0)</span>
+<span class="lineno">   85 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">limit :: Int -&gt; Natural</span>
+<span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">limit pow = 2 ^ pow - 1</span></span>
+<span class="lineno">   88 </span>
+<span class="lineno">   89 </span>--
+<span class="lineno">   90 </span>-- Decoding
+<span class="lineno">   91 </span>--
+<span class="lineno">   92 </span>putVariableLengthNat :: Natural -&gt; Put
+<span class="lineno">   93 </span><span class="decl"><span class="istickedoff">putVariableLengthNat = putWord7s . toWord7s</span>
+<span class="lineno">   94 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">putWord7s :: [Word7] -&gt; Put</span>
+<span class="lineno">   96 </span><span class="spaces">    </span><span class="istickedoff">putWord7s [] = <span class="nottickedoff">pure ()</span></span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">putWord7s [Word7 x] = putWord8 x</span>
+<span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">putWord7s (Word7 x : xs) = putWord8 (x .|. 0x80) &gt;&gt; putWord7s xs</span></span>
+<span class="lineno">   99 </span>
+<span class="lineno">  100 </span>getVariableLengthNat :: Get Natural
+<span class="lineno">  101 </span><span class="decl"><span class="istickedoff">getVariableLengthNat = word7sToNat &lt;$&gt; getWord7s</span>
+<span class="lineno">  102 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  103 </span><span class="spaces">    </span><span class="istickedoff">getWord7s :: Get [Word7]</span>
+<span class="lineno">  104 </span><span class="spaces">    </span><span class="istickedoff">getWord7s = do</span>
+<span class="lineno">  105 </span><span class="spaces">      </span><span class="istickedoff">next &lt;- getWord8</span>
+<span class="lineno">  106 </span><span class="spaces">      </span><span class="istickedoff">case next .&amp;. 0x80 of</span>
+<span class="lineno">  107 </span><span class="spaces">        </span><span class="istickedoff">0x80 -&gt; (:) (toWord7 next) &lt;$&gt; getWord7s</span>
+<span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; pure [Word7 next]</span></span>
+
+</pre>
+</body>
+</html>
