@@ -1,0 +1,89 @@
+TestVector 
+    { rootXPrv = "root_xsk17zqw352yj02seytp9apunec55722k93crtplq8chgpfh7cx33dg4v2x3wpyhd9chhkknzhprztumrystkpfl5nyhyeuq0gnwf76r39u9l9q3z40hgf5jv6xn8unr5acs3yy8fxg35v5xjsw4kwvf5zfkvcn57fle" 
+    , accXPrv0 = "acct_xsk13rkczfa4xzrax4x0unqnesaasr8s3qnyr2mmjcwga6lrue733dg6at2stlqft9jtz0kk50xsp4yrqnrf9gl78npu50r7e38kpu0f744af46s2r37d7m6sh0uyj9szp86s546k43t2thfw4nzd7zsxckx6gd7zxnq" 
+    , accXPrv1 = "acct_xsk1rrd6a79s9gktygfmp4gxhme3jxvnxazk45u2twrwfnfg2c733dg323eaegqrxe7lt0zepz3aq3ydgdse8vjs7qks4c4yh0q39pdf4fsv4ql5tv5tny3mxzn20r792nl9nk904y0ztqgclyxuxzl56p6fsydppkqk" 
+    , addrXPrv0 = "addr_xsk1fz8tz0pdda8la0aqhadnzctw0p48zwygkgf4xyar2jjljm733dgkprs4sj8cxfwv9xtfddpdfvjlap0hhg9gd37pr0tp7ue48mh9cnfyy68k52f88z5vghezam30c3pcue6aewl4mqul6nvassxlenh3eqh822k2" 
+    , addrXPub0 = "addr_xvk1x4dme9s2f5xxn77wgjhggqh73r6syy4nvjcdjklnaqrh48f6desjgf50dg5jww9gc30j9mhzl3zr3en4mjaltkpel4xempqdln80rjq5grmc7" 
+    , addrXPrv1 = "addr_xsk18peu0v64maghaa87jvu0txdkftvznq7he2yhntk8eem56mk33dgl2rwt8kmhcgdytr6fjn0t4cdf6sr3xud67yhwnjhzyghgu294f6v0fcfzqlactzd8cf5m4tpu7yyn5x58dx6q00d362j6e06g88phjglns3p5" 
+    , addrXPub1 = "addr_xvk1ndtepmpg06x9nskfasvr50mue356e4rqlvuzf8jjcj6n48feexsg7nsjyplmsky60snfh2kreugf8gdgw6d5q77mr5494jl5swwr0ysprauul" 
+    , addrXPrv1442 = "addr_xsk1sr8gz532k2yckskgzv4047taz92905nnr9sysv20ks257ux33dg5000a39wpvw066n3pcgz20062yhqpy9mjjszluq5ef9mg5yjjsseur0tu9duqet2zxeqfm9jlt6g4wf3altrupqwggrn00j0f36v8aqeldweq" 
+    , addrXPub1442 = "addr_xvk1vagd70p45qd774cdna2qe2t3t9200hx3jcfvp39w3r9ruscjapdncx7hc2mcpjk5ydjqnkt97h532unrm7k8czquss8x7ly7nr5c06q2am4uq" 
+    , paymentAddr0 = 
+        [ "addr_test1vz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqrrykc7" 
+        , "addr1vw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqcxeph4" 
+        , "addr_test1v683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqr5ltcv" 
+        ] 
+    , paymentAddr1 = 
+        [ "addr_test1vzr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqsl4gkk5" 
+        , "addr1vwr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqsys4pel" 
+        , "addr_test1v6r08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqslzntkx" 
+        ] 
+    , paymentAddr1442 = 
+        [ "addr_test1vz54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnses3aps" 
+        , "addr1vw54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnsz4v2wm" 
+        , "addr_test1v654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnse82qpz" 
+        ] 
+    , delegationAddr0Stake0 = 
+        [ "addr_test1qz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaxcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsh8t7e5" 
+        , "addr1qw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaxcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsl5yscc" 
+        , "addr_test1q683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaxcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezs2g5vwg" 
+        ] 
+    , delegationAddr1Stake0 = 
+        [ "addr_test1qzr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezs9qrgxg" 
+        , "addr1qwr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsdnvx8y" 
+        , "addr_test1q6r08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcqkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsc0u635" 
+        ] 
+    , delegationAddr1442Stake0 = 
+        [ "addr_test1qz54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezstz0xhp" 
+        , "addr1qw54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezsr3qgkd" 
+        , "addr_test1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjnkcd4azvtus2m6m3q409pnflcurpnkz3gnxf4ef47ducezskds5qa" 
+        ] 
+    , delegationAddr0Stake1 = 
+        [ "addr_test1qz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s4xe03d" 
+        , "addr1qw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sa4kpsp" 
+        , "addr_test1q683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhay52juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sgfxax3" 
+        ] 
+    , delegationAddr1Stake1 = 
+        [ "addr_test1qzr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s8p3ew3" 
+        , "addr1qwr08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s0j7h0a" 
+        , "addr_test1q6r08acccp7s3l9cppvptz7jyflejkkuma2k06vx4vjrcq552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s6wwted" 
+        ] 
+    , delegationAddr1442Stake1 = 
+        [ "addr_test1qz54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56sfrahlc" 
+        , "addr1qw54amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56spsje75" 
+        , "addr_test1q654amjcp4yxynrj877j4nk0umg5w0rf9t5lz3rfprxwjn552juen6vgkzm3s3lzwefszuhhy56rekx68xv33n76a56s5vz9gy" 
+        ] 
+    , pointerAddr0Slot1 = 
+        [ "addr_test1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsn3mqwn" 
+        , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgpsx4arfz" 
+        , "addr_test1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhaqpqgps89q0qr" 
+        ] 
+    , pointerAddr0Slot2 = 
+        [ "addr_test1gz83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2n4r9s9" 
+        , "addr1gw83dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf25fdyg2" 
+        , "addr_test1g683dnlqqtdrlct4kz3f7d07d59w6p4yrtlr62340yklhayph3wczvf2t2la9t" 
+        ] 
+    , mnemonic = 
+        [ "draft" 
+        , "ability" 
+        , "female" 
+        , "child" 
+        , "jump" 
+        , "maid" 
+        , "roof" 
+        , "hurt" 
+        , "below" 
+        , "live" 
+        , "topple" 
+        , "paper" 
+        , "exclude" 
+        , "ordinary" 
+        , "coach" 
+        , "churn" 
+        , "sunset" 
+        , "emerge" 
+        , "blame" 
+        , "ketchup" 
+        , "much" 
+        ] 
+    } 
