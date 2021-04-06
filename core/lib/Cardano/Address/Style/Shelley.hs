@@ -557,11 +557,6 @@ inspectAddress mRootPub addr
             network  = fstByte .&. 0b00001111
 
             (fstHash, sndHash) = BS.splitAt credentialHashSize rest
-
-            addrHrp = if NetworkTag (fromIntegral network)  == shelleyMainnet
-                then CIP5.addr
-                else CIP5.addr_test
-            bech32Spending = bech32With addrHrp
         in
             case addrType of
                -- 0000: base address: keyhash28,keyhash28
@@ -679,6 +674,7 @@ inspectAddress mRootPub addr
     base16 = T.unpack . T.decodeUtf8 . encode EBase16
 
     bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
+    bech32Spending = bech32With CIP5.addr_vkh
     bech32Stake = bech32With CIP5.stake_vkh
     bech32Script = bech32With CIP5.script_vkh
 
