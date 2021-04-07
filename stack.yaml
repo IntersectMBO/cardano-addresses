@@ -16,6 +16,9 @@ extra-deps:
 - hjsonschema-1.10.0
 - string-interpolate-0.3.0.2
 - hspec-golden-0.1.0.3
+- pretty-simple-4.0.0.0
+- prettyprinter-1.7.0
+- prettyprinter-ansi-terminal-1.1.2
 
 allow-newer: true
 
