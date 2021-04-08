@@ -76,7 +76,8 @@ let
     musl64 = mapTestOnCross musl64 (packagePlatformsCross (filterJobsCross project));
     ghcjs = mapTestOnCross ghcjs (packagePlatformsCross (filterJobsCross project));
   } // (mkRequiredJob (concatLists [
-    (collectJobs jobs."${mingwW64.config}".checks.tests)
+    (collectJobs jobs."${mingwW64.config}".checks)
+    (collectJobs jobs.ghcjs.checks)
     #(collectJobs jobs.native.checks)
     #(collectJobs jobs.native.benchmarks)
     #(collectJobs jobs.native.libs)
