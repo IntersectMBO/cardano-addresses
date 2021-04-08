@@ -27,3 +27,6 @@ flags:
   # generation is dubious. Set the flag so we use /dev/urandom by default.
   cryptonite:
     support_rdrand: false
+
+nix:
+  shell-file: nix/stack-shell.nix
