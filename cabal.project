@@ -1,5 +1,9 @@
 index-state: 2021-03-23T15:14:00Z
 
+-- NOTE: Staying on 8.6.5 to match stack.yaml and also because ghcjs
+-- does not yet support 8.10.4.
+with-compiler: ghc-8.6.5
+
 packages: */*.cabal
 
 source-repository-package

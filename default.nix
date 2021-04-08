@@ -25,18 +25,10 @@ let
     inherit haskellPackages;
     inherit (haskellPackages.cardano-addresses-cli.components.exes) cardano-address;
 
-    # `tests` are the test suites which have been built.
-    #tests = collectComponents' "tests" haskellPackages;
-    # `benchmarks` (only built, not run).
-    #benchmarks = collectComponents' "benchmarks" haskellPackages;
-
-    #libs = collectComponents' "library" haskellPackages;
-
     exes = collectComponents' "exes" haskellPackages;
-
-    #checks = recurseIntoAttrs {
-    #  # `checks.tests` collect results of executing the tests:
-    #  tests = collectChecks haskellPackages;
-    #};
+    # tests are the built test suites.
+    tests = collectComponents' "tests" haskellPackages;
+    # checks are the results of executing the tests.
+    checks = collectChecks haskellPackages;
   };
 in self
