@@ -545,7 +545,7 @@ spec = do
                 `shouldBe` Left err
 
         it "Invalid JSON" $ do
-            let err = "Error in $: Failed reading: not a valid json value at ''';[]['"
+            let err = "Error in $: Failed reading: not a valid json value"
             Json.eitherDecode @(Script KeyHash) "'';[]["
                 `shouldBe` Left err
   where
