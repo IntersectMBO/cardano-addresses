@@ -53,7 +53,7 @@ mod liftCmd = command "key" $
             , indent 2 $ bold $ string "$ cat root.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H \\"
             , indent 4 $ bold $ string "| tee acct.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public > acct.pub"
+            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code > acct.pub"
             , indent 2 $ string ""
             , indent 2 $ bold $ string $ "$ "<>progName<>" key inspect <<< $(cat acct.prv)"
             , indent 2 $ string "{"
