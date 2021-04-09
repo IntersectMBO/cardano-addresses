@@ -1,0 +1,5 @@
+*.rspec_status
+*.prv
+*.pub
+*.xprv
+*.hash
