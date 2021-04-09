@@ -49,7 +49,6 @@ RSpec.describe "CLI examples" do
   end
 
   it "cardano-address key" do
-    pending "<<< operator is not supprted by shell"
     o, e = ca_cmd('key')
     examples = get_examples(e)
     examples.each do |example|

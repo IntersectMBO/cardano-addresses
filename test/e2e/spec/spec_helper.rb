@@ -16,7 +16,8 @@ end
 
 # Helpers
 def cmd(cmd)
-  out, err, status = Open3.capture3(cmd)
+  # running commands against bash because not all are compatible with shell
+  out, err, status = Open3.capture3("bash -c #{cmd}")
   return [out, err, status, cmd]
 end
 
