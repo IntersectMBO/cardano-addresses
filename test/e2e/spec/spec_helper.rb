@@ -14,7 +14,6 @@ RSpec.configure do |config|
   end
 end
 
-
 # Helpers
 def cmd(cmd)
   out, err, status = Open3.capture3(cmd)

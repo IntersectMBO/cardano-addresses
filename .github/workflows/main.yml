@@ -26,6 +26,11 @@ jobs:
     - name: 📥 Checkout repository
       uses: actions/checkout@v1
 
+    - name: 💎 Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7.1
+
     - name: 🧰 Setup Stack
       uses: mstksg/setup-stack@v1
 
@@ -43,6 +48,7 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
+        echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
         stack --no-terminal test --bench --haddock --no-haddock-deps --no-run-benchmarks --flag cardano-addresses:release --flag cardano-addresses-cli:release
         mkdir -p bin && cp $(stack path --local-install-root)/bin/* bin && chmod +x bin/*
         mkdir -p dist/haddock && mv $(stack path --local-install-root)/doc/* dist/haddock
@@ -52,6 +58,13 @@ jobs:
         DESTDIR=dist/coverage make report && DESTDIR=dist/coverage make badge
         echo "Checking for updated cabal files"
         git diff --exit-code -- '**/*.cabal' && echo OK
+
+    - name: 🧪 Test CLI examples
+      run: |
+        cd test/e2e
+        bundle install
+        rspec .
+        cd -
 
     - name: 📎 Upload Artifact
       uses: actions/upload-artifact@v1
