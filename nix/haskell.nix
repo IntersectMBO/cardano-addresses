@@ -18,27 +18,24 @@ let
       src = ../.;
   };
 
-  # Constraints not in `cabal.project.freeze for cross platform support
-  cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
-    constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
-  '';
-
   # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
   # not build for windows on a per package bases (rather than using --disable-tests).
   # configureArgs = lib.optionalString stdenv.targetPlatform.isWindows "--disable-tests";
   configureArgs = "";
 
-  # Arguments used as inputs for `cabal configure` (like `configureArgs` and `cabalProjectLocal`)
-  # should be passed to this `cabalProject` call as well or `cabal configure` will have to run twice.
-  projectPackages = lib.attrNames (haskell-nix.haskellLib.selectProjectPackages
-    (haskell-nix.cabalProject { inherit src cabalProjectLocal configureArgs; compiler-nix-name = compiler; }));
-
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
-  pkgSet = haskell-nix.cabalProject  ({
+  pkgSet = haskell-nix.cabalProject ({ pkgs, ... }: {
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
-    inherit src cabalProjectLocal configureArgs;
+    # Constraints not in `cabal.project.freeze for cross platform support
+    cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
+      constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
+    '' + lib.optionalString pkgs.stdenv.hostPlatform.isGhcjs ''
+      packages: jsbits/
+    '';
+
+    inherit src configureArgs;
     compiler-nix-name = compiler;
     modules = [
       # Allow reinstallation of Win32
@@ -105,7 +102,7 @@ let
         packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
         # Run the script to build the C sources from cryptonite and cardano-crypto
         # and place the result in jsbits/cardano-crypto.js
-        packages.cardano-addresses.components.library.preConfigure = ''
+        packages.cardano-addresses-jsbits.components.library.preConfigure = ''
           script=$(mktemp -d)
           cp -r ${../ghcjs}/* $script
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite

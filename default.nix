@@ -22,7 +22,7 @@ let
     (selectProjectPackages cardanoAddressesHaskellPackages);
 
   self = {
-    inherit haskellPackages;
+    inherit haskellPackages cardanoAddressesHaskellPackages pkgs;
     inherit (haskellPackages.cardano-addresses-cli.components.exes) cardano-address;
 
     exes = collectComponents' "exes" haskellPackages;

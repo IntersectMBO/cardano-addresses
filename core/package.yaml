@@ -31,8 +31,8 @@ library:
     ghc-options:
     - -Werror
   - condition: impl(ghcjs) || os(ghcjs)
-    ghc-options:
-      - jsbits/cardano-crypto.js
+    dependencies:
+    - cardano-addresses-jsbits
   default-extensions:
   - NoImplicitPrelude
   dependencies:
