@@ -31,6 +31,7 @@ source-repository-package
 
 -- Relax overly strict bounds in hjsonschema and hjsonpointer
 allow-newer:
-    hjsonschema:aeson
-  , hjsonschema:hjsonpointer
-  , hjsonpointer:aeson
+    hjsonschema:*
+  , hjsonpointer:*
+
+test-show-details: direct

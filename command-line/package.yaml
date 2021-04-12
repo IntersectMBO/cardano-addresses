@@ -110,7 +110,7 @@ tests:
     - containers
     - hspec
     - process
-    - QuickCheck
+    - QuickCheck >= 2.14.2
     - string-interpolate
     - temporary
     - text

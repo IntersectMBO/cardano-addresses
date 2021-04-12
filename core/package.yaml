@@ -87,7 +87,7 @@ tests:
     - containers
     - hspec
     - memory
-    - QuickCheck
+    - QuickCheck >= 2.14.2
     - text
     - hspec-golden >= 0.1.0.3 && < 0.2
     - pretty-simple
