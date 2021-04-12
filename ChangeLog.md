@@ -1,4 +1,20 @@
-## [3.3.0] - 2021-03-30
+## [3.4.0] - UNRELEASED
+
+### Added
+
+- Added `Cardano.Address.Style.Shelley.eitherInspectAddress` function
+  with stronger result and error types.
+
+### Changed
+
+- The constructors of `Cardano.Address.Style.Shelley.ErrInspectAddress`
+  have changed.
+  Any code which pattern matches on this type will need minor changes.
+
+### Removed
+
+
+## [3.3.0] - 2021-04-09
 
 ### Added
 
