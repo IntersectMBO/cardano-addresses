@@ -1,4 +1,4 @@
-index-state: 2021-03-23T15:14:00Z
+index-state: 2021-03-23T15:08:40Z
 
 -- NOTE: Staying on 8.6.5 to match stack.yaml and also because ghcjs
 -- does not yet support 8.10.4.
