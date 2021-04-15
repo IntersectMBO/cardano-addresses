@@ -108,7 +108,7 @@ let
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite
           ln -s ${pkgs.srcOnly {name = "cardano-crypto-src"; src = config.packages.cardano-crypto.src;}}/cbits $script/cardano-crypto
           patchShebangs $script/build.sh
-          (cd $script && PATH=${pkgs.buildPackages.emscripten}/bin:${pkgs.buildPackages.buildPackages.closurecompiler}/bin:$PATH ./build.sh)
+          (cd $script && PATH=${lib.makeBinPath (with pkgs.buildPackages; [emscripten closurecompiler coreutils])}:$PATH ./build.sh)
           mkdir -p jsbits
           cp $script/cardano-crypto.js jsbits/cardano-crypto.js
         '';
