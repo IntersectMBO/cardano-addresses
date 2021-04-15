@@ -74,6 +74,10 @@ tests:
     - condition: flag(release)
       ghc-options:
       - -Werror
+    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
+    - condition: impl(ghcjs) || os(ghcjs)
+      ghc-options:
+      - jsbits/cardano-crypto.js
     build-tools:
     - hspec-discover
     dependencies:

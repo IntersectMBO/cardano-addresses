@@ -74,6 +74,10 @@ executables:
       - -O2
       cc-options: -static
       ld-options: -static -pthread
+    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
+    - condition: impl(ghcjs) || os(ghcjs)
+      ghc-options:
+      - jsbits/cardano-crypto.js
 
 tests:
   unit:

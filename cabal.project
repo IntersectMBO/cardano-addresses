@@ -8,6 +8,14 @@ packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
 
+-- Needed for ghcjs
+-- See https://github.com/haskell-crypto/cryptonite/pull/345
+source-repository-package
+    type: git
+    location: https://github.com/haskell-crypto/cryptonite.git
+    tag: cf89276b5cdd87fcd60cce2fb424e64f0de7016a
+    --sha256: 1j25zzdq4hiqlqwxg998hd985d4h8h27h3vkyaaz9wid2gbmfpih
+
 source-repository-package
     type: git
     location: https://github.com/input-output-hk/cardano-crypto

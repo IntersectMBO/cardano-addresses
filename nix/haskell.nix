@@ -97,20 +97,38 @@ let
         packages.semigroupoids.package.buildType = lib.mkForce "Simple";
       })
 
-      ({pkgs, config, ... }: lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
-        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
-        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+      ({pkgs, config, ... }:
+      let
         # Run the script to build the C sources from cryptonite and cardano-crypto
         # and place the result in jsbits/cardano-crypto.js
-        packages.cardano-addresses-jsbits.components.library.preConfigure = ''
+        cardano-crypto-js = pkgs.runCommand "cardano-cypto-js" {} ''
           script=$(mktemp -d)
           cp -r ${../jsbits/emscripten}/* $script
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite
           ln -s ${pkgs.srcOnly {name = "cardano-crypto-src"; src = config.packages.cardano-crypto.src;}}/cbits $script/cardano-crypto
           patchShebangs $script/build.sh
-          (cd $script && PATH=${lib.makeBinPath (with pkgs.buildPackages; [emscripten closurecompiler coreutils])}:$PATH ./build.sh)
+          (cd $script && PATH=${
+              # The extra buildPackages here is for closurecompiler.
+              # Without it we get `unknown emulation for platform: js-unknown-ghcjs` errors.
+              lib.makeBinPath (with pkgs.buildPackages.buildPackages;
+                [emscripten closurecompiler coreutils])
+            }:$PATH ./build.sh)
+          cp $script/cardano-crypto.js $out
+        '';
+      in lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+        packages.cardano-addresses-jsbits.components.library.preConfigure = ''
           mkdir -p jsbits
-          cp $script/cardano-crypto.js jsbits/cardano-crypto.js
+          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
+        '';
+        packages.cardano-addresses.components.tests.unit.preConfigure = ''
+          mkdir -p jsbits
+          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
+        '';
+        packages.cardano-addresses-cli.components.exes.cardano-address.preConfigure = ''
+          mkdir -p jsbits
+          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
         '';
 
         # Disable CLI running tests under ghcjs

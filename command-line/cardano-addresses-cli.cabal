@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7732258e4cdea1e05b68c673c9206db4d711e2b68aeda7b4fdb1294da2dd3008
+-- hash: 5148abda432eba11f90b2b6142cb9c1427d3b3ad1839af97472609f12ea3a821
 
 name:           cardano-addresses-cli
 version:        3.3.0
@@ -105,6 +105,8 @@ executable cardano-address
     ghc-options: -Werror -static -O2
     cc-options: -static
     ld-options: -static -pthread
+  if impl(ghcjs) || os(ghcjs)
+    ghc-options: jsbits/cardano-crypto.js
   default-language: Haskell2010
 
 test-suite unit
