@@ -16,6 +16,7 @@ mkShell rec {
     stack
     nix
     pkgconfig
+    bundler
   ] ++ lib.optional (!stdenv.isDarwin) git;
 
   libs = [
