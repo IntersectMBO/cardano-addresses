@@ -104,7 +104,7 @@ let
         # and place the result in jsbits/cardano-crypto.js
         packages.cardano-addresses-jsbits.components.library.preConfigure = ''
           script=$(mktemp -d)
-          cp -r ${../ghcjs}/* $script
+          cp -r ${../jsbits/emscripten}/* $script
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite
           ln -s ${pkgs.srcOnly {name = "cardano-crypto-src"; src = config.packages.cardano-crypto.src;}}/cbits $script/cardano-crypto
           patchShebangs $script/build.sh

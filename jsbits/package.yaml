@@ -19,6 +19,8 @@ dependencies:
 
 library:
   source-dirs: lib
+  # This file is not included in the git repo and should be built
+  # manually, e.g. by running ./emscripten/build.sh, or via the nix build.
   ghc-options: jsbits/cardano-crypto.js
   default-extensions:
   - NoImplicitPrelude
