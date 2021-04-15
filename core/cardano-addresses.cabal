@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 188c53b5e7dabc019e454e84cf1340c6691d201fbc12f83efe35d3639e1f530f
+-- hash: 7209d7b7cf4e54cc8b313d82e80557a89bd0776760a0d7c3e1c014ee07cfd935
 
 name:           cardano-addresses
 version:        3.3.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/input-output-hk/cardano-addresses#readme
 bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
-copyright:      2020 IOHK
+copyright:      2021 IOHK
 license:        Apache-2.0
 build-type:     Simple
 

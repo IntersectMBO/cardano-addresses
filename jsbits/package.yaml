@@ -1,0 +1,29 @@
+name:                cardano-addresses-jsbits
+version:             3.3.0
+github:              input-output-hk/cardano-addresses
+license:             Apache-2.0
+author:              IOHK
+maintainer:          operations@iohk.io
+copyright:           2021 IOHK
+synopsis:            Library utilities for mnemonic generation and address derivation.
+category:            Cardano
+
+description: |
+  Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+
+verbatim:
+  cabal-version: 3.0
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: lib
+  ghc-options: jsbits/cardano-crypto.js
+  default-extensions:
+  - NoImplicitPrelude
+  when:
+  - condition: '!impl(ghcjs) && !os(ghcjs)'
+    buildable: false
+  - condition: false
+    other-modules: Paths_cardano_addresses_jsbits

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d241faede133eea9ac4907217831be611a911806be1272258d6172813a91d647
+-- hash: 7732258e4cdea1e05b68c673c9206db4d711e2b68aeda7b4fdb1294da2dd3008
 
 name:           cardano-addresses-cli
 version:        3.3.0
@@ -18,7 +18,6 @@ maintainer:     operations@iohk.io
 copyright:      2021 IOHK
 license:        Apache-2.0
 build-type:     Simple
-
 extra-source-files:
     ./schemas/address-inspect.json
 
