@@ -15,10 +15,10 @@ homepage:       https://github.com/input-output-hk/cardano-addresses#readme
 bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
-copyright:      2020 IOHK
+copyright:      2021 IOHK
 license:        Apache-2.0
-license-file:   LICENSE
 build-type:     Simple
+
 extra-source-files:
     ./schemas/address-inspect.json
 

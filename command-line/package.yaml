@@ -4,7 +4,7 @@ github:              input-output-hk/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
-copyright:           2020 IOHK
+copyright:           2021 IOHK
 synopsis:            Utils for constructing a command-line on top of cardano-addresses.
 category:            Cardano
 
