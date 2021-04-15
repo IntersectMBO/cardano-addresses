@@ -1,5 +1,6 @@
 require 'bundler/setup'
 require 'open3'
+require 'tmpdir'
 require_relative '../helpers/matchers'
 
 RSpec.configure do |config|
@@ -14,18 +15,41 @@ RSpec.configure do |config|
   end
 end
 
-# Helpers
-def cmd(cmd)
-  # running commands against bash because not all are compatible with shell
-  out, err, status = Open3.capture3("bash -c #{cmd}")
+# Run all examples in a temporary directory, expect them all to
+# succeed.
+def run_examples(examples)
+  Dir.mktmpdir do |dir|
+    examples.each do |example|
+      expect(run_example(example, dir)).to succeed
+    end
+  end
+end
+
+def run_example(example, dir)
+  # running commands against bash because not all are compatible with
+  # posix shell
+  cmd = ["bash", "-c", example]
+  out, err, status = Open3.capture3(*cmd, :chdir=>dir)
   return [out, err, status, cmd]
 end
 
+# cli command
 def ca_cmd(*args)
-  cmd("cardano-address #{args.join(' ')}")
+  return Open3.capture3(*args.unshift("cardano-address"))
 end
 
-def get_examples(output)
+def get_examples(*cmd)
+  o, e, status = ca_cmd(*cmd)
+  expect(status.exitstatus).to be_between(0, 1).inclusive
+  examples = parse_examples(e)
+
+  # sanity check
+  expect(examples).to have_attributes(size: (be > 0))
+
+  return examples
+end
+
+def parse_examples(output)
   # get examples
   cmds = output.partition('Example:').last.split(" \n ")
 
@@ -39,5 +63,5 @@ def get_examples(output)
               map {|c| c.gsub("\\", '') }.
               map {|c| c[c.index("$") + 1, c.size] }. # remove starting $
               map {|c| c.strip }
-  cmds
+  return cmds
 end
