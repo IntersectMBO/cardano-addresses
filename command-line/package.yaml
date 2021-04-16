@@ -78,6 +78,8 @@ executables:
     - condition: impl(ghcjs) || os(ghcjs)
       ghc-options:
       - jsbits/cardano-crypto.js
+      js-sources:
+      - jsbits/cardano-crypto.js
 
 tests:
   unit:

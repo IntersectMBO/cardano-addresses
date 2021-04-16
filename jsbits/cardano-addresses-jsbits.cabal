@@ -28,7 +28,9 @@ library
       lib
   default-extensions:
       NoImplicitPrelude
-  js-sources: jsbits/cardano-crypto.js
+  ghc-options: jsbits/cardano-crypto.js
+  js-sources:
+      jsbits/cardano-crypto.js
   build-depends:
       base >=4.7 && <5
   if !impl(ghcjs) && !os(ghcjs)
