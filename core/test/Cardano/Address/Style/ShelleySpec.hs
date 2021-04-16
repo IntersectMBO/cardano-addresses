@@ -533,7 +533,7 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
             (pShowOpt defaultOutputOptionsNoColor vec)
     it "should inspect correctly" $ do
         goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic)
-            (Aeson.encodePretty $ genericToJSON defaultOptions $ toInspect <$> inspectVec)
+            (Aeson.encodePretty' (Aeson.defConfig { Aeson.confCompare = compare }) $ genericToJSON defaultOptions $ toInspect <$> inspectVec)
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
