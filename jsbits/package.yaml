@@ -5,11 +5,13 @@ license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
 copyright:           2021 IOHK
-synopsis:            Library utilities for mnemonic generation and address derivation.
+synopsis:            Javascript code for ghcjs build of cardano-addresses.
 category:            Cardano
 
 description: |
-  Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+  This package supports ghcjs compilation of cardano-addresses with
+  Javascript wrappers and Emscripten builds of the cryptonite C
+  sources.
 
 verbatim:
   cabal-version: 3.0

@@ -6,8 +6,10 @@ cabal-version: 3.0
 
 name:           cardano-addresses-jsbits
 version:        3.3.0
-synopsis:       Library utilities for mnemonic generation and address derivation.
-description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+synopsis:       Javascript code for ghcjs build of cardano-addresses.
+description:    This package supports ghcjs compilation of cardano-addresses with
+                Javascript wrappers and Emscripten builds of the cryptonite C
+                sources.
 category:       Cardano
 homepage:       https://github.com/input-output-hk/cardano-addresses#readme
 bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues

@@ -101,7 +101,7 @@ let
       let
         # Run the script to build the C sources from cryptonite and cardano-crypto
         # and place the result in jsbits/cardano-crypto.js
-        cardano-crypto-js = pkgs.runCommand "cardano-cypto-js" {} ''
+        jsbits = pkgs.runCommand "cardano-addresses-jsbits" {} ''
           script=$(mktemp -d)
           cp -r ${../jsbits/emscripten}/* $script
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite
@@ -113,23 +113,20 @@ let
               lib.makeBinPath (with pkgs.buildPackages.buildPackages;
                 [emscripten closurecompiler coreutils])
             }:$PATH ./build.sh)
+          mkdir -p $out
           cp $script/cardano-crypto.js $out
         '';
+        addJsbits = ''
+          mkdir -p jsbits
+          cp ${jsbits}/* jsbits
+        '';
+
       in lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
         packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
         packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
-        packages.cardano-addresses-jsbits.components.library.preConfigure = ''
-          mkdir -p jsbits
-          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
-        '';
-        packages.cardano-addresses.components.tests.unit.preConfigure = ''
-          mkdir -p jsbits
-          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
-        '';
-        packages.cardano-addresses-cli.components.exes.cardano-address.preConfigure = ''
-          mkdir -p jsbits
-          cp ${cardano-crypto-js} jsbits/cardano-crypto.js
-        '';
+        packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
+        packages.cardano-addresses.components.tests.unit.preConfigure = addJsbits;
+        packages.cardano-addresses-cli.components.exes.cardano-address.preConfigure = addJsbits;
 
         # Disable CLI running tests under ghcjs
         packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
