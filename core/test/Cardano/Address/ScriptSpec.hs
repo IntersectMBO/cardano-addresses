@@ -42,8 +42,8 @@ import Cardano.Address.Script
     , validateScript
     , validateScriptTemplate
     )
-import Cardano.Address.Style.Shelley
-    ( Shelley (..), deriveMultisigForPaymentPrivateKey, hashKey )
+import Cardano.Address.Style.Shared
+    ( Shared (..), deriveMultisigForPaymentPrivateKey, hashKey )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -89,7 +89,7 @@ spec = do
                    , "company", "walk", "dog" ]
     let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
     let sndFactor = mempty
-    let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
     let accXPrv = deriveAccountPrivateKey rootK minBound
 
     let index1 = minBound

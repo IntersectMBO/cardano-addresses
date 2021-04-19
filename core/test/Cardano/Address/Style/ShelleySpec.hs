@@ -53,10 +53,6 @@ import Cardano.Address.Style.Shelley
     , Shelley (..)
     , delegationAddress
     , deriveDelegationPrivateKey
-    , deriveMultisigForDelegationPrivateKey
-    , deriveMultisigForDelegationPublicKey
-    , deriveMultisigForPaymentPrivateKey
-    , deriveMultisigForPaymentPublicKey
     , liftXPub
     , mkNetworkDiscriminant
     , paymentAddress
@@ -84,6 +80,8 @@ import Data.Maybe
     ( fromMaybe, isNothing )
 import Data.Text
     ( Text )
+import GHC.Generics
+    ( Generic )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -116,8 +114,6 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Text.Lazy.IO as TL
-import GHC.Generics
-    ( Generic )
 
 spec :: Spec
 spec = do
@@ -126,10 +122,6 @@ spec = do
             property prop_accountKeyDerivation
         it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for any key" $
             property prop_publicChildKeyDerivation
-        it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for multisig for payment credential" $
-            property prop_publicMultisigForPaymentDerivation
-        it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i) for multisig for delegation credential" $
-            property prop_publicMultisigForDelegationDerivation
 
     describe "Role indices" $ do
         it "Calling indexFromWord32 for invalid value fails)" $
@@ -234,30 +226,6 @@ prop_publicChildKeyDerivation (mw, (SndFactor sndFactor)) cc ix =
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub1 = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
     addrXPub2 = deriveAddressPublicKey (toXPub <$> accXPrv) cc ix
-
-prop_publicMultisigForPaymentDerivation
-    :: (SomeMnemonic, SndFactor)
-    -> Index 'Soft 'PaymentK
-    -> Property
-prop_publicMultisigForPaymentDerivation (mw, (SndFactor sndFactor)) ix =
-    multisigXPub1 === multisigXPub2
-  where
-    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
-    multisigXPub1 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv ix
-    multisigXPub2 = deriveMultisigForPaymentPublicKey (toXPub <$> accXPrv) ix
-
-prop_publicMultisigForDelegationDerivation
-    :: (SomeMnemonic, SndFactor)
-    -> Index 'Soft 'PaymentK
-    -> Property
-prop_publicMultisigForDelegationDerivation (mw, (SndFactor sndFactor)) ix =
-    multisigXPub1 === multisigXPub2
-  where
-    rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    accXPrv  = deriveAccountPrivateKey rootXPrv minBound
-    multisigXPub1 = toXPub <$> deriveMultisigForDelegationPrivateKey accXPrv ix
-    multisigXPub2 = deriveMultisigForDelegationPublicKey (toXPub <$> accXPrv) ix
 
 prop_accountKeyDerivation
     :: (SomeMnemonic, SndFactor)
