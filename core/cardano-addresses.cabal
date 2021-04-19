@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 71ff25e7e71c101aee4c5118ce676d5ae452e15b6ea8ed35fc5235446d02f7a6
+-- hash: 11dd066f96bb160ea0e0895fbe57d33aeffa695cd8fc32808fa23aab2284d1ca
 
 name:           cardano-addresses
 version:        3.3.0
@@ -58,6 +58,7 @@ library
     , bech32-th
     , binary
     , bytestring
+    , cardano-addresses-jsbits
     , cardano-crypto
     , cborg
     , containers
@@ -73,15 +74,13 @@ library
     , unordered-containers
   if flag(release)
     ghc-options: -Werror
-  if impl(ghcjs) || os(ghcjs)
-    build-depends:
-        cardano-addresses-jsbits
   default-language: Haskell2010
 
 test-suite unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      AutoDiscover
       Cardano.Address.DerivationSpec
       Cardano.Address.Script.ParserSpec
       Cardano.Address.ScriptSpec
@@ -104,13 +103,14 @@ test-suite unit
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck
-    , aeson >=1.4.6.0 && <1.5.0.0
+    , aeson
     , aeson-pretty
     , base >=4.7 && <5
     , bech32
     , binary
     , bytestring
     , cardano-addresses
+    , cardano-addresses-jsbits
     , cardano-crypto
     , containers
     , hspec
@@ -120,8 +120,4 @@ test-suite unit
     , text
   if flag(release)
     ghc-options: -Werror
-  if impl(ghcjs) || os(ghcjs)
-    ghc-options: jsbits/cardano-crypto.js
-    js-sources:
-        jsbits/cardano-crypto.js
   default-language: Haskell2010

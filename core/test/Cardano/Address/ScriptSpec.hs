@@ -59,7 +59,7 @@ import Data.Text
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec, describe, it, shouldBe )
+    ( Spec, describe, it, shouldBe, shouldStartWith, expectationFailure )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
@@ -545,9 +545,11 @@ spec = do
                 `shouldBe` Left err
 
         it "Invalid JSON" $ do
-            let err = "Error in $: Failed reading: not a valid json value at ''';[]['"
-            Json.eitherDecode @(Script KeyHash) "'';[]["
-                `shouldBe` Left err
+            let err = "Error in $: Failed reading: not a valid json value"
+            case Json.eitherDecode @(Script KeyHash) "'';[][" of
+                Right _ -> expectationFailure "Parsed invalid json?"
+                Left msg -> msg `shouldStartWith` err
+
   where
     toHexText = T.decodeUtf8 . encode EBase16
     toHexText' (ScriptHash bytes) = toHexText bytes

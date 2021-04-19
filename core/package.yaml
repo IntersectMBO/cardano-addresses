@@ -83,7 +83,7 @@ tests:
     build-tools:
     - hspec-discover
     dependencies:
-    - aeson >= 1.4.6.0 && < 1.5.0.0
+    - aeson
     - bech32
     - binary
     - bytestring
