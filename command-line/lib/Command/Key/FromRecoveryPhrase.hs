@@ -22,7 +22,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
-    ( Style, generateRootKey, styleArg )
+    ( Style (..), generateRootKey, styleArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -54,4 +54,8 @@ run :: Cmd -> IO ()
 run FromRecoveryPhrase{style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
-    hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.root_xsk)
+    case style of
+        Shared ->
+            hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.shared_root_xsk)
+        _ ->
+            hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.root_xsk)
