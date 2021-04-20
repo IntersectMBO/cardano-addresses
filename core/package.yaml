@@ -30,9 +30,6 @@ library:
   - condition: flag(release)
     ghc-options:
     - -Werror
-  - condition: impl(ghcjs) || os(ghcjs)
-    dependencies:
-    - cardano-addresses-jsbits
   default-extensions:
   - NoImplicitPrelude
   dependencies:
@@ -43,6 +40,7 @@ library:
   - bech32-th
   - binary
   - bytestring
+  - cardano-addresses-jsbits
   - cardano-crypto
   - cborg
   - containers
@@ -74,10 +72,6 @@ tests:
     - condition: flag(release)
       ghc-options:
       - -Werror
-    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
-    - condition: impl(ghcjs) || os(ghcjs)
-      dependencies:
-      - cardano-addresses-jsbits
     build-tools:
     - hspec-discover
     dependencies:
@@ -86,6 +80,7 @@ tests:
     - binary
     - bytestring
     - cardano-addresses
+    - cardano-addresses-jsbits
     - cardano-crypto
     - containers
     - hspec

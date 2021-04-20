@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ef936a22370df164e58c37817c4a06f7d69eb530fb060bcc4cdc919b95dbac69
+-- hash: f9dae3519ee875de20289c2073fb6bb3f7cd290369f08095b90b3c4a976e4edf
 
 name:           cardano-addresses-cli
 version:        3.3.0
@@ -101,13 +101,11 @@ executable cardano-address
   build-depends:
       base >=4.7 && <5
     , cardano-addresses-cli
-  if flag(release)
+    , cardano-addresses-jsbits
+  if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
     cc-options: -static
     ld-options: -static -pthread
-  if impl(ghcjs) || os(ghcjs)
-    build-depends:
-        cardano-addresses-jsbits
   default-language: Haskell2010
 
 test-suite unit
@@ -156,6 +154,7 @@ test-suite unit
     , bytestring
     , cardano-addresses
     , cardano-addresses-cli
+    , cardano-addresses-jsbits
     , containers
     , hspec
     , process
@@ -164,9 +163,6 @@ test-suite unit
     , text
   if flag(release)
     ghc-options: -Werror
-  if impl(ghcjs) || os(ghcjs)
-    build-depends:
-        cardano-addresses-jsbits
   if !(impl(ghcjs) || os(ghcjs))
     cpp-options: -DHJSONSCHEMA
     build-depends:

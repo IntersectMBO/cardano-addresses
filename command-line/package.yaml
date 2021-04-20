@@ -66,18 +66,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - cardano-addresses-cli
+    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
+    - cardano-addresses-jsbits
     when:
-    - condition: flag(release)
+    - condition: 'flag(release) && !impl(ghcjs) && !os(ghcjs)'
       ghc-options:
       - -Werror
       - -static
       - -O2
       cc-options: -static
       ld-options: -static -pthread
-    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
-    - condition: impl(ghcjs) || os(ghcjs)
-      dependencies:
-      - cardano-addresses-jsbits
 
 tests:
   unit:
@@ -96,9 +94,6 @@ tests:
     - condition: flag(release)
       ghc-options:
       - -Werror
-    - condition: impl(ghcjs) || os(ghcjs)
-      dependencies:
-      - cardano-addresses-jsbits
     - condition: '!(impl(ghcjs) || os(ghcjs))'
       cpp-options: -DHJSONSCHEMA
       dependencies:
@@ -113,6 +108,7 @@ tests:
     - bytestring
     - cardano-addresses
     - cardano-addresses-cli
+    - cardano-addresses-jsbits
     - containers
     - hspec
     - process
