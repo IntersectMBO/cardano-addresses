@@ -31,8 +31,6 @@ let
     # Constraints not in `cabal.project.freeze for cross platform support
     cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
       constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
-    '' + lib.optionalString pkgs.stdenv.hostPlatform.isGhcjs ''
-      packages: jsbits/
     '';
 
     inherit src configureArgs;
