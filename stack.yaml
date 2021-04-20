@@ -3,6 +3,7 @@ resolver: lts-14.25
 packages:
 - core
 - command-line
+- jsbits
 
 extra-deps:
 - base58-bytestring-0.1.0
