@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Main where
@@ -9,5 +10,15 @@ import Command
 
 import qualified Command as CLI
 
+#ifdef ghcjs_HOST_OS
+import qualified Cardano.Address.Jsbits as Jsbits
+    ( addJsbitsDependency )
+#endif
+
 main :: IO ()
-main = withUtf8Encoding (CLI.setup >> CLI.parse >>= CLI.run)
+main =
+#ifdef ghcjs_HOST_OS
+  do
+    Jsbits.addJsbitsDependency
+#endif
+    withUtf8Encoding (CLI.setup >> CLI.parse >>= CLI.run)

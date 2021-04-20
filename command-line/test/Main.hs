@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Main where
 
 import Prelude
@@ -9,5 +11,15 @@ import Test.Hspec.Runner
 
 import qualified AutoDiscover
 
+#ifdef ghcjs_HOST_OS
+import qualified Cardano.Address.Jsbits as Jsbits
+    ( addJsbitsDependency )
+#endif
+
 main :: IO ()
-main = withUtf8Encoding $ hspecWith defaultConfig AutoDiscover.spec
+main =
+#ifdef ghcjs_HOST_OS
+  do
+    Jsbits.addJsbitsDependency
+#endif
+    withUtf8Encoding $ hspecWith defaultConfig AutoDiscover.spec
