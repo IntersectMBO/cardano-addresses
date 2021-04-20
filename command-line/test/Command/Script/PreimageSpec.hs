@@ -60,14 +60,6 @@ spec = do
             "008200581caf1c4aa560f374e106d458c78a0fe08428a5803105860b1697ca3f0a"
             [iii|#{verKeyH4}|]
 
-        specScriptPreimageProper
-            "008200581caf1c4aa560f374e106d458c78a0fe08428a5803105860b1697ca3f0a"
-            [iii|#{verKey4}|]
-
-        specScriptPreimageProper
-            "008200581caf1c4aa560f374e106d458c78a0fe08428a5803105860b1697ca3f0a"
-            [iii|#{verExtKey4}|]
-
         specScriptInvalid Malformed
             [iii|wrong [ #{verKeyH1} ]|]
 
@@ -134,12 +126,6 @@ verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 
 verKeyH3 :: String
 verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
-
-verExtKey4 :: String
-verExtKey4 = "script_xvk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23nlvugj5ez9qfxxvkmjwnpn69s48cv572phfy6qpmnwat0hwcdrasapqewe"
-
-verKey4 :: String
-verKey4 = "script_vk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23skqaly0"
 
 verKeyH4 :: String
 verKeyH4 = "script_vkh14uwy4ftq7d6wzpk5trrc5rlqss52tqp3qkrqk95hegls54e0sga"

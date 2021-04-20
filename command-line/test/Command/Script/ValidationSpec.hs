@@ -25,7 +25,7 @@ spec :: Spec
 spec = do
     describeCmd [ "script", "validate"] $ do
         specScriptValidated RequiredValidation
-            [iii|#{verKey4}|]
+            [iii|#{verKeyH1}|]
 
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
@@ -99,6 +99,3 @@ verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 
 verKeyH3 :: String
 verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
-
-verKey4 :: String
-verKey4 = "script_vk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23skqaly0"
