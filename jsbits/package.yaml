@@ -13,9 +13,6 @@ description: |
   Javascript wrappers and Emscripten builds of the cryptonite C
   sources.
 
-verbatim:
-  cabal-version: 3.0
-
 dependencies:
 - base >= 4.7 && < 5
 
