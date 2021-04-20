@@ -84,6 +84,9 @@ run Child{path} = do
         [ CIP5.root_xsk
         , CIP5.acct_xsk
         , CIP5.acct_xvk
+        , CIP5.shared_root_xsk
+        , CIP5.shared_acct_xsk
+        , CIP5.shared_acct_xvk
         ]
 
     -- As a reminder, we really have two scenarios:
@@ -98,8 +101,8 @@ run Child{path} = do
     --     m / purpose' / coin_type' / account' / role / index
     --
     -- We do not allow derivations to anywhere in the path to avoid people
-    -- shooting themselves in the foot. Hence We only allow the following
-    -- transformations:
+    -- shooting themselves in the foot. purpose' = 1852H.
+    -- Hence We only allow the following transformations:
     --
     -- root_xsk => addr_xsk: (legacy)
     --     m => m / rnd_account' / rnd_address
@@ -116,39 +119,54 @@ run Child{path} = do
     -- acct_xvk => addr_xvk: (soft derivation from account to address)
     --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
     --
+    --
+    -- Shared:
+    --
+    --     m / purpose' / coin_type' / account' / role / index
+    --
+    -- We do not allow derivations to anywhere in the path to avoid people
+    -- shooting themselves in the foot. purpose' = 1854H.
+    -- Hence We only allow the following transformations:
+    --
+    -- shared_root_xsk => shared_acct_xsk: (hard derivation from root to account)
+    --     m => m / purpose' / coin_type' / account'
+    --
+    -- shared_root_xsk => shared_acct_xsk: (hard derivation from root to address)
+    --     m => m / purpose' / coin_type' / account' / role / index
+    --
+    -- shared_acct_xsk => shared_addr_xsk: (hard derivation from account to address)
+    --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
+    --
+    -- shared_acct_xvk => shared_addr_xvk: (soft derivation from account to address)
+    --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
+    --
+    --
     -- There's no use-case at the moment for accessing intermediate paths such
     -- as m / purpose' or m / purpose' / coin_type' so we do not expose them.
     childHrpFor [_,_,_,2,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.stake_xsk
-
-    childHrpFor [_,_,_,3,_] hrp
-        | hrp == CIP5.root_xsk = pure CIP5.script_xsk
-
-    childHrpFor [_,_,_,4,_] hrp
-        | hrp == CIP5.root_xsk = pure CIP5.script_xsk
+        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_stake_xsk
 
     childHrpFor [_,_,_,_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
+        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_addr_xsk
 
     childHrpFor [_,_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.acct_xsk
+        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_acct_xsk
 
     childHrpFor [2,_] hrp
         | hrp == CIP5.acct_xsk = pure CIP5.stake_xsk
         | hrp == CIP5.acct_xvk = pure CIP5.stake_xvk
-
-    childHrpFor [3,_] hrp
-        | hrp == CIP5.acct_xsk = pure CIP5.script_xsk
-        | hrp == CIP5.acct_xvk = pure CIP5.script_xvk
-
-    childHrpFor [4,_] hrp
-        | hrp == CIP5.acct_xsk = pure CIP5.script_xsk
-        | hrp == CIP5.acct_xvk = pure CIP5.script_xvk
+        | hrp == CIP5.shared_acct_xsk = pure CIP5.shared_stake_xsk
+        | hrp == CIP5.shared_acct_xvk = pure CIP5.shared_stake_xvk
 
     childHrpFor [_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.acct_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.acct_xvk = pure CIP5.addr_xvk
+        | hrp == CIP5.shared_acct_xsk = pure CIP5.shared_addr_xsk
+        | hrp == CIP5.shared_acct_xvk = pure CIP5.shared_addr_xvk
 
     childHrpFor _ hrp
         | hrp == CIP5.root_xsk = fail
@@ -157,6 +175,12 @@ run Child{path} = do
             \address) if you intend to derive a legacy Byron key. Provide 3 or 5 \
             \(purpose, coin_type, account, role, index) if you're dealing with \
             \anything else."
+
+        | hrp == CIP5.shared_root_xsk = fail
+            "When deriving child keys from a parent root key, you must \
+            \provide either 3 or 5 path segments. Provide 3 \
+            \(purpose, coin_type, account) or 5 \
+            \(purpose, coin_type, account, role, index)."
 
         | otherwise = fail
             "When deriving child keys from a parent account key, you must \

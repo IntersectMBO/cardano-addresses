@@ -69,10 +69,16 @@ stake_xvk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7h9z4smmeqsvs67qhyqm
 
 <details>
   <summary>How to generate a script verification key (<strong>script.xvk</strong>)</summary>
-
+Please take notice that `1854H` purpose is used for multisig.
+For payment multisig keys role=0 is used
 ```console
-$ cardano-address key child 1852H/1815H/0H/3/0 < root.xsk | cardano-address key public --with-chain-code > script.xvk
-script_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qj75eg0
+$ cardano-address key child 1854H/1815H/0H/0/0 < root.xsk | cardano-address key public --without-chain-code > script.vk
+script_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qj75eg0
+```
+For delegation multisig keys role=2 is used
+```console
+$ cardano-address key child 1854H/1815H/0H/2/0 < root.xsk | cardano-address key public --without-chain-code > script.vk
+script_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qj75eg0
 ```
 
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.

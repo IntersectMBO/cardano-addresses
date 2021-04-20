@@ -54,12 +54,14 @@ run Hash = do
         , CIP5.addr_xvk
         , CIP5.stake_vk
         , CIP5.stake_xvk
-        , CIP5.script_vk
-        , CIP5.script_xvk
+        , CIP5.shared_addr_vk
+        , CIP5.shared_addr_xvk
+        , CIP5.shared_stake_vk
+        , CIP5.shared_stake_xvk
         ]
 
     guardBytes hrp bytes
-        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.script_xvk] = do
+        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.shared_addr_xvk, CIP5.shared_stake_xvk] = do
             when (BS.length bytes /= 64) $
                 fail "data should be a 32-byte public key with a 32-byte chain-code appended"
 
@@ -68,13 +70,16 @@ run Hash = do
                 fail "data should be a 32-byte public key."
 
     prefixFor hrp
-        | hrp == CIP5.addr_vk    = CIP5.addr_vkh
-        | hrp == CIP5.addr_xvk   = CIP5.addr_vkh
+        | hrp == CIP5.addr_vk          = CIP5.addr_vkh
+        | hrp == CIP5.addr_xvk         = CIP5.addr_vkh
 
-        | hrp == CIP5.stake_vk   = CIP5.stake_vkh
-        | hrp == CIP5.stake_xvk  = CIP5.stake_vkh
+        | hrp == CIP5.stake_vk         = CIP5.stake_vkh
+        | hrp == CIP5.stake_xvk        = CIP5.stake_vkh
 
-        | hrp == CIP5.script_vk  = CIP5.script_vkh
-        | hrp == CIP5.script_xvk = CIP5.script_vkh
+        | hrp == CIP5.shared_addr_vk   = CIP5.script_vkh
+        | hrp == CIP5.shared_addr_xvk  = CIP5.script_vkh
+
+        | hrp == CIP5.shared_stake_vk  = CIP5.script_vkh
+        | hrp == CIP5.shared_stake_xvk = CIP5.script_vkh
 
         | otherwise = error "impossible: pattern-match not coverage all cases."

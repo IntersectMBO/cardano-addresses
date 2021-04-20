@@ -233,8 +233,9 @@ keyHashToText (KeyHash keyHash) =
     T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
--- Bech32 encoded text with `script_vkh`, `script_vk` or `script_xvk` hrp are
--- expected. Raw keys will be hashed on the fly, whereas hash that are directly
+-- Bech32 encoded text with `script_vkh`, `shared_addr_vk`, `shared_stake_vk`,
+-- `shared_addr_xvk` or `shared_stake_xvk` hrp are expected.
+-- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 --
 -- @since 3.1.0
@@ -251,8 +252,10 @@ keyHashFromText txt = do
  where
     convertBytes hrp bytes
         | hrp == CIP5.script_vkh = Right bytes
-        | hrp == CIP5.script_vk  = Right $ hashCredential bytes
-        | hrp == CIP5.script_xvk = Right $ hashCredential $ BS.take 32 bytes
+        | hrp == CIP5.shared_addr_vk  = Right $ hashCredential bytes
+        | hrp == CIP5.shared_addr_xvk = Right $ hashCredential $ BS.take 32 bytes
+        | hrp == CIP5.shared_stake_vk  = Right $ hashCredential bytes
+        | hrp == CIP5.shared_stake_xvk = Right $ hashCredential $ BS.take 32 bytes
         | otherwise = Left ErrKeyHashFromTextWrongHrp
 
 -- Validation level. Required level does basic check that will make sure the script
