@@ -108,6 +108,9 @@ spec = do
     let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index4
     let verKeyHash4 = RequireSignatureOf $ hashKey Payment multisigXPub4
 
+    let multisigXPub5 = toXPub <$> Shared.deriveDelegationPrivateKey accXPrv index4
+    let verKeyHash5 = RequireSignatureOf $ hashKey Delegation multisigXPub5
+
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
                 (toHexText (serializeScript script)) `shouldBe` cbor
@@ -343,6 +346,13 @@ spec = do
                         ]
                     ]
             validateScript RecommendedValidation script `shouldBe` Right ()
+
+        it "not uniform prefixes in script" $ do
+            let script = RequireAllOf
+                    [ RequireAnyOf
+                      [ verKeyHash1, verKeyHash5 ]
+                    ]
+            validateScript RequiredValidation script `shouldBe` (Left NotUniformKeyType)
 
     describe "validateScriptTemplate - errors" $ do
         let accXpub0 =

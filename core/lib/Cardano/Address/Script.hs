@@ -343,6 +343,9 @@ validateScript level script = do
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
 
+    when (L.length (L.nub $ map credential allSigs) > 1) $
+        Left NotUniformKeyType
+
     requiredValidation script
 
     when (level == RecommendedValidation) $
@@ -470,6 +473,7 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
 data ErrValidateScript
     = LedgerIncompatible
     | WrongKeyHash
+    | NotUniformKeyType
     | Malformed
     | NotRecommended ErrRecommendedValidateScript
     deriving (Eq, Show)
@@ -509,6 +513,8 @@ prettyErrValidateScript = \case
     WrongKeyHash ->
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
+    NotUniformKeyType ->
+        "All key hashes should have either 'addr_shared_vkh' or 'stake_shared_vhk' prefixes."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \
