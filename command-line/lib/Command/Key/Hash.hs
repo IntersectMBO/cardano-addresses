@@ -49,16 +49,19 @@ run Hash = do
     guardBytes hrp bytes
     hPutBytes stdout (hashCredential $ BS.take 32 bytes) (EBech32 $ prefixFor hrp)
   where
-    allowedPrefixes =
-        [ CIP5.addr_vk
-        , CIP5.addr_xvk
-        , CIP5.stake_vk
-        , CIP5.stake_xvk
-        , CIP5.shared_addr_vk
-        , CIP5.shared_addr_xvk
-        , CIP5.shared_stake_vk
-        , CIP5.shared_stake_xvk
+    -- Mapping of input HRP to output HRP
+    prefixes =
+        [ ( CIP5.addr_vk         , CIP5.addr_vkh   )
+        , ( CIP5.addr_xvk        , CIP5.addr_vkh   )
+        , ( CIP5.stake_vk        , CIP5.stake_vkh  )
+        , ( CIP5.stake_xvk       , CIP5.stake_vkh  )
+        , ( CIP5.shared_addr_vk  , CIP5.script_vkh )
+        , ( CIP5.shared_addr_xvk , CIP5.script_vkh )
+        , ( CIP5.shared_stake_vk , CIP5.script_vkh )
+        , ( CIP5.shared_stake_xvk, CIP5.script_vkh )
         ]
+    allowedPrefixes = map fst prefixes
+    prefixFor = fromJust . flip lookup prefixes
 
     guardBytes hrp bytes
         | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.shared_addr_xvk, CIP5.shared_stake_xvk] = do
@@ -68,18 +71,3 @@ run Hash = do
         | otherwise = do
             when (BS.length bytes /= 32) $
                 fail "data should be a 32-byte public key."
-
-    prefixFor hrp
-        | hrp == CIP5.addr_vk          = CIP5.addr_vkh
-        | hrp == CIP5.addr_xvk         = CIP5.addr_vkh
-
-        | hrp == CIP5.stake_vk         = CIP5.stake_vkh
-        | hrp == CIP5.stake_xvk        = CIP5.stake_vkh
-
-        | hrp == CIP5.shared_addr_vk   = CIP5.script_vkh
-        | hrp == CIP5.shared_addr_xvk  = CIP5.script_vkh
-
-        | hrp == CIP5.shared_stake_vk  = CIP5.script_vkh
-        | hrp == CIP5.shared_stake_xvk = CIP5.script_vkh
-
-        | otherwise = error "impossible: pattern-match not coverage all cases."
