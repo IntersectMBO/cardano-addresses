@@ -14,14 +14,11 @@
 let
 
   src = haskell-nix.haskellLib.cleanGit {
-      name = "cardano-addresses-src";
-      src = ../.;
+    name = "cardano-addresses-src";
+    src = ../.;
   };
 
-  # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
-  # not build for windows on a per package bases (rather than using --disable-tests).
-  # configureArgs = lib.optionalString stdenv.targetPlatform.isWindows "--disable-tests";
-  configureArgs = "";
+  isCrossBuild = pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform;
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
@@ -33,7 +30,7 @@ let
       constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
     '';
 
-    inherit src configureArgs;
+    inherit src;
     compiler-nix-name = compiler;
     modules = [
       # Allow reinstallation of Win32
@@ -71,21 +68,26 @@ let
         ];
       })
 
-      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
-        # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
+      # Build fixes for Hackage dependencies.
+      {
+        # Needed for linking of the musl static build.
+        packages.pcre-light.flags.use-pkg-config = true;
+        packages.cardano-addresses-cli.components.tests.unit.configureFlags =
+          lib.mkIf stdenv.hostPlatform.isMusl
+            [ "--ghc-option=-optl=-L${pkgs.pcre}/lib" ];
+      }
+
+      (lib.mkIf isCrossBuild {
+        # Remove hsc2hs build-tool dependencies (suitable version will
+        # be available as part of the ghc derivation)
         packages.Win32.components.library.build-tools = lib.mkForce [];
         packages.terminal-size.components.library.build-tools = lib.mkForce [];
         packages.network.components.library.build-tools = lib.mkForce [];
-      })
 
-      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
         # Make sure we use a buildPackages version of happy
-        packages.pretty-show.components.library.build-tools = [ buildPackages.haskell-nix.haskellPackages.happy ];
-
-        # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
-        packages.Win32.components.library.build-tools = lib.mkForce [];
-        packages.terminal-size.components.library.build-tools = lib.mkForce [];
-        packages.network.components.library.build-tools = lib.mkForce [];
+        packages.pretty-show.components.library.build-tools = [
+          buildPackages.haskell-nix.haskellPackages.happy
+        ];
 
         # Disable cabal-doctest tests by turning off custom setups
         packages.comonad.package.buildType = lib.mkForce "Simple";
