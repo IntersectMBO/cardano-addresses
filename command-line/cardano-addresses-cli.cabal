@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d241faede133eea9ac4907217831be611a911806be1272258d6172813a91d647
+-- hash: f9dae3519ee875de20289c2073fb6bb3f7cd290369f08095b90b3c4a976e4edf
 
 name:           cardano-addresses-cli
 version:        3.3.0
@@ -15,9 +15,8 @@ homepage:       https://github.com/input-output-hk/cardano-addresses#readme
 bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
-copyright:      2020 IOHK
+copyright:      2021 IOHK
 license:        Apache-2.0
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     ./schemas/address-inspect.json
@@ -102,7 +101,8 @@ executable cardano-address
   build-depends:
       base >=4.7 && <5
     , cardano-addresses-cli
-  if flag(release)
+    , cardano-addresses-jsbits
+  if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
     cc-options: -static
     ld-options: -static -pthread
@@ -154,6 +154,7 @@ test-suite unit
     , bytestring
     , cardano-addresses
     , cardano-addresses-cli
+    , cardano-addresses-jsbits
     , containers
     , hspec
     , process

@@ -26,6 +26,11 @@ stack.yaml.lock
 *.tix
 hie.yaml
 
+# ghcjs
+/jsbits/jsbits
+/core/jsbits
+/command-line/jsbits
+
 # hspec-golden generated files
 core/test/golden/*/actual
 

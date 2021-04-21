@@ -4,7 +4,7 @@ github:              input-output-hk/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
-copyright:           2020 IOHK
+copyright:           2021 IOHK
 synopsis:            Library utilities for mnemonic generation and address derivation.
 category:            Cardano
 
@@ -30,9 +30,6 @@ library:
   - condition: flag(release)
     ghc-options:
     - -Werror
-  - condition: impl(ghcjs) || os(ghcjs)
-    ghc-options:
-      - jsbits/cardano-crypto.js
   default-extensions:
   - NoImplicitPrelude
   dependencies:
@@ -43,6 +40,7 @@ library:
   - bech32-th
   - binary
   - bytestring
+  - cardano-addresses-jsbits
   - cardano-crypto
   - cborg
   - containers
@@ -77,11 +75,12 @@ tests:
     build-tools:
     - hspec-discover
     dependencies:
-    - aeson >= 1.4.6.0 && < 1.5.0.0
+    - aeson
     - bech32
     - binary
     - bytestring
     - cardano-addresses
+    - cardano-addresses-jsbits
     - cardano-crypto
     - containers
     - hspec

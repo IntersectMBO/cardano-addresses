@@ -2,6 +2,8 @@ module Main where
 
 import Prelude
 
+import Cardano.Address.Jsbits
+    ( addJsbitsDependency )
 import Command
     ( withUtf8Encoding )
 import Test.Hspec.Runner
@@ -9,5 +11,8 @@ import Test.Hspec.Runner
 
 import qualified AutoDiscover
 
+
 main :: IO ()
-main = withUtf8Encoding $ hspecWith defaultConfig AutoDiscover.spec
+main = do
+    addJsbitsDependency
+    withUtf8Encoding $ hspecWith defaultConfig AutoDiscover.spec

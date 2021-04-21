@@ -1,5 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -67,8 +68,10 @@ import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
+import Control.Monad
+    ( (<=<) )
 import Data.Aeson
-    ( ToJSON (toJSON), Value, defaultOptions, genericToJSON )
+    ( ToJSON, Value (..) )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
@@ -78,7 +81,7 @@ import Data.Either
 import Data.Function
     ( (&) )
 import Data.Maybe
-    ( fromJust, fromMaybe, isNothing )
+    ( fromMaybe, isNothing )
 import Data.Text
     ( Text )
 import Test.Arbitrary
@@ -478,7 +481,7 @@ data InspectVector a = InspectVector
     , pointerAddr0Slot1 :: [a]
     , pointerAddr0Slot2 :: [a]
     } deriving (Generic, Show, Functor)
-
+    deriving anyclass ToJSON
 
 testVectors :: [Text] -> SpecWith ()
 testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
@@ -532,8 +535,8 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
         goldenTextLazy ("addresses_" <> T.intercalate "_" mnemonic)
             (pShowOpt defaultOutputOptionsNoColor vec)
     it "should inspect correctly" $ do
-        goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic)
-            (Aeson.encodePretty $ genericToJSON defaultOptions $ toInspect <$> inspectVec)
+        goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic) $
+            goldenEncodeJSON $ toInspect <$> inspectVec
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
@@ -542,8 +545,13 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     getDelegationAddr addrKPrv stakeKPub net =
         bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
     toInspect :: Text -> Value
-    toInspect a = fromMaybe (toJSON ("couldn't inspect" :: Text)) $
-        Shelley.inspectAddress Nothing (fromJust $ fromBech32 a)
+    toInspect = fromMaybe (String "couldn't inspect") .
+        (Shelley.inspectAddress Nothing <=< fromBech32)
+
+goldenEncodeJSON :: ToJSON a => a -> BL.ByteString
+goldenEncodeJSON = Aeson.encodePretty' cfg
+  where
+    cfg = Aeson.defConfig { Aeson.confCompare = compare }
 
 prop_roundtripTextEncoding
     :: (Address -> Text)

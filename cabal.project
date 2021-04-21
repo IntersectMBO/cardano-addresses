@@ -4,7 +4,18 @@ index-state: 2021-03-23T15:14:00Z
 -- does not yet support 8.10.4.
 with-compiler: ghc-8.6.5
 
-packages: */*.cabal
+packages:
+  command-line/cardano-addresses-cli.cabal
+  core/cardano-addresses.cabal
+  jsbits/cardano-addresses-jsbits.cabal
+
+-- Needed for ghcjs
+-- See https://github.com/haskell-crypto/cryptonite/pull/345
+source-repository-package
+    type: git
+    location: https://github.com/haskell-crypto/cryptonite.git
+    tag: cf89276b5cdd87fcd60cce2fb424e64f0de7016a
+    --sha256: 1j25zzdq4hiqlqwxg998hd985d4h8h27h3vkyaaz9wid2gbmfpih
 
 source-repository-package
     type: git

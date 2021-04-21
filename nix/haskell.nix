@@ -14,31 +14,23 @@
 let
 
   src = haskell-nix.haskellLib.cleanGit {
-      name = "cardano-addresses-src";
-      src = ../.;
+    name = "cardano-addresses-src";
+    src = ../.;
   };
 
-  # Constraints not in `cabal.project.freeze for cross platform support
-  cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
-    constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
-  '';
-
-  # TODO add flags to packages (like cs-ledger) so we can turn off tests that will
-  # not build for windows on a per package bases (rather than using --disable-tests).
-  # configureArgs = lib.optionalString stdenv.targetPlatform.isWindows "--disable-tests";
-  configureArgs = "";
-
-  # Arguments used as inputs for `cabal configure` (like `configureArgs` and `cabalProjectLocal`)
-  # should be passed to this `cabalProject` call as well or `cabal configure` will have to run twice.
-  projectPackages = lib.attrNames (haskell-nix.haskellLib.selectProjectPackages
-    (haskell-nix.cabalProject { inherit src cabalProjectLocal configureArgs; compiler-nix-name = compiler; }));
+  isCrossBuild = pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform;
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
-  pkgSet = haskell-nix.cabalProject  ({
+  pkgSet = haskell-nix.cabalProject ({ pkgs, ... }: {
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
-    inherit src cabalProjectLocal configureArgs;
+    # Constraints not in `cabal.project.freeze for cross platform support
+    cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
+      constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
+    '';
+
+    inherit src;
     compiler-nix-name = compiler;
     modules = [
       # Allow reinstallation of Win32
@@ -76,21 +68,26 @@ let
         ];
       })
 
-      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
-        # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
+      # Build fixes for Hackage dependencies.
+      {
+        # Needed for linking of the musl static build.
+        packages.pcre-light.flags.use-pkg-config = true;
+        packages.cardano-addresses-cli.components.tests.unit.configureFlags =
+          lib.mkIf stdenv.hostPlatform.isMusl
+            [ "--ghc-option=-optl=-L${pkgs.pcre}/lib" ];
+      }
+
+      (lib.mkIf isCrossBuild {
+        # Remove hsc2hs build-tool dependencies (suitable version will
+        # be available as part of the ghc derivation)
         packages.Win32.components.library.build-tools = lib.mkForce [];
         packages.terminal-size.components.library.build-tools = lib.mkForce [];
         packages.network.components.library.build-tools = lib.mkForce [];
-      })
 
-      ({ pkgs, ... }: lib.mkIf (pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform) {
         # Make sure we use a buildPackages version of happy
-        packages.pretty-show.components.library.build-tools = [ buildPackages.haskell-nix.haskellPackages.happy ];
-
-        # Remove hsc2hs build-tool dependencies (suitable version will be available as part of the ghc derivation)
-        packages.Win32.components.library.build-tools = lib.mkForce [];
-        packages.terminal-size.components.library.build-tools = lib.mkForce [];
-        packages.network.components.library.build-tools = lib.mkForce [];
+        packages.pretty-show.components.library.build-tools = [
+          buildPackages.haskell-nix.haskellPackages.happy
+        ];
 
         # Disable cabal-doctest tests by turning off custom setups
         packages.comonad.package.buildType = lib.mkForce "Simple";
@@ -100,21 +97,34 @@ let
         packages.semigroupoids.package.buildType = lib.mkForce "Simple";
       })
 
-      ({pkgs, config, ... }: lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
-        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
-        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+      ({pkgs, config, ... }:
+      let
         # Run the script to build the C sources from cryptonite and cardano-crypto
         # and place the result in jsbits/cardano-crypto.js
-        packages.cardano-addresses.components.library.preConfigure = ''
+        jsbits = pkgs.runCommand "cardano-addresses-jsbits" {} ''
           script=$(mktemp -d)
-          cp -r ${../ghcjs}/* $script
+          cp -r ${../jsbits/emscripten}/* $script
           ln -s ${pkgs.srcOnly {name = "cryptonite-src"; src = config.packages.cryptonite.src;}}/cbits $script/cryptonite
           ln -s ${pkgs.srcOnly {name = "cardano-crypto-src"; src = config.packages.cardano-crypto.src;}}/cbits $script/cardano-crypto
           patchShebangs $script/build.sh
-          (cd $script && PATH=${pkgs.buildPackages.emscripten}/bin:${pkgs.buildPackages.buildPackages.closurecompiler}/bin:$PATH ./build.sh)
-          mkdir -p jsbits
-          cp $script/cardano-crypto.js jsbits/cardano-crypto.js
+          (cd $script && PATH=${
+              # The extra buildPackages here is for closurecompiler.
+              # Without it we get `unknown emulation for platform: js-unknown-ghcjs` errors.
+              lib.makeBinPath (with pkgs.buildPackages.buildPackages;
+                [emscripten closurecompiler coreutils])
+            }:$PATH ./build.sh)
+          mkdir -p $out
+          cp $script/cardano-crypto.js $out
         '';
+        addJsbits = ''
+          mkdir -p jsbits
+          cp ${jsbits}/* jsbits
+        '';
+
+      in lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+        packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
 
         # Disable CLI running tests under ghcjs
         packages.cardano-addresses-cli.components.tests.unit.preCheck = ''

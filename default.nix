@@ -14,21 +14,33 @@
 , pkgs ? import ./nix { inherit system crossSystem config sourcesOverride; }
 , gitrev ? pkgs.iohkNix.commitIdFromGitRepoOrZero ./.git
 }:
-with pkgs; with commonLib;
 let
+  inherit (pkgs.haskell-nix.haskellLib)
+    selectProjectPackages
+    collectComponents'
+    collectChecks';
 
-  haskellPackages = recRecurseIntoAttrs
+  haskellPackages = pkgs.lib.dontRecurseIntoAttrs
     # the Haskell.nix package set, reduced to local packages.
-    (selectProjectPackages cardanoAddressesHaskellPackages);
+    (selectProjectPackages pkgs.cardanoAddressesHaskellPackages);
 
   self = {
-    inherit haskellPackages;
+    inherit haskellPackages pkgs;
     inherit (haskellPackages.cardano-addresses-cli.components.exes) cardano-address;
+    inherit (haskellPackages.cardano-addresses.components) library;
 
-    exes = collectComponents' "exes" haskellPackages;
-    # tests are the built test suites.
+    # The built (but not executed) test suites.
     tests = collectComponents' "tests" haskellPackages;
-    # checks are the results of executing the tests.
-    checks = collectChecks haskellPackages;
+    # The results of executing the tests.
+    checks = collectChecks' haskellPackages;
+
+    # Development environment with bonus ghcjs cross-compiler.
+    shell = pkgs.cardanoAddressesHaskellPackages.shellFor {
+      crossPlatforms = p: [ p.ghcjs ];
+      tools.cabal = {};
+      tools.hpack = {};
+      buildInputs = [ pkgs.nodejs ];
+      packages = ps: [ ps.cardano-addresses ps.cardano-addresses-cli ];
+    };
   };
 in self

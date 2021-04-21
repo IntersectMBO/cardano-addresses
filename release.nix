@@ -71,24 +71,22 @@ let
   inherit (systems.examples) mingwW64 musl64 ghcjs;
 
   jobs = {
-    native = mapTestOn (__trace (__toJSON (packagePlatforms project)) (packagePlatforms project));
+    native = mapTestOn (recursiveUpdate (packagePlatforms project) { checks = []; });
     "${mingwW64.config}" = recursiveUpdate (mapTestOnCross mingwW64 (packagePlatformsCross (filterJobsCross project))) disabledMingwW64Tests;
     musl64 = mapTestOnCross musl64 (packagePlatformsCross (filterJobsCross project));
     ghcjs = mapTestOnCross ghcjs (packagePlatformsCross (filterJobsCross project));
   } // (mkRequiredJob (concatLists [
-    (collectJobs jobs."${mingwW64.config}".checks.tests)
-    #(collectJobs jobs.native.checks)
-    #(collectJobs jobs.native.benchmarks)
-    #(collectJobs jobs.native.libs)
-    (collectJobs jobs.native.exes)
+    (collectJobs jobs.musl64.checks)
+    # fixme: mingw32 cross builds broken with ghc-8.6.5
+    # (collectJobs jobs."${mingwW64.config}".checks)
+    (collectJobs jobs.ghcjs.checks)
+    [ jobs.native.shell.x86_64-linux
+      jobs.native.shell.x86_64-darwin
+      jobs.musl64.cardano-address.x86_64-linux
+      # fixme: mingw32 cross builds broken with ghc-8.6.5
+      # jobs."${mingwW64.config}".cardano-address.x86_64-linux
+      jobs.ghcjs.library.x86_64-linux
+    ]
   ]));
-  #])) // {
-  #  # This is used for testing the build on windows.
-  #  cardano-addresses-tests-win64 = pkgs.callPackage ./nix/windows-testing-bundle.nix {
-  #    inherit project;
-  #    tests = collectJobs jobs."${mingwW64.config}".tests;
-  #    benchmarks = collectJobs jobs."${mingwW64.config}".benchmarks;
-  #  };
-  #};
 
 in jobs
