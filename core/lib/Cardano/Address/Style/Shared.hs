@@ -20,7 +20,7 @@
 module Cardano.Address.Style.Shared
     ( -- $overview
 
-      -- * Shelley
+      -- * Shared
       Shared
     , getKey
     , liftXPrv
@@ -31,10 +31,10 @@ module Cardano.Address.Style.Shared
     , genMasterKeyFromXPrv
     , genMasterKeyFromMnemonic
     , deriveAccountPrivateKey
-    , deriveMultisigForPaymentPrivateKey
-    , deriveMultisigForPaymentPublicKey
-    , deriveMultisigForDelegationPrivateKey
-    , deriveMultisigForDelegationPublicKey
+    , deriveAddressPrivateKey
+    , deriveAddressPublicKey
+    , deriveDelegationPrivateKey
+    , deriveDelegationPublicKey
     , hashKey
 
     ) where
@@ -81,7 +81,7 @@ import qualified Data.ByteArray as BA
 --
 -- This module provides an implementation of:
 --
--- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shelley master keys from mnemonic sentences
+-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shared master keys from mnemonic sentences
 -- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
 -- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
 --
@@ -94,9 +94,9 @@ import qualified Data.ByteArray as BA
 -- phantom-types to disambiguate key types.
 --
 -- @
--- let rootPrivateKey = Shelley 'RootK XPrv
--- let accountPubKey  = Shelley 'AccountK XPub
--- let addressPubKey  = Shelley 'PaymentK XPub
+-- let rootPrivateKey = Shared 'RootK XPrv
+-- let accountPubKey  = Shared 'AccountK XPub
+-- let addressPubKey  = Shared 'PaymentK XPub
 -- @
 --
 -- @since 3.3.0
@@ -104,7 +104,7 @@ newtype Shared (depth :: Depth) key = Shared
     { getKey :: key
         -- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.
         --
-        -- @since 1.0.0
+        -- @since 3.4.0
     }
     deriving stock (Generic, Show, Eq)
 
@@ -231,11 +231,11 @@ deriveAccountPrivateKey =
 -- | Derives a multisig private key from the given account private key for payment credential.
 --
 -- @since 3.4.0
-deriveMultisigForPaymentPrivateKey
+deriveAddressPrivateKey
     :: Shared 'AccountK XPrv
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPrv
-deriveMultisigForPaymentPrivateKey accPrv addrIx =
+deriveAddressPrivateKey accPrv addrIx =
     let (Shared xprv) = Internal.deriveAddressPrivateKey accPrv UTxOExternal addrIx
     in Shared xprv
 
@@ -244,11 +244,11 @@ deriveMultisigForPaymentPrivateKey accPrv addrIx =
 -- | Derives a multisig private key from the given account private key for delegation credential.
 --
 -- @since 3.4.0
-deriveMultisigForDelegationPrivateKey
+deriveDelegationPrivateKey
     :: Shared 'AccountK XPrv
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPrv
-deriveMultisigForDelegationPrivateKey accPrv addrIx =
+deriveDelegationPrivateKey accPrv addrIx =
     let (Shared xprv) = Internal.deriveAddressPrivateKey accPrv Stake addrIx
     in Shared xprv
 
@@ -257,11 +257,11 @@ deriveMultisigForDelegationPrivateKey accPrv addrIx =
 -- | Derives a multisig public key from the given account public key for payment credential.
 --
 -- @since 3.4.0
-deriveMultisigForPaymentPublicKey
+deriveAddressPublicKey
     :: Shared 'AccountK XPub
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPub
-deriveMultisigForPaymentPublicKey accPub addrIx =
+deriveAddressPublicKey accPub addrIx =
     let (Shared xpub) = Internal.deriveAddressPublicKey accPub UTxOExternal addrIx
     in Shared xpub
 
@@ -270,11 +270,11 @@ deriveMultisigForPaymentPublicKey accPub addrIx =
 -- | Derives a multisig public key from the given account public key for delegation credential.
 --
 -- @since 3.4.0
-deriveMultisigForDelegationPublicKey
+deriveDelegationPublicKey
     :: Shared 'AccountK XPub
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPub
-deriveMultisigForDelegationPublicKey accPub addrIx =
+deriveDelegationPublicKey accPub addrIx =
     let (Shared xpub) = Internal.deriveAddressPublicKey accPub Stake addrIx
     in Shared xpub
 

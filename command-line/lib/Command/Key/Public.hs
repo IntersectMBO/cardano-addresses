@@ -61,10 +61,10 @@ run Public{chainCode} = do
         , CIP5.acct_xsk
         , CIP5.addr_xsk
         , CIP5.stake_xsk
-        , CIP5.shared_root_xsk
-        , CIP5.shared_acct_xsk
-        , CIP5.shared_addr_xsk
-        , CIP5.shared_stake_xsk
+        , CIP5.root_shared_xsk
+        , CIP5.acct_shared_xsk
+        , CIP5.addr_shared_xsk
+        , CIP5.stake_shared_xsk
         ]
 
     prefixToPublic WithChainCode hrp
@@ -72,20 +72,20 @@ run Public{chainCode} = do
         | hrp == CIP5.acct_xsk = CIP5.acct_xvk
         | hrp == CIP5.addr_xsk = CIP5.addr_xvk
         | hrp == CIP5.stake_xsk = CIP5.stake_xvk
-        | hrp == CIP5.shared_root_xsk = CIP5.shared_root_xvk
-        | hrp == CIP5.shared_acct_xsk = CIP5.shared_acct_xvk
-        | hrp == CIP5.shared_addr_xsk = CIP5.shared_addr_xvk
-        | hrp == CIP5.shared_stake_xsk = CIP5.shared_stake_xvk
+        | hrp == CIP5.root_shared_xsk = CIP5.root_shared_xvk
+        | hrp == CIP5.acct_shared_xsk = CIP5.acct_shared_xvk
+        | hrp == CIP5.addr_shared_xsk = CIP5.addr_shared_xvk
+        | hrp == CIP5.stake_shared_xsk = CIP5.stake_shared_xvk
 
     prefixToPublic WithoutChainCode hrp
         | hrp == CIP5.root_xsk = CIP5.root_vk
         | hrp == CIP5.acct_xsk = CIP5.acct_vk
         | hrp == CIP5.addr_xsk = CIP5.addr_vk
         | hrp == CIP5.stake_xsk = CIP5.stake_vk
-        | hrp == CIP5.shared_root_xsk = CIP5.shared_root_vk
-        | hrp == CIP5.shared_acct_xsk = CIP5.shared_acct_vk
-        | hrp == CIP5.shared_addr_xsk = CIP5.shared_addr_vk
-        | hrp == CIP5.shared_stake_xsk = CIP5.shared_stake_vk
+        | hrp == CIP5.root_shared_xsk = CIP5.root_shared_vk
+        | hrp == CIP5.acct_shared_xsk = CIP5.acct_shared_vk
+        | hrp == CIP5.addr_shared_xsk = CIP5.addr_shared_vk
+        | hrp == CIP5.stake_shared_xsk = CIP5.stake_shared_vk
 
     prefixToPublic _ _ =
         error "impossible: pattern-match not covering all cases."

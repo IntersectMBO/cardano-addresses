@@ -17,14 +17,14 @@ spec = describeCmd [ "key", "hash" ] $ do
     specKeyPublic "icarus" "addr_vkh"   "1852H/1815H/0H/0/0" "--without-chain-code"
     specKeyPublic "icarus" "addr_vkh"   "1852H/1815H/0H/1/0" "--without-chain-code"
     specKeyPublic "icarus" "stake_vkh"  "1852H/1815H/0H/2/0" "--without-chain-code"
-    specKeyPublic "shared" "script_vkh"   "1854H/1815H/0H/0/0" "--without-chain-code"
-    specKeyPublic "shared" "script_vkh"  "1854H/1815H/0H/2/0" "--without-chain-code"
+    specKeyPublic "shared" "addr_shared_vkh"   "1854H/1815H/0H/0/0" "--without-chain-code"
+    specKeyPublic "shared" "stake_shared_vkh"  "1854H/1815H/0H/2/0" "--without-chain-code"
 
     specKeyPublic "icarus" "addr_vkh"   "1852H/1815H/0H/0/0" "--with-chain-code"
     specKeyPublic "icarus" "addr_vkh"   "1852H/1815H/0H/1/0" "--with-chain-code"
     specKeyPublic "icarus" "stake_vkh"  "1852H/1815H/0H/2/0" "--with-chain-code"
-    specKeyPublic "shared" "script_vkh"   "1854H/1815H/0H/0/0" "--with-chain-code"
-    specKeyPublic "shared" "script_vkh"  "1854H/1815H/0H/2/0" "--with-chain-code"
+    specKeyPublic "shared" "addr_shared_vkh"   "1854H/1815H/0H/0/0" "--with-chain-code"
+    specKeyPublic "shared" "stake_shared_vkh"  "1854H/1815H/0H/2/0" "--with-chain-code"
 
 specKeyNotPublic :: SpecWith ()
 specKeyNotPublic = it "fail if key isn't public" $ do

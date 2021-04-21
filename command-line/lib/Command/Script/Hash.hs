@@ -45,10 +45,10 @@ mod liftCmd = command "hash" $
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string $ progName<>" script hash 'all "
-            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
-            , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+            , indent 4 $ bold $ string "[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3"
+            , indent 4 $ bold $ string ", addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "script15q26ucg8tcju8kf9p0wtcdwx24e8yyneylk09gkhzm3f70947hv"
+            , indent 2 $ string "script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k"
             ])
   where
     parser = Cmd

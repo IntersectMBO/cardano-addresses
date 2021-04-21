@@ -59,6 +59,6 @@ run FromRecoveryPhrase{style} = do
     let hrp = styleHrp style
     hPutBytes stdout (xprvToBytes rootK) (EBech32 hrp)
 
-stypleHrp :: Style -> HumanReadablePart
-styleHrp Shared = CIP5.shared_root_xsk
+styleHrp :: Style -> HumanReadablePart
+styleHrp Shared = CIP5.root_shared_xsk
 styleHrp _ = CIP5.root_xsk

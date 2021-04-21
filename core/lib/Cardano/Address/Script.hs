@@ -230,7 +230,7 @@ keyHashFromBytes bytes
 -- @since 3.0.0
 keyHashToText :: KeyHash -> Text
 keyHashToText (KeyHash keyHash) =
-    T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
+    T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
 -- Bech32 encoded text with `script_vkh`, `shared_addr_vk`, `shared_stake_vk`,
@@ -251,11 +251,12 @@ keyHashFromText txt = do
         >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
     convertBytes hrp bytes
-        | hrp == CIP5.script_vkh = Right bytes
-        | hrp == CIP5.shared_addr_vk  = Right $ hashCredential bytes
-        | hrp == CIP5.shared_addr_xvk = Right $ hashCredential $ BS.take 32 bytes
-        | hrp == CIP5.shared_stake_vk  = Right $ hashCredential bytes
-        | hrp == CIP5.shared_stake_xvk = Right $ hashCredential $ BS.take 32 bytes
+        | hrp == CIP5.addr_shared_vkh = Right bytes
+        | hrp == CIP5.stake_shared_vkh = Right bytes
+        | hrp == CIP5.addr_shared_vk  = Right $ hashCredential bytes
+        | hrp == CIP5.addr_shared_xvk = Right $ hashCredential $ BS.take 32 bytes
+        | hrp == CIP5.stake_shared_vk  = Right $ hashCredential bytes
+        | hrp == CIP5.stake_shared_xvk = Right $ hashCredential $ BS.take 32 bytes
         | otherwise = Left ErrKeyHashFromTextWrongHrp
 
 -- Validation level. Required level does basic check that will make sure the script

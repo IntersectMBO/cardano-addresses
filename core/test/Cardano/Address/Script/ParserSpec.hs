@@ -31,11 +31,11 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
-    let verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms" :: Text
+    let verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
     let kh1 = KeyHash $ unBech32 verKeyH1
-    let verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj" :: Text
+    let verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp" :: Text
     let kh2 = KeyHash $ unBech32 verKeyH2
-    let verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2" :: Text
+    let verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9" :: Text
     let kh3 = KeyHash $ unBech32 verKeyH3
 
     let script1 = "all ["<>verKeyH1<>"]"

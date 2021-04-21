@@ -84,9 +84,9 @@ run Child{path} = do
         [ CIP5.root_xsk
         , CIP5.acct_xsk
         , CIP5.acct_xvk
-        , CIP5.shared_root_xsk
-        , CIP5.shared_acct_xsk
-        , CIP5.shared_acct_xvk
+        , CIP5.root_shared_xsk
+        , CIP5.acct_shared_xsk
+        , CIP5.acct_shared_xvk
         ]
 
     -- As a reminder, we really have two scenarios:
@@ -146,28 +146,28 @@ run Child{path} = do
     -- as m / purpose' or m / purpose' / coin_type' so we do not expose them.
     childHrpFor [_,_,_,2,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.stake_xsk
-        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_stake_xsk
+        | hrp == CIP5.root_shared_xsk = pure CIP5.stake_shared_xsk
 
     childHrpFor [_,_,_,_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
-        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_addr_xsk
+        | hrp == CIP5.root_shared_xsk = pure CIP5.addr_shared_xsk
 
     childHrpFor [_,_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.acct_xsk
-        | hrp == CIP5.shared_root_xsk = pure CIP5.shared_acct_xsk
+        | hrp == CIP5.root_shared_xsk = pure CIP5.acct_shared_xsk
 
     childHrpFor [2,_] hrp
         | hrp == CIP5.acct_xsk = pure CIP5.stake_xsk
         | hrp == CIP5.acct_xvk = pure CIP5.stake_xvk
-        | hrp == CIP5.shared_acct_xsk = pure CIP5.shared_stake_xsk
-        | hrp == CIP5.shared_acct_xvk = pure CIP5.shared_stake_xvk
+        | hrp == CIP5.acct_shared_xsk = pure CIP5.stake_shared_xsk
+        | hrp == CIP5.acct_shared_xvk = pure CIP5.stake_shared_xvk
 
     childHrpFor [_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.acct_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.acct_xvk = pure CIP5.addr_xvk
-        | hrp == CIP5.shared_acct_xsk = pure CIP5.shared_addr_xsk
-        | hrp == CIP5.shared_acct_xvk = pure CIP5.shared_addr_xvk
+        | hrp == CIP5.acct_shared_xsk = pure CIP5.addr_shared_xsk
+        | hrp == CIP5.acct_shared_xvk = pure CIP5.addr_shared_xvk
 
     childHrpFor _ hrp
         | hrp == CIP5.root_xsk = fail
@@ -177,7 +177,7 @@ run Child{path} = do
             \(purpose, coin_type, account, role, index) if you're dealing with \
             \anything else."
 
-        | hrp == CIP5.shared_root_xsk = fail
+        | hrp == CIP5.root_shared_xsk = fail
             "When deriving child keys from a parent root key, you must \
             \provide either 3 or 5 path segments. Provide 3 \
             \(purpose, coin_type, account) or 5 \

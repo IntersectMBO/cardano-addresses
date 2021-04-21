@@ -612,7 +612,7 @@ inspectAddress mRootPub addr
     bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
     bech32Spending = bech32With CIP5.addr_vkh
     bech32Stake = bech32With CIP5.stake_vkh
-    bech32Script = bech32With CIP5.script_vkh
+    bech32Script = bech32With CIP5.script
 
     ptrToJSON :: ChainPointer -> Json.Value
     ptrToJSON ChainPointer{slotNum,transactionIndex,outputIndex} = Json.object

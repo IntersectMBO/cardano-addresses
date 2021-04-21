@@ -18,6 +18,8 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
     ( when )
+import Data.Maybe
+    ( fromJust )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
@@ -55,16 +57,16 @@ run Hash = do
         , ( CIP5.addr_xvk        , CIP5.addr_vkh   )
         , ( CIP5.stake_vk        , CIP5.stake_vkh  )
         , ( CIP5.stake_xvk       , CIP5.stake_vkh  )
-        , ( CIP5.shared_addr_vk  , CIP5.script_vkh )
-        , ( CIP5.shared_addr_xvk , CIP5.script_vkh )
-        , ( CIP5.shared_stake_vk , CIP5.script_vkh )
-        , ( CIP5.shared_stake_xvk, CIP5.script_vkh )
+        , ( CIP5.addr_shared_vk  , CIP5.addr_shared_vkh )
+        , ( CIP5.addr_shared_xvk , CIP5.addr_shared_vkh )
+        , ( CIP5.stake_shared_vk , CIP5.stake_shared_vkh )
+        , ( CIP5.stake_shared_xvk, CIP5.stake_shared_vkh )
         ]
     allowedPrefixes = map fst prefixes
     prefixFor = fromJust . flip lookup prefixes
 
     guardBytes hrp bytes
-        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.shared_addr_xvk, CIP5.shared_stake_xvk] = do
+        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.addr_shared_xvk, CIP5.stake_shared_xvk] = do
             when (BS.length bytes /= 64) $
                 fail "data should be a 32-byte public key with a 32-byte chain-code appended"
 

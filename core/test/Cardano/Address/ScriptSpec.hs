@@ -18,8 +18,6 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
-    , GenMasterKey (..)
-    , HardDerivation (..)
     , Index
     , XPrv
     , XPub
@@ -43,7 +41,7 @@ import Cardano.Address.Script
     , validateScriptTemplate
     )
 import Cardano.Address.Style.Shared
-    ( Shared (..), deriveMultisigForPaymentPrivateKey, hashKey )
+    ( Shared (..), hashKey )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -77,6 +75,7 @@ import Test.QuickCheck
     , (===)
     )
 
+import qualified Cardano.Address.Style.Shared as Shared
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -87,25 +86,25 @@ spec :: Spec
 spec = do
     let mnemonic = ["network","empty","cause","mean","expire","private","finger"
                    ,"accident","session","problem","absurd","banner","stage","void","what"]
-    let (Right mw) = mkSomeMnemonic @'[15] mnemonic
+    let (Right mw) = mkSomeMnemonic @'[9,15,18,21,24] mnemonic
     let sndFactor = mempty
-    let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
-    let accXPrv = deriveAccountPrivateKey rootK minBound
+    let rootK = Shared.genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+    let accXPrv = Shared.deriveAccountPrivateKey rootK minBound
 
     let index1 = minBound
-    let multisigXPub1 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index1
+    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index1
     let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
 
     let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
-    let multisigXPub2 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index2
+    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index2
     let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
 
     let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
-    let multisigXPub3 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index3
+    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index3
     let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
 
     let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
-    let multisigXPub4 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index4
+    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index4
     let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4
 
     describe "Multisig CBOR and hashes - golden tests" $ do
