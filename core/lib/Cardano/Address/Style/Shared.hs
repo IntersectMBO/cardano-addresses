@@ -56,7 +56,7 @@ import Cardano.Address.Derivation
     , xpubPublicKey
     )
 import Cardano.Address.Script
-    ( KeyHash (..) )
+    ( KeyHash (..), KeyType )
 import Cardano.Address.Style.Shelley
     ( Role (..), coinTypeIndex, minSeedLengthBytes, roleToIndex )
 import Cardano.Mnemonic
@@ -312,8 +312,8 @@ liftXPub = Shared
 --- | Computes a 28-byte Blake2b224 digest of a Shared 'XPub'.
 ---
 --- @since 3.4.0
-hashKey :: Shared key XPub -> KeyHash
-hashKey = KeyHash . hashCredential . xpubPublicKey . getKey
+hashKey :: KeyType -> Shared key XPub -> KeyHash
+hashKey cred = flip KeyHash cred . hashCredential . xpubPublicKey . getKey
 
 -- Purpose is a constant set to 1854' (or 0x8000073e) following the
 -- CIP-1854 Multi-signatures HD Wallets

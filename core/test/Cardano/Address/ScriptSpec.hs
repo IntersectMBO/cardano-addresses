@@ -31,6 +31,7 @@ import Cardano.Address.Script
     , ErrValidateScript (..)
     , ErrValidateScriptTemplate (..)
     , KeyHash (..)
+    , KeyType (..)
     , Script (..)
     , ScriptHash (..)
     , ScriptTemplate (..)
@@ -93,19 +94,19 @@ spec = do
 
     let index1 = minBound
     let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index1
-    let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
+    let verKeyHash1 = RequireSignatureOf $ hashKey Payment multisigXPub1
 
     let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
     let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index2
-    let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
+    let verKeyHash2 = RequireSignatureOf $ hashKey Payment multisigXPub2
 
     let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
     let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index3
-    let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
+    let verKeyHash3 = RequireSignatureOf $ hashKey Payment multisigXPub3
 
     let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
     let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index4
-    let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4
+    let verKeyHash4 = RequireSignatureOf $ hashKey Payment multisigXPub4
 
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
@@ -223,11 +224,11 @@ spec = do
 
     describe "validateScript - expectations for RequiredValidation" $ do
         it "incorrect RequireSignatureOf" $ do
-            let script = RequireSignatureOf (KeyHash "<wrong key hash>")
+            let script = RequireSignatureOf (KeyHash "<wrong key hash>" Payment)
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "incorrect RequireSignatureOf nested" $ do
-            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>")]]
+            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>" Payment)]]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireAllOf []" $ do
@@ -243,7 +244,7 @@ spec = do
             validateScript RequiredValidation script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 2" $ do
-            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>")]
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>" Payment)]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireSomeOf" $ do
@@ -614,7 +615,9 @@ genScript elemGen = scale (`div` 3) $ sized scriptTree
 instance Arbitrary KeyHash where
     -- always generate valid hashes, because json decoding will immediately fail
     -- on these.
-    arbitrary = KeyHash . BS.pack <$> vectorOf 28 arbitrary
+    arbitrary = do
+        payload' <- BS.pack <$> vectorOf 28 arbitrary
+        KeyHash payload' <$> oneof [pure Payment, pure Delegation]
 
 instance Arbitrary Cosigner where
     arbitrary = Cosigner <$> arbitrary
