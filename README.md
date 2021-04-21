@@ -95,22 +95,29 @@ stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat%
 </details>
 
 <details>
-  <summary>How to generate a payment verification key for shared wallet (<strong>shared_addr.vk</strong>) (<strong>shared_stake.vk</strong>)</summary>
-  Let's generate extended root private key for shared style
+  <summary>How to generate a payment verification key for shared wallet (<strong>shared_addr.vk</strong>, <strong>shared_stake.vk</strong>)</summary>
+
+Let's generate extended root private key for shared style:
+
 ``` console
 $ cardano-address key from-recovery-phrase Shared < phrase.prv > shared_root.xsk
 ```
-  Now generate payment verification key (role=0 is used). Please take notice that `1854H` purpose is used for multisig.
+
+Now generate payment verification key (`role=0` is used). Please note that purpose `1854H` is used for multisig.
+
 ```console
 $ cardano-address key child 1854H/1815H/0H/0/0 < shared_root.xsk | cardano-address key public --without-chain-code > shared_addr.vk
 shared_addr_vk1a9h46rvjnqquxz02zyesh0ct29szh7vv9x7r2h87ttmnkgrfgguq6jxekq
 ```
- Generating delegation verification key is the similar (the only difference is role=2)
+
+Generating delegation verification key is the similar (the only difference is role=2)
+
 ```console
 $ cardano-address key child 1854H/1815H/0H/2/0 < shared_root.xsk | cardano-address key public --without-chain-code > shared_stake.vk
 shared_stake_vk18a8z5dcrlwene88n84j6dm9yvj5rt296fjtresqnunmacetdcymq8000na
+```
 
-> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
+> :information_source: The last segment in the path is the key index, which can be incremented to derive more keys. Up `2^31-1` keys are possible.
 </details>
 
 <details>
