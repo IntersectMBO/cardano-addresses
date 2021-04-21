@@ -8,14 +8,14 @@ ghcjs.
 Build and run CLI:
 
 ```terminal
-$ nix-build release.nix -A ghcjs.haskellPackages.cardano-addresses-cli.components.exes.cardano-address
+$ nix-build release.nix -A ghcjs.cardano-address.x86_64-linux
 $ node ./result/bin/cardano-address.jsexe/all.js --help
 $ node ./result/bin/cardano-address.jsexe/all.js recovery-phrase generate
 ```
 
 Execute library unit tests:
 ```terminal
-$ nix-build release.nix -A ghcjs.haskellPackages.cardano-addresses.checks.unit
+$ nix-build release.nix -A ghcjs.checks.cardano-addresses.unit.x86_64-linux
 ```
 
 ## With Cabal in nix-shell
@@ -36,6 +36,7 @@ $ nix-shell
 cardano-address: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
 
 [nix-shell:~/iohk/cardano-addresses]$ node dist-ghcjs/build/wasm32-none/ghcjs-8.6.5/cardano-addresses-cli-3.3.0/x/cardano-address/build/cardano-address/cardano-address.jsexe/all.js recovery-phrase generate
+culture fringe exercise stumble gold current balance ....
 ```
 
 ### Limitations
@@ -43,16 +44,8 @@ cardano-address: createProcess: runInteractiveProcess: exec: does not exist (No 
 1. `js-unknown-ghcjs-cabal run` doesn't work ghcjs code needs to be
    interpreted with `nodejs`.
 
-2. `js-unknown-ghcjs-cabal` is not yet able to automatically use the
-   nix build of `jsbits/cardano-crypto.js`.
-
-   Workaround is to find and copy it in manually:
-
-   ```terminal
-   $ cp --no-preserve=mode /nix/store/*cardano-addresses-jsbits jsbits/jsbits
-   $ ln -s ../jsbits/jsbits core
-   $ ln -s ../jsbits/jsbits command-line
-   ```
+2. We needed to add dummy calls to `Cardano.Address.Jsbits.addJsbitsDependency`
+   to ensure that ghcjs linked in the emscripten-compiled crypto code.
 
 ## Without Nix
 
