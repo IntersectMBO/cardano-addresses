@@ -7,7 +7,6 @@ with-compiler: ghc-8.6.5
 packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
-  jsbits/cardano-addresses-jsbits.cabal
 
 -- Needed for ghcjs
 -- See https://github.com/haskell-crypto/cryptonite/pull/345

@@ -26,7 +26,10 @@ let
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
     # Constraints not in `cabal.project.freeze for cross platform support
-    cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
+    cabalProjectLocal = ''
+      packages:
+        jsbits/cardano-addresses-jsbits.cabal
+    '' + lib.optionalString stdenv.hostPlatform.isWindows ''
       constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
     '';
 
