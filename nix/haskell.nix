@@ -54,8 +54,8 @@ let
         ];
       })
       ({ config, ... }: {
-        packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
-        packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
+        # packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
+        # packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
 
         # This works around an issue with `cardano-addresses-cli.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
