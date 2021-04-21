@@ -15,6 +15,8 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( xprvToBytes )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
@@ -54,8 +56,9 @@ run :: Cmd -> IO ()
 run FromRecoveryPhrase{style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
-    case style of
-        Shared ->
-            hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.shared_root_xsk)
-        _ ->
-            hPutBytes stdout (xprvToBytes rootK) (EBech32 CIP5.root_xsk)
+    let hrp = styleHrp style
+    hPutBytes stdout (xprvToBytes rootK) (EBech32 hrp)
+
+stypleHrp :: Style -> HumanReadablePart
+styleHrp Shared = CIP5.shared_root_xsk
+styleHrp _ = CIP5.root_xsk

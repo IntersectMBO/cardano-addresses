@@ -101,7 +101,7 @@ run Child{path} = do
     --     m / purpose' / coin_type' / account' / role / index
     --
     -- We do not allow derivations to anywhere in the path to avoid people
-    -- shooting themselves in the foot. purpose' = 1852H.
+    -- shooting themselves in the foot.
     -- Hence We only allow the following transformations:
     --
     -- root_xsk => addr_xsk: (legacy)
@@ -124,9 +124,10 @@ run Child{path} = do
     --
     --     m / purpose' / coin_type' / account' / role / index
     --
-    -- We do not allow derivations to anywhere in the path to avoid people
-    -- shooting themselves in the foot. purpose' = 1854H.
-    -- Hence We only allow the following transformations:
+    -- purpose' = 1854H for shared wallet addresses.
+    --
+    -- As with Icarus/Shelley sequential wallets, to prevent undiscoverable
+    -- addresses, we allow only the following transformations:
     --
     -- shared_root_xsk => shared_acct_xsk: (hard derivation from root to account)
     --     m => m / purpose' / coin_type' / account'
