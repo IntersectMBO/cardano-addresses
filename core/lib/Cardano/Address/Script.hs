@@ -40,7 +40,7 @@ module Cardano.Address.Script
     , scriptHashFromBytes
 
     , KeyHash (..)
-    , KeyType (..)
+    , KeyRole (..)
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
@@ -142,7 +142,7 @@ serializeScript script =
 
     toCBOR :: Script KeyHash -> CBOR.Encoding
     toCBOR = \case
-        RequireSignatureOf (KeyHash verKeyHash _) ->
+        RequireSignatureOf (KeyHash _ verKeyHash) ->
             encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
         RequireAllOf contents ->
             encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR contents
@@ -212,33 +212,33 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
-data KeyType = Payment | Delegation
+data KeyRole = Payment | Delegation
     deriving (Generic, Show, Ord, Eq)
-instance NFData KeyType
+instance NFData KeyRole
 
 -- | A 'KeyHash' type represents verification key hash that participate in building
 -- multi-signature script. The hash is expected to have size of 28-byte.
 --
 -- @since 3.0.0
 data KeyHash = KeyHash
-    { payload :: ByteString
-    , credential :: KeyType }
+    { role :: KeyRole
+    , digest :: ByteString }
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
 
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
 --
 -- @since 3.0.0
-keyHashFromBytes :: (KeyType, ByteString) -> Maybe KeyHash
+keyHashFromBytes :: (KeyRole, ByteString) -> Maybe KeyHash
 keyHashFromBytes (cred, bytes)
     | BS.length bytes /= credentialHashSize = Nothing
-    | otherwise = Just $ KeyHash bytes cred
+    | otherwise = Just $ KeyHash cred bytes
 
 -- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
 --
 -- @since 3.0.0
 keyHashToText :: KeyHash -> Text
-keyHashToText (KeyHash keyHash cred) = case cred of
+keyHashToText (KeyHash cred keyHash) = case cred of
     Payment ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
     Delegation ->
@@ -338,12 +338,12 @@ validateScript
     -> Script KeyHash
     -> Either ErrValidateScript ()
 validateScript level script = do
-    let validateKeyHash (KeyHash bytes _) =
+    let validateKeyHash (KeyHash _ bytes) =
             (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
 
-    when (L.length (L.nub $ map credential allSigs) > 1) $
+    when (L.length (L.nub $ map role allSigs) > 1) $
         Left NotUniformKeyType
 
     requiredValidation script
@@ -514,7 +514,7 @@ prettyErrValidateScript = \case
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
     NotUniformKeyType ->
-        "All key hashes should have either 'addr_shared_vkh' or 'stake_shared_vhk' prefixes."
+        "All keys of a script must have the same role: either payment or delegation."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \

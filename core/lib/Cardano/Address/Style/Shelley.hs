@@ -39,7 +39,6 @@ module Cardano.Address.Style.Shelley
     , deriveAddressPrivateKey
     , deriveDelegationPrivateKey
     , deriveAddressPublicKey
-    , hashKey
 
       -- * Addresses
       -- $addresses
@@ -104,7 +103,7 @@ import Cardano.Address.Derivation
     , xpubPublicKey
     )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyType, ScriptHash (..) )
+    ( ScriptHash (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -863,12 +862,6 @@ unsafeFromRight =
 --
 -- Internal
 --
-
---- | Computes a 28-byte Blake2b224 digest of a Shelley 'XPub'.
----
---- @since 3.0.0
-hashKey :: KeyType -> Shelley key XPub -> KeyHash
-hashKey cred = flip KeyHash cred . hashCredential . xpubPublicKey . getKey
 
 -- Purpose is a constant set to 1852' (or 0x8000073c) following the BIP-44
 -- extension for Cardano:

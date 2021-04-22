@@ -49,7 +49,7 @@ import Cardano.Address.Derivation
     , xpubPublicKey
     )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyType )
+    ( KeyHash (..), KeyRole )
 import Cardano.Address.Style.Shelley
     ( Role (..)
     , deriveAccountPrivateKeyShelley
@@ -86,7 +86,8 @@ import qualified Cardano.Address.Derivation as Internal
 -- - 'stakeAddress': for constructing reward accounts from stake credential (public key or script)
 
 -- | A cryptographic key for sequential-scheme address derivation, with
--- phantom-types to disambiguate key types.
+-- phantom-types to disambiguate key types. The derivation is mostly like Shelley, except the used purpose index
+-- (here 1854H rather than Shelley's 1852H)
 --
 -- @
 -- let rootPrivateKey = Shared 'RootK XPrv
@@ -94,7 +95,7 @@ import qualified Cardano.Address.Derivation as Internal
 -- let addressPubKey  = Shared 'PaymentK XPub
 -- @
 --
--- @since 3.3.0
+-- @since 3.4.0
 newtype Shared (depth :: Depth) key = Shared
     { getKey :: key
         -- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.
@@ -148,12 +149,12 @@ instance Internal.HardDerivation Shared where
     deriveAccountPrivateKey (Shared rootXPrv) accIx =
         Shared $ deriveAccountPrivateKeyShelley rootXPrv accIx purposeIndex
 
-    deriveAddressPrivateKey (Shared accXPrv) role addrIx =
-        Shared $ deriveAddressPrivateKeyShelley accXPrv role addrIx
+    deriveAddressPrivateKey (Shared accXPrv) keyRole addrIx =
+        Shared $ deriveAddressPrivateKeyShelley accXPrv keyRole addrIx
 
 instance Internal.SoftDerivation Shared where
-    deriveAddressPublicKey (Shared accXPub) role addrIx =
-        Shared $ deriveAddressPublicKeyShelley accXPub role addrIx
+    deriveAddressPublicKey (Shared accXPub) keyRole addrIx =
+        Shared $ deriveAddressPublicKeyShelley accXPub keyRole addrIx
 
 -- | Generate a root key from a corresponding mnemonic.
 --
@@ -264,8 +265,8 @@ liftXPub = Shared
 --- | Computes a 28-byte Blake2b224 digest of a Shared 'XPub'.
 ---
 --- @since 3.4.0
-hashKey :: KeyType -> Shared key XPub -> KeyHash
-hashKey cred = flip KeyHash cred . hashCredential . xpubPublicKey . getKey
+hashKey :: KeyRole -> Shared key XPub -> KeyHash
+hashKey cred = KeyHash cred . hashCredential . xpubPublicKey . getKey
 
 -- Purpose is a constant set to 1854' (or 0x8000073e) following the
 -- CIP-1854 Multi-signatures HD Wallets

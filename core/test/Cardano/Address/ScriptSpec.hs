@@ -31,7 +31,7 @@ import Cardano.Address.Script
     , ErrValidateScript (..)
     , ErrValidateScriptTemplate (..)
     , KeyHash (..)
-    , KeyType (..)
+    , KeyRole (..)
     , Script (..)
     , ScriptHash (..)
     , ScriptTemplate (..)
@@ -227,11 +227,11 @@ spec = do
 
     describe "validateScript - expectations for RequiredValidation" $ do
         it "incorrect RequireSignatureOf" $ do
-            let script = RequireSignatureOf (KeyHash "<wrong key hash>" Payment)
+            let script = RequireSignatureOf (KeyHash Payment "<wrong key hash>")
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "incorrect RequireSignatureOf nested" $ do
-            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>" Payment)]]
+            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash Payment "<wrong key hash>")]]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireAllOf []" $ do
@@ -247,7 +247,7 @@ spec = do
             validateScript RequiredValidation script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 2" $ do
-            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>" Payment)]
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash Payment "<wrong key hash>")]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireSomeOf" $ do
@@ -627,7 +627,7 @@ instance Arbitrary KeyHash where
     -- on these.
     arbitrary = do
         payload' <- BS.pack <$> vectorOf 28 arbitrary
-        KeyHash payload' <$> oneof [pure Payment, pure Delegation]
+        flip KeyHash payload' <$> oneof [pure Payment, pure Delegation]
 
 instance Arbitrary Cosigner where
     arbitrary = Cosigner <$> arbitrary
