@@ -4,8 +4,8 @@ module Main where
 
 import Prelude
 
-import Cardano.Address.Jsbits
-    ( addJsbitsDependency )
+import Cardano.Address.Compat
+    ( ghcjsBuildSupport )
 import Command
     ( withUtf8Encoding )
 
@@ -13,5 +13,5 @@ import qualified Command as CLI
 
 main :: IO ()
 main = do
-    addJsbitsDependency
+    ghcjsBuildSupport
     withUtf8Encoding (CLI.setup >> CLI.parse >>= CLI.run)

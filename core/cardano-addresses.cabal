@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11dd066f96bb160ea0e0895fbe57d33aeffa695cd8fc32808fa23aab2284d1ca
+-- hash: ed1f4406910ece0166a2df56354db7c2a3f027832734cb9791454d3a87b3421c
 
 name:           cardano-addresses
 version:        3.3.0
@@ -31,6 +31,7 @@ flag release
 library
   exposed-modules:
       Cardano.Address
+      Cardano.Address.Compat
       Cardano.Address.Derivation
       Cardano.Address.Script
       Cardano.Address.Script.Parser
@@ -58,7 +59,6 @@ library
     , bech32-th
     , binary
     , bytestring
-    , cardano-addresses-jsbits
     , cardano-crypto
     , cborg
     , containers
@@ -74,6 +74,9 @@ library
     , unordered-containers
   if flag(release)
     ghc-options: -Werror
+  if impl(ghcjs) || os(ghcjs)
+    build-depends:
+        cardano-addresses-jsbits
   default-language: Haskell2010
 
 test-suite unit
@@ -102,7 +105,7 @@ test-suite unit
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      QuickCheck
+      QuickCheck >=2.14.2
     , aeson
     , aeson-pretty
     , base >=4.7 && <5
@@ -110,7 +113,6 @@ test-suite unit
     , binary
     , bytestring
     , cardano-addresses
-    , cardano-addresses-jsbits
     , cardano-crypto
     , containers
     , hspec

@@ -26,7 +26,10 @@ let
     # FIXME: without this deprecated attribute, db-converter fails to compile directory with:
   } // {
     # Constraints not in `cabal.project.freeze for cross platform support
-    cabalProjectLocal = lib.optionalString stdenv.hostPlatform.isWindows ''
+    cabalProjectLocal = ''
+      packages:
+        jsbits/cardano-addresses-jsbits.cabal
+    '' + lib.optionalString stdenv.hostPlatform.isWindows ''
       constraints: Wind32 ==2.6.1.0, mintty ==0.1.2
     '';
 
@@ -69,13 +72,18 @@ let
       })
 
       # Build fixes for Hackage dependencies.
-      {
+      ({ pkgs, ...}: let
+        pcre = pkgs.pcre.overrideAttrs (oldAttrs: {
+          configureFlags = oldAttrs.configureFlags ++ [ "--enable-static" ];
+        });
+      in {
         # Needed for linking of the musl static build.
         packages.pcre-light.flags.use-pkg-config = true;
+        packages.pcre-light.components.library.libs = [ pcre ];
         packages.cardano-addresses-cli.components.tests.unit.configureFlags =
           lib.mkIf stdenv.hostPlatform.isMusl
-            [ "--ghc-option=-optl=-L${pkgs.pcre}/lib" ];
-      }
+            [ "--ghc-option=-optl=-L${pcre}/lib" ];
+      })
 
       (lib.mkIf isCrossBuild {
         # Remove hsc2hs build-tool dependencies (suitable version will

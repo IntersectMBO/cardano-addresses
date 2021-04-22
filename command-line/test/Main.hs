@@ -2,8 +2,8 @@ module Main where
 
 import Prelude
 
-import Cardano.Address.Jsbits
-    ( addJsbitsDependency )
+import Cardano.Address.Compat
+    ( ghcjsBuildSupport )
 import Command
     ( withUtf8Encoding )
 import Test.Hspec.Runner
@@ -11,8 +11,7 @@ import Test.Hspec.Runner
 
 import qualified AutoDiscover
 
-
 main :: IO ()
 main = do
-    addJsbitsDependency
+    ghcjsBuildSupport
     withUtf8Encoding $ hspecWith defaultConfig AutoDiscover.spec
