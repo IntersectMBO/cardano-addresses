@@ -6,9 +6,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -43,41 +41,36 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( Depth (..)
-    , DerivationScheme (..)
     , DerivationType (..)
     , Index (..)
     , XPrv
     , XPub
-    , deriveXPrv
-    , deriveXPub
-    , generateNew
     , hashCredential
-    , indexFromWord32
     , xpubPublicKey
     )
 import Cardano.Address.Script
     ( KeyHash (..), KeyType )
 import Cardano.Address.Style.Shelley
-    ( Role (..), coinTypeIndex, minSeedLengthBytes, roleToIndex )
+    ( Role (..)
+    , deriveAccountPrivateKeyShelley
+    , deriveAddressPrivateKeyShelley
+    , deriveAddressPublicKeyShelley
+    , genMasterKeyFromMnemonicShelley
+    )
 import Cardano.Mnemonic
-    ( SomeMnemonic, someMnemonicToBytes )
+    ( SomeMnemonic )
 import Control.DeepSeq
     ( NFData )
-import Control.Exception.Base
-    ( assert )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.Coerce
     ( coerce )
-import Data.Maybe
-    ( fromMaybe )
 import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address.Derivation as Internal
-import qualified Data.ByteArray as BA
 
 -- $overview
 --
@@ -145,12 +138,7 @@ instance Internal.GenMasterKey Shared where
 
     genMasterKeyFromXPrv = liftXPrv
     genMasterKeyFromMnemonic fstFactor sndFactor =
-        Shared $ generateNew seedValidated sndFactor
-        where
-            seed  = someMnemonicToBytes fstFactor
-            seedValidated = assert
-                (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-                seed
+        Shared $ genMasterKeyFromMnemonicShelley fstFactor sndFactor
 
 instance Internal.HardDerivation Shared where
     type AccountIndexDerivationType Shared = 'Hardened
@@ -158,43 +146,14 @@ instance Internal.HardDerivation Shared where
     type WithRole Shared = Role
 
     deriveAccountPrivateKey (Shared rootXPrv) accIx =
-        let
-            Just purposeIx =
-                indexFromWord32 @(Index 'Hardened _) purposeIndex
-            Just coinTypeIx =
-                indexFromWord32 @(Index 'Hardened _) coinTypeIndex
-            purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
-                deriveXPrv DerivationScheme2 rootXPrv purposeIx
-            coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
-                deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
-            acctXPrv = -- lvl3 derivation; hardened derivation of account' index
-                deriveXPrv DerivationScheme2 coinTypeXPrv accIx
-        in
-            Shared acctXPrv
+        Shared $ deriveAccountPrivateKeyShelley rootXPrv accIx purposeIndex
 
     deriveAddressPrivateKey (Shared accXPrv) role addrIx =
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (roleToIndex role)
-            addrXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv addrIx
-        in
-            Shared addrXPrv
+        Shared $ deriveAddressPrivateKeyShelley accXPrv role addrIx
 
 instance Internal.SoftDerivation Shared where
     deriveAddressPublicKey (Shared accXPub) role addrIx =
-        fromMaybe errWrongIndex $ do
-            changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub (roleToIndex role)
-            addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
-                deriveXPub DerivationScheme2 changeXPub addrIx
-            return $ Shared addrXPub
-      where
-        errWrongIndex = error $
-            "deriveAddressPublicKey failed: was given an hardened (or too big) \
-            \index for soft path derivation ( " ++ show addrIx ++ "). This is \
-            \either a programmer error, or, we may have reached the maximum \
-            \number of addresses for a given wallet."
+        Shared $ deriveAddressPublicKeyShelley accXPub role addrIx
 
 -- | Generate a root key from a corresponding mnemonic.
 --
@@ -271,7 +230,6 @@ deriveDelegationPublicKey
     -> Shared 'ScriptK XPub
 deriveDelegationPublicKey accPub = coerce .
     Internal.deriveAddressPublicKey accPub Stake
-
 
 --
 -- Unsafe

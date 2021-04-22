@@ -68,7 +68,10 @@ module Cardano.Address.Style.Shelley
 
       -- Internals
     , minSeedLengthBytes
-    , coinTypeIndex
+    , genMasterKeyFromMnemonicShelley
+    , deriveAccountPrivateKeyShelley
+    , deriveAddressPrivateKeyShelley
+    , deriveAddressPublicKeyShelley
     ) where
 
 import Prelude
@@ -252,12 +255,7 @@ instance Internal.GenMasterKey Shelley where
 
     genMasterKeyFromXPrv = liftXPrv
     genMasterKeyFromMnemonic fstFactor sndFactor =
-        Shelley $ generateNew seedValidated sndFactor
-        where
-            seed  = someMnemonicToBytes fstFactor
-            seedValidated = assert
-                (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
-                seed
+        Shelley $ genMasterKeyFromMnemonicShelley fstFactor sndFactor
 
 instance Internal.HardDerivation Shelley where
     type AccountIndexDerivationType Shelley = 'Hardened
@@ -265,43 +263,14 @@ instance Internal.HardDerivation Shelley where
     type WithRole Shelley = Role
 
     deriveAccountPrivateKey (Shelley rootXPrv) accIx =
-        let
-            Just purposeIx =
-                indexFromWord32 @(Index 'Hardened _) purposeIndex
-            Just coinTypeIx =
-                indexFromWord32 @(Index 'Hardened _) coinTypeIndex
-            purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
-                deriveXPrv DerivationScheme2 rootXPrv purposeIx
-            coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
-                deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
-            acctXPrv = -- lvl3 derivation; hardened derivation of account' index
-                deriveXPrv DerivationScheme2 coinTypeXPrv accIx
-        in
-            Shelley acctXPrv
+        Shelley $ deriveAccountPrivateKeyShelley rootXPrv accIx purposeIndex
 
     deriveAddressPrivateKey (Shelley accXPrv) role addrIx =
-        let
-            changeXPrv = -- lvl4 derivation; soft derivation of change chain
-                deriveXPrv DerivationScheme2 accXPrv (roleToIndex role)
-            addrXPrv = -- lvl5 derivation; soft derivation of address index
-                deriveXPrv DerivationScheme2 changeXPrv addrIx
-        in
-            Shelley addrXPrv
+        Shelley $ deriveAddressPrivateKeyShelley accXPrv role addrIx
 
 instance Internal.SoftDerivation Shelley where
     deriveAddressPublicKey (Shelley accXPub) role addrIx =
-        fromMaybe errWrongIndex $ do
-            changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
-                deriveXPub DerivationScheme2 accXPub (roleToIndex role)
-            addrXPub <- -- lvl5 derivation in bip44 is derivation of address chain
-                deriveXPub DerivationScheme2 changeXPub addrIx
-            return $ Shelley addrXPub
-      where
-        errWrongIndex = error $
-            "deriveAddressPublicKey failed: was given an hardened (or too big) \
-            \index for soft path derivation ( " ++ show addrIx ++ "). This is \
-            \either a programmer error, or, we may have reached the maximum \
-            \number of addresses for a given wallet."
+        Shelley $ deriveAddressPublicKeyShelley accXPub role addrIx
 
 -- | Generate a root key from a corresponding mnemonic.
 --
@@ -977,3 +946,69 @@ constructPayload addrType discrimination bytes = unsafeMkAddress $
     expectedLength =
         let headerSizeBytes = 1
         in headerSizeBytes + credentialHashSize
+
+--Shelley specific derivation and generation
+genMasterKeyFromMnemonicShelley
+    :: BA.ByteArrayAccess sndFactor
+    => SomeMnemonic
+    -> sndFactor
+    -> XPrv
+genMasterKeyFromMnemonicShelley fstFactor =
+    generateNew seedValidated
+    where
+        seed  = someMnemonicToBytes fstFactor
+        seedValidated = assert
+            (BA.length seed >= minSeedLengthBytes && BA.length seed <= 255)
+            seed
+
+deriveAccountPrivateKeyShelley
+    :: XPrv
+    -> Index derivationType depth
+    -> Word32
+    -> XPrv
+deriveAccountPrivateKeyShelley rootXPrv accIx purpose =
+    let
+        Just purposeIx =
+            indexFromWord32 @(Index 'Hardened _) purpose
+        Just coinTypeIx =
+            indexFromWord32 @(Index 'Hardened _) coinTypeIndex
+        purposeXPrv = -- lvl1 derivation; hardened derivation of purpose'
+            deriveXPrv DerivationScheme2 rootXPrv purposeIx
+        coinTypeXPrv = -- lvl2 derivation; hardened derivation of coin_type'
+            deriveXPrv DerivationScheme2 purposeXPrv coinTypeIx
+        acctXPrv = -- lvl3 derivation; hardened derivation of account' index
+            deriveXPrv DerivationScheme2 coinTypeXPrv accIx
+    in
+        acctXPrv
+
+deriveAddressPrivateKeyShelley
+    :: XPrv
+    -> Role
+    -> Index derivationType depth
+    -> XPrv
+deriveAddressPrivateKeyShelley accXPrv role addrIx =
+    let
+        changeXPrv = -- lvl4 derivation; soft derivation of change chain
+            deriveXPrv DerivationScheme2 accXPrv (roleToIndex role)
+        addrXPrv = -- lvl5 derivation; soft derivation of address index
+            deriveXPrv DerivationScheme2 changeXPrv addrIx
+    in
+        addrXPrv
+
+deriveAddressPublicKeyShelley
+    :: XPub
+    -> Role
+    -> Index derivationType depth
+    -> XPub
+deriveAddressPublicKeyShelley accXPub role addrIx =
+    fromMaybe errWrongIndex $ do
+        changeXPub <- -- lvl4 derivation in bip44 is derivation of change chain
+            deriveXPub DerivationScheme2 accXPub (roleToIndex role)
+        -- lvl5 derivation in bip44 is derivation of address chain
+        deriveXPub DerivationScheme2 changeXPub addrIx
+  where
+      errWrongIndex = error $
+          "deriveAddressPublicKey failed: was given an hardened (or too big) \
+          \index for soft path derivation ( " ++ show addrIx ++ "). This is \
+          \either a programmer error, or, we may have reached the maximum \
+          \number of addresses for a given wallet."
