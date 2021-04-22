@@ -67,6 +67,8 @@ import Control.Exception.Base
     ( assert )
 import Data.ByteArray
     ( ScrubbedBytes )
+import Data.Coerce
+    ( coerce )
 import Data.Maybe
     ( fromMaybe )
 import Data.Word
@@ -203,16 +205,13 @@ genMasterKeyFromMnemonic
     -> ScrubbedBytes
         -- ^ An optional second-factor passphrase (or 'mempty')
     -> Shared 'RootK XPrv
-genMasterKeyFromMnemonic =
-    Internal.genMasterKeyFromMnemonic
+genMasterKeyFromMnemonic = Internal.genMasterKeyFromMnemonic
 
 -- | Generate a root key from a corresponding root 'XPrv'
 --
 -- @since 3.4.0
-genMasterKeyFromXPrv
-    :: XPrv -> Shared 'RootK XPrv
-genMasterKeyFromXPrv =
-    Internal.genMasterKeyFromXPrv
+genMasterKeyFromXPrv :: XPrv -> Shared 'RootK XPrv
+genMasterKeyFromXPrv = Internal.genMasterKeyFromXPrv
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 --
@@ -223,8 +222,7 @@ deriveAccountPrivateKey
     :: Shared 'RootK XPrv
     -> Index 'Hardened 'AccountK
     -> Shared 'AccountK XPrv
-deriveAccountPrivateKey =
-    Internal.deriveAccountPrivateKey
+deriveAccountPrivateKey = Internal.deriveAccountPrivateKey
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 --
@@ -235,9 +233,8 @@ deriveAddressPrivateKey
     :: Shared 'AccountK XPrv
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPrv
-deriveAddressPrivateKey accPrv addrIx =
-    let (Shared xprv) = Internal.deriveAddressPrivateKey accPrv UTxOExternal addrIx
-    in Shared xprv
+deriveAddressPrivateKey accPrv = coerce .
+    Internal.deriveAddressPrivateKey accPrv UTxOExternal
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 --
@@ -248,9 +245,8 @@ deriveDelegationPrivateKey
     :: Shared 'AccountK XPrv
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPrv
-deriveDelegationPrivateKey accPrv addrIx =
-    let (Shared xprv) = Internal.deriveAddressPrivateKey accPrv Stake addrIx
-    in Shared xprv
+deriveDelegationPrivateKey accPrv = coerce .
+    Internal.deriveAddressPrivateKey accPrv Stake
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 --
@@ -261,9 +257,8 @@ deriveAddressPublicKey
     :: Shared 'AccountK XPub
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPub
-deriveAddressPublicKey accPub addrIx =
-    let (Shared xpub) = Internal.deriveAddressPublicKey accPub UTxOExternal addrIx
-    in Shared xpub
+deriveAddressPublicKey accPub = coerce .
+    Internal.deriveAddressPublicKey accPub UTxOExternal
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 --
@@ -274,9 +269,8 @@ deriveDelegationPublicKey
     :: Shared 'AccountK XPub
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPub
-deriveDelegationPublicKey accPub addrIx =
-    let (Shared xpub) = Internal.deriveAddressPublicKey accPub Stake addrIx
-    in Shared xpub
+deriveDelegationPublicKey accPub = coerce .
+    Internal.deriveAddressPublicKey accPub Stake
 
 
 --

@@ -73,10 +73,12 @@ import Data.Aeson
     )
 import Data.Aeson.Types
     ( Parser )
+import Data.Bifunctor
+    ( first )
 import Data.ByteString
     ( ByteString )
 import Data.Either.Combinators
-    ( mapLeft, maybeToRight )
+    ( maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
@@ -256,23 +258,21 @@ keyHashToText (KeyHash keyHash cred) = case cred of
 -- @since 3.1.0
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 keyHashFromText txt = do
-    (hrp, dp) <- either
-        (const $ Left ErrKeyHashFromTextInvalidString)
-        Right
-        (Bech32.decodeLenient txt)
+    (hrp, dp) <- first (const ErrKeyHashFromTextInvalidString) $
+        Bech32.decodeLenient txt
 
     maybeToRight ErrKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
-        >>= convertBytes hrp
+        >>= maybeToRight ErrKeyHashFromTextWrongHrp . convertBytes hrp
         >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
     convertBytes hrp bytes
-        | hrp == CIP5.addr_shared_vkh = Right (Payment, bytes)
-        | hrp == CIP5.stake_shared_vkh = Right (Delegation, bytes)
-        | hrp == CIP5.addr_shared_vk  = Right (Payment, hashCredential bytes)
-        | hrp == CIP5.addr_shared_xvk = Right (Payment, hashCredential $ BS.take 32 bytes)
-        | hrp == CIP5.stake_shared_vk  = Right (Delegation, hashCredential bytes)
-        | hrp == CIP5.stake_shared_xvk = Right (Delegation, hashCredential $ BS.take 32 bytes)
-        | otherwise = Left ErrKeyHashFromTextWrongHrp
+        | hrp == CIP5.addr_shared_vkh  = Just (Payment, bytes)
+        | hrp == CIP5.stake_shared_vkh = Just (Delegation, bytes)
+        | hrp == CIP5.addr_shared_vk   = Just (Payment, hashCredential bytes)
+        | hrp == CIP5.addr_shared_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
+        | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | otherwise                    = Nothing
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
@@ -349,7 +349,7 @@ validateScript level script = do
     requiredValidation script
 
     when (level == RecommendedValidation) $
-        mapLeft NotRecommended (recommendedValidation script)
+        first NotRecommended (recommendedValidation script)
 
 requiredValidation
     :: Script elem
@@ -462,10 +462,10 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     let unusedCosigners =
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
-    mapLeft WrongScript $ do
+    first WrongScript $ do
         requiredValidation script
         when (level == RecommendedValidation ) $
-            mapLeft NotRecommended (recommendedValidation script)
+            first NotRecommended (recommendedValidation script)
 
 -- | Possible validation errors when validating a script
 --

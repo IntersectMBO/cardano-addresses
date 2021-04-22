@@ -56,8 +56,7 @@ run :: Cmd -> IO ()
 run FromRecoveryPhrase{style} = do
     someMnemonic <- hGetSomeMnemonic stdin
     rootK <- generateRootKey someMnemonic style
-    let hrp = styleHrp style
-    hPutBytes stdout (xprvToBytes rootK) (EBech32 hrp)
+    hPutBytes stdout (xprvToBytes rootK) (EBech32 $ styleHrp style)
 
 styleHrp :: Style -> HumanReadablePart
 styleHrp Shared = CIP5.root_shared_xsk
