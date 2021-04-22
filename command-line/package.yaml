@@ -65,9 +65,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - cardano-addresses
     - cardano-addresses-cli
-    # TODO remove once js-sources from cardano-addresses-jsbits works correctly
-    - cardano-addresses-jsbits
     when:
     - condition: 'flag(release) && !impl(ghcjs) && !os(ghcjs)'
       ghc-options:
@@ -108,7 +107,6 @@ tests:
     - bytestring
     - cardano-addresses
     - cardano-addresses-cli
-    - cardano-addresses-jsbits
     - containers
     - hspec
     - process
