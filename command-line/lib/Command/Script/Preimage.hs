@@ -43,16 +43,16 @@ mod liftCmd = command "preimage" $
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string $ progName<>" script preimage 'all "
-            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
-            , indent 4 $ bold $ string ", script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+            , indent 4 $ bold $ string "[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3"
+            , indent 4 $ bold $ string ", addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "008201828200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333"
+            , indent 2 $ string "008201828200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d8200581c2445facc08d975d9d965d360dbe0fa63688ccc8f70fd7e1f01135380"
             , string ""
             , indent 2 $ bold $ string $ progName<>" script preimage 'all "
-            , indent 4 $ bold $ string "[ script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+            , indent 4 $ bold $ string "[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3"
             , indent 4 $ bold $ string ", active_from 100, active_until 150"
             , indent 4 $ bold $ string "]'"
-            , indent 2 $ string "008201838200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8204186482051896"
+            , indent 2 $ string "008201838200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d8204186482051896"
             ])
   where
     parser = Cmd

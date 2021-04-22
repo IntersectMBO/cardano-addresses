@@ -84,6 +84,8 @@ networkTagOpt style = option (eitherReader reader) $ mempty
                 "┌ Byron / Icarus ──────────"
             Shelley ->
                 "┌ Shelley ─────────────────"
+            Shared ->
+                "┌ Shared ──────────────────"
         fmtAllowedKeyword network =
             "│ " <> network
 
@@ -96,6 +98,10 @@ networkTagOpt style = option (eitherReader reader) $ mempty
         Icarus ->
             tagsFor Byron
         Shelley ->
+            [ unNetworkTag Shelley.shelleyMainnet
+            , unNetworkTag Shelley.shelleyTestnet
+            ]
+        Shared ->
             [ unNetworkTag Shelley.shelleyMainnet
             , unNetworkTag Shelley.shelleyTestnet
             ]
@@ -114,9 +120,12 @@ networkTagOpt style = option (eitherReader reader) $ mempty
         Icarus -> readKeywordMaybe str Byron
         Shelley | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shelley | str == "testnet" -> pure Shelley.shelleyTestnet
+        Shared | str == "mainnet" -> pure Shelley.shelleyMainnet
+        Shared | str == "testnet" -> pure Shelley.shelleyTestnet
         _ -> Nothing
 
     allowedKeywords = \case
         Byron -> ["mainnet", "staging", "testnet"]
         Icarus -> allowedKeywords Byron
         Shelley -> ["mainnet", "testnet"]
+        Shared -> ["mainnet", "testnet"]

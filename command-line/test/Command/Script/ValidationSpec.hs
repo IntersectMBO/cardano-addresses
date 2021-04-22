@@ -25,7 +25,7 @@ spec :: Spec
 spec = do
     describeCmd [ "script", "validate"] $ do
         specScriptValidated RequiredValidation
-            [iii|#{verKey4}|]
+            [iii|#{verKeyH1}|]
 
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
@@ -75,6 +75,12 @@ spec = do
         specScriptNotValidated (NotRecommended MZero) RecommendedValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
+        specScriptNotValidated NotUniformKeyType RequiredValidation
+            [iii|any [ #{verKeyH1}, #{verKeyH4}]|]
+
+        specScriptNotValidated NotUniformKeyType RecommendedValidation
+            [iii|at_least 1 [ #{verKeyH1}, #{verKeyH4} ]|]
+
 levelStr :: ValidationLevel -> String
 levelStr = \case
     RequiredValidation -> "--required"
@@ -92,13 +98,13 @@ specScriptNotValidated errMsg level script = it (script <> " => " <> show errMsg
     err `shouldContain` prettyErrValidateScript errMsg
 
 verKeyH1 :: String
-verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
 
 verKeyH2 :: String
-verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
 
 verKeyH3 :: String
-verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
+verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 
-verKey4 :: String
-verKey4 = "script_vk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23skqaly0"
+verKeyH4 :: String
+verKeyH4 = "stake_shared_vkh1nqc00hvlc6cq0sfhretk0rmzw8dywmusp8retuqnnxzajtzhjg5"

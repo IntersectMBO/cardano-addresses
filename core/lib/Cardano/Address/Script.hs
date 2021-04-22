@@ -40,6 +40,7 @@ module Cardano.Address.Script
     , scriptHashFromBytes
 
     , KeyHash (..)
+    , KeyRole (..)
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
@@ -72,10 +73,12 @@ import Data.Aeson
     )
 import Data.Aeson.Types
     ( Parser )
+import Data.Bifunctor
+    ( first )
 import Data.ByteString
     ( ByteString )
 import Data.Either.Combinators
-    ( mapLeft, maybeToRight )
+    ( maybeToRight )
 import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
@@ -139,7 +142,7 @@ serializeScript script =
 
     toCBOR :: Script KeyHash -> CBOR.Encoding
     toCBOR = \case
-        RequireSignatureOf (KeyHash verKeyHash) ->
+        RequireSignatureOf (KeyHash _ verKeyHash) ->
             encodeMultiscriptCtr 0 2 <> CBOR.encodeBytes verKeyHash
         RequireAllOf contents ->
             encodeMultiscriptCtr 1 2 <> encodeFoldable toCBOR contents
@@ -209,51 +212,67 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
+data KeyRole = Payment | Delegation
+    deriving (Generic, Show, Ord, Eq)
+instance NFData KeyRole
+
 -- | A 'KeyHash' type represents verification key hash that participate in building
 -- multi-signature script. The hash is expected to have size of 28-byte.
 --
 -- @since 3.0.0
-newtype KeyHash = KeyHash { unKeyHash :: ByteString }
+data KeyHash = KeyHash
+    { role :: KeyRole
+    , digest :: ByteString }
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyHash
 
 -- | Construct an 'KeyHash' from raw 'ByteString' (28 bytes).
 --
 -- @since 3.0.0
-keyHashFromBytes :: ByteString -> Maybe KeyHash
-keyHashFromBytes bytes
+keyHashFromBytes :: (KeyRole, ByteString) -> Maybe KeyHash
+keyHashFromBytes (cred, bytes)
     | BS.length bytes /= credentialHashSize = Nothing
-    | otherwise = Just $ KeyHash bytes
+    | otherwise = Just $ KeyHash cred bytes
 
 -- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
 --
 -- @since 3.0.0
 keyHashToText :: KeyHash -> Text
-keyHashToText (KeyHash keyHash) =
-    T.decodeUtf8 $ encode (EBech32 CIP5.script_vkh) keyHash
+keyHashToText (KeyHash cred keyHash) = case cred of
+    Payment ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
+    Delegation ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.stake_shared_vkh) keyHash
 
--- | Construct a 'KeyHash' from 'Text'. Either hex encoded text or
--- Bech32 encoded text with `script_vkh`, `script_vk` or `script_xvk` hrp are
--- expected. Raw keys will be hashed on the fly, whereas hash that are directly
+-- | Construct a 'KeyHash' from 'Text'. It should be
+-- Bech32 encoded text with one of following hrp:
+-- - `addr_shared_vkh`
+-- - `stake_shared_vkh`
+-- - `addr_shared_vk`
+-- - `stake_shared_vk`
+-- - `addr_shared_xvk`
+-- - `stake_shared_xvk`
+-- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 --
 -- @since 3.1.0
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 keyHashFromText txt = do
-    (hrp, dp) <- either
-        (const $ Left ErrKeyHashFromTextInvalidString)
-        Right
-        (Bech32.decodeLenient txt)
+    (hrp, dp) <- first (const ErrKeyHashFromTextInvalidString) $
+        Bech32.decodeLenient txt
 
     maybeToRight ErrKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
-        >>= convertBytes hrp
+        >>= maybeToRight ErrKeyHashFromTextWrongHrp . convertBytes hrp
         >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
     convertBytes hrp bytes
-        | hrp == CIP5.script_vkh = Right bytes
-        | hrp == CIP5.script_vk  = Right $ hashCredential bytes
-        | hrp == CIP5.script_xvk = Right $ hashCredential $ BS.take 32 bytes
-        | otherwise = Left ErrKeyHashFromTextWrongHrp
+        | hrp == CIP5.addr_shared_vkh  = Just (Payment, bytes)
+        | hrp == CIP5.stake_shared_vkh = Just (Delegation, bytes)
+        | hrp == CIP5.addr_shared_vk   = Just (Payment, hashCredential bytes)
+        | hrp == CIP5.addr_shared_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
+        | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | otherwise                    = Nothing
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
@@ -319,15 +338,18 @@ validateScript
     -> Script KeyHash
     -> Either ErrValidateScript ()
 validateScript level script = do
-    let validateKeyHash (KeyHash bytes) =
+    let validateKeyHash (KeyHash _ bytes) =
             (BS.length bytes == credentialHashSize)
     let allSigs = foldScript (:) [] script
     unless (L.all validateKeyHash allSigs) $ Left WrongKeyHash
 
+    when (L.length (L.nub $ map role allSigs) > 1) $
+        Left NotUniformKeyType
+
     requiredValidation script
 
     when (level == RecommendedValidation) $
-        mapLeft NotRecommended (recommendedValidation script)
+        first NotRecommended (recommendedValidation script)
 
 requiredValidation
     :: Script elem
@@ -440,10 +462,10 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     let unusedCosigners =
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
-    mapLeft WrongScript $ do
+    first WrongScript $ do
         requiredValidation script
         when (level == RecommendedValidation ) $
-            mapLeft NotRecommended (recommendedValidation script)
+            first NotRecommended (recommendedValidation script)
 
 -- | Possible validation errors when validating a script
 --
@@ -451,6 +473,7 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
 data ErrValidateScript
     = LedgerIncompatible
     | WrongKeyHash
+    | NotUniformKeyType
     | Malformed
     | NotRecommended ErrRecommendedValidateScript
     deriving (Eq, Show)
@@ -490,6 +513,8 @@ prettyErrValidateScript = \case
     WrongKeyHash ->
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
+    NotUniformKeyType ->
+        "All keys of a script must have the same role: either payment or delegation."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \
@@ -530,33 +555,34 @@ prettyErrValidateScriptTemplate = \case
 --
 
 -- Examples of Script jsons:
---"script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
---{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
---          , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+--"addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+--"stake_shared_vkh1nqc00hvlc6cq0sfhretk0rmzw8dywmusp8retuqnnxzajtzhjg5"
+--{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+--          , "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
 --          ]
 --}
---{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
---          , {"any": [ "script_vkh18srsxr3khll7vl3w9mqfu55n7wzxxlxj7qzr2mhnyrenxv223vj"
---                    , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vw"
+--{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+--          , {"any": [ "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
+--                    , "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 --                    ]
 --            }
 --          ]
 --}
---{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
---          , {"some": { "from" :[ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
---                               , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
---                               , "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223ll"
+--{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+--          , {"some": { "from" :[ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+--                               , "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
+--                               , "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 --                               ]
 --                     , "at_least" : 2
 --                     }
 --            }
 --          ]
 --}
---{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+--{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
 --          , {"active_from": 120 }
 --          ]
 --}
---{ "all" : [ "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+--{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
 --          , any [{"active_until": 100 }, {"active_from": 120 }]
 --          ]
 --}

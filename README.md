@@ -68,17 +68,6 @@ stake_xvk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7h9z4smmeqsvs67qhyqm
 </details>
 
 <details>
-  <summary>How to generate a script verification key (<strong>script.xvk</strong>)</summary>
-
-```console
-$ cardano-address key child 1852H/1815H/0H/3/0 < root.xsk | cardano-address key public --with-chain-code > script.xvk
-script_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qj75eg0
-```
-
-> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
-</details>
-
-<details>
   <summary>How to generate a payment address from a payment key (<strong>payment.addr</strong>)</summary>
 
 ```console
@@ -106,27 +95,55 @@ stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat%
 </details>
 
 <details>
+  <summary>How to generate a payment verification key for shared wallet (<strong>addr_shared.vk</strong>, <strong>stake_shared.vk</strong>)</summary>
+
+Let's generate extended root private key for shared style:
+
+``` console
+$ cardano-address key from-recovery-phrase Shared < phrase.prv > root_shared.xsk
+```
+
+Now generate payment verification key (`role=0` is used). Please note that purpose `1854H` is used for multisig.
+
+```console
+$ cardano-address key child 1854H/1815H/0H/0/0 < root_shared.xsk | cardano-address key public --without-chain-code > addr_shared.vk
+addr_shared_vk1a9h46rvjnqquxz02zyesh0ct29szh7vv9x7r2h87ttmnkgrfgguqhz0mtc
+```
+
+Generating delegation verification key is the similar (the only difference is role=2)
+
+```console
+$ cardano-address key child 1854H/1815H/0H/2/0 < root_shared.xsk | cardano-address key public --without-chain-code > stake_shared.vk
+stake_shared_vk18a8z5dcrlwene88n84j6dm9yvj5rt296fjtresqnunmacetdcymquyq43z
+```
+
+> :information_source: The last segment in the path is the key index, which can be incremented to derive more keys. Up `2^31-1` keys are possible.
+</details>
+
+<details>
   <summary>How to construct a multisig script hash (<strong>script.hash</strong>)</summary>
 
-We consider `script.1.xvk` and `script.2.xvk` obtained like `script.xvk` but by replacing the final index by `1` and `2` respectively.
+We consider `addr_shared.1.vk` and `addr_shared.2.vk` obtained like `addr_shared.vk` but by replacing the final index by `1` and `2` respectively.
 
 ```console
-$ cardano-address script hash "all [$(cat script.1.xvk), $(cat script.2.xvk)]" > script.hash
-script1qzzzlvn435jzdpm9dz5sk5helh6u2n5wa7g49m03sk4lzxhsxgt
+$ cardano-address script hash "all [$(cat addr_shared.1.vk), $(cat addr_shared.2.vk)]" > script.hash
+script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
 
-This script requires the signature from both signing keys corresponding to `script.1.xvk` and `script.2.xvk` in order to be valid. Similarly, we could require only one of the two signatures:
+This script requires the signature from both signing keys corresponding to `shared_addr.1.vk` and `shared_addr.2.vk` (ie., shared_addr.1.sk and shared_addr.2.sk) in order to be valid. Similarly, we could require only one of the two signatures:
+
+We can also use extended verification, eiher payment or delegation, keys. They can be obtained as the non-extended ones by using `--with-chain-code` option rather than `--without-chain-option` as above. They will give rise to the same script hash as for verification keys chain code is stripped upon calculation.
 
 ```console
-$ cardano-address script hash "any [$(cat script.1.xvk), $(cat script.2.xvk)]"
-script19raudr366cluzcwjxu67v7w50dazvxc0xtyfjy99wvmd593squy
+$ cardano-address script hash "any [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
+script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
 
-which is equivalent to:
+which is equivalent (functionally, but not in terms of hash value) to :
 
 ```console
-$ cardano-address script hash "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk)]"
-script1dnt66jufkgx8rqxypxtz0hcrxs6hhayuj9cqh0eca82lcpwawd4
+$ cardano-address script hash "at_least 1 [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
+script13uf3fz3ts5srpjc5zcfe977uvnyvp36wcvxuudryegz0zpjlx6a
 ```
 </details>
 
@@ -134,7 +151,7 @@ script1dnt66jufkgx8rqxypxtz0hcrxs6hhayuj9cqh0eca82lcpwawd4
   <summary>How to construct a multisig script hash with timelocks</summary>
 
 ```console
-$  cardano-address script hash "all [$(cat script.1.xvk), $(cat script.2.xvk), active_from 100, active_until 120]"
+$  cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]"
 ```
 </details>
 
@@ -143,10 +160,10 @@ $  cardano-address script hash "all [$(cat script.1.xvk), $(cat script.2.xvk), a
   <summary>How to validate a script</summary>
 
 ```console
-$  cardano-address script validate "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
+$  cardano-address script validate "at_least 1 [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), $(cat addr_shared.2.xvk)]"
 Validated.
 
-$  cardano-address script validate --recommended  "at_least 1 [$(cat script.1.xvk), $(cat script.2.xvk), $(cat script.2.xvk)]"
+$  cardano-address script validate --recommended  "at_least 1 [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), $(cat addr_shared.2.xvk)]"
 Not validated: The list inside a script has duplicate keys (which is not recommended)..
 ```
 </details>
@@ -155,11 +172,11 @@ Not validated: The list inside a script has duplicate keys (which is not recomme
   <summary>How to get preimage for a script</summary>
 
 ```console
-$ cardano-address script preimage "all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms, script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj]"
-008201828200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f333
+$ cardano-address script preimage "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq, addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp]"
+008201828200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d8200581c2445facc08d975d9d965d360dbe0fa63688ccc8f70fd7e1f01135380
 
-$  cardano-address script preimage "all [script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms, active_from 100, active_until 150]"
-008201838200581c3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe8204186482051896
+$  cardano-address script preimage "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq, active_from 100, active_until 150]"
+008201838200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d8204186482051896
 ```
 </details>
 

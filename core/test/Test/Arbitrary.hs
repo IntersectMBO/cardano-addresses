@@ -211,8 +211,6 @@ instance Arbitrary Shelley.Role where
         [ Shelley.UTxOExternal
         , Shelley.UTxOInternal
         , Shelley.Stake
-        , Shelley.MultisigForPayment
-        , Shelley.MultisigForDelegation
         ]
 
 instance Arbitrary Icarus.Role where

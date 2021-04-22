@@ -30,6 +30,7 @@ import Options.Applicative
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
+import qualified Cardano.Address.Style.Shared as Shared
 import qualified Cardano.Address.Style.Shelley as Shelley
 
 --
@@ -41,6 +42,7 @@ data Style
     = Byron
     | Icarus
     | Shelley
+    | Shared
     deriving (Eq, Show, Enum, Bounded)
 
 -- TODO
@@ -61,6 +63,10 @@ generateRootKey mw = \case
         let sndFactor = mempty
         let rootK = Shelley.genMasterKeyFromMnemonic mw sndFactor
         pure $ Shelley.getKey rootK
+    Shared -> do
+        let sndFactor = mempty
+        let rootK = Shared.genMasterKeyFromMnemonic mw sndFactor
+        pure $ Shared.getKey rootK
 
 --
 -- Applicative Parser
@@ -83,4 +89,5 @@ styleArg = argument (eitherReader reader) $ mempty
         "byron"       -> Right Byron
         "icarus"      -> Right Icarus
         "shelley"     -> Right Shelley
+        "shared"     -> Right Shared
         _             -> Left $ "Unknown style; expecting one of " <> styles'

@@ -20,35 +20,29 @@ import Test.Utils
 spec :: Spec
 spec = do
     describeCmd [ "script", "hash" ] $ do
-        specScriptHashProper "script102cyqtxktt547mcu3ea6v0ghaj6tjpw5ua34llyrxq02cg3yew2"
+        specScriptHashProper "script1ugvvxx2vrajnx7q4y8a3mtjgrms8a3c85zz5hjvwa2gpqpkhpzq"
             [iii|all [ #{verKeyH1} ]|]
 
-        specScriptHashProper "script102cyqtxktt547mcu3ea6v0ghaj6tjpw5ua34llyrxq02cg3yew2"
+        specScriptHashProper "script1ugvvxx2vrajnx7q4y8a3mtjgrms8a3c85zz5hjvwa2gpqpkhpzq"
             ("all    [ " <>verKeyH1<>"  ] ")
 
-        specScriptHashProper "script1tcn27mnwqdptdufkqxf0tsn6q7npttm56y2xk3k3tkzeklgpray"
+        specScriptHashProper "script1s7uwytqrwv63wp8e8cu7jz7j0nmqfcw3lmeh8u8dujmkvafpkpf"
             [iii|all [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "script1w7r7nyfe3wtwz9caslxe35q534zl308cpft58qdgv3wq25j9e5x"
+        specScriptHashProper "script1tgp32rg8358hae5senu7degf4cdp3cvul5ylq5sy76nkxvlm48l"
             [iii|any [ #{verKeyH1} ]|]
 
-        specScriptHashProper "script16fdf0plkpdwf3rl9u74dp4qjdq3k8mg0qrqyttl9ne26yx4w2tr"
+        specScriptHashProper "script1wnsgkncprsznm9smhc6x9h2gms3dn7kyx5g549hjueussc5twaa"
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "script16j8c8vy8t9nektczn5m47evxexkvewwcdnug45htjds7qdcdjgt"
+        specScriptHashProper "script1vw9etsd8d52dndc4aqkgpp23pmj2j9u29dayed494dyngpc9rsv"
             [iii|at_least 1 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "script1dalltthzqnpd06fukp6j4s026wsnwrrf9k0lytzg0hnj64tfxdm"
+        specScriptHashProper "script1hwv9dxq42uqy34las3gvhxg3s45n8vtzn74wjq6ungpp7xg86mh"
             [iii|at_least 1 [ #{verKeyH1}, all [ #{verKeyH2}, #{verKeyH3} ] ]|]
 
-        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
+        specScriptHashProper "script1w8469gq5ed7xtyf2tqdng5yn7ykgckkfcl38xre8hk3ejk2lcwt"
             [iii|#{verKeyH4}|]
-
-        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
-            [iii|#{verKey4}|]
-
-        specScriptHashProper "script1gtq9tzn6c82dzjquvn6aw5kj3s2rny6au3lejsymf96azkvdfqc"
-            [iii|#{verExtKey4}|]
 
         specScriptInvalid Malformed
             [iii|wrong [ #{verKeyH1} ]|]
@@ -56,25 +50,25 @@ spec = do
         specScriptInvalid Malformed
             [iii|any [ #{verKeyH1}, ]|]
 
-        specScriptHashProper "script10w5mpzsfwcjeg4ksqh7ffl0ya4fda0yyra7z7c3je6g67x57ctn"
+        specScriptHashProper "script1pcjctr4ltcndy3nljsdrlv3jcawanz4kcj69aj00py62udt0j3g"
             [iii|at_least 4 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptHashProper "script16app2n3qlwc543cmvrlnxt29nrpqttu2kc72ftj5fapvzccsc6y"
+        specScriptHashProper "script10tx7wh633277e0dgw3mkwvmdawrjvdmcz88ypqjzsgxcjr9nwlj"
             [iii|at_least 1 [ #{verKeyH1}, at_least 2 [ #{verKeyH2} ] ]|]
 
         specScriptHashProper "script163qjya2n5rc6je07ultq5rmjfvmgm5dam0pqsuc0en4u7967saj"
             [iii|all []|]
 
-        specScriptHashProper "script1duhpq0x5k2tey5rltut0ucunhqagxfhwqyu5rh4jmrw2qrjtkus"
+        specScriptHashProper "script14uj40hnew0uxrwlfz45z5umqwrs54kd0c04ujzyatyxzsk59wr8"
             [iii|any [ #{verKeyH1}, all [] ]|]
 
-        specScriptHashProper "script1njfxl9tzwfqaxk8tt5llh9zdfse9srvpeunjssjslrhvvl0ys30"
+        specScriptHashProper "script1v9rsc0jdf8l7hm5y45hecm5phjl6lscxmanxm0s93rg3z8q25jj"
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
-        specScriptHashProper "script12zfnrxhgn9xmzpptgz2eaepf8w9qww460xm0ek453y8qx3kfk7p"
+        specScriptHashProper "script1ltujlnyeee7j5ujgjjw6taqc9vqlaj63ws75ttpfzxq9557zuzv"
             [iii|at_least 1 [ #{verKeyH1}, #{verKeyH2}, active_from 10, active_until 25 ]|]
 
-        specScriptHashProper "script1uan07g0z30cfpvg7gxp5fmvjmv6ylaqa84msw8twyt5777hf7gf"
+        specScriptHashProper "script1mt0mww34xff9s6vzt6ehw633njcrd7am406e8vm6c66uggynax4"
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH1}]|]
 
         specScriptInvalid Malformed
@@ -95,19 +89,13 @@ specScriptInvalid errMsg script = it (script <> " => " <> show errMsg) $ do
     err `shouldContain` (prettyErrValidateScript errMsg)
 
 verKeyH1 :: String
-verKeyH1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
 
 verKeyH2 :: String
-verKeyH2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
 
 verKeyH3 :: String
-verKeyH3 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyre5g2sfvk2"
-
-verExtKey4 :: String
-verExtKey4 = "script_xvk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23nlvugj5ez9qfxxvkmjwnpn69s48cv572phfy6qpmnwat0hwcdrasapqewe"
-
-verKey4 :: String
-verKey4 = "script_vk1mjr5lrrlxuvelx94hu2cttmg5pp6cwy5h0sa37qvpcd07pv9g23skqaly0"
+verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 
 verKeyH4 :: String
-verKeyH4 = "script_vkh14uwy4ftq7d6wzpk5trrc5rlqss52tqp3qkrqk95hegls54e0sga"
+verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"

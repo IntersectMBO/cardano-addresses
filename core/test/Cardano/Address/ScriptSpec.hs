@@ -18,8 +18,6 @@ import Prelude
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
-    , GenMasterKey (..)
-    , HardDerivation (..)
     , Index
     , XPrv
     , XPub
@@ -33,6 +31,7 @@ import Cardano.Address.Script
     , ErrValidateScript (..)
     , ErrValidateScriptTemplate (..)
     , KeyHash (..)
+    , KeyRole (..)
     , Script (..)
     , ScriptHash (..)
     , ScriptTemplate (..)
@@ -42,8 +41,8 @@ import Cardano.Address.Script
     , validateScript
     , validateScriptTemplate
     )
-import Cardano.Address.Style.Shelley
-    ( Shelley (..), deriveMultisigForPaymentPrivateKey, hashKey )
+import Cardano.Address.Style.Shared
+    ( Shared (..), hashKey )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -77,6 +76,7 @@ import Test.QuickCheck
     , (===)
     )
 
+import qualified Cardano.Address.Style.Shared as Shared
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -85,32 +85,31 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
-    let mnemonic = [ "test", "child", "burst", "immense", "armed", "parrot"
-                   , "company", "walk", "dog" ]
-    let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
+    let mnemonic = ["network","empty","cause","mean","expire","private","finger"
+                   ,"accident","session","problem","absurd","banner","stage","void","what"]
+    let (Right mw) = mkSomeMnemonic @'[9,15,18,21,24] mnemonic
     let sndFactor = mempty
-    let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
-    let accXPrv = deriveAccountPrivateKey rootK minBound
+    let rootK = Shared.genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+    let accXPrv = Shared.deriveAccountPrivateKey rootK minBound
 
     let index1 = minBound
-    let multisigXPub1 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index1
-    -- "deeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
-    let verKeyHash1 = RequireSignatureOf $ hashKey multisigXPub1
+    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index1
+    let verKeyHash1 = RequireSignatureOf $ hashKey Payment multisigXPub1
 
     let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
-    let multisigXPub2 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index2
-    -- "60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-    let verKeyHash2 = RequireSignatureOf $ hashKey multisigXPub2
+    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index2
+    let verKeyHash2 = RequireSignatureOf $ hashKey Payment multisigXPub2
 
     let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
-    let multisigXPub3 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index3
-    -- "ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
-    let verKeyHash3 = RequireSignatureOf $ hashKey multisigXPub3
+    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index3
+    let verKeyHash3 = RequireSignatureOf $ hashKey Payment multisigXPub3
 
     let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
-    let multisigXPub4 = toXPub <$> deriveMultisigForPaymentPrivateKey accXPrv index4
-    -- "96834025cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-    let verKeyHash4 = RequireSignatureOf $ hashKey multisigXPub4
+    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index4
+    let verKeyHash4 = RequireSignatureOf $ hashKey Payment multisigXPub4
+
+    let multisigXPub5 = toXPub <$> Shared.deriveDelegationPrivateKey accXPrv index4
+    let verKeyHash5 = RequireSignatureOf $ hashKey Delegation multisigXPub5
 
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
@@ -119,120 +118,120 @@ spec = do
 
         it "RequireSignatureOf index=0" $
             checkCBORandScriptHash verKeyHash1
-                "008200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e"
-                "59fd497a34ac3e5abf2c8a703e3aaf3a2750e207b139d65d08d2c1b3"
+                "008200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab0986ce33d2"
+                "2e768befb6e18e302a5d89fc4d4bcbd5d63ac256682f87246c06b1bb"
         it "RequireSignatureOf index=1" $
             checkCBORandScriptHash verKeyHash2
-                "008200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-                "8d60cfd18163231751491389db7fa95bbb4192452d493f4147949f42"
+                "008200581c91e3548bc14b2947014d2060fe17eaf172b85efb02323752400976cf"
+                "7b244224d7e6517ceb99bd2f83ccc4587285f276acb9caa484c9c306"
         it "RequireSignatureOf index=2" $
             checkCBORandScriptHash verKeyHash3
-                "008200581cffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
-                "f34b7c6642ee2d2ff115a09d60d084d8df866c1be7722bfb78585d75"
+                "008200581c92d19fcb8f67c609f43aef8c53a2226dd141866820ebaa5157479101"
+                "98530ec66e36061feabcf6b3ef730b75cf8bf13b9948506382272dc7"
         it "RequireSignatureOf index=3" $
             checkCBORandScriptHash verKeyHash4
-                "008200581c96834025cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-                "324f9577142f2034545ba2e905d6e8a18afbd3ede08ec6c274aa641b"
+                "008200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
+                "547794e90ad105ea6dc75d0bac54c1473c663b7396dfc82fc34c5a9d"
 
         it "RequireAllOf for index=0 and index=1 keys" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2]
             checkCBORandScriptHash script
-                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a50437\
-                \9cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-                "57eec18300169c459169e335b809dbf50ca236d6ef730f623799a004"
+                "008201828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb02323752400976cf"
+                "0334c66ba3bada99c0bda26f88b8a1aea8c0aba87956d24e938a0f48"
         it "RequireAllOf for index=0, index=1 and index=2 keys" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2, verKeyHash3]
             checkCBORandScriptHash script
-                "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8200\
-                \581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb72393\
-                \215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
-                "3db6ba0c234043ab963f5cc723d8a953d46477dbdc45f3dbd73847f1"
+                "008201838200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb0232375240\
+                \0976cf8200581c92d19fcb8f67c609f43aef8c53a2226dd141866820ebaa5157479101"
+                "d5913dca5953a9bba712fde99b4ebc59ac83f5734f73d0c3c528450d"
 
         it "RequireAnyOf for index=0 and index=1 keys" $ do
             let script = RequireAnyOf [verKeyHash1, verKeyHash2]
             checkCBORandScriptHash script
-                "008202828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a50437\
-                \9cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-                "ee98a536acf306c398d0b51a675a088faf76d7e41d1f0ab94efc3be7"
+                "008202828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb02323752400976cf"
+                "b17721daca904785d6f610df2d22dd949f0698561cd0463962bbcfa7"
         it "RequireAllOf for index=0, index=1 and index=2 keys" $ do
             let script = RequireAnyOf [verKeyHash1, verKeyHash2, verKeyHash3]
             checkCBORandScriptHash script
-                "008202838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8200\
-                \581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb72393\
-                \215007d9a0aa02b7430080409cd8c053fd4f5b4d905053"
-                "270cbddf1d43fb4ad7eca05f08f2c9c65a290389d8c48c57ba9f38c4"
+                "008202838200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb0232375240\
+                \0976cf8200581c92d19fcb8f67c609f43aef8c53a2226dd141866820ebaa5157479101"
+                "2149c366b64f75cf17dc25c77576e906b92d780bef9a985f9ecc9193"
 
         it "RequireSomeOf 1 out of index=0 and index=1 keys" $ do
             let script = RequireSomeOf 1 [verKeyHash1, verKeyHash2]
             checkCBORandScriptHash script
-                "00830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504\
-                \379cfc1e8200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f"
-                "31aa5030ae386603145f0cb16577da64ce0647b3cf2104e8d5646d67"
+                "00830301828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb02323752400976cf"
+                "8f81fd46f3fabb58dc2d72a31e239740dd5e09d268e752f11deeb460"
         it "RequireAllOf 2 out of index=0, index=1, index=2 and index=3 keys" $ do
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, verKeyHash3, verKeyHash4]
             checkCBORandScriptHash script
-                "00830302848200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82\
-                \00581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581cffcbb723\
-                \93215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca063ce9c32d\
-                \fae6bc6a3e47f8da07ee4fb8e1a3901559"
-                "e2da1830b3465ae1a9161e89ff79673d8d133c841ab06418f0034534"
+                "00830302848200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb023237524009\
+                \76cf8200581c92d19fcb8f67c609f43aef8c53a2226dd141866820ebaa515747910\
+                \18200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
+                "ded625e186392b3dd432824a51bf4aedad188236ae3d475ee634c560"
 
         it "nested 1" $ do
             let nested = RequireAllOf [verKeyHash3, verKeyHash4]
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, nested]
             checkCBORandScriptHash script
-                "00830302838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
-                \200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8201828200581c\
-                \ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca0\
-                \63ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-                "1ae2515f480c8b67fc2fcccab565bbc12b196a24083f6cf278c3ed7a"
+                "00830302838200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28200581c91e3548bc14b2947014d2060fe17eaf172b85efb023237524009\
+                \76cf8201828200581c92d19fcb8f67c609f43aef8c53a2226dd141866820ebaa515\
+                \74791018200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
+                "3e4bdfb98e8e83a77350dbb546222dc9dec59a31fa413207270e60ea"
 
         it "nested 2" $ do
             let nested = RequireAnyOf [verKeyHash2, verKeyHash3, verKeyHash4]
             let script = RequireAllOf [verKeyHash1, nested]
             checkCBORandScriptHash script
-                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82\
-                \02838200581c60a3bf69aa748f9934b64357d9f1ca202f1a768aaf57263aedca8d5f8200581c\
-                \ffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c96834025cdca\
-                \063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-                "ae743bad455bad082ab69fd31183fb70a2787274938c85048b80e8ee"
+                "008201828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28202838200581c91e3548bc14b2947014d2060fe17eaf172b85efb0232\
+                \3752400976cf8200581c92d19fcb8f67c609f43aef8c53a2226dd141866820eba\
+                \a51574791018200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
+                "f21e0e095cee196d45796e9108bc2a9ebc0f81082850ad4b82ae92ff"
 
         it "nested 3" $ do
             let nested' = RequireAnyOf [verKeyHash3, verKeyHash4]
             let nested = RequireAllOf [verKeyHash1, nested']
             let script = RequireSomeOf 1 [verKeyHash1, nested]
             checkCBORandScriptHash script
-                "00830301828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8\
-                \201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82028282\
-                \00581cffcbb72393215007d9a0aa02b7430080409cd8c053fd4f5b4d9050538200581c9683402\
-                \5cdca063ce9c32dfae6bc6a3e47f8da07ee4fb8e1a3901559"
-                "8aa7af44362310140ff3d32ac7d1a2ecbe26da65f3d146c64b90e9e1"
+                "00830301828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab098\
+                \6ce33d28201828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab\
+                \0986ce33d28202828200581c92d19fcb8f67c609f43aef8c53a2226dd141866820e\
+                \baa51574791018200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
+                "5cf0520d67e4ac52a47fdbf9efbb1a5b95a0df4595287bafdb099d5b"
 
         it "ActivateFromSlot" $ do
             let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120]
             checkCBORandScriptHash script
-                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82041878"
-                "f0252f0e8b31694afe2e793aefa8420fe7cdefc08003fe6a911f710d"
+                "008201828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab0986ce33d282041878"
+                "068bc5b5efb96ff9831d75a132de4b700f8b605ebce43b2f8e340305"
 
         it "ActivateUntilSlot" $ do
             let script = RequireAllOf [verKeyHash1, ActiveUntilSlot 150]
             checkCBORandScriptHash script
-                "008201828200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e82051896"
-                "88bf6eca7c3bf7abc74fdb6bd8dee2ac08656a9b79bd5cccfddda058"
+                "008201828200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab0986ce33d282051896"
+                "83dee9daf83dd2dcff0b8e5aec72d256e05c283a1824e84485a0c726"
 
         it "ActivateUntilSlot and ActivateUntilSlot" $ do
             let script = RequireAllOf [verKeyHash1, ActiveFromSlot 120, ActiveUntilSlot 150]
             checkCBORandScriptHash script
-                "008201838200581cdeeae4e895d8d57378125ed4fd540f9bf245d59f7936a504379cfc1e8204187882051896"
-                "344ff9c219027af44c14c1d7c47bdf4c14b95c93739cac0b03c41b76"
+                "008201838200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab0986ce33d28204187882051896"
+                "37a5c4fe748ae7f01b9f029c875cbb2b407c559fd497786022a57019"
 
     describe "validateScript - expectations for RequiredValidation" $ do
         it "incorrect RequireSignatureOf" $ do
-            let script = RequireSignatureOf (KeyHash "<wrong key hash>")
+            let script = RequireSignatureOf (KeyHash Payment "<wrong key hash>")
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "incorrect RequireSignatureOf nested" $ do
-            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash "<wrong key hash>")]]
+            let script = RequireAllOf [RequireAnyOf [ RequireSignatureOf (KeyHash Payment "<wrong key hash>")]]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireAllOf []" $ do
@@ -248,7 +247,7 @@ spec = do
             validateScript RequiredValidation script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 2" $ do
-            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash "<wrong key hash>")]
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf [], RequireSignatureOf (KeyHash Payment "<wrong key hash>")]
             validateScript RequiredValidation script `shouldBe` (Left WrongKeyHash)
 
         it "correct RequireSomeOf" $ do
@@ -347,6 +346,13 @@ spec = do
                         ]
                     ]
             validateScript RecommendedValidation script `shouldBe` Right ()
+
+        it "not uniform prefixes in script" $ do
+            let script = RequireAllOf
+                    [ RequireAnyOf
+                      [ verKeyHash1, verKeyHash5 ]
+                    ]
+            validateScript RequiredValidation script `shouldBe` (Left NotUniformKeyType)
 
     describe "validateScriptTemplate - errors" $ do
         let accXpub0 =
@@ -619,7 +625,9 @@ genScript elemGen = scale (`div` 3) $ sized scriptTree
 instance Arbitrary KeyHash where
     -- always generate valid hashes, because json decoding will immediately fail
     -- on these.
-    arbitrary = KeyHash . BS.pack <$> vectorOf 28 arbitrary
+    arbitrary = do
+        payload' <- BS.pack <$> vectorOf 28 arbitrary
+        flip KeyHash payload' <$> oneof [pure Payment, pure Delegation]
 
 instance Arbitrary Cosigner where
     arbitrary = Cosigner <$> arbitrary

@@ -17,10 +17,11 @@ module Cardano.Codec.Bech32.Prefixes
 
       -- * Hashes
     , addr_vkh
-    , script_vkh
     , stake_vkh
+    , addr_shared_vkh
+    , stake_shared_vkh
 
-      -- * Keys
+      -- * Keys for 1852H
     , addr_vk
     , addr_sk
     , addr_xvk
@@ -33,14 +34,29 @@ module Cardano.Codec.Bech32.Prefixes
     , root_sk
     , root_xvk
     , root_xsk
-    , script_vk
-    , script_sk
-    , script_xvk
-    , script_xsk
     , stake_vk
     , stake_sk
     , stake_xvk
     , stake_xsk
+
+      -- * Keys for 1854H
+    , addr_shared_vk
+    , addr_shared_sk
+    , addr_shared_xvk
+    , addr_shared_xsk
+    , acct_shared_vk
+    , acct_shared_sk
+    , acct_shared_xvk
+    , acct_shared_xsk
+    , root_shared_vk
+    , root_shared_sk
+    , root_shared_xvk
+    , root_shared_xsk
+    , stake_shared_vk
+    , stake_shared_sk
+    , stake_shared_xvk
+    , stake_shared_xsk
+
     ) where
 
 import Codec.Binary.Bech32
@@ -105,18 +121,6 @@ root_xvk = [humanReadablePart|root_xvk|]
 root_xsk :: HumanReadablePart
 root_xsk = [humanReadablePart|root_xsk|]
 
-script_vk :: HumanReadablePart
-script_vk = [humanReadablePart|script_vk|]
-
-script_sk :: HumanReadablePart
-script_sk = [humanReadablePart|script_sk|]
-
-script_xvk :: HumanReadablePart
-script_xvk = [humanReadablePart|script_xvk|]
-
-script_xsk :: HumanReadablePart
-script_xsk = [humanReadablePart|script_xsk|]
-
 stake_vk :: HumanReadablePart
 stake_vk = [humanReadablePart|stake_vk|]
 
@@ -129,14 +133,64 @@ stake_xvk = [humanReadablePart|stake_xvk|]
 stake_xsk :: HumanReadablePart
 stake_xsk = [humanReadablePart|stake_xsk|]
 
+addr_shared_vk :: HumanReadablePart
+addr_shared_vk = [humanReadablePart|addr_shared_vk|]
+
+addr_shared_sk :: HumanReadablePart
+addr_shared_sk = [humanReadablePart|addr_shared_sk|]
+
+addr_shared_xvk :: HumanReadablePart
+addr_shared_xvk = [humanReadablePart|addr_shared_xvk|]
+
+addr_shared_xsk :: HumanReadablePart
+addr_shared_xsk = [humanReadablePart|addr_shared_xsk|]
+
+acct_shared_vk :: HumanReadablePart
+acct_shared_vk = [humanReadablePart|acct_shared_vk|]
+
+acct_shared_sk :: HumanReadablePart
+acct_shared_sk = [humanReadablePart|acct_shared_sk|]
+
+acct_shared_xvk :: HumanReadablePart
+acct_shared_xvk = [humanReadablePart|acct_shared_xvk|]
+
+acct_shared_xsk :: HumanReadablePart
+acct_shared_xsk = [humanReadablePart|acct_shared_xsk|]
+
+root_shared_vk :: HumanReadablePart
+root_shared_vk = [humanReadablePart|root_shared_vk|]
+
+root_shared_sk :: HumanReadablePart
+root_shared_sk = [humanReadablePart|root_shared_sk|]
+
+root_shared_xvk :: HumanReadablePart
+root_shared_xvk = [humanReadablePart|root_shared_xvk|]
+
+root_shared_xsk :: HumanReadablePart
+root_shared_xsk = [humanReadablePart|root_shared_xsk|]
+
+stake_shared_vk :: HumanReadablePart
+stake_shared_vk = [humanReadablePart|stake_shared_vk|]
+
+stake_shared_sk :: HumanReadablePart
+stake_shared_sk = [humanReadablePart|stake_shared_sk|]
+
+stake_shared_xvk :: HumanReadablePart
+stake_shared_xvk = [humanReadablePart|stake_shared_xvk|]
+
+stake_shared_xsk :: HumanReadablePart
+stake_shared_xsk = [humanReadablePart|stake_shared_xsk|]
 
 -- Hashes
 
 addr_vkh :: HumanReadablePart
 addr_vkh = [humanReadablePart|addr_vkh|]
 
-script_vkh :: HumanReadablePart
-script_vkh = [humanReadablePart|script_vkh|]
-
 stake_vkh :: HumanReadablePart
 stake_vkh = [humanReadablePart|stake_vkh|]
+
+addr_shared_vkh :: HumanReadablePart
+addr_shared_vkh = [humanReadablePart|addr_shared_vkh|]
+
+stake_shared_vkh :: HumanReadablePart
+stake_shared_vkh = [humanReadablePart|stake_shared_vkh|]
