@@ -509,28 +509,27 @@ eitherInspectAddress mRootPub addr = unpackAddress addr >>= parseInfo
 parseAddressInfoShelley :: AddressParts -> Either ErrInspectAddressOnlyShelley AddressInfo
 parseAddressInfoShelley AddressParts{..} = case addrType of
     -- 0000: base address: keyhash28,keyhash28
-    -- fixme: 28 byte hashes ????
     0b00000000 | addrRestLength == credentialHashSize + credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
             }
-    -- 0001: base address: scripthash32,keyhash28
+    -- 0001: base address: scripthash28,keyhash28
     0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
             }
-    -- 0010: base address: keyhash28,scripthash32
+    -- 0010: base address: keyhash28,scripthash28
     0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
             }
-    -- 0011: base address: scripthash32,scripthash32
+    -- 0011: base address: scripthash28,scripthash28
     0b00110000 | addrRestLength == 2 * credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
@@ -544,7 +543,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just $ ByPointer ptr
             , infoSpendingKeyHash = Just addrHash1
             }
-    -- 0101: pointer address: scripthash32, 3 variable length uint
+    -- 0101: pointer address: scripthash28, 3 variable length uint
     0b01010000 | addrRestLength > credentialHashSize -> do
         ptr <- getPtr addrHash2
         pure addressInfo
@@ -557,7 +556,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Nothing
             , infoSpendingKeyHash = Just addrHash1
             }
-    -- 0111: enterprise address: scripthash32
+    -- 0111: enterprise address: scripthash28
     0b01110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
@@ -569,7 +568,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoStakeKeyHash = Just addrHash1
             }
-    -- 1111: reward account: scripthash32
+    -- 1111: reward account: scripthash28
     0b11110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
