@@ -10,6 +10,16 @@
 @version 3.3.0
 
 
+-- | A compatibility function for the GHCJS build.
+module Cardano.Address.Compat
+
+-- | This function must be used somewhere, so that external Javascript
+--   files are correctly linked in the GHCJS build.
+--   
+--   For non-GHCJS, it has no effect.
+ghcjsBuildSupport :: IO ()
+
+
 -- | List common bech32 prefixes used for objects in the Cardano
 --   eco-systems.
 --   
