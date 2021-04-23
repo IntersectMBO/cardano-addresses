@@ -52,9 +52,9 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
 
     -- reward account: scripthash28
-    specInspectAddress ["Shelley", "by value", "script_hash"] []
+    specInspectAddress ["Shelley", "by value", "stake_shared_hash"] []
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
-    specInspectAddress ["Shelley", "by value", "script_hash_bech32"] []
+    specInspectAddress ["Shelley", "by value", "stake_shared_hash_bech32"] []
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
 
     -- cardano-cli generated --testnet-magic 42 addresses
