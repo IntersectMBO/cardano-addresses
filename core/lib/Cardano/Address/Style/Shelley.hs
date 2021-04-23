@@ -577,21 +577,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
     unknown -> Left (UnknownType unknown)
 
   where
-    bytes  = unAddress addr
-    base16 = T.unpack . T.decodeUtf8 . encode EBase16
-
-    bech32With hrp = T.decodeUtf8 . encode (EBech32 hrp)
-    bech32Spending = bech32With CIP5.addr_vkh
-    bech32Stake = bech32With CIP5.stake_vkh
-    bech32Script = bech32With CIP5.script
-
-    ptrToJSON :: ChainPointer -> Json.Value
-    ptrToJSON ChainPointer{slotNum,transactionIndex,outputIndex} = Json.object
-        [ "slot_num" .= slotNum
-        , "transaction_index" .= transactionIndex
-        , "output_index" .= outputIndex
-        ]
-
     addressInfo = AddressInfo
         { infoNetworkTag = NetworkTag $ fromIntegral addrNetwork
         , infoStakeReference = Nothing
@@ -677,7 +662,8 @@ instance ToJSON AddressInfo where
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
         ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
-        ++ jsonHash "script_hash" CIP5.script_vkh infoScriptHash
+        ++ jsonHash "spending_shared_hash" CIP5.addr_shared_vkh infoScriptHash
+        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoScriptHash
         ++ jsonHash "stake_script_hash" CIP5.stake_vkh infoStakeScriptHash
       where
         getPointer ByValue = Nothing
