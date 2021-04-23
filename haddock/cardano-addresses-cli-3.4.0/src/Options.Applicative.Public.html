@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><a name="line-2"></a><span>
+</span><a name="line-3"></a><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><a name="line-4"></a><span>
+</span><a name="line-5"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Options.Applicative.Public</span><span>
+</span><a name="line-6"></a><span>    </span><span class="hs-special">(</span><span>
+</span><a name="line-7"></a><span>    </span><span class="hs-comment">-- * Types</span><span>
+</span><a name="line-8"></a><span>      </span><a href="Options.Applicative.Public.html#PublicType"><span class="hs-identifier hs-type">PublicType</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-9"></a><span>
+</span><a name="line-10"></a><span>    </span><span class="hs-comment">-- * Applicative Parser</span><span>
+</span><a name="line-11"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Options.Applicative.Public.html#publicOpt"><span class="hs-identifier hs-var">publicOpt</span></a><span>
+</span><a name="line-12"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-13"></a><span>
+</span><a name="line-14"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Prelude</span><span>
+</span><a name="line-15"></a><span>
+</span><a name="line-16"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Control.Applicative</span><span>
+</span><a name="line-17"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-special">(</span><span class="hs-operator hs-var">&lt;|&gt;</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><a name="line-18"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Options.Applicative</span><span>
+</span><a name="line-19"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">Parser</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">flag'</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-special">)</span><span>
+</span><a name="line-20"></a><span>
+</span><a name="line-21"></a><span>
+</span><a name="line-22"></a><span class="hs-keyword">data</span><span> </span><a name="PublicType"><a href="Options.Applicative.Public.html#PublicType"><span class="hs-identifier">PublicType</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="WithChainCode"><a href="Options.Applicative.Public.html#WithChainCode"><span class="hs-identifier">WithChainCode</span></a></a><span> </span><span class="hs-glyph">|</span><span> </span><a name="WithoutChainCode"><a href="Options.Applicative.Public.html#WithoutChainCode"><span class="hs-identifier">WithoutChainCode</span></a></a><span>
+</span><a name="line-23"></a><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Eq</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Show</span><span class="hs-special">)</span><span>
+</span><a name="line-24"></a><span>
+</span><a name="line-25"></a><span class="hs-comment">--</span><span>
+</span><a name="line-26"></a><span class="hs-comment">-- Applicative Parser</span><span>
+</span><a name="line-27"></a><span class="hs-comment">--</span><span>
+</span><a name="line-28"></a><span>
+</span><a name="line-29"></a><span class="hs-comment">-- | Parse an 'PublicType' from the command-line, as set of non-overlapping flags.</span><span>
+</span><a name="line-30"></a><span class="hs-identifier">publicOpt</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="Options.Applicative.Public.html#PublicType"><span class="hs-identifier hs-type">PublicType</span></a><span>
+</span><a name="line-31"></a><a name="publicOpt"><a href="Options.Applicative.Public.html#publicOpt"><span class="hs-identifier">publicOpt</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679077811"><span class="hs-identifier hs-var">withoutCC</span></a><span> </span><span class="hs-operator hs-var">&lt;|&gt;</span><span> </span><a href="#local-6989586621679077812"><span class="hs-identifier hs-var">withCC</span></a><span>
+</span><a name="line-32"></a><span>  </span><span class="hs-keyword">where</span><span>
+</span><a name="line-33"></a><span>    </span><a name="local-6989586621679077811"><a href="#local-6989586621679077811"><span class="hs-identifier">withoutCC</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="Options.Applicative.Public.html#WithoutChainCode"><span class="hs-identifier hs-var">WithoutChainCode</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;without-chain-code&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-34"></a><span>    </span><a name="local-6989586621679077812"><a href="#local-6989586621679077812"><span class="hs-identifier">withCC</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="Options.Applicative.Public.html#WithChainCode"><span class="hs-identifier hs-var">WithChainCode</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;with-chain-code&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-35"></a></pre></body></html>
