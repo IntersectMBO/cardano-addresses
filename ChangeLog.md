@@ -1,12 +1,12 @@
-## [3.4.0] - UNRELEASED
+## [3.4.0] - 2021-04-30
 
 ### Added
 
 - Added `Cardano.Address.Style.Shelley.eitherInspectAddress` function
   with stronger result and error types.
 
-- Added `Cardano.Address.Style.Shared` module which define a shared wallet style
-  enabling multisig.
+- Added `Cardano.Address.Style.Shared` module which defines a shared
+  wallet style enabling multisig.
 
 ### Changed
 
@@ -20,13 +20,15 @@
   but `addr_shared_vkh` and `stake_shared_vkh` to denote spending and stake
   verification key hashes, respectively.
 
-- `KeyHash` now needs `KeyRole` values to specify, except binary payload. It was needed
-  change to enable differentiating between spending and stake key hashes.
+- `KeyHash` now needs `KeyRole` values to be specified, except binary
+  payload. It was needed change to enable differentiating between
+  spending and stake key hashes.
 
 ### Removed
 
 - Multisig related functions were deleted from `Cardano.Address.Style.Shelley` as they
   found a new place in `Cardano.Address.Style.Shared`.
+
 
 ## [3.3.0] - 2021-04-09
 
