@@ -67,7 +67,7 @@ let
         # `build-tool-depends` is used.
         packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
           config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
-          config.hsPkgs.buildPackages.cardano-addresses-cli.components.exes.cardano-address
+          config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address
         ];
       })
 
