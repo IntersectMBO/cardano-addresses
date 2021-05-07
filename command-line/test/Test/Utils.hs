@@ -25,6 +25,8 @@ import JSONSchema.Draft4
     , referencesViaFilesystem
     )
 #endif
+import System.Environment
+    ( lookupEnv )
 import System.Process
     ( readProcess, readProcessWithExitCode )
 import Test.Hspec
@@ -46,17 +48,28 @@ class CommandLine output where
             -- ^ output, either stdout or (stdout, stderr)
 
 instance CommandLine String where
-    cli = readProcess exe
+    cli args input = do
+        (exe', args') <- getWrappedCLI args
+        readProcess exe' args' input
 
 instance CommandLine (String, String) where
-    cli args =
-        fmap dropFirst . readProcessWithExitCode exe args
+    cli args input = do
+        (exe', args') <- getWrappedCLI args
+        dropFirst <$> readProcessWithExitCode exe' args' input
       where
         dropFirst (_,b,c) = (b, c)
 
 exe :: String
 exe = "cardano-address"
 
+-- | Return the exe name and args for a CLI invocation.
+-- For ghcjs, the cardano-address CLI must be executed under nodejs.
+getWrappedCLI :: [String] -> IO (FilePath, [String])
+getWrappedCLI args = maybe (exe, args) wrap <$> lookupJsExe
+  where
+    lookupJsExe = fmap allJs <$> lookupEnv "CARDANO_ADDRESSES_CLI"
+    allJs = (<> ("/" <> exe <> ".jsexe/all.js"))
+    wrap jsExe = ("node", (jsExe:args))
 
 --
 -- describeCmd

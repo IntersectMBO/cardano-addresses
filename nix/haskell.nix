@@ -133,12 +133,14 @@ let
         packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
         packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
         packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
-
         # Disable CLI running tests under ghcjs
         packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
-          echo "CLI tests disabled under ghcjs"
-          exit 0
+          export CARDANO_ADDRESSES_CLI="${config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address}/bin"
         '';
+        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+          config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
+          pkgs.buildPackages.nodejs
+        ];
       })
     ];
   });
