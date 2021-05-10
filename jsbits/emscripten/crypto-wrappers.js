@@ -273,9 +273,9 @@ function h$cryptonite_ed25519_scalar_decode_long(out_d, out_o, in_d, in_o, len) 
   h$logWrapper("h$cardano_crypto_ed25519_decode_long");
   // XXX sizes
   var in_ptr = h$getTmpBufferWith(0, in_d, in_o, len),
-      out_ptr = h$getTmpBuffer(1, 32);
+      out_ptr = h$getTmpBuffer(1, 40);
   var r = h$cardano_crypto._cryptonite_ed25519_scalar_decode_long(out_ptr, in_ptr, len);
-  h$copyFromHeap(out_ptr, out_d, out_o, 32);
+  h$copyFromHeap(out_ptr, out_d, out_o, 40);
   return r;
 }
 

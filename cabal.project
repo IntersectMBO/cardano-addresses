@@ -1,8 +1,6 @@
 index-state: 2021-03-23T15:08:40Z
 
--- NOTE: Staying on 8.6.5 to match stack.yaml and also because ghcjs
--- does not yet support 8.10.4.
-with-compiler: ghc-8.6.5
+with-compiler: ghc-8.10.4
 
 packages:
   command-line/cardano-addresses-cli.cabal
@@ -31,7 +29,13 @@ source-repository-package
 
 -- Relax overly strict bounds in hjsonschema and hjsonpointer
 allow-newer:
-    hjsonschema:*
-  , hjsonpointer:*
+    hjsonschema:QuickCheck
+  , hjsonschema:aeson
+  , hjsonschema:hashable
+  , hjsonschema:hjsonpointer
+  , hjsonschema:protolude
+  , hjsonpointer:aeson
+  , hjsonpointer:hashable
+  , stm:base
 
 test-show-details: direct

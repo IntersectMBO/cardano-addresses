@@ -54,8 +54,8 @@ let
         ];
       })
       ({ config, ... }: {
-        packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
-        packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
+        # packages.cardano-addresses.configureFlags = [ "--ghc-option=-Werror" ];
+        # packages.cardano-addresses-cli.configureFlags = [ "--ghc-option=-Werror" ];
 
         # This works around an issue with `cardano-addresses-cli.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
@@ -67,7 +67,7 @@ let
         # `build-tool-depends` is used.
         packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
           config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
-          config.hsPkgs.buildPackages.cardano-addresses-cli.components.exes.cardano-address
+          config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address
         ];
       })
 
@@ -133,12 +133,14 @@ let
         packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
         packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
         packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
-
         # Disable CLI running tests under ghcjs
         packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
-          echo "CLI tests disabled under ghcjs"
-          exit 0
+          export CARDANO_ADDRESSES_CLI="${config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address}/bin"
         '';
+        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+          config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
+          pkgs.buildPackages.nodejs
+        ];
       })
     ];
   });
