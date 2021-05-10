@@ -71,7 +71,7 @@ let
   inherit (systems.examples) mingwW64 musl64 ghcjs;
 
   jobs = {
-    native = mapTestOn (recursiveUpdate (packagePlatforms project) { checks = []; });
+    native = mapTestOn (packagePlatforms project);
     "${mingwW64.config}" = recursiveUpdate (mapTestOnCross mingwW64 (packagePlatformsCross (filterJobsCross project))) disabledMingwW64Tests;
     musl64 = mapTestOnCross musl64 (packagePlatformsCross (filterJobsCross project));
     ghcjs = mapTestOnCross ghcjs (packagePlatformsCross (filterJobsCross project));
