@@ -562,7 +562,7 @@ prettyErrValidateScriptTemplate = \case
     NoCosigner ->
         "The script template must have at least one cosigner defined."
     UnusedCosigner ->
-        "Each cosigner predefined must be used in a script template"
+        "Each cosigner predefined must be used in a script template."
 --
 -- Internal
 --
