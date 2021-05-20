@@ -39,6 +39,7 @@ import Cardano.Address.Script
     , serializeScript
     , toScriptHash
     , validateScript
+    , validateScriptInScriptTemplate
     , validateScriptTemplate
     )
 import Cardano.Address.Style.Shared
@@ -512,6 +513,44 @@ spec = do
                                    ]
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
+
+    describe "validateScriptInScriptTemplate - errors" $ do
+        let cosigner0 = RequireSignatureOf (Cosigner 0)
+        let cosigner1 = RequireSignatureOf (Cosigner 1)
+        let cosigner2 = RequireSignatureOf (Cosigner 2)
+        let cosigner3 = RequireSignatureOf (Cosigner 3)
+
+        it "correct RequireAllOf []" $ do
+            let script = ScriptTemplate Map.empty $ RequireAllOf []
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Right ())
+
+        it "incorrect RequireAnyOf []" $ do
+            let script = ScriptTemplate Map.empty $ RequireAnyOf []
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
+
+        it "incorrect RequireSomeOf 1" $ do
+            let script = ScriptTemplate Map.empty $ RequireSomeOf 2 [cosigner0]
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
+
+        it "incorrect RequireSomeOf 2" $ do
+            let script = ScriptTemplate Map.empty $
+                    RequireSomeOf 2 [cosigner0, cosigner0, RequireAnyOf []]
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
+
+        it "correct RequireSomeOf" $ do
+            let script = ScriptTemplate Map.empty $
+                    RequireSomeOf 2 [cosigner0,  cosigner1, RequireAnyOf []]
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
+
+        it "m=0 in RequireSomeOf is correct" $ do
+            let script = ScriptTemplate Map.empty $
+                    RequireSomeOf 0 [cosigner2, cosigner3]
+            validateScriptInScriptTemplate RequiredValidation script  `shouldBe` Right ()
+
+        it "timelocks are correct if timelocks are disjoint" $ do
+            let script = ScriptTemplate Map.empty $
+                    RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
+            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
 
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $
