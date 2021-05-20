@@ -31,6 +31,7 @@ module Cardano.Address.Script
     , ErrValidateScriptTemplate (..)
     , validateScript
     , validateScriptTemplate
+    , validateScriptInScriptTemplate
     , prettyErrValidateScript
     , prettyErrValidateScriptTemplate
 
@@ -466,6 +467,18 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
         requiredValidation script
         when (level == RecommendedValidation ) $
             first NotRecommended (recommendedValidation script)
+
+-- | Validate a 'ScriptTemplate', semantically
+--
+-- @since 3.5.0
+validateScriptInScriptTemplate
+    :: ValidationLevel
+    -> ScriptTemplate
+    -> Either ErrValidateScript ()
+validateScriptInScriptTemplate level (ScriptTemplate _ script) = do
+    requiredValidation script
+    when (level == RecommendedValidation ) $
+        first NotRecommended (recommendedValidation script)
 
 -- | Possible validation errors when validating a script
 --
