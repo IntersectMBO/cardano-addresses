@@ -456,16 +456,16 @@ validateScriptTemplate
     -> Either ErrValidateScriptTemplate ()
 validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     first WrongScript $ validateScriptOfTemplate level script
-    when (Map.size cosigners' == 0) $ Left NoCosigner
+    let allCosigners = Set.fromList $ foldScript (:) [] script
+    when (L.null allCosigners) $ Left NoCosignerInScript
+    when (Map.size cosigners' == 0) $ Left NoCosignerXPub
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
-    let allCosigners = Set.fromList $ foldScript (:) [] script
+    unless (L.all (`elem` allCosigners) (Map.keys cosigners')) $
+        Left UnknownCosigner
     let unknownCosigners =
             allCosigners `difference` Set.fromList (Map.keys cosigners')
-    unless (Set.null unknownCosigners) $ Left UnknownCosigner
-    let unusedCosigners =
-            Set.fromList (Map.keys cosigners') `difference` allCosigners
-    unless (Set.null unusedCosigners) $ Left UnusedCosigner
+    unless (Set.null unknownCosigners) $ Left MissingCosignerXPub
 
 -- | Validate a script in 'ScriptTemplate'
 --
@@ -509,8 +509,9 @@ data ErrValidateScriptTemplate
     = WrongScript ErrValidateScript
     | DuplicateXPubs
     | UnknownCosigner
-    | NoCosigner
-    | UnusedCosigner
+    | MissingCosignerXPub
+    | NoCosignerInScript
+    | NoCosignerXPub
     deriving (Eq, Show)
 
 -- | Pretty-print a script validation error.
@@ -556,12 +557,14 @@ prettyErrValidateScriptTemplate = \case
     WrongScript err -> prettyErrValidateScript err
     DuplicateXPubs ->
         "The cosigners in a script template must stand behind an unique extended public key."
+    MissingCosignerXPub ->
+        "Each cosigner in a script template must have extended public key."
+    NoCosignerInScript ->
+        "The script of a template must have at least one cosigner defined."
+    NoCosignerXPub ->
+        "The script template must have at least one cosigner with an extended public key."
     UnknownCosigner ->
-        "The script must use a cosigner present in a script template."
-    NoCosigner ->
-        "The script template must have at least one cosigner defined."
-    UnusedCosigner ->
-        "Each cosigner predefined must be used in a script template."
+        "The specified cosigner must be present in the script of the template."
 --
 -- Internal
 --
