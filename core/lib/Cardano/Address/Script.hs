@@ -453,6 +453,10 @@ validateScriptTemplate
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
 validateScriptTemplate level (ScriptTemplate cosigners' script) = do
+    first WrongScript $ do
+        requiredValidation script
+        when (level == RecommendedValidation ) $
+            first NotRecommended (recommendedValidation script)
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
@@ -463,10 +467,6 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     let unusedCosigners =
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
-    first WrongScript $ do
-        requiredValidation script
-        when (level == RecommendedValidation ) $
-            first NotRecommended (recommendedValidation script)
 
 -- | Validate a 'ScriptTemplate', semantically
 --

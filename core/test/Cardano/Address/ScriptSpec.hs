@@ -380,7 +380,7 @@ spec = do
         let cosigner3 = RequireSignatureOf (Cosigner 3)
 
         it "no cosigners in script template" $ do
-            let scriptTemplate = ScriptTemplate Map.empty (RequireAllOf [])
+            let scriptTemplate = ScriptTemplate Map.empty (RequireAllOf [cosigner0, cosigner1])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left NoCosigner)
 
         it "illegal cosigner in script template" $ do
