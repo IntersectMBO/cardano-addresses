@@ -31,6 +31,7 @@ module Cardano.Address.Script
     , ErrValidateScriptTemplate (..)
     , validateScript
     , validateScriptTemplate
+    , validateScriptOfTemplate
     , prettyErrValidateScript
     , prettyErrValidateScriptTemplate
 
@@ -452,6 +453,7 @@ validateScriptTemplate
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
 validateScriptTemplate level (ScriptTemplate cosigners' script) = do
+    first WrongScript $ validateScriptOfTemplate level script
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
@@ -462,10 +464,18 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
     let unusedCosigners =
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
-    first WrongScript $ do
-        requiredValidation script
-        when (level == RecommendedValidation ) $
-            first NotRecommended (recommendedValidation script)
+
+-- | Validate a script in 'ScriptTemplate'
+--
+-- @since 3.5.0
+validateScriptOfTemplate
+    :: ValidationLevel
+    -> Script Cosigner
+    -> Either ErrValidateScript ()
+validateScriptOfTemplate level script = do
+    requiredValidation script
+    when (level == RecommendedValidation ) $
+        first NotRecommended (recommendedValidation script)
 
 -- | Possible validation errors when validating a script
 --
@@ -549,7 +559,7 @@ prettyErrValidateScriptTemplate = \case
     NoCosigner ->
         "The script template must have at least one cosigner defined."
     UnusedCosigner ->
-        "Each cosigner predefined must be used in a script template"
+        "Each cosigner predefined must be used in a script template."
 --
 -- Internal
 --
