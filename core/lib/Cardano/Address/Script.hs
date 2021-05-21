@@ -31,7 +31,7 @@ module Cardano.Address.Script
     , ErrValidateScriptTemplate (..)
     , validateScript
     , validateScriptTemplate
-    , validateScriptInScriptTemplate
+    , validateScriptOfTemplate
     , prettyErrValidateScript
     , prettyErrValidateScriptTemplate
 
@@ -453,10 +453,7 @@ validateScriptTemplate
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
 validateScriptTemplate level (ScriptTemplate cosigners' script) = do
-    first WrongScript $ do
-        requiredValidation script
-        when (level == RecommendedValidation ) $
-            first NotRecommended (recommendedValidation script)
+    first WrongScript $ validateScriptOfTemplate level script
     when (Map.size cosigners' == 0) $ Left NoCosigner
     when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
         Left DuplicateXPubs
@@ -468,14 +465,14 @@ validateScriptTemplate level (ScriptTemplate cosigners' script) = do
             Set.fromList (Map.keys cosigners') `difference` allCosigners
     unless (Set.null unusedCosigners) $ Left UnusedCosigner
 
--- | Validate a 'ScriptTemplate', semantically
+-- | Validate a script in 'ScriptTemplate'
 --
 -- @since 3.5.0
-validateScriptInScriptTemplate
+validateScriptOfTemplate
     :: ValidationLevel
-    -> ScriptTemplate
+    -> Script Cosigner
     -> Either ErrValidateScript ()
-validateScriptInScriptTemplate level (ScriptTemplate _ script) = do
+validateScriptOfTemplate level script = do
     requiredValidation script
     when (level == RecommendedValidation ) $
         first NotRecommended (recommendedValidation script)

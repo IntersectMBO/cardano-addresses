@@ -39,7 +39,7 @@ import Cardano.Address.Script
     , serializeScript
     , toScriptHash
     , validateScript
-    , validateScriptInScriptTemplate
+    , validateScriptOfTemplate
     , validateScriptTemplate
     )
 import Cardano.Address.Style.Shared
@@ -514,118 +514,113 @@ spec = do
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
 
-    describe "validateScriptInScriptTemplate - errors" $ do
+    describe "validateScriptOfTemplate - errors" $ do
         let cosigner0 = RequireSignatureOf (Cosigner 0)
         let cosigner1 = RequireSignatureOf (Cosigner 1)
         let cosigner2 = RequireSignatureOf (Cosigner 2)
         let cosigner3 = RequireSignatureOf (Cosigner 3)
 
         it "correct RequireAllOf []" $ do
-            let script = ScriptTemplate Map.empty $ RequireAllOf []
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Right ())
+            let script = RequireAllOf []
+            validateScriptOfTemplate RequiredValidation script `shouldBe` (Right ())
 
         it "incorrect RequireAnyOf []" $ do
-            let script = ScriptTemplate Map.empty $ RequireAnyOf []
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
+            let script = RequireAnyOf []
+            validateScriptOfTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 1" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 2 [cosigner0]
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
+            let script = RequireSomeOf 2 [cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` (Left LedgerIncompatible)
 
         it "incorrect RequireSomeOf 2" $ do
-            let script = ScriptTemplate Map.empty $
-                    RequireSomeOf 2 [cosigner0, cosigner0, RequireAnyOf []]
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
+            let script = RequireSomeOf 2 [cosigner0, cosigner0, RequireAnyOf []]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
         it "correct RequireSomeOf" $ do
-            let script = ScriptTemplate Map.empty $
-                    RequireSomeOf 2 [cosigner0,  cosigner1, RequireAnyOf []]
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
+            let script = RequireSomeOf 2 [cosigner0,  cosigner1, RequireAnyOf []]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
         it "m=0 in RequireSomeOf is correct" $ do
-            let script = ScriptTemplate Map.empty $
-                    RequireSomeOf 0 [cosigner2, cosigner3]
-            validateScriptInScriptTemplate RequiredValidation script  `shouldBe` Right ()
+            let script = RequireSomeOf 0 [cosigner2, cosigner3]
+            validateScriptOfTemplate RequiredValidation script  `shouldBe` Right ()
 
         it "timelocks are correct if timelocks are disjoint" $ do
-            let script = ScriptTemplate Map.empty $
-                    RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
-            validateScriptInScriptTemplate RequiredValidation script `shouldBe` Right ()
+            let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
         it "incorrect RequireAllOf []" $ do
-            let script = ScriptTemplate Map.empty $ RequireAllOf []
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
+            let script = RequireAllOf []
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
 
         it "incorrect in nested 1" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1 [cosigner1, RequireAllOf [] ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
+            let script = RequireSomeOf 1 [cosigner1, RequireAllOf [] ]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
 
         it "incorrect in nested 2" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1
+            let script = RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [cosigner2, RequireAllOf [] ]
                     ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended EmptyList)
 
         it "m=0 in RequireSomeOf" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 0 [cosigner2, cosigner3]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended MZero)
+            let script = RequireSomeOf 0 [cosigner2, cosigner3]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended MZero)
 
         it "duplicate content in RequireAllOf" $ do
-            let script = ScriptTemplate Map.empty $ RequireAllOf [cosigner1, cosigner2, cosigner1]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
+            let script = RequireAllOf [cosigner1, cosigner2, cosigner1]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
         it "duplicate content in RequireAnyOf" $ do
-            let script = ScriptTemplate Map.empty $ RequireAnyOf [cosigner1, cosigner2, cosigner1]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
+            let script = RequireAnyOf [cosigner1, cosigner2, cosigner1]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
         it "duplicate content in RequireSomeOf" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1 [cosigner1, cosigner2, cosigner1]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
+            let script = RequireSomeOf 1 [cosigner1, cosigner2, cosigner1]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
         it "duplicate in nested" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1
+            let script = RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireSomeOf 2 [cosigner3, cosigner3, cosigner0]
                                    ]
                     ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
         it "redundant timelocks - too many" $ do
-            let script = ScriptTemplate Map.empty $
-                    RequireSomeOf 1 [cosigner1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
+            let script = RequireSomeOf 1 [cosigner1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
         it "redundant timelocks - nested" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1
+            let script = RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireSomeOf 2 [cosigner2, cosigner3, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, cosigner1]
                                    ]
                     ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
         it "content in RequireAllOf - 1" $ do
-            let script = ScriptTemplate Map.empty $ RequireAllOf [cosigner0]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Right ()
+            let script = RequireAllOf [cosigner0]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Right ()
 
         it "content in RequireAllOf - 2" $ do
-            let script = ScriptTemplate Map.empty $ RequireAllOf [cosigner1, cosigner2]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Right ()
+            let script = RequireAllOf [cosigner1, cosigner2]
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Right ()
 
         it "nested 1" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1
+            let script = RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf
                         [ cosigner2
                         , RequireSomeOf 1 [cosigner2, cosigner3]
                         ]
                     ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Right ()
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Right ()
 
         it "nested 2" $ do
-            let script = ScriptTemplate Map.empty $ RequireSomeOf 1
+            let script = RequireSomeOf 1
                     [ RequireAnyOf
                         [ cosigner1
                         , cosigner2
@@ -635,7 +630,7 @@ spec = do
                         , cosigner3
                         ]
                     ]
-            validateScriptInScriptTemplate RecommendedValidation script `shouldBe` Right ()
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Right ()
 
     describe "can perform roundtrip JSON serialization & deserialization - Script KeyHash" $
         it "fromJSON . toJSON === pure" $
