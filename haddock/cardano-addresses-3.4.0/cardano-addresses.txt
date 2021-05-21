@@ -450,6 +450,9 @@ validateScript :: ValidationLevel -> Script KeyHash -> Either ErrValidateScript 
 -- | Validate a <a>ScriptTemplate</a>, semantically
 validateScriptTemplate :: ValidationLevel -> ScriptTemplate -> Either ErrValidateScriptTemplate ()
 
+-- | Validate a script in <a>ScriptTemplate</a>
+validateScriptOfTemplate :: ValidationLevel -> Script Cosigner -> Either ErrValidateScript ()
+
 -- | Pretty-print a script validation error.
 prettyErrValidateScript :: ErrValidateScript -> String
 
