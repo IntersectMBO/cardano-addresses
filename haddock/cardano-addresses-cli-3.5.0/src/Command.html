@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Command</span><span>
+</span><span id="line-7"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Command.html#CLI"><span class="hs-identifier">CLI</span></a></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><span class="hs-comment">-- * I/O interface</span></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.html#setup"><span class="hs-identifier">setup</span></a></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.html#parse"><span class="hs-identifier">parse</span></a></span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.html#run"><span class="hs-identifier">run</span></a></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><span class="hs-comment">-- * I/O Fix</span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.html#withUtf8Encoding"><span class="hs-identifier">withUtf8Encoding</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">handle</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">void</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">ParserInfo</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">customExecParser</span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">footerDoc</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">helper</span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">info</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">prefs</span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">progDesc</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">showHelpOnEmpty</span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">subparser</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative.Help.Pretty</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">bold</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">hsep</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">string</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">vsep</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Console.ANSI</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">hSupportsANSIWithoutEmulation</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO</span></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">BufferMode</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Handle</span></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">hSetBuffering</span></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">hSetEncoding</span></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">mkTextEncoding</span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">stderr</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">stdin</span></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">stdout</span></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO.CodePage</span></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">withCP65001</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.IO.Extra.html"><span class="hs-identifier">System.IO.Extra</span></a></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="System.IO.Extra.html#prettyIOException"><span class="hs-identifier">prettyIOException</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.IO.Extra.html#progName"><span class="hs-identifier">progName</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.html"><span class="hs-identifier">Command.Address</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Address</span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Key.html"><span class="hs-identifier">Command.Key</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Key</span></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.html"><span class="hs-identifier">Command.RecoveryPhrase</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">RecoveryPhrase</span></span><span>
+</span><span id="line-58"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Script.html"><span class="hs-identifier">Command.Script</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Script</span></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Version.html"><span class="hs-identifier">Command.Version</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Version</span></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-keyword">data</span><span> </span><span id="CLI"><span class="annot"><a href="Command.html#CLI"><span class="hs-identifier hs-var">CLI</span></a></span></span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="RecoveryPhrase"><span class="annot"><a href="Command.html#RecoveryPhrase"><span class="hs-identifier hs-var">RecoveryPhrase</span></a></span></span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.html#Cmd"><span class="hs-identifier hs-type">RecoveryPhrase.Cmd</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Key"><span class="annot"><a href="Command.html#Key"><span class="hs-identifier hs-var">Key</span></a></span></span><span> </span><span class="annot"><a href="Command.Key.html#Cmd"><span class="hs-identifier hs-type">Key.Cmd</span></a></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Address"><span class="annot"><a href="Command.html#Address"><span class="hs-identifier hs-var">Address</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier hs-type">Address.Cmd</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Script"><span class="annot"><a href="Command.html#Script"><span class="hs-identifier hs-var">Script</span></a></span></span><span> </span><span class="annot"><a href="Command.Script.html#Cmd"><span class="hs-identifier hs-type">Script.Cmd</span></a></span><span>
+</span><span id="line-66"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Version"><span class="annot"><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span></span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679107402"><span id="local-6989586621679107404"><span id="local-6989586621679107406"><span class="annot"><span class="annottext">Int -&gt; CLI -&gt; ShowS
+[CLI] -&gt; ShowS
+CLI -&gt; String
+(Int -&gt; CLI -&gt; ShowS)
+-&gt; (CLI -&gt; String) -&gt; ([CLI] -&gt; ShowS) -&gt; Show CLI
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [CLI] -&gt; ShowS
+$cshowList :: [CLI] -&gt; ShowS
+show :: CLI -&gt; String
+$cshow :: CLI -&gt; String
+showsPrec :: Int -&gt; CLI -&gt; ShowS
+$cshowsPrec :: Int -&gt; CLI -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Command.html#cli"><span class="hs-identifier hs-type">cli</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ParserInfo</span></span><span> </span><span class="annot"><a href="Command.html#CLI"><span class="hs-identifier hs-type">CLI</span></a></span><span>
+</span><span id="line-70"></span><span id="cli"><span class="annot"><span class="annottext">cli :: ParserInfo CLI
+</span><a href="Command.html#cli"><span class="hs-identifier hs-var hs-var">cli</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser CLI -&gt; InfoMod CLI -&gt; ParserInfo CLI
+forall a. Parser a -&gt; InfoMod a -&gt; ParserInfo a
+</span><span class="hs-identifier hs-var">info</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (CLI -&gt; CLI)
+forall a. Parser (a -&gt; a)
+</span><span class="hs-identifier hs-var">helper</span></span><span> </span><span class="annot"><span class="annottext">Parser (CLI -&gt; CLI) -&gt; Parser CLI -&gt; Parser CLI
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser CLI
+</span><a href="#local-6989586621679107399"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod CLI -&gt; ParserInfo CLI) -&gt; InfoMod CLI -&gt; ParserInfo CLI
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod CLI
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">InfoMod CLI -&gt; InfoMod CLI -&gt; InfoMod CLI
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; InfoMod CLI
+forall a. String -&gt; InfoMod a
+</span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Command-line for address and key manipulation in Cardano.&quot;</span></span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><span class="annottext">InfoMod CLI -&gt; InfoMod CLI -&gt; InfoMod CLI
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Maybe Doc -&gt; InfoMod CLI
+forall a. Maybe Doc -&gt; InfoMod a
+</span><span class="hs-identifier hs-var">footerDoc</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Doc -&gt; Maybe Doc
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Maybe Doc) -&gt; Doc -&gt; Maybe Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">vsep</span></span><span>
+</span><span id="line-73"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&#128161; Need auto-completion?&quot;</span></span><span>
+</span><span id="line-74"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-75"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">hsep</span></span><span>
+</span><span id="line-76"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;  &#8627;&quot;</span></span><span>
+</span><span id="line-77"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;source &lt;(&quot;</span></span><span>
+</span><span id="line-78"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="System.IO.Extra.html#progName"><span class="hs-identifier hs-var">progName</span></a></span><span>
+</span><span id="line-79"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Doc) -&gt; String -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;--bash-completion-script `which &quot;</span></span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span class="annot"><span class="annottext">String
+</span><a href="System.IO.Extra.html#progName"><span class="hs-identifier hs-var">progName</span></a></span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;`)&quot;</span></span><span>
+</span><span id="line-80"></span><span>            </span><span class="hs-special">]</span><span>
+</span><span id="line-81"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-82"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Or alternatively --fish-completion-script / --zsh-completion-script.&quot;</span></span><span>
+</span><span id="line-83"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;For a long-term solution, you may want to put this script in the relevant place. e.g.:&quot;</span></span><span>
+</span><span id="line-84"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-85"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">hsep</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;  &#8627;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;/etc/bash_completion.d&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-86"></span><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-88"></span><span>    </span><span id="local-6989586621679107399"><span class="annot"><span class="annottext">parser :: Parser CLI
+</span><a href="#local-6989586621679107399"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CLI -&gt; Parser CLI
+forall a. a -&gt; Parser a
+</span><a href="Command.Version.html#opt"><span class="hs-identifier hs-var">Version.opt</span></a></span><span> </span><span class="annot"><span class="annottext">CLI
+</span><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span><span> </span><span class="annot"><span class="annottext">Parser CLI -&gt; Parser CLI -&gt; Parser CLI
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Mod CommandFields CLI -&gt; Parser CLI
+forall a. Mod CommandFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">subparser</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Mod CommandFields CLI] -&gt; Mod CommandFields CLI
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-89"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; CLI) -&gt; Mod CommandFields CLI
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.RecoveryPhrase.html#mod"><span class="hs-identifier hs-var">RecoveryPhrase.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; CLI
+</span><a href="Command.html#RecoveryPhrase"><span class="hs-identifier hs-var">RecoveryPhrase</span></a></span><span>
+</span><span id="line-90"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; CLI) -&gt; Mod CommandFields CLI
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Key.html#mod"><span class="hs-identifier hs-var">Key.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; CLI
+</span><a href="Command.html#Key"><span class="hs-identifier hs-var">Key</span></a></span><span>
+</span><span id="line-91"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; CLI) -&gt; Mod CommandFields CLI
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.html#mod"><span class="hs-identifier hs-var">Address.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; CLI
+</span><a href="Command.html#Address"><span class="hs-identifier hs-var">Address</span></a></span><span>
+</span><span id="line-92"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; CLI) -&gt; Mod CommandFields CLI
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Script.html#mod"><span class="hs-identifier hs-var">Script.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; CLI
+</span><a href="Command.html#Script"><span class="hs-identifier hs-var">Script</span></a></span><span>
+</span><span id="line-93"></span><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- | Run a given command</span><span>
+</span><span id="line-96"></span><span class="annot"><a href="Command.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.html#CLI"><span class="hs-identifier hs-type">CLI</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span id="run"><span class="annot"><span class="annottext">run :: CLI -&gt; IO ()
+</span><a href="Command.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(IOException -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall e a. Exception e =&gt; (e -&gt; IO a) -&gt; IO a -&gt; IO a
+</span><span class="hs-identifier hs-var">handle</span></span><span> </span><span class="annot"><span class="annottext">IOException -&gt; IO ()
+forall a. IOException -&gt; IO a
+</span><a href="System.IO.Extra.html#prettyIOException"><span class="hs-identifier hs-var">prettyIOException</span></a></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; (CLI -&gt; IO ()) -&gt; CLI -&gt; IO ()
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><a href="Command.html#RecoveryPhrase"><span class="hs-identifier hs-type">RecoveryPhrase</span></a></span><span> </span><span id="local-6989586621679107392"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107392"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.RecoveryPhrase.html#run"><span class="hs-identifier hs-var">RecoveryPhrase.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107392"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-99"></span><span>    </span><span class="annot"><a href="Command.html#Key"><span class="hs-identifier hs-type">Key</span></a></span><span> </span><span id="local-6989586621679107390"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107390"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Key.html#run"><span class="hs-identifier hs-var">Key.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107390"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-100"></span><span>    </span><span class="annot"><a href="Command.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span id="local-6989586621679107388"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107388"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.html#run"><span class="hs-identifier hs-var">Address.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107388"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-101"></span><span>    </span><span class="annot"><a href="Command.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span id="local-6989586621679107386"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107386"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Script.html#run"><span class="hs-identifier hs-var">Script.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679107386"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-102"></span><span>    </span><span class="annot"><span class="annottext">CLI
+</span><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO ()
+</span><a href="Command.Version.html#run"><span class="hs-identifier hs-var">Version.run</span></a></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- | Parse command line options and arguments</span><span>
+</span><span id="line-105"></span><span class="annot"><a href="Command.html#parse"><span class="hs-identifier hs-type">parse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Command.html#CLI"><span class="hs-identifier hs-type">CLI</span></a></span><span>
+</span><span id="line-106"></span><span id="parse"><span class="annot"><span class="annottext">parse :: IO CLI
+</span><a href="Command.html#parse"><span class="hs-identifier hs-var hs-var">parse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserPrefs -&gt; ParserInfo CLI -&gt; IO CLI
+forall a. ParserPrefs -&gt; ParserInfo a -&gt; IO a
+</span><span class="hs-identifier hs-var">customExecParser</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PrefsMod -&gt; ParserPrefs
+</span><span class="hs-identifier hs-var">prefs</span></span><span> </span><span class="annot"><span class="annottext">PrefsMod
+</span><span class="hs-identifier hs-var">showHelpOnEmpty</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ParserInfo CLI
+</span><a href="Command.html#cli"><span class="hs-identifier hs-var">cli</span></a></span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="hs-comment">-- | Enable ANSI colors on Windows and correct output buffering</span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Command.html#setup"><span class="hs-identifier hs-type">setup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span id="setup"><span class="annot"><span class="annottext">setup :: IO ()
+</span><a href="Command.html#setup"><span class="hs-identifier hs-var hs-var">setup</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-111"></span><span>    </span><span class="annot"><span class="annottext">(Handle -&gt; IO ()) -&gt; [Handle] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO ()
+</span><a href="#local-6989586621679107382"><span class="hs-identifier hs-var">hSetup</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stderr</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stdout</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stdin</span></span><span class="hs-special">]</span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-113"></span><span>    </span><span class="annot"><a href="#local-6989586621679107382"><span class="hs-identifier hs-type">hSetup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Handle</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>    </span><span id="local-6989586621679107382"><span class="annot"><span class="annottext">hSetup :: Handle -&gt; IO ()
+</span><a href="#local-6989586621679107382"><span class="hs-identifier hs-var hs-var">hSetup</span></a></span></span><span> </span><span id="local-6989586621679107381"><span class="annot"><span class="annottext">Handle
+</span><a href="#local-6989586621679107381"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-115"></span><span>      </span><span class="annot"><span class="annottext">IO (Maybe Bool) -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO (Maybe Bool) -&gt; IO ()) -&gt; IO (Maybe Bool) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO (Maybe Bool)
+</span><span class="hs-identifier hs-var">hSupportsANSIWithoutEmulation</span></span><span> </span><span class="annot"><span class="annottext">Handle
+</span><a href="#local-6989586621679107381"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-116"></span><span>      </span><span class="annot"><span class="annottext">Handle -&gt; BufferMode -&gt; IO ()
+</span><span class="hs-identifier hs-var">hSetBuffering</span></span><span> </span><span class="annot"><span class="annottext">Handle
+</span><a href="#local-6989586621679107381"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">BufferMode
+</span><span class="hs-identifier hs-var">NoBuffering</span></span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- | Force the locale text encoding to UTF-8. This is needed because the CLI</span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- prints UTF-8 characters regardless of the @LANG@ environment variable or any</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- other settings.</span><span>
+</span><span id="line-121"></span><span class="hs-comment">--</span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- On Windows the current console code page is changed to UTF-8.</span><span>
+</span><span id="line-123"></span><span id="local-6989586621679107379"><span class="annot"><a href="Command.html#withUtf8Encoding"><span class="hs-identifier hs-type">withUtf8Encoding</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679107379"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679107379"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-124"></span><span id="withUtf8Encoding"><span class="annot"><span class="annottext">withUtf8Encoding :: IO a -&gt; IO a
+</span><a href="Command.html#withUtf8Encoding"><span class="hs-identifier hs-var hs-var">withUtf8Encoding</span></a></span></span><span> </span><span id="local-6989586621679107378"><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679107378"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO a -&gt; IO a
+forall a. IO a -&gt; IO a
+</span><span class="hs-identifier hs-var">withCP65001</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO ()
+</span><a href="#local-6989586621679107377"><span class="hs-identifier hs-var">setUtf8EncodingHandles</span></a></span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO a -&gt; IO a
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; m b -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679107378"><span class="hs-identifier hs-var">action</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-126"></span><span>    </span><span class="annot"><a href="#local-6989586621679107377"><span class="hs-identifier hs-type">setUtf8EncodingHandles</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>    </span><span id="local-6989586621679107377"><span class="annot"><span class="annottext">setUtf8EncodingHandles :: IO ()
+</span><a href="#local-6989586621679107377"><span class="hs-identifier hs-var hs-var">setUtf8EncodingHandles</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-128"></span><span>        </span><span id="local-6989586621679107376"><span class="annot"><span class="annottext">TextEncoding
+</span><a href="#local-6989586621679107376"><span class="hs-identifier hs-var">utf8'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO TextEncoding
+</span><span class="hs-identifier hs-var">mkTextEncoding</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;UTF-8//TRANSLIT&quot;</span></span><span>
+</span><span id="line-129"></span><span>        </span><span class="annot"><span class="annottext">(Handle -&gt; IO ()) -&gt; [Handle] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Handle -&gt; TextEncoding -&gt; IO ()
+</span><span class="hs-operator hs-var">`hSetEncoding`</span></span><span> </span><span class="annot"><span class="annottext">TextEncoding
+</span><a href="#local-6989586621679107376"><span class="hs-identifier hs-var">utf8'</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stdin</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stdout</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
+</span><span class="hs-identifier hs-var">stderr</span></span><span class="hs-special">]</span><span>
+</span><span id="line-130"></span></pre></body></html>
