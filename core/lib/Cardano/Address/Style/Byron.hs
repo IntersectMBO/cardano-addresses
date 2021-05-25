@@ -110,6 +110,8 @@ import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.Kind
+    ( Type )
 import Data.List
     ( find )
 import Data.Word
@@ -182,7 +184,7 @@ deriving instance (Functor (Byron depth))
 -- | The hierarchical derivation indices for a given level/depth.
 --
 -- @since 1.0.0
-type family DerivationPath (depth :: Depth) :: * where
+type family DerivationPath (depth :: Depth) :: Type where
     -- The root key is generated from the seed.
     DerivationPath 'RootK =
         ()

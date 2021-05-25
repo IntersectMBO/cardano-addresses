@@ -84,6 +84,8 @@ import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
     ( Identity (..) )
+import Data.Kind
+    ( Type )
 import Data.Map.Strict
     ( Map )
 import Data.Set
@@ -117,7 +119,7 @@ import qualified Data.Text.Read as T
 -- that need to be satisfied to make it valid.
 --
 -- @since 3.0.0
-data Script (elem :: *)
+data Script (elem :: Type)
     = RequireSignatureOf !elem
     | RequireAllOf ![Script elem]
     | RequireAnyOf ![Script elem]

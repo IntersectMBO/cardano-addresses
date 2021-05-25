@@ -59,6 +59,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Either.Extra
     ( eitherToMaybe )
+import Data.Kind
+    ( Type )
 import Data.Text
     ( Text )
 import Data.Word
@@ -219,8 +221,8 @@ class PaymentAddress key
             -- ^ Pointer to locate delegation key in blockchain
         -> Address
 
-class HasNetworkDiscriminant (key :: Depth -> * -> *) where
-    type NetworkDiscriminant key :: *
+class HasNetworkDiscriminant (key :: Depth -> Type -> Type) where
+    type NetworkDiscriminant key :: Type
 
     addressDiscrimination :: NetworkDiscriminant key -> AddressDiscrimination
     networkTag :: NetworkDiscriminant key -> NetworkTag
