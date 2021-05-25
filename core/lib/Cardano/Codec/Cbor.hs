@@ -49,8 +49,6 @@ import Control.Monad
     ( replicateM, when )
 import Control.Monad.Catch
     ( MonadThrow, throwM )
-import Control.Monad.Fail
-    ( MonadFail )
 import Crypto.Error
     ( CryptoError (..), CryptoFailable (..) )
 import Crypto.Hash
@@ -417,4 +415,3 @@ unsafeDeserialiseCbor decoder bytes = either
     (\e -> error $ "unsafeSerializeCbor: " <> show e)
     snd
     (CBOR.deserialiseFromBytes decoder bytes)
-

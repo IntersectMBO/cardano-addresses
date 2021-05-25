@@ -87,6 +87,8 @@ import Data.Coerce
     ( coerce )
 import Data.Either.Extra
     ( eitherToMaybe )
+import Data.Kind
+    ( Type )
 import Data.String
     ( fromString )
 import Data.Word
@@ -402,10 +404,10 @@ data DerivationType = Hardened | Soft | WholeDomain
 -- | An interface for doing hard derivations from the root private key, /Master Key/
 --
 -- @since 1.0.0
-class HardDerivation (key :: Depth -> * -> *) where
+class HardDerivation (key :: Depth -> Type -> Type) where
     type AccountIndexDerivationType key :: DerivationType
     type AddressIndexDerivationType key :: DerivationType
-    type WithRole key :: *
+    type WithRole key :: Type
 
     -- | Derives account private key from the given root private key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
@@ -429,7 +431,7 @@ class HardDerivation (key :: Depth -> * -> *) where
         -> key 'PaymentK XPrv
 
 -- | An interface for doing soft derivations from an account public key
-class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
+class HardDerivation key => SoftDerivation (key :: Depth -> Type -> Type) where
     -- | Derives address public key from the given account public key, using
     -- derivation scheme 2 (see <https://github.com/input-output-hk/cardano-crypto/ cardano-crypto>
     -- package for more details).
@@ -447,8 +449,8 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *) where
 -- | Abstract interface for constructing a /Master Key/.
 --
 -- @since 1.0.0
-class GenMasterKey (key :: Depth -> * -> *) where
-    type SecondFactor key :: *
+class GenMasterKey (key :: Depth -> Type -> Type) where
+    type SecondFactor key :: Type
 
     -- | Generate a root key from a corresponding mnemonic.
     --

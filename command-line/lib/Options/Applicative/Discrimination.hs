@@ -19,8 +19,6 @@ import Cardano.Address
     ( NetworkDiscriminant (..), NetworkTag (..) )
 import Cardano.Address.Style.Shelley
     ( Shelley )
-import Control.Monad.Fail
-    ( MonadFail )
 import Data.List
     ( intercalate )
 import Options.Applicative
