@@ -84,12 +84,12 @@ import Data.Foldable
     ( asum, foldl', traverse_ )
 import Data.Functor.Identity
     ( Identity (..) )
+import Data.Hashable
+    ( Hashable )
 import Data.Kind
     ( Type )
 import Data.Map.Strict
     ( Map )
-import Data.Set
-    ( difference )
 import Data.Text
     ( Text )
 import Data.Traversable
@@ -108,9 +108,9 @@ import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
 import qualified Data.HashMap.Strict as HM
+import qualified Data.HashSet as Set
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Read as T
@@ -181,6 +181,7 @@ serializeScript script =
 -- @since 3.2.0
 newtype Cosigner = Cosigner Word8
     deriving (Generic, Show, Ord, Eq)
+instance Hashable Cosigner
 instance NFData Cosigner
 
 -- | Represents the script template that show the structure of the script and determines
@@ -454,18 +455,21 @@ validateScriptTemplate
     :: ValidationLevel
     -> ScriptTemplate
     -> Either ErrValidateScriptTemplate ()
-validateScriptTemplate level (ScriptTemplate cosigners' script) = do
-    first WrongScript $ validateScriptOfTemplate level script
-    let allCosigners = Set.fromList $ foldScript (:) [] script
-    when (L.null allCosigners) $ Left NoCosignerInScript
-    when (Map.size cosigners' == 0) $ Left NoCosignerXPub
-    when (L.length (L.nub $ Map.elems cosigners') /= Map.size cosigners') $
-        Left DuplicateXPubs
-    unless (L.all (`elem` allCosigners) (Map.keys cosigners')) $
-        Left UnknownCosigner
-    let unknownCosigners =
-            allCosigners `difference` Set.fromList (Map.keys cosigners')
-    unless (Set.null unknownCosigners) $ Left MissingCosignerXPub
+validateScriptTemplate level (ScriptTemplate cosigners_ script) = do
+    first WrongScript (validateScriptOfTemplate level script)
+    check NoCosignerInScript (nonEmpty scriptCosigners)
+    check NoCosignerXPub (nonEmpty cosignerKeys)
+    check DuplicateXPubs (Set.size cosignerKeys == Map.size cosigners_)
+    check UnknownCosigner (cosignerSet `Set.isSubsetOf` scriptCosigners)
+    check MissingCosignerXPub (scriptCosigners `Set.isSubsetOf` cosignerSet)
+  where
+    scriptCosigners = Set.fromList $ foldScript (:) [] script
+    cosignerKeys = Set.fromList $ Map.elems cosigners_
+    cosignerSet = Set.fromList $ Map.keys cosigners_
+
+    -- throws error if condition doesn't apply
+    check err cond = unless cond (Left err)
+    nonEmpty = not . Set.null
 
 -- | Validate a script in 'ScriptTemplate'
 --

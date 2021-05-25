@@ -54,6 +54,7 @@ library:
   - exceptions
   - extra
   - fmt
+  - hashable
   - memory
   - text
   - unordered-containers
