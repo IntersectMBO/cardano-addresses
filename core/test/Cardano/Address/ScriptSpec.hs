@@ -378,22 +378,31 @@ spec = do
         let cosigner1 = RequireSignatureOf (Cosigner 1)
         let cosigner2 = RequireSignatureOf (Cosigner 2)
         let cosigner3 = RequireSignatureOf (Cosigner 3)
+        let cosigner4 = RequireSignatureOf (Cosigner 4)
 
-        it "no cosigners in script template" $ do
+        it "no cosigners in script of script template" $ do
+            let scriptTemplate = ScriptTemplate Map.empty (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 10])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left NoCosignerInScript)
+
+        it "no cosigners xpub in script template" $ do
             let scriptTemplate = ScriptTemplate Map.empty (RequireAllOf [cosigner0, cosigner1])
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left NoCosigner)
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left NoCosignerXPub)
 
-        it "illegal cosigner in script template" $ do
+        it "unknown cosigner xpub in script template - 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSignatureOf (Cosigner 4))
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left UnknownCosigner)
 
-        it "not all cosigners used in script template" $ do
+        it "unknown cosigner xpub in script template - 2" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner0, cosigner1, cosigner2] )
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left UnusedCosigner)
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left UnknownCosigner)
 
         it "duplicated xpub in cosigners in script template" $ do
-            let scriptTemplate = ScriptTemplate cosignersWrong (RequireSignatureOf (Cosigner 1))
+            let scriptTemplate = ScriptTemplate cosignersWrong (RequireAnyOf [cosigner0, cosigner1, cosigner2, cosigner3])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left DuplicateXPubs)
+
+        it "missing cosigner's xpub in script template" $ do
+            let scriptTemplate = ScriptTemplate cosigners' (RequireAnyOf [cosigner0, cosigner1, cosigner2, cosigner3, cosigner4] )
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left MissingCosignerXPub)
 
         it "no content in RequireAnyOf" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireAllOf [cosigner0, cosigner1, cosigner2, cosigner3, RequireAnyOf []])

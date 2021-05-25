@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bd8548f62cb3cd204176970099aa6a614afd2ea3785adff19770e8b2b768b4e9
+-- hash: 38b8d2b112ffb58c3d3bcaae7697a1be6cb1c3f776205d13a22ab1dc01641c8e
 
 name:           cardano-addresses
-version:        3.4.0
+version:        3.5.0
 synopsis:       Library utilities for mnemonic generation and address derivation.
 description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 category:       Cardano
@@ -70,6 +70,7 @@ library
     , exceptions
     , extra
     , fmt
+    , hashable
     , memory
     , text
     , unordered-containers
