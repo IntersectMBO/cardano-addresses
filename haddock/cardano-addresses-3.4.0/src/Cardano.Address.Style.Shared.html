@@ -1,277 +1,533 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
-</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE BinaryLiterals #-}</span><span>
-</span><a name="line-3"></a><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
-</span><a name="line-4"></a><span class="hs-pragma">{-# LANGUAGE DeriveFunctor #-}</span><span>
-</span><a name="line-5"></a><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
-</span><a name="line-6"></a><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
-</span><a name="line-7"></a><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
-</span><a name="line-8"></a><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
-</span><a name="line-9"></a><span class="hs-pragma">{-# LANGUAGE StandaloneDeriving #-}</span><span>
-</span><a name="line-10"></a><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
-</span><a name="line-11"></a><span>
-</span><a name="line-12"></a><span class="hs-pragma">{-# OPTIONS_HADDOCK prune #-}</span><span>
-</span><a name="line-13"></a><span>
-</span><a name="line-14"></a><span class="hs-comment">-- |</span><span>
-</span><a name="line-15"></a><span class="hs-comment">-- Copyright: &#169; 2018-2021 IOHK</span><span>
-</span><a name="line-16"></a><span class="hs-comment">-- License: Apache-2.0</span><span>
-</span><a name="line-17"></a><span>
-</span><a name="line-18"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Style.Shared</span><span>
-</span><a name="line-19"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-comment">-- $overview</span><span>
-</span><a name="line-20"></a><span>
-</span><a name="line-21"></a><span>      </span><span class="hs-comment">-- * Shared</span><span>
-</span><a name="line-22"></a><span>      </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span>
-</span><a name="line-23"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#getKey"><span class="hs-identifier hs-var">getKey</span></a><span>
-</span><a name="line-24"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier hs-var">liftXPrv</span></a><span>
-</span><a name="line-25"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#liftXPub"><span class="hs-identifier hs-var">liftXPub</span></a><span>
-</span><a name="line-26"></a><span>
-</span><a name="line-27"></a><span>      </span><span class="hs-comment">-- * Key Derivation</span><span>
-</span><a name="line-28"></a><span>      </span><span class="hs-comment">-- $keyDerivation</span><span>
-</span><a name="line-29"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-var">genMasterKeyFromXPrv</span></a><span>
-</span><a name="line-30"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-var">genMasterKeyFromMnemonic</span></a><span>
-</span><a name="line-31"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#deriveAccountPrivateKey"><span class="hs-identifier hs-var">deriveAccountPrivateKey</span></a><span>
-</span><a name="line-32"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var">deriveAddressPrivateKey</span></a><span>
-</span><a name="line-33"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#deriveAddressPublicKey"><span class="hs-identifier hs-var">deriveAddressPublicKey</span></a><span>
-</span><a name="line-34"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#deriveDelegationPrivateKey"><span class="hs-identifier hs-var">deriveDelegationPrivateKey</span></a><span>
-</span><a name="line-35"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#deriveDelegationPublicKey"><span class="hs-identifier hs-var">deriveDelegationPublicKey</span></a><span>
-</span><a name="line-36"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shared.html#hashKey"><span class="hs-identifier hs-var">hashKey</span></a><span>
-</span><a name="line-37"></a><span>
-</span><a name="line-38"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-39"></a><span>
-</span><a name="line-40"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Prelude</span><span>
-</span><a name="line-41"></a><span>
-</span><a name="line-42"></a><span class="hs-keyword">import</span><span> </span><a href="Cardano.Address.Derivation.html"><span class="hs-identifier">Cardano.Address.Derivation</span></a><span>
-</span><a name="line-43"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier hs-type">Depth</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
-</span><a name="line-44"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#DerivationType"><span class="hs-identifier hs-type">DerivationType</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
-</span><a name="line-45"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
-</span><a name="line-46"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-47"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-48"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#hashCredential"><span class="hs-identifier hs-var">hashCredential</span></a><span>
-</span><a name="line-49"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Derivation.html#xpubPublicKey"><span class="hs-identifier hs-var">xpubPublicKey</span></a><span>
-</span><a name="line-50"></a><span>    </span><span class="hs-special">)</span><span>
-</span><a name="line-51"></a><span class="hs-keyword">import</span><span> </span><a href="Cardano.Address.Script.html"><span class="hs-identifier">Cardano.Address.Script</span></a><span>
-</span><a name="line-52"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier hs-type">KeyHash</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Script.html#KeyRole"><span class="hs-identifier hs-type">KeyRole</span></a><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-53"></a><span class="hs-keyword">import</span><span> </span><a href="Cardano.Address.Style.Shelley.html"><span class="hs-identifier">Cardano.Address.Style.Shelley</span></a><span>
-</span><a name="line-54"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Cardano.Address.Style.Shelley.html#Role"><span class="hs-identifier hs-type">Role</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
-</span><a name="line-55"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAccountPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAccountPrivateKeyShelley</span></a><span>
-</span><a name="line-56"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAddressPrivateKeyShelley</span></a><span>
-</span><a name="line-57"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPublicKeyShelley"><span class="hs-identifier hs-var">deriveAddressPublicKeyShelley</span></a><span>
-</span><a name="line-58"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Cardano.Address.Style.Shelley.html#genMasterKeyFromMnemonicShelley"><span class="hs-identifier hs-var">genMasterKeyFromMnemonicShelley</span></a><span>
-</span><a name="line-59"></a><span>    </span><span class="hs-special">)</span><span>
-</span><a name="line-60"></a><span class="hs-keyword">import</span><span> </span><a href="Cardano.Mnemonic.html"><span class="hs-identifier">Cardano.Mnemonic</span></a><span>
-</span><a name="line-61"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-62"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Control.DeepSeq</span><span>
-</span><a name="line-63"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">NFData</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-64"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.ByteArray</span><span>
-</span><a name="line-65"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">ScrubbedBytes</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-66"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Coerce</span><span>
-</span><a name="line-67"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-var">coerce</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-68"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Word</span><span>
-</span><a name="line-69"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">Word32</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-70"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">GHC.Generics</span><span>
-</span><a name="line-71"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier hs-type">Generic</span><span> </span><span class="hs-special">)</span><span>
-</span><a name="line-72"></a><span>
-</span><a name="line-73"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Cardano.Address.Derivation.html"><span class="hs-identifier">Cardano.Address.Derivation</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">Internal</span><span>
-</span><a name="line-74"></a><span>
-</span><a name="line-75"></a><span class="hs-comment">-- $overview</span><span>
-</span><a name="line-76"></a><span class="hs-comment">--</span><span>
-</span><a name="line-77"></a><span class="hs-comment">-- This module provides an implementation of:</span><span>
-</span><a name="line-78"></a><span class="hs-comment">--</span><span>
-</span><a name="line-79"></a><span class="hs-comment">-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shared master keys from mnemonic sentences</span><span>
-</span><a name="line-80"></a><span class="hs-comment">-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys</span><span>
-</span><a name="line-81"></a><span class="hs-comment">-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys</span><span>
-</span><a name="line-82"></a><span class="hs-comment">--</span><span>
-</span><a name="line-83"></a><span class="hs-comment">-- - 'paymentAddress': for constructing payment addresses from a address public key or a script</span><span>
-</span><a name="line-84"></a><span class="hs-comment">-- - 'delegationAddress': for constructing delegation addresses from payment credential (public key or script) and stake credential (public key or script)</span><span>
-</span><a name="line-85"></a><span class="hs-comment">-- - 'pointerAddress': for constructing delegation addresses from payment credential (public key or script) and chain pointer</span><span>
-</span><a name="line-86"></a><span class="hs-comment">-- - 'stakeAddress': for constructing reward accounts from stake credential (public key or script)</span><span>
-</span><a name="line-87"></a><span>
-</span><a name="line-88"></a><span class="hs-comment">-- | A cryptographic key for sequential-scheme address derivation, with</span><span>
-</span><a name="line-89"></a><span class="hs-comment">-- phantom-types to disambiguate key types. The derivation is mostly like Shelley, except the used purpose index</span><span>
-</span><a name="line-90"></a><span class="hs-comment">-- (here 1854H rather than Shelley's 1852H)</span><span>
-</span><a name="line-91"></a><span class="hs-comment">--</span><span>
-</span><a name="line-92"></a><span class="hs-comment">-- @</span><span>
-</span><a name="line-93"></a><span class="hs-comment">-- let rootPrivateKey = Shared 'RootK XPrv</span><span>
-</span><a name="line-94"></a><span class="hs-comment">-- let accountPubKey  = Shared 'AccountK XPub</span><span>
-</span><a name="line-95"></a><span class="hs-comment">-- let addressPubKey  = Shared 'PaymentK XPub</span><span>
-</span><a name="line-96"></a><span class="hs-comment">-- @</span><span>
-</span><a name="line-97"></a><span class="hs-comment">--</span><span>
-</span><a name="line-98"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-99"></a><span class="hs-keyword">newtype</span><span> </span><a name="Shared"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier">Shared</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679173365"><a href="#local-6989586621679173365"><span class="hs-identifier">depth</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier hs-type">Depth</span></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679173366"><a href="#local-6989586621679173366"><span class="hs-identifier">key</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="Shared"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier">Shared</span></a></a><span>
-</span><a name="line-100"></a><span>    </span><span class="hs-special">{</span><span> </span><a name="getKey"><a href="Cardano.Address.Style.Shared.html#getKey"><span class="hs-identifier">getKey</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="#local-6989586621679173366"><span class="hs-identifier hs-type">key</span></a><span>
-</span><a name="line-101"></a><span>        </span><span class="hs-comment">-- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.</span><span>
-</span><a name="line-102"></a><span>        </span><span class="hs-comment">--</span><span>
-</span><a name="line-103"></a><span>        </span><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-104"></a><span>    </span><span class="hs-special">}</span><span>
-</span><a name="line-105"></a><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">stock</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Generic</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Show</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Eq</span><span class="hs-special">)</span><span>
-</span><a name="line-106"></a><span>
-</span><a name="line-107"></a><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Functor</span><span> </span><span class="hs-special">(</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><a href="#local-6989586621679173387"><span class="hs-identifier hs-type">depth</span></a><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><a name="line-108"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">NFData</span><span> </span><a href="#local-6989586621679173377"><span class="hs-identifier hs-type">key</span></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">NFData</span><span> </span><span class="hs-special">(</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><a href="#local-6989586621679173378"><span class="hs-identifier hs-type">depth</span></a><span> </span><a href="#local-6989586621679173377"><span class="hs-identifier hs-type">key</span></a><span class="hs-special">)</span><span>
-</span><a name="line-109"></a><span>
-</span><a name="line-110"></a><span class="hs-comment">--</span><span>
-</span><a name="line-111"></a><span class="hs-comment">-- Key Derivation</span><span>
-</span><a name="line-112"></a><span class="hs-comment">--</span><span>
-</span><a name="line-113"></a><span class="hs-comment">-- $keyDerivation</span><span>
-</span><a name="line-114"></a><span class="hs-comment">--</span><span>
-</span><a name="line-115"></a><span class="hs-comment">-- === Generating a root key from 'SomeMnemonic'</span><span>
-</span><a name="line-116"></a><span class="hs-comment">-- &gt; :set -XOverloadedStrings</span><span>
-</span><a name="line-117"></a><span class="hs-comment">-- &gt; :set -XTypeApplications</span><span>
-</span><a name="line-118"></a><span class="hs-comment">-- &gt; :set -XDataKinds</span><span>
-</span><a name="line-119"></a><span class="hs-comment">-- &gt; import Cardano.Mnemonic ( mkSomeMnemonic )</span><span>
-</span><a name="line-120"></a><span class="hs-comment">-- &gt;</span><span>
-</span><a name="line-121"></a><span class="hs-comment">-- &gt; let (Right mw) = mkSomeMnemonic @'[15] [&quot;network&quot;,&quot;empty&quot;,&quot;cause&quot;,&quot;mean&quot;,&quot;expire&quot;,&quot;private&quot;,&quot;finger&quot;,&quot;accident&quot;,&quot;session&quot;,&quot;problem&quot;,&quot;absurd&quot;,&quot;banner&quot;,&quot;stage&quot;,&quot;void&quot;,&quot;what&quot;]</span><span>
-</span><a name="line-122"></a><span class="hs-comment">-- &gt; let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes</span><span>
-</span><a name="line-123"></a><span class="hs-comment">-- &gt; let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv</span><span>
-</span><a name="line-124"></a><span class="hs-comment">--</span><span>
-</span><a name="line-125"></a><span class="hs-comment">-- === Deriving child keys</span><span>
-</span><a name="line-126"></a><span class="hs-comment">--</span><span>
-</span><a name="line-127"></a><span class="hs-comment">-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@</span><span>
-</span><a name="line-128"></a><span class="hs-comment">--</span><span>
-</span><a name="line-129"></a><span class="hs-comment">-- &gt; let Just accIx = indexFromWord32 0x80000000</span><span>
-</span><a name="line-130"></a><span class="hs-comment">-- &gt; let acctK = deriveAccountPrivateKey rootK accIx</span><span>
-</span><a name="line-131"></a><span class="hs-comment">-- &gt;</span><span>
-</span><a name="line-132"></a><span class="hs-comment">-- &gt; let Just addIx = indexFromWord32 0x00000014</span><span>
-</span><a name="line-133"></a><span class="hs-comment">-- &gt; let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx</span><span>
-</span><a name="line-134"></a><span class="hs-comment">--</span><span>
-</span><a name="line-135"></a><span class="hs-comment">-- &gt; let stakeK = deriveDelegationPrivateKey acctK</span><span>
-</span><a name="line-136"></a><span>
-</span><a name="line-137"></a><span class="hs-keyword">instance</span><span> </span><a href="Cardano.Address.Derivation.html#GenMasterKey"><span class="hs-identifier hs-type">Internal.GenMasterKey</span></a><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-138"></a><span>    </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">SecondFactor</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">ScrubbedBytes</span><span>
-</span><a name="line-139"></a><span>
-</span><a name="line-140"></a><span>    </span><a name="local-8214565720323886765"><a href="Cardano.Address.Derivation.html#genMasterKeyFromXPrv"><span class="hs-identifier">genMasterKeyFromXPrv</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier hs-var">liftXPrv</span></a><span>
-</span><a name="line-141"></a><span>    </span><a name="local-8214565720323886764"><a href="Cardano.Address.Derivation.html#genMasterKeyFromMnemonic"><span class="hs-identifier">genMasterKeyFromMnemonic</span></a></a><span> </span><a name="local-6989586621679173375"><a href="#local-6989586621679173375"><span class="hs-identifier">fstFactor</span></a></a><span> </span><a name="local-6989586621679173376"><a href="#local-6989586621679173376"><span class="hs-identifier">sndFactor</span></a></a><span> </span><span class="hs-glyph">=</span><span>
-</span><a name="line-142"></a><span>        </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Cardano.Address.Style.Shelley.html#genMasterKeyFromMnemonicShelley"><span class="hs-identifier hs-var">genMasterKeyFromMnemonicShelley</span></a><span> </span><a href="#local-6989586621679173375"><span class="hs-identifier hs-var">fstFactor</span></a><span> </span><a href="#local-6989586621679173376"><span class="hs-identifier hs-var">sndFactor</span></a><span>
-</span><a name="line-143"></a><span>
-</span><a name="line-144"></a><span class="hs-keyword">instance</span><span> </span><a href="Cardano.Address.Derivation.html#HardDerivation"><span class="hs-identifier hs-type">Internal.HardDerivation</span></a><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-145"></a><span>    </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">AccountIndexDerivationType</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a><span>
-</span><a name="line-146"></a><span>    </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">AddressIndexDerivationType</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a><span>
-</span><a name="line-147"></a><span>    </span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">WithRole</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Style.Shelley.html#Role"><span class="hs-identifier hs-type">Role</span></a><span>
-</span><a name="line-148"></a><span>
-</span><a name="line-149"></a><span>    </span><a name="local-8214565720323886772"><a href="Cardano.Address.Derivation.html#deriveAccountPrivateKey"><span class="hs-identifier">deriveAccountPrivateKey</span></a></a><span> </span><span class="hs-special">(</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><a name="local-6989586621679173370"><a href="#local-6989586621679173370"><span class="hs-identifier">rootXPrv</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679173371"><a href="#local-6989586621679173371"><span class="hs-identifier">accIx</span></a></a><span> </span><span class="hs-glyph">=</span><span>
-</span><a name="line-150"></a><span>        </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAccountPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAccountPrivateKeyShelley</span></a><span> </span><a href="#local-6989586621679173370"><span class="hs-identifier hs-var">rootXPrv</span></a><span> </span><a href="#local-6989586621679173371"><span class="hs-identifier hs-var">accIx</span></a><span> </span><a href="Cardano.Address.Style.Shared.html#purposeIndex"><span class="hs-identifier hs-var">purposeIndex</span></a><span>
-</span><a name="line-151"></a><span>
-</span><a name="line-152"></a><span>    </span><a name="local-8214565720323886773"><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier">deriveAddressPrivateKey</span></a></a><span> </span><span class="hs-special">(</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><a name="local-6989586621679173372"><a href="#local-6989586621679173372"><span class="hs-identifier">accXPrv</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679173373"><a href="#local-6989586621679173373"><span class="hs-identifier">keyRole</span></a></a><span> </span><a name="local-6989586621679173374"><a href="#local-6989586621679173374"><span class="hs-identifier">addrIx</span></a></a><span> </span><span class="hs-glyph">=</span><span>
-</span><a name="line-153"></a><span>        </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAddressPrivateKeyShelley</span></a><span> </span><a href="#local-6989586621679173372"><span class="hs-identifier hs-var">accXPrv</span></a><span> </span><a href="#local-6989586621679173373"><span class="hs-identifier hs-var">keyRole</span></a><span> </span><a href="#local-6989586621679173374"><span class="hs-identifier hs-var">addrIx</span></a><span>
-</span><a name="line-154"></a><span>
-</span><a name="line-155"></a><span class="hs-keyword">instance</span><span> </span><a href="Cardano.Address.Derivation.html#SoftDerivation"><span class="hs-identifier hs-type">Internal.SoftDerivation</span></a><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-156"></a><span>    </span><a name="local-8214565720323886767"><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier">deriveAddressPublicKey</span></a></a><span> </span><span class="hs-special">(</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><a name="local-6989586621679173367"><a href="#local-6989586621679173367"><span class="hs-identifier">accXPub</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679173368"><a href="#local-6989586621679173368"><span class="hs-identifier">keyRole</span></a></a><span> </span><a name="local-6989586621679173369"><a href="#local-6989586621679173369"><span class="hs-identifier">addrIx</span></a></a><span> </span><span class="hs-glyph">=</span><span>
-</span><a name="line-157"></a><span>        </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPublicKeyShelley"><span class="hs-identifier hs-var">deriveAddressPublicKeyShelley</span></a><span> </span><a href="#local-6989586621679173367"><span class="hs-identifier hs-var">accXPub</span></a><span> </span><a href="#local-6989586621679173368"><span class="hs-identifier hs-var">keyRole</span></a><span> </span><a href="#local-6989586621679173369"><span class="hs-identifier hs-var">addrIx</span></a><span>
-</span><a name="line-158"></a><span>
-</span><a name="line-159"></a><span class="hs-comment">-- | Generate a root key from a corresponding mnemonic.</span><span>
-</span><a name="line-160"></a><span class="hs-comment">--</span><span>
-</span><a name="line-161"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-162"></a><span class="hs-identifier">genMasterKeyFromMnemonic</span><span>
-</span><a name="line-163"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a><span>
-</span><a name="line-164"></a><span>        </span><span class="hs-comment">-- ^ Some valid mnemonic sentence.</span><span>
-</span><a name="line-165"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">ScrubbedBytes</span><span>
-</span><a name="line-166"></a><span>        </span><span class="hs-comment">-- ^ An optional second-factor passphrase (or 'mempty')</span><span>
-</span><a name="line-167"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-168"></a><a name="genMasterKeyFromMnemonic"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromMnemonic"><span class="hs-identifier">genMasterKeyFromMnemonic</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Derivation.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-var">Internal.genMasterKeyFromMnemonic</span></a><span>
-</span><a name="line-169"></a><span>
-</span><a name="line-170"></a><span class="hs-comment">-- | Generate a root key from a corresponding root 'XPrv'</span><span>
-</span><a name="line-171"></a><span class="hs-comment">--</span><span>
-</span><a name="line-172"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-173"></a><span class="hs-identifier">genMasterKeyFromXPrv</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-174"></a><a name="genMasterKeyFromXPrv"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromXPrv"><span class="hs-identifier">genMasterKeyFromXPrv</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Derivation.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-var">Internal.genMasterKeyFromXPrv</span></a><span>
-</span><a name="line-175"></a><span>
-</span><a name="line-176"></a><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
-</span><a name="line-177"></a><span class="hs-comment">--</span><span>
-</span><a name="line-178"></a><span class="hs-comment">-- | Derives an account private key from the given root private key.</span><span>
-</span><a name="line-179"></a><span class="hs-comment">--</span><span>
-</span><a name="line-180"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-181"></a><span class="hs-identifier">deriveAccountPrivateKey</span><span>
-</span><a name="line-182"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-183"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span>
-</span><a name="line-184"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-185"></a><a name="deriveAccountPrivateKey"><a href="Cardano.Address.Style.Shared.html#deriveAccountPrivateKey"><span class="hs-identifier">deriveAccountPrivateKey</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Derivation.html#deriveAccountPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAccountPrivateKey</span></a><span>
-</span><a name="line-186"></a><span>
-</span><a name="line-187"></a><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
-</span><a name="line-188"></a><span class="hs-comment">--</span><span>
-</span><a name="line-189"></a><span class="hs-comment">-- | Derives a multisig private key from the given account private key for payment credential.</span><span>
-</span><a name="line-190"></a><span class="hs-comment">--</span><span>
-</span><a name="line-191"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-192"></a><span class="hs-identifier">deriveAddressPrivateKey</span><span>
-</span><a name="line-193"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-194"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a><span>
-</span><a name="line-195"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-196"></a><a name="deriveAddressPrivateKey"><a href="Cardano.Address.Style.Shared.html#deriveAddressPrivateKey"><span class="hs-identifier">deriveAddressPrivateKey</span></a></a><span> </span><a name="local-6989586621679173382"><a href="#local-6989586621679173382"><span class="hs-identifier">accPrv</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">coerce</span><span> </span><span class="hs-operator hs-var">.</span><span>
-</span><a name="line-197"></a><span>    </span><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAddressPrivateKey</span></a><span> </span><a href="#local-6989586621679173382"><span class="hs-identifier hs-var">accPrv</span></a><span> </span><a href="Cardano.Address.Style.Shelley.html#UTxOExternal"><span class="hs-identifier hs-var">UTxOExternal</span></a><span>
-</span><a name="line-198"></a><span>
-</span><a name="line-199"></a><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
-</span><a name="line-200"></a><span class="hs-comment">--</span><span>
-</span><a name="line-201"></a><span class="hs-comment">-- | Derives a multisig private key from the given account private key for delegation credential.</span><span>
-</span><a name="line-202"></a><span class="hs-comment">--</span><span>
-</span><a name="line-203"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-204"></a><span class="hs-identifier">deriveDelegationPrivateKey</span><span>
-</span><a name="line-205"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-206"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a><span>
-</span><a name="line-207"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-208"></a><a name="deriveDelegationPrivateKey"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPrivateKey"><span class="hs-identifier">deriveDelegationPrivateKey</span></a></a><span> </span><a name="local-6989586621679173383"><a href="#local-6989586621679173383"><span class="hs-identifier">accPrv</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">coerce</span><span> </span><span class="hs-operator hs-var">.</span><span>
-</span><a name="line-209"></a><span>    </span><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAddressPrivateKey</span></a><span> </span><a href="#local-6989586621679173383"><span class="hs-identifier hs-var">accPrv</span></a><span> </span><a href="Cardano.Address.Style.Shelley.html#Stake"><span class="hs-identifier hs-var">Stake</span></a><span>
-</span><a name="line-210"></a><span>
-</span><a name="line-211"></a><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock</span><span>
-</span><a name="line-212"></a><span class="hs-comment">--</span><span>
-</span><a name="line-213"></a><span class="hs-comment">-- | Derives a multisig public key from the given account public key for payment credential.</span><span>
-</span><a name="line-214"></a><span class="hs-comment">--</span><span>
-</span><a name="line-215"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-216"></a><span class="hs-identifier">deriveAddressPublicKey</span><span>
-</span><a name="line-217"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-218"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a><span>
-</span><a name="line-219"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-220"></a><a name="deriveAddressPublicKey"><a href="Cardano.Address.Style.Shared.html#deriveAddressPublicKey"><span class="hs-identifier">deriveAddressPublicKey</span></a></a><span> </span><a name="local-6989586621679173384"><a href="#local-6989586621679173384"><span class="hs-identifier">accPub</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">coerce</span><span> </span><span class="hs-operator hs-var">.</span><span>
-</span><a name="line-221"></a><span>    </span><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier hs-var">Internal.deriveAddressPublicKey</span></a><span> </span><a href="#local-6989586621679173384"><span class="hs-identifier hs-var">accPub</span></a><span> </span><a href="Cardano.Address.Style.Shelley.html#UTxOExternal"><span class="hs-identifier hs-var">UTxOExternal</span></a><span>
-</span><a name="line-222"></a><span>
-</span><a name="line-223"></a><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock</span><span>
-</span><a name="line-224"></a><span class="hs-comment">--</span><span>
-</span><a name="line-225"></a><span class="hs-comment">-- | Derives a multisig public key from the given account public key for delegation credential.</span><span>
-</span><a name="line-226"></a><span class="hs-comment">--</span><span>
-</span><a name="line-227"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-228"></a><span class="hs-identifier">deriveDelegationPublicKey</span><span>
-</span><a name="line-229"></a><span>    </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-230"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a><span>
-</span><a name="line-231"></a><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><span class="hs-special">'</span><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-232"></a><a name="deriveDelegationPublicKey"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPublicKey"><span class="hs-identifier">deriveDelegationPublicKey</span></a></a><span> </span><a name="local-6989586621679173385"><a href="#local-6989586621679173385"><span class="hs-identifier">accPub</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">coerce</span><span> </span><span class="hs-operator hs-var">.</span><span>
-</span><a name="line-233"></a><span>    </span><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier hs-var">Internal.deriveAddressPublicKey</span></a><span> </span><a href="#local-6989586621679173385"><span class="hs-identifier hs-var">accPub</span></a><span> </span><a href="Cardano.Address.Style.Shelley.html#Stake"><span class="hs-identifier hs-var">Stake</span></a><span>
-</span><a name="line-234"></a><span>
-</span><a name="line-235"></a><span class="hs-comment">--</span><span>
-</span><a name="line-236"></a><span class="hs-comment">-- Unsafe</span><span>
-</span><a name="line-237"></a><span class="hs-comment">--</span><span>
-</span><a name="line-238"></a><span>
-</span><a name="line-239"></a><span class="hs-comment">-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPrv'. this is</span><span>
-</span><a name="line-240"></a><span class="hs-comment">-- unsafe because it lets the caller choose the actually derivation 'depth'.</span><span>
-</span><a name="line-241"></a><span class="hs-comment">--</span><span>
-</span><a name="line-242"></a><span class="hs-comment">-- This can be useful however when serializing / deserializing such a type, or to</span><span>
-</span><a name="line-243"></a><span class="hs-comment">-- speed up test code (and avoid having to do needless derivations from a master</span><span>
-</span><a name="line-244"></a><span class="hs-comment">-- key down to an address key for instance).</span><span>
-</span><a name="line-245"></a><span class="hs-comment">--</span><span>
-</span><a name="line-246"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-247"></a><span class="hs-identifier">liftXPrv</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><a href="#local-6989586621679173381"><span class="hs-identifier hs-type">depth</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a><span>
-</span><a name="line-248"></a><a name="liftXPrv"><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier">liftXPrv</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span>
-</span><a name="line-249"></a><span>
-</span><a name="line-250"></a><span class="hs-comment">-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPub'. this is</span><span>
-</span><a name="line-251"></a><span class="hs-comment">-- unsafe because it lets the caller choose the actually derivation 'depth'.</span><span>
-</span><a name="line-252"></a><span class="hs-comment">--</span><span>
-</span><a name="line-253"></a><span class="hs-comment">-- This can be useful however when serializing / deserializing such a type, or to</span><span>
-</span><a name="line-254"></a><span class="hs-comment">-- speed up test code (and avoid having to do needless derivations from a master</span><span>
-</span><a name="line-255"></a><span class="hs-comment">-- key down to an address key for instance).</span><span>
-</span><a name="line-256"></a><span class="hs-comment">--</span><span>
-</span><a name="line-257"></a><span class="hs-comment">-- @since 3.4.0</span><span>
-</span><a name="line-258"></a><span class="hs-identifier">liftXPub</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><a href="#local-6989586621679173380"><span class="hs-identifier hs-type">depth</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span>
-</span><a name="line-259"></a><a name="liftXPub"><a href="Cardano.Address.Style.Shared.html#liftXPub"><span class="hs-identifier">liftXPub</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a><span>
-</span><a name="line-260"></a><span>
-</span><a name="line-261"></a><span class="hs-comment">--</span><span>
-</span><a name="line-262"></a><span class="hs-comment">-- Internal</span><span>
-</span><a name="line-263"></a><span class="hs-comment">--</span><span>
-</span><a name="line-264"></a><span>
-</span><a name="line-265"></a><span class="hs-comment">--- | Computes a 28-byte Blake2b224 digest of a Shared 'XPub'.</span><span>
-</span><a name="line-266"></a><span class="hs-comment">---</span><span>
-</span><a name="line-267"></a><span class="hs-comment">--- @since 3.4.0</span><span>
-</span><a name="line-268"></a><span class="hs-identifier">hashKey</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="Cardano.Address.Script.html#KeyRole"><span class="hs-identifier hs-type">KeyRole</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a><span> </span><a href="#local-6989586621679173379"><span class="hs-identifier hs-type">key</span></a><span> </span><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier hs-type">KeyHash</span></a><span>
-</span><a name="line-269"></a><a name="hashKey"><a href="Cardano.Address.Style.Shared.html#hashKey"><span class="hs-identifier">hashKey</span></a></a><span> </span><a name="local-6989586621679173386"><a href="#local-6989586621679173386"><span class="hs-identifier">cred</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier hs-var">KeyHash</span></a><span> </span><a href="#local-6989586621679173386"><span class="hs-identifier hs-var">cred</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><a href="Cardano.Address.Derivation.html#hashCredential"><span class="hs-identifier hs-var">hashCredential</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><a href="Cardano.Address.Derivation.html#xpubPublicKey"><span class="hs-identifier hs-var">xpubPublicKey</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier">getKey</span><span>
-</span><a name="line-270"></a><span>
-</span><a name="line-271"></a><span class="hs-comment">-- Purpose is a constant set to 1854' (or 0x8000073e) following the</span><span>
-</span><a name="line-272"></a><span class="hs-comment">-- CIP-1854 Multi-signatures HD Wallets</span><span>
-</span><a name="line-273"></a><span class="hs-comment">--</span><span>
-</span><a name="line-274"></a><span class="hs-comment">-- Hardened derivation is used at this level.</span><span>
-</span><a name="line-275"></a><span class="hs-identifier">purposeIndex</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Word32</span><span>
-</span><a name="line-276"></a><a name="purposeIndex"><a href="Cardano.Address.Style.Shared.html#purposeIndex"><span class="hs-identifier">purposeIndex</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">0x8000073e</span><span>
-</span><a name="line-277"></a></pre></body></html>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE BinaryLiterals #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DeriveFunctor #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE GADTs #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE StandaloneDeriving #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK prune #-}</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- Copyright: &#169; 2018-2021 IOHK</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Style.Shared</span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- $overview</span></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Shared</span></span><span>
+</span><span id="line-22"></span><span>      </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier">Shared</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#getKey"><span class="hs-identifier">getKey</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier">liftXPrv</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#liftXPub"><span class="hs-identifier">liftXPub</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Key Derivation</span></span><span>
+</span><span id="line-28"></span><span>      </span><span class="annot"><span class="hs-comment">-- $keyDerivation</span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromXPrv"><span class="hs-identifier">genMasterKeyFromXPrv</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromMnemonic"><span class="hs-identifier">genMasterKeyFromMnemonic</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAccountPrivateKey"><span class="hs-identifier">deriveAccountPrivateKey</span></a></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAddressPrivateKey"><span class="hs-identifier">deriveAddressPrivateKey</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAddressPublicKey"><span class="hs-identifier">deriveAddressPublicKey</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPrivateKey"><span class="hs-identifier">deriveDelegationPrivateKey</span></a></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPublicKey"><span class="hs-identifier">deriveDelegationPublicKey</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#hashKey"><span class="hs-identifier">hashKey</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html"><span class="hs-identifier">Cardano.Address.Derivation</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier">Depth</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#DerivationType"><span class="hs-identifier">DerivationType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier">Index</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier">XPrv</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier">XPub</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#hashCredential"><span class="hs-identifier">hashCredential</span></a></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#xpubPublicKey"><span class="hs-identifier">xpubPublicKey</span></a></span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html"><span class="hs-identifier">Cardano.Address.Script</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier">KeyHash</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#KeyRole"><span class="hs-identifier">KeyRole</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html"><span class="hs-identifier">Cardano.Address.Style.Shelley</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#Role"><span class="hs-identifier">Role</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#deriveAccountPrivateKeyShelley"><span class="hs-identifier">deriveAccountPrivateKeyShelley</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#deriveAddressPrivateKeyShelley"><span class="hs-identifier">deriveAddressPrivateKeyShelley</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#deriveAddressPublicKeyShelley"><span class="hs-identifier">deriveAddressPublicKeyShelley</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#genMasterKeyFromMnemonicShelley"><span class="hs-identifier">genMasterKeyFromMnemonicShelley</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html"><span class="hs-identifier">Cardano.Mnemonic</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier">SomeMnemonic</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.DeepSeq</span></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">NFData</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteArray</span></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">ScrubbedBytes</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Coerce</span></span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">coerce</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Word32</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span>
+</span><span id="line-71"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Generic</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html"><span class="hs-identifier">Cardano.Address.Derivation</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Internal</span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- $overview</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--</span><span>
+</span><span id="line-77"></span><span class="hs-comment">-- This module provides an implementation of:</span><span>
+</span><span id="line-78"></span><span class="hs-comment">--</span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shared master keys from mnemonic sentences</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys</span><span>
+</span><span id="line-82"></span><span class="hs-comment">--</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- - 'paymentAddress': for constructing payment addresses from a address public key or a script</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- - 'delegationAddress': for constructing delegation addresses from payment credential (public key or script) and stake credential (public key or script)</span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- - 'pointerAddress': for constructing delegation addresses from payment credential (public key or script) and chain pointer</span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- - 'stakeAddress': for constructing reward accounts from stake credential (public key or script)</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- | A cryptographic key for sequential-scheme address derivation, with</span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- phantom-types to disambiguate key types. The derivation is mostly like Shelley, except the used purpose index</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- (here 1854H rather than Shelley's 1852H)</span><span>
+</span><span id="line-91"></span><span class="hs-comment">--</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- let rootPrivateKey = Shared 'RootK XPrv</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- let accountPubKey  = Shared 'AccountK XPub</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- let addressPubKey  = Shared 'PaymentK XPub</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-97"></span><span class="hs-comment">--</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-99"></span><span id="local-6989586621679128499"><span id="local-6989586621679128500"></span></span><span class="hs-keyword">newtype</span><span> </span><span id="Shared"><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679128558"><span class="annot"><a href="#local-6989586621679128558"><span class="hs-identifier hs-type">depth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier hs-type">Depth</span></a></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679128559"><span class="annot"><a href="#local-6989586621679128559"><span class="hs-identifier hs-type">key</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Shared"><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span></span><span>
+</span><span id="line-100"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="getKey"><span class="annot"><span class="annottext">Shared depth key -&gt; key
+</span><a href="Cardano.Address.Style.Shared.html#getKey"><span class="hs-identifier hs-var hs-var">getKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679128559"><span class="hs-identifier hs-type">key</span></a></span><span>
+</span><span id="line-101"></span><span>        </span><span class="hs-comment">-- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.</span><span>
+</span><span id="line-102"></span><span>        </span><span class="hs-comment">--</span><span>
+</span><span id="line-103"></span><span>        </span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-104"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-105"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall x. Shared depth key -&gt; Rep (Shared depth key) x)
+-&gt; (forall x. Rep (Shared depth key) x -&gt; Shared depth key)
+-&gt; Generic (Shared depth key)
+forall x. Rep (Shared depth key) x -&gt; Shared depth key
+forall x. Shared depth key -&gt; Rep (Shared depth key) x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall (depth :: Depth) key x.
+Rep (Shared depth key) x -&gt; Shared depth key
+forall (depth :: Depth) key x.
+Shared depth key -&gt; Rep (Shared depth key) x
+$cto :: forall (depth :: Depth) key x.
+Rep (Shared depth key) x -&gt; Shared depth key
+$cfrom :: forall (depth :: Depth) key x.
+Shared depth key -&gt; Rep (Shared depth key) x
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679128489"><span id="local-6989586621679128491"><span id="local-6989586621679128493"><span class="annot"><span class="annottext">Int -&gt; Shared depth key -&gt; ShowS
+[Shared depth key] -&gt; ShowS
+Shared depth key -&gt; String
+(Int -&gt; Shared depth key -&gt; ShowS)
+-&gt; (Shared depth key -&gt; String)
+-&gt; ([Shared depth key] -&gt; ShowS)
+-&gt; Show (Shared depth key)
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+forall (depth :: Depth) key.
+Show key =&gt;
+Int -&gt; Shared depth key -&gt; ShowS
+forall (depth :: Depth) key.
+Show key =&gt;
+[Shared depth key] -&gt; ShowS
+forall (depth :: Depth) key. Show key =&gt; Shared depth key -&gt; String
+showList :: [Shared depth key] -&gt; ShowS
+$cshowList :: forall (depth :: Depth) key.
+Show key =&gt;
+[Shared depth key] -&gt; ShowS
+show :: Shared depth key -&gt; String
+$cshow :: forall (depth :: Depth) key. Show key =&gt; Shared depth key -&gt; String
+showsPrec :: Int -&gt; Shared depth key -&gt; ShowS
+$cshowsPrec :: forall (depth :: Depth) key.
+Show key =&gt;
+Int -&gt; Shared depth key -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679128484"><span id="local-6989586621679128486"><span class="annot"><span class="annottext">Shared depth key -&gt; Shared depth key -&gt; Bool
+(Shared depth key -&gt; Shared depth key -&gt; Bool)
+-&gt; (Shared depth key -&gt; Shared depth key -&gt; Bool)
+-&gt; Eq (Shared depth key)
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+forall (depth :: Depth) key.
+Eq key =&gt;
+Shared depth key -&gt; Shared depth key -&gt; Bool
+/= :: Shared depth key -&gt; Shared depth key -&gt; Bool
+$c/= :: forall (depth :: Depth) key.
+Eq key =&gt;
+Shared depth key -&gt; Shared depth key -&gt; Bool
+== :: Shared depth key -&gt; Shared depth key -&gt; Bool
+$c== :: forall (depth :: Depth) key.
+Eq key =&gt;
+Shared depth key -&gt; Shared depth key -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span id="local-6989586621679128478"><span id="local-6989586621679128480"><span id="local-6989586621679128482"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128482"><span class="hs-identifier hs-type">depth</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-108"></span><span id="local-6989586621679128475"><span id="local-6989586621679128476"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679128473"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">NFData</span></span><span> </span><span class="annot"><a href="#local-6989586621679128476"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">NFData</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128475"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128476"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="hs-comment">--</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- Key Derivation</span><span>
+</span><span id="line-112"></span><span class="hs-comment">--</span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- $keyDerivation</span><span>
+</span><span id="line-114"></span><span class="hs-comment">--</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- === Generating a root key from 'SomeMnemonic'</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- &gt; :set -XOverloadedStrings</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- &gt; :set -XTypeApplications</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- &gt; :set -XDataKinds</span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- &gt; import Cardano.Mnemonic ( mkSomeMnemonic )</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- &gt;</span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- &gt; let (Right mw) = mkSomeMnemonic @'[15] [&quot;network&quot;,&quot;empty&quot;,&quot;cause&quot;,&quot;mean&quot;,&quot;expire&quot;,&quot;private&quot;,&quot;finger&quot;,&quot;accident&quot;,&quot;session&quot;,&quot;problem&quot;,&quot;absurd&quot;,&quot;banner&quot;,&quot;stage&quot;,&quot;void&quot;,&quot;what&quot;]</span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- &gt; let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes</span><span>
+</span><span id="line-123"></span><span class="hs-comment">-- &gt; let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv</span><span>
+</span><span id="line-124"></span><span class="hs-comment">--</span><span>
+</span><span id="line-125"></span><span class="hs-comment">-- === Deriving child keys</span><span>
+</span><span id="line-126"></span><span class="hs-comment">--</span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@</span><span>
+</span><span id="line-128"></span><span class="hs-comment">--</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- &gt; let Just accIx = indexFromWord32 0x80000000</span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- &gt; let acctK = deriveAccountPrivateKey rootK accIx</span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- &gt;</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- &gt; let Just addIx = indexFromWord32 0x00000014</span><span>
+</span><span id="line-133"></span><span class="hs-comment">-- &gt; let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx</span><span>
+</span><span id="line-134"></span><span class="hs-comment">--</span><span>
+</span><span id="line-135"></span><span class="hs-comment">-- &gt; let stakeK = deriveDelegationPrivateKey acctK</span><span>
+</span><span id="line-136"></span><span>
+</span><span id="line-137"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#GenMasterKey"><span class="hs-identifier hs-type">Internal.GenMasterKey</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-138"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="SecondFactor"><span class="annot"><a href="Cardano.Address.Derivation.html#SecondFactor"><span class="hs-identifier hs-var">SecondFactor</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span>    </span><span id="local-6989586621679128468"><span class="annot"><span class="annottext">genMasterKeyFromXPrv :: XPrv -&gt; Shared 'RootK XPrv
+</span><a href="Cardano.Address.Derivation.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Shared 'RootK XPrv
+forall (depth :: Depth). XPrv -&gt; Shared depth XPrv
+</span><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier hs-var">liftXPrv</span></a></span><span>
+</span><span id="line-141"></span><span>    </span><span id="local-6989586621679128466"><span class="annot"><span class="annottext">genMasterKeyFromMnemonic :: SomeMnemonic -&gt; SecondFactor Shared -&gt; Shared 'RootK XPrv
+</span><a href="Cardano.Address.Derivation.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromMnemonic</span></a></span></span><span> </span><span id="local-6989586621679128464"><span class="annot"><span class="annottext">SomeMnemonic
+</span><a href="#local-6989586621679128464"><span class="hs-identifier hs-var">fstFactor</span></a></span></span><span> </span><span id="local-6989586621679128463"><span class="annot"><span class="annottext">SecondFactor Shared
+</span><a href="#local-6989586621679128463"><span class="hs-identifier hs-var">sndFactor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-142"></span><span>        </span><span class="annot"><span class="annottext">XPrv -&gt; Shared 'RootK XPrv
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span> </span><span class="annot"><span class="annottext">(XPrv -&gt; Shared 'RootK XPrv) -&gt; XPrv -&gt; Shared 'RootK XPrv
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">SomeMnemonic -&gt; ScrubbedBytes -&gt; XPrv
+forall sndFactor.
+ByteArrayAccess sndFactor =&gt;
+SomeMnemonic -&gt; sndFactor -&gt; XPrv
+</span><a href="Cardano.Address.Style.Shelley.html#genMasterKeyFromMnemonicShelley"><span class="hs-identifier hs-var">genMasterKeyFromMnemonicShelley</span></a></span><span> </span><span class="annot"><span class="annottext">SomeMnemonic
+</span><a href="#local-6989586621679128464"><span class="hs-identifier hs-var">fstFactor</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+SecondFactor Shared
+</span><a href="#local-6989586621679128463"><span class="hs-identifier hs-var">sndFactor</span></a></span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#HardDerivation"><span class="hs-identifier hs-type">Internal.HardDerivation</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-145"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="AccountIndexDerivationType"><span class="annot"><a href="Cardano.Address.Derivation.html#AccountIndexDerivationType"><span class="hs-identifier hs-var">AccountIndexDerivationType</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a></span><span>
+</span><span id="line-146"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="AddressIndexDerivationType"><span class="annot"><a href="Cardano.Address.Derivation.html#AddressIndexDerivationType"><span class="hs-identifier hs-var">AddressIndexDerivationType</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span>
+</span><span id="line-147"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="WithRole"><span class="annot"><a href="Cardano.Address.Derivation.html#WithRole"><span class="hs-identifier hs-var">WithRole</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#Role"><span class="hs-identifier hs-type">Role</span></a></span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span><span>    </span><span id="local-6989586621679128459"><span class="annot"><span class="annottext">deriveAccountPrivateKey :: Shared 'RootK XPrv
+-&gt; Index (AccountIndexDerivationType Shared) 'AccountK
+-&gt; Shared 'AccountK XPrv
+</span><a href="Cardano.Address.Derivation.html#deriveAccountPrivateKey"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAccountPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span id="local-6989586621679128457"><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679128457"><span class="hs-identifier hs-var">rootXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679128456"><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Shared) 'AccountK
+</span><a href="#local-6989586621679128456"><span class="hs-identifier hs-var">accIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-150"></span><span>        </span><span class="annot"><span class="annottext">XPrv -&gt; Shared 'AccountK XPrv
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span> </span><span class="annot"><span class="annottext">(XPrv -&gt; Shared 'AccountK XPrv) -&gt; XPrv -&gt; Shared 'AccountK XPrv
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Index 'Hardened 'AccountK -&gt; Word32 -&gt; XPrv
+forall (derivationType :: DerivationType) (depth :: Depth).
+XPrv -&gt; Index derivationType depth -&gt; Word32 -&gt; XPrv
+</span><a href="Cardano.Address.Style.Shelley.html#deriveAccountPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAccountPrivateKeyShelley</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679128457"><span class="hs-identifier hs-var">rootXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Shared) 'AccountK
+Index 'Hardened 'AccountK
+</span><a href="#local-6989586621679128456"><span class="hs-identifier hs-var">accIx</span></a></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="Cardano.Address.Style.Shared.html#purposeIndex"><span class="hs-identifier hs-var">purposeIndex</span></a></span><span>
+</span><span id="line-151"></span><span>
+</span><span id="line-152"></span><span>    </span><span id="local-6989586621679128454"><span class="annot"><span class="annottext">deriveAddressPrivateKey :: Shared 'AccountK XPrv
+-&gt; WithRole Shared
+-&gt; Index (AddressIndexDerivationType Shared) 'PaymentK
+-&gt; Shared 'PaymentK XPrv
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span id="local-6989586621679128452"><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679128452"><span class="hs-identifier hs-var">accXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679128451"><span class="annot"><span class="annottext">WithRole Shared
+</span><a href="#local-6989586621679128451"><span class="hs-identifier hs-var">keyRole</span></a></span></span><span> </span><span id="local-6989586621679128450"><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Shared) 'PaymentK
+</span><a href="#local-6989586621679128450"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-153"></span><span>        </span><span class="annot"><span class="annottext">XPrv -&gt; Shared 'PaymentK XPrv
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span> </span><span class="annot"><span class="annottext">(XPrv -&gt; Shared 'PaymentK XPrv) -&gt; XPrv -&gt; Shared 'PaymentK XPrv
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Role -&gt; Index 'Soft 'PaymentK -&gt; XPrv
+forall (derivationType :: DerivationType) (depth :: Depth).
+XPrv -&gt; Role -&gt; Index derivationType depth -&gt; XPrv
+</span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPrivateKeyShelley"><span class="hs-identifier hs-var">deriveAddressPrivateKeyShelley</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679128452"><span class="hs-identifier hs-var">accXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="#local-6989586621679128451"><span class="hs-identifier hs-var">keyRole</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Shared) 'PaymentK
+Index 'Soft 'PaymentK
+</span><a href="#local-6989586621679128450"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#SoftDerivation"><span class="hs-identifier hs-type">Internal.SoftDerivation</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-156"></span><span>    </span><span id="local-6989586621679128446"><span class="annot"><span class="annottext">deriveAddressPublicKey :: Shared 'AccountK XPub
+-&gt; WithRole Shared
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'PaymentK XPub
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPublicKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span id="local-6989586621679128444"><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679128444"><span class="hs-identifier hs-var">accXPub</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679128443"><span class="annot"><span class="annottext">WithRole Shared
+</span><a href="#local-6989586621679128443"><span class="hs-identifier hs-var">keyRole</span></a></span></span><span> </span><span id="local-6989586621679128442"><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
+</span><a href="#local-6989586621679128442"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-157"></span><span>        </span><span class="annot"><span class="annottext">XPub -&gt; Shared 'PaymentK XPub
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span> </span><span class="annot"><span class="annottext">(XPub -&gt; Shared 'PaymentK XPub) -&gt; XPub -&gt; Shared 'PaymentK XPub
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Role -&gt; Index 'Soft 'PaymentK -&gt; XPub
+forall (derivationType :: DerivationType) (depth :: Depth).
+XPub -&gt; Role -&gt; Index derivationType depth -&gt; XPub
+</span><a href="Cardano.Address.Style.Shelley.html#deriveAddressPublicKeyShelley"><span class="hs-identifier hs-var">deriveAddressPublicKeyShelley</span></a></span><span> </span><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679128444"><span class="hs-identifier hs-var">accXPub</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="#local-6989586621679128443"><span class="hs-identifier hs-var">keyRole</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
+</span><a href="#local-6989586621679128442"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span class="hs-comment">-- | Generate a root key from a corresponding mnemonic.</span><span>
+</span><span id="line-160"></span><span class="hs-comment">--</span><span>
+</span><span id="line-161"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-162"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-type">genMasterKeyFromMnemonic</span></a></span><span>
+</span><span id="line-163"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a></span><span>
+</span><span id="line-164"></span><span>        </span><span class="hs-comment">-- ^ Some valid mnemonic sentence.</span><span>
+</span><span id="line-165"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-166"></span><span>        </span><span class="hs-comment">-- ^ An optional second-factor passphrase (or 'mempty')</span><span>
+</span><span id="line-167"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-168"></span><span id="genMasterKeyFromMnemonic"><span class="annot"><span class="annottext">genMasterKeyFromMnemonic :: SomeMnemonic -&gt; ScrubbedBytes -&gt; Shared 'RootK XPrv
+</span><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-var hs-var">genMasterKeyFromMnemonic</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SomeMnemonic -&gt; ScrubbedBytes -&gt; Shared 'RootK XPrv
+forall (key :: Depth -&gt; * -&gt; *).
+GenMasterKey key =&gt;
+SomeMnemonic -&gt; SecondFactor key -&gt; key 'RootK XPrv
+</span><a href="Cardano.Address.Derivation.html#genMasterKeyFromMnemonic"><span class="hs-identifier hs-var">Internal.genMasterKeyFromMnemonic</span></a></span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- | Generate a root key from a corresponding root 'XPrv'</span><span>
+</span><span id="line-171"></span><span class="hs-comment">--</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-173"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-type">genMasterKeyFromXPrv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-174"></span><span id="genMasterKeyFromXPrv"><span class="annot"><span class="annottext">genMasterKeyFromXPrv :: XPrv -&gt; Shared 'RootK XPrv
+</span><a href="Cardano.Address.Style.Shared.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-var hs-var">genMasterKeyFromXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Shared 'RootK XPrv
+forall (key :: Depth -&gt; * -&gt; *).
+GenMasterKey key =&gt;
+XPrv -&gt; key 'RootK XPrv
+</span><a href="Cardano.Address.Derivation.html#genMasterKeyFromXPrv"><span class="hs-identifier hs-var">Internal.genMasterKeyFromXPrv</span></a></span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
+</span><span id="line-177"></span><span class="hs-comment">--</span><span>
+</span><span id="line-178"></span><span class="hs-comment">-- | Derives an account private key from the given root private key.</span><span>
+</span><span id="line-179"></span><span class="hs-comment">--</span><span>
+</span><span id="line-180"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-181"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAccountPrivateKey"><span class="hs-identifier hs-type">deriveAccountPrivateKey</span></a></span><span>
+</span><span id="line-182"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-183"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span>
+</span><span id="line-184"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-185"></span><span id="deriveAccountPrivateKey"><span class="annot"><span class="annottext">deriveAccountPrivateKey :: Shared 'RootK XPrv
+-&gt; Index 'Hardened 'AccountK -&gt; Shared 'AccountK XPrv
+</span><a href="Cardano.Address.Style.Shared.html#deriveAccountPrivateKey"><span class="hs-identifier hs-var hs-var">deriveAccountPrivateKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Shared 'RootK XPrv
+-&gt; Index 'Hardened 'AccountK -&gt; Shared 'AccountK XPrv
+forall (key :: Depth -&gt; * -&gt; *).
+HardDerivation key =&gt;
+key 'RootK XPrv
+-&gt; Index (AccountIndexDerivationType key) 'AccountK
+-&gt; key 'AccountK XPrv
+</span><a href="Cardano.Address.Derivation.html#deriveAccountPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAccountPrivateKey</span></a></span><span>
+</span><span id="line-186"></span><span>
+</span><span id="line-187"></span><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
+</span><span id="line-188"></span><span class="hs-comment">--</span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- | Derives a multisig private key from the given account private key for payment credential.</span><span>
+</span><span id="line-190"></span><span class="hs-comment">--</span><span>
+</span><span id="line-191"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-192"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAddressPrivateKey"><span class="hs-identifier hs-type">deriveAddressPrivateKey</span></a></span><span>
+</span><span id="line-193"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-194"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a></span><span>
+</span><span id="line-195"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-196"></span><span id="deriveAddressPrivateKey"><span class="annot"><span class="annottext">deriveAddressPrivateKey :: Shared 'AccountK XPrv
+-&gt; Index 'Soft 'PaymentK -&gt; Shared 'ScriptK XPrv
+</span><a href="Cardano.Address.Style.Shared.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var hs-var">deriveAddressPrivateKey</span></a></span></span><span> </span><span id="local-6989586621679128441"><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+</span><a href="#local-6989586621679128441"><span class="hs-identifier hs-var">accPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Shared 'PaymentK XPrv -&gt; Shared 'ScriptK XPrv
+</span><span class="hs-identifier hs-var">coerce</span></span><span> </span><span class="annot"><span class="annottext">(Shared 'PaymentK XPrv -&gt; Shared 'ScriptK XPrv)
+-&gt; (Index 'Soft 'PaymentK -&gt; Shared 'PaymentK XPrv)
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'ScriptK XPrv
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span>
+</span><span id="line-197"></span><span>    </span><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+-&gt; WithRole Shared
+-&gt; Index (AddressIndexDerivationType Shared) 'PaymentK
+-&gt; Shared 'PaymentK XPrv
+forall (key :: Depth -&gt; * -&gt; *).
+HardDerivation key =&gt;
+key 'AccountK XPrv
+-&gt; WithRole key
+-&gt; Index (AddressIndexDerivationType key) 'PaymentK
+-&gt; key 'PaymentK XPrv
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAddressPrivateKey</span></a></span><span> </span><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+</span><a href="#local-6989586621679128441"><span class="hs-identifier hs-var">accPrv</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="Cardano.Address.Style.Shelley.html#UTxOExternal"><span class="hs-identifier hs-var">UTxOExternal</span></a></span><span>
+</span><span id="line-198"></span><span>
+</span><span id="line-199"></span><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.</span><span>
+</span><span id="line-200"></span><span class="hs-comment">--</span><span>
+</span><span id="line-201"></span><span class="hs-comment">-- | Derives a multisig private key from the given account private key for delegation credential.</span><span>
+</span><span id="line-202"></span><span class="hs-comment">--</span><span>
+</span><span id="line-203"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-204"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPrivateKey"><span class="hs-identifier hs-type">deriveDelegationPrivateKey</span></a></span><span>
+</span><span id="line-205"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-206"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a></span><span>
+</span><span id="line-207"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
+</span><span id="line-208"></span><span id="deriveDelegationPrivateKey"><span class="annot"><span class="annottext">deriveDelegationPrivateKey :: Shared 'AccountK XPrv
+-&gt; Index 'Soft 'PaymentK -&gt; Shared 'ScriptK XPrv
+</span><a href="Cardano.Address.Style.Shared.html#deriveDelegationPrivateKey"><span class="hs-identifier hs-var hs-var">deriveDelegationPrivateKey</span></a></span></span><span> </span><span id="local-6989586621679128438"><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+</span><a href="#local-6989586621679128438"><span class="hs-identifier hs-var">accPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Shared 'PaymentK XPrv -&gt; Shared 'ScriptK XPrv
+</span><span class="hs-identifier hs-var">coerce</span></span><span> </span><span class="annot"><span class="annottext">(Shared 'PaymentK XPrv -&gt; Shared 'ScriptK XPrv)
+-&gt; (Index 'Soft 'PaymentK -&gt; Shared 'PaymentK XPrv)
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'ScriptK XPrv
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span>
+</span><span id="line-209"></span><span>    </span><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+-&gt; WithRole Shared
+-&gt; Index (AddressIndexDerivationType Shared) 'PaymentK
+-&gt; Shared 'PaymentK XPrv
+forall (key :: Depth -&gt; * -&gt; *).
+HardDerivation key =&gt;
+key 'AccountK XPrv
+-&gt; WithRole key
+-&gt; Index (AddressIndexDerivationType key) 'PaymentK
+-&gt; key 'PaymentK XPrv
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPrivateKey"><span class="hs-identifier hs-var">Internal.deriveAddressPrivateKey</span></a></span><span> </span><span class="annot"><span class="annottext">Shared 'AccountK XPrv
+</span><a href="#local-6989586621679128438"><span class="hs-identifier hs-var">accPrv</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="Cardano.Address.Style.Shelley.html#Stake"><span class="hs-identifier hs-var">Stake</span></a></span><span>
+</span><span id="line-210"></span><span>
+</span><span id="line-211"></span><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock</span><span>
+</span><span id="line-212"></span><span class="hs-comment">--</span><span>
+</span><span id="line-213"></span><span class="hs-comment">-- | Derives a multisig public key from the given account public key for payment credential.</span><span>
+</span><span id="line-214"></span><span class="hs-comment">--</span><span>
+</span><span id="line-215"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-216"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveAddressPublicKey"><span class="hs-identifier hs-type">deriveAddressPublicKey</span></a></span><span>
+</span><span id="line-217"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span>
+</span><span id="line-218"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a></span><span>
+</span><span id="line-219"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span>
+</span><span id="line-220"></span><span id="deriveAddressPublicKey"><span class="annot"><span class="annottext">deriveAddressPublicKey :: Shared 'AccountK XPub
+-&gt; Index 'Soft 'PaymentK -&gt; Shared 'ScriptK XPub
+</span><a href="Cardano.Address.Style.Shared.html#deriveAddressPublicKey"><span class="hs-identifier hs-var hs-var">deriveAddressPublicKey</span></a></span></span><span> </span><span id="local-6989586621679128436"><span class="annot"><span class="annottext">Shared 'AccountK XPub
+</span><a href="#local-6989586621679128436"><span class="hs-identifier hs-var">accPub</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Shared 'PaymentK XPub -&gt; Shared 'ScriptK XPub
+</span><span class="hs-identifier hs-var">coerce</span></span><span> </span><span class="annot"><span class="annottext">(Shared 'PaymentK XPub -&gt; Shared 'ScriptK XPub)
+-&gt; (Index 'Soft 'PaymentK -&gt; Shared 'PaymentK XPub)
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'ScriptK XPub
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span>
+</span><span id="line-221"></span><span>    </span><span class="annot"><span class="annottext">Shared 'AccountK XPub
+-&gt; WithRole Shared
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'PaymentK XPub
+forall (key :: Depth -&gt; * -&gt; *).
+SoftDerivation key =&gt;
+key 'AccountK XPub
+-&gt; WithRole key -&gt; Index 'Soft 'PaymentK -&gt; key 'PaymentK XPub
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier hs-var">Internal.deriveAddressPublicKey</span></a></span><span> </span><span class="annot"><span class="annottext">Shared 'AccountK XPub
+</span><a href="#local-6989586621679128436"><span class="hs-identifier hs-var">accPub</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="Cardano.Address.Style.Shelley.html#UTxOExternal"><span class="hs-identifier hs-var">UTxOExternal</span></a></span><span>
+</span><span id="line-222"></span><span>
+</span><span id="line-223"></span><span class="hs-comment">-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock</span><span>
+</span><span id="line-224"></span><span class="hs-comment">--</span><span>
+</span><span id="line-225"></span><span class="hs-comment">-- | Derives a multisig public key from the given account public key for delegation credential.</span><span>
+</span><span id="line-226"></span><span class="hs-comment">--</span><span>
+</span><span id="line-227"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-228"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#deriveDelegationPublicKey"><span class="hs-identifier hs-type">deriveDelegationPublicKey</span></a></span><span>
+</span><span id="line-229"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#AccountK"><span class="hs-identifier hs-type">AccountK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span>
+</span><span id="line-230"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#PaymentK"><span class="hs-identifier hs-type">PaymentK</span></a></span><span>
+</span><span id="line-231"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#ScriptK"><span class="hs-identifier hs-type">ScriptK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span>
+</span><span id="line-232"></span><span id="deriveDelegationPublicKey"><span class="annot"><span class="annottext">deriveDelegationPublicKey :: Shared 'AccountK XPub
+-&gt; Index 'Soft 'PaymentK -&gt; Shared 'ScriptK XPub
+</span><a href="Cardano.Address.Style.Shared.html#deriveDelegationPublicKey"><span class="hs-identifier hs-var hs-var">deriveDelegationPublicKey</span></a></span></span><span> </span><span id="local-6989586621679128435"><span class="annot"><span class="annottext">Shared 'AccountK XPub
+</span><a href="#local-6989586621679128435"><span class="hs-identifier hs-var">accPub</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Shared 'PaymentK XPub -&gt; Shared 'ScriptK XPub
+</span><span class="hs-identifier hs-var">coerce</span></span><span> </span><span class="annot"><span class="annottext">(Shared 'PaymentK XPub -&gt; Shared 'ScriptK XPub)
+-&gt; (Index 'Soft 'PaymentK -&gt; Shared 'PaymentK XPub)
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'ScriptK XPub
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span>
+</span><span id="line-233"></span><span>    </span><span class="annot"><span class="annottext">Shared 'AccountK XPub
+-&gt; WithRole Shared
+-&gt; Index 'Soft 'PaymentK
+-&gt; Shared 'PaymentK XPub
+forall (key :: Depth -&gt; * -&gt; *).
+SoftDerivation key =&gt;
+key 'AccountK XPub
+-&gt; WithRole key -&gt; Index 'Soft 'PaymentK -&gt; key 'PaymentK XPub
+</span><a href="Cardano.Address.Derivation.html#deriveAddressPublicKey"><span class="hs-identifier hs-var">Internal.deriveAddressPublicKey</span></a></span><span> </span><span class="annot"><span class="annottext">Shared 'AccountK XPub
+</span><a href="#local-6989586621679128435"><span class="hs-identifier hs-var">accPub</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Shared
+Role
+</span><a href="Cardano.Address.Style.Shelley.html#Stake"><span class="hs-identifier hs-var">Stake</span></a></span><span>
+</span><span id="line-234"></span><span>
+</span><span id="line-235"></span><span class="hs-comment">--</span><span>
+</span><span id="line-236"></span><span class="hs-comment">-- Unsafe</span><span>
+</span><span id="line-237"></span><span class="hs-comment">--</span><span>
+</span><span id="line-238"></span><span>
+</span><span id="line-239"></span><span class="hs-comment">-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPrv'. this is</span><span>
+</span><span id="line-240"></span><span class="hs-comment">-- unsafe because it lets the caller choose the actually derivation 'depth'.</span><span>
+</span><span id="line-241"></span><span class="hs-comment">--</span><span>
+</span><span id="line-242"></span><span class="hs-comment">-- This can be useful however when serializing / deserializing such a type, or to</span><span>
+</span><span id="line-243"></span><span class="hs-comment">-- speed up test code (and avoid having to do needless derivations from a master</span><span>
+</span><span id="line-244"></span><span class="hs-comment">-- key down to an address key for instance).</span><span>
+</span><span id="line-245"></span><span class="hs-comment">--</span><span>
+</span><span id="line-246"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-247"></span><span id="local-6989586621679128560"><span class="annot"><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier hs-type">liftXPrv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128560"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span></span><span>
+</span><span id="line-248"></span><span id="liftXPrv"><span class="annot"><span class="annottext">liftXPrv :: XPrv -&gt; Shared depth XPrv
+</span><a href="Cardano.Address.Style.Shared.html#liftXPrv"><span class="hs-identifier hs-var hs-var">liftXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Shared depth XPrv
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span>
+</span><span id="line-249"></span><span>
+</span><span id="line-250"></span><span class="hs-comment">-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPub'. this is</span><span>
+</span><span id="line-251"></span><span class="hs-comment">-- unsafe because it lets the caller choose the actually derivation 'depth'.</span><span>
+</span><span id="line-252"></span><span class="hs-comment">--</span><span>
+</span><span id="line-253"></span><span class="hs-comment">-- This can be useful however when serializing / deserializing such a type, or to</span><span>
+</span><span id="line-254"></span><span class="hs-comment">-- speed up test code (and avoid having to do needless derivations from a master</span><span>
+</span><span id="line-255"></span><span class="hs-comment">-- key down to an address key for instance).</span><span>
+</span><span id="line-256"></span><span class="hs-comment">--</span><span>
+</span><span id="line-257"></span><span class="hs-comment">-- @since 3.4.0</span><span>
+</span><span id="line-258"></span><span id="local-6989586621679128434"><span class="annot"><a href="Cardano.Address.Style.Shared.html#liftXPub"><span class="hs-identifier hs-type">liftXPub</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128434"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span></span><span>
+</span><span id="line-259"></span><span id="liftXPub"><span class="annot"><span class="annottext">liftXPub :: XPub -&gt; Shared depth XPub
+</span><a href="Cardano.Address.Style.Shared.html#liftXPub"><span class="hs-identifier hs-var hs-var">liftXPub</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Shared depth XPub
+forall (depth :: Depth) key. key -&gt; Shared depth key
+</span><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-var">Shared</span></a></span><span>
+</span><span id="line-260"></span><span>
+</span><span id="line-261"></span><span class="hs-comment">--</span><span>
+</span><span id="line-262"></span><span class="hs-comment">-- Internal</span><span>
+</span><span id="line-263"></span><span class="hs-comment">--</span><span>
+</span><span id="line-264"></span><span>
+</span><span id="line-265"></span><span class="hs-comment">--- | Computes a 28-byte Blake2b224 digest of a Shared 'XPub'.</span><span>
+</span><span id="line-266"></span><span class="hs-comment">---</span><span>
+</span><span id="line-267"></span><span class="hs-comment">--- @since 3.4.0</span><span>
+</span><span id="line-268"></span><span id="local-6989586621679128433"><span class="annot"><a href="Cardano.Address.Style.Shared.html#hashKey"><span class="hs-identifier hs-type">hashKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#KeyRole"><span class="hs-identifier hs-type">KeyRole</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shared.html#Shared"><span class="hs-identifier hs-type">Shared</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679128433"><span class="hs-identifier hs-type">key</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier hs-type">KeyHash</span></a></span></span><span>
+</span><span id="line-269"></span><span id="hashKey"><span class="annot"><span class="annottext">hashKey :: KeyRole -&gt; Shared key XPub -&gt; KeyHash
+</span><a href="Cardano.Address.Style.Shared.html#hashKey"><span class="hs-identifier hs-var hs-var">hashKey</span></a></span></span><span> </span><span id="local-6989586621679128432"><span class="annot"><span class="annottext">KeyRole
+</span><a href="#local-6989586621679128432"><span class="hs-identifier hs-var">cred</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">KeyRole -&gt; ByteString -&gt; KeyHash
+</span><a href="Cardano.Address.Script.html#KeyHash"><span class="hs-identifier hs-var">KeyHash</span></a></span><span> </span><span class="annot"><span class="annottext">KeyRole
+</span><a href="#local-6989586621679128432"><span class="hs-identifier hs-var">cred</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; KeyHash)
+-&gt; (Shared key XPub -&gt; ByteString) -&gt; Shared key XPub -&gt; KeyHash
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+</span><a href="Cardano.Address.Derivation.html#hashCredential"><span class="hs-identifier hs-var">hashCredential</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString)
+-&gt; (Shared key XPub -&gt; ByteString) -&gt; Shared key XPub -&gt; ByteString
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">XPub -&gt; ByteString
+</span><a href="Cardano.Address.Derivation.html#xpubPublicKey"><span class="hs-identifier hs-var">xpubPublicKey</span></a></span><span> </span><span class="annot"><span class="annottext">(XPub -&gt; ByteString)
+-&gt; (Shared key XPub -&gt; XPub) -&gt; Shared key XPub -&gt; ByteString
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Shared key XPub -&gt; XPub
+forall (depth :: Depth) key. Shared depth key -&gt; key
+</span><a href="Cardano.Address.Style.Shared.html#getKey"><span class="hs-identifier hs-var hs-var">getKey</span></a></span><span>
+</span><span id="line-270"></span><span>
+</span><span id="line-271"></span><span class="hs-comment">-- Purpose is a constant set to 1854' (or 0x8000073e) following the</span><span>
+</span><span id="line-272"></span><span class="hs-comment">-- CIP-1854 Multi-signatures HD Wallets</span><span>
+</span><span id="line-273"></span><span class="hs-comment">--</span><span>
+</span><span id="line-274"></span><span class="hs-comment">-- Hardened derivation is used at this level.</span><span>
+</span><span id="line-275"></span><span class="annot"><a href="Cardano.Address.Style.Shared.html#purposeIndex"><span class="hs-identifier hs-type">purposeIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-276"></span><span id="purposeIndex"><span class="annot"><span class="annottext">purposeIndex :: Word32
+</span><a href="Cardano.Address.Style.Shared.html#purposeIndex"><span class="hs-identifier hs-var hs-var">purposeIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32
+</span><span class="hs-number">0x8000073e</span></span><span>
+</span><span id="line-277"></span></pre></body></html>

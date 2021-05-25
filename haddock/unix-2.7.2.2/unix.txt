@@ -132,9 +132,9 @@ Null :: DL
 Next :: DL
 Default :: DL
 DLHandle :: Ptr () -> DL
-instance GHC.Show.Show System.Posix.DynamicLinker.Prim.DL
 instance GHC.Read.Read System.Posix.DynamicLinker.Prim.RTLDFlags
 instance GHC.Show.Show System.Posix.DynamicLinker.Prim.RTLDFlags
+instance GHC.Show.Show System.Posix.DynamicLinker.Prim.DL
 
 
 -- | Dynamic linker support through dlopen()
@@ -290,20 +290,20 @@ module System.Posix.Error
 
 -- | as <a>throwErrno</a>, but exceptions include the given path when
 --   appropriate.
-throwErrnoPath :: () => String -> FilePath -> IO a
+throwErrnoPath :: String -> FilePath -> IO a
 
 -- | as <a>throwErrnoIf</a>, but exceptions include the given path when
 --   appropriate.
-throwErrnoPathIf :: () => (a -> Bool) -> String -> FilePath -> IO a -> IO a
+throwErrnoPathIf :: (a -> Bool) -> String -> FilePath -> IO a -> IO a
 
 -- | as <a>throwErrnoIf_</a>, but exceptions include the given path when
 --   appropriate.
-throwErrnoPathIf_ :: () => (a -> Bool) -> String -> FilePath -> IO a -> IO ()
+throwErrnoPathIf_ :: (a -> Bool) -> String -> FilePath -> IO a -> IO ()
 throwErrnoPathIfRetry :: (a -> Bool) -> String -> FilePath -> IO a -> IO a
 
 -- | as <a>throwErrnoIfNull</a>, but exceptions include the given path when
 --   appropriate.
-throwErrnoPathIfNull :: () => String -> FilePath -> IO (Ptr a) -> IO (Ptr a)
+throwErrnoPathIfNull :: String -> FilePath -> IO (Ptr a) -> IO (Ptr a)
 throwErrnoPathIfNullRetry :: String -> FilePath -> IO (Ptr a) -> IO (Ptr a)
 
 -- | as <a>throwErrnoIfMinus1</a>, but exceptions include the given path
@@ -1762,9 +1762,9 @@ ResourceStackSize :: Resource
 ResourceTotalMemory :: Resource
 getResourceLimit :: Resource -> IO ResourceLimits
 setResourceLimit :: Resource -> ResourceLimits -> IO ()
-instance GHC.Classes.Eq System.Posix.Resource.ResourceLimits
-instance GHC.Classes.Eq System.Posix.Resource.ResourceLimit
 instance GHC.Classes.Eq System.Posix.Resource.Resource
+instance GHC.Classes.Eq System.Posix.Resource.ResourceLimit
+instance GHC.Classes.Eq System.Posix.Resource.ResourceLimits
 
 
 -- | POSIX named semaphore support.
@@ -2625,12 +2625,12 @@ setEffectiveGroupID :: GroupID -> IO ()
 -- | <tt>setGroups</tt> calls <tt>setgroups</tt> to set the list of
 --   supplementary <tt>GroupID</tt>s associated with the current process.
 setGroups :: [GroupID] -> IO ()
-instance GHC.Classes.Eq System.Posix.User.UserEntry
-instance GHC.Read.Read System.Posix.User.UserEntry
-instance GHC.Show.Show System.Posix.User.UserEntry
 instance GHC.Classes.Eq System.Posix.User.GroupEntry
 instance GHC.Read.Read System.Posix.User.GroupEntry
 instance GHC.Show.Show System.Posix.User.GroupEntry
+instance GHC.Classes.Eq System.Posix.User.UserEntry
+instance GHC.Read.Read System.Posix.User.UserEntry
+instance GHC.Show.Show System.Posix.User.UserEntry
 
 
 -- | <a>POSIX.1-2008</a> support with <tt>ByteString</tt> file paths and

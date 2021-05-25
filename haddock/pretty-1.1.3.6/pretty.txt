@@ -313,20 +313,20 @@ fullRender :: Mode -> Int -> Float -> (TextDetails -> a -> a) -> a -> Doc b -> a
 --   to the <tt>Style</tt> and <tt>Mode</tt> types for a description of
 --   rendering mode, line length and ribbons.
 fullRenderAnn :: Mode -> Int -> Float -> (AnnotDetails b -> a -> a) -> a -> Doc b -> a
-instance GHC.Classes.Eq a => GHC.Classes.Eq (Text.PrettyPrint.Annotated.HughesPJ.Span a)
-instance GHC.Show.Show a => GHC.Show.Show (Text.PrettyPrint.Annotated.HughesPJ.Span a)
-instance GHC.Generics.Generic Text.PrettyPrint.Annotated.HughesPJ.Style
-instance GHC.Classes.Eq Text.PrettyPrint.Annotated.HughesPJ.Style
-instance GHC.Show.Show Text.PrettyPrint.Annotated.HughesPJ.Style
-instance GHC.Generics.Generic Text.PrettyPrint.Annotated.HughesPJ.Mode
-instance GHC.Classes.Eq Text.PrettyPrint.Annotated.HughesPJ.Mode
-instance GHC.Show.Show Text.PrettyPrint.Annotated.HughesPJ.Mode
-instance GHC.Generics.Generic (Text.PrettyPrint.Annotated.HughesPJ.Doc a)
-instance GHC.Classes.Eq a => GHC.Classes.Eq (Text.PrettyPrint.Annotated.HughesPJ.AnnotDetails a)
-instance GHC.Show.Show a => GHC.Show.Show (Text.PrettyPrint.Annotated.HughesPJ.AnnotDetails a)
 instance GHC.Generics.Generic Text.PrettyPrint.Annotated.HughesPJ.TextDetails
 instance GHC.Classes.Eq Text.PrettyPrint.Annotated.HughesPJ.TextDetails
 instance GHC.Show.Show Text.PrettyPrint.Annotated.HughesPJ.TextDetails
+instance GHC.Classes.Eq a => GHC.Classes.Eq (Text.PrettyPrint.Annotated.HughesPJ.AnnotDetails a)
+instance GHC.Show.Show a => GHC.Show.Show (Text.PrettyPrint.Annotated.HughesPJ.AnnotDetails a)
+instance GHC.Generics.Generic (Text.PrettyPrint.Annotated.HughesPJ.Doc a)
+instance GHC.Generics.Generic Text.PrettyPrint.Annotated.HughesPJ.Mode
+instance GHC.Classes.Eq Text.PrettyPrint.Annotated.HughesPJ.Mode
+instance GHC.Show.Show Text.PrettyPrint.Annotated.HughesPJ.Mode
+instance GHC.Generics.Generic Text.PrettyPrint.Annotated.HughesPJ.Style
+instance GHC.Classes.Eq Text.PrettyPrint.Annotated.HughesPJ.Style
+instance GHC.Show.Show Text.PrettyPrint.Annotated.HughesPJ.Style
+instance GHC.Classes.Eq a => GHC.Classes.Eq (Text.PrettyPrint.Annotated.HughesPJ.Span a)
+instance GHC.Show.Show a => GHC.Show.Show (Text.PrettyPrint.Annotated.HughesPJ.Span a)
 instance GHC.Base.Functor Text.PrettyPrint.Annotated.HughesPJ.Span
 instance GHC.Show.Show (Text.PrettyPrint.Annotated.HughesPJ.Doc a)
 instance GHC.Base.Semigroup (Text.PrettyPrint.Annotated.HughesPJ.Doc a)

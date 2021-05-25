@@ -106,8 +106,8 @@ mkSomeMnemonic :: MkSomeMnemonic sz => [Text] -> Either (MkSomeMnemonicError sz)
 -- | Error reported from trying to create a passphrase from a given
 --   mnemonic
 newtype MkSomeMnemonicError (sz :: [Nat])
-MkSomeMnemonicError :: String -> MkSomeMnemonicError
-[getMkSomeMnemonicError] :: MkSomeMnemonicError -> String
+MkSomeMnemonicError :: String -> MkSomeMnemonicError (sz :: [Nat])
+[getMkSomeMnemonicError] :: MkSomeMnemonicError (sz :: [Nat]) -> String
 
 -- | Convert a <a>SomeMnemonic</a> to bytes.
 someMnemonicToBytes :: SomeMnemonic -> ScrubbedBytes
@@ -187,21 +187,21 @@ entropyToBytes :: Entropy n -> ScrubbedBytes
 --   <a>Entropy</a> and <a>Mnemonic</a> can only be created through
 --   smart-constructors, this function cannot fail and is total.
 entropyToMnemonic :: forall mw ent csz. (ValidMnemonicSentence mw, ValidEntropySize ent, ValidChecksumSize ent csz, ent ~ EntropySize mw, mw ~ MnemonicWords ent) => Entropy ent -> Mnemonic mw
-instance GHC.Show.Show (Cardano.Mnemonic.MkSomeMnemonicError sz)
-instance GHC.Classes.Eq (Cardano.Mnemonic.MkSomeMnemonicError sz)
-instance GHC.Show.Show (Cardano.Mnemonic.MkMnemonicError csz)
-instance GHC.Classes.Eq (Cardano.Mnemonic.MkMnemonicError csz)
-instance GHC.Show.Show (Cardano.Mnemonic.MnemonicException csz)
 instance GHC.Show.Show (Cardano.Mnemonic.Mnemonic mw)
 instance GHC.Classes.Eq (Cardano.Mnemonic.Mnemonic mw)
+instance GHC.Show.Show (Cardano.Mnemonic.MnemonicException csz)
+instance GHC.Show.Show (Cardano.Mnemonic.MkMnemonicError csz)
+instance GHC.Classes.Eq (Cardano.Mnemonic.MkMnemonicError csz)
+instance GHC.Show.Show (Cardano.Mnemonic.MkSomeMnemonicError sz)
+instance GHC.Classes.Eq (Cardano.Mnemonic.MkSomeMnemonicError sz)
 instance GHC.Classes.Eq (Crypto.Encoding.BIP39.EntropyError czs)
 instance GHC.Classes.Eq Crypto.Encoding.BIP39.MnemonicWordsError
 instance GHC.Classes.Eq Crypto.Encoding.BIP39.Dictionary.DictionaryError
 instance GHC.Show.Show Cardano.Mnemonic.SomeMnemonic
-instance (n Data.Type.Equality.~ Crypto.Encoding.BIP39.EntropySize mw, csz Data.Type.Equality.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz, Cardano.Mnemonic.MkSomeMnemonic rest, Cardano.Mnemonic.NatVals rest) => Cardano.Mnemonic.MkSomeMnemonic (mw : rest)
+instance (n GHC.Types.~ Crypto.Encoding.BIP39.EntropySize mw, csz GHC.Types.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz, Cardano.Mnemonic.MkSomeMnemonic rest, Cardano.Mnemonic.NatVals rest) => Cardano.Mnemonic.MkSomeMnemonic (mw : rest)
 instance Cardano.Mnemonic.NatVals '[]
 instance (GHC.TypeNats.KnownNat n, Cardano.Mnemonic.NatVals rest) => Cardano.Mnemonic.NatVals (n : rest)
-instance (n Data.Type.Equality.~ Crypto.Encoding.BIP39.EntropySize mw, csz Data.Type.Equality.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz) => Cardano.Mnemonic.MkSomeMnemonic '[mw]
+instance (n GHC.Types.~ Crypto.Encoding.BIP39.EntropySize mw, csz GHC.Types.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz) => Cardano.Mnemonic.MkSomeMnemonic '[mw]
 instance GHC.Classes.Eq Cardano.Mnemonic.SomeMnemonic
 instance GHC.TypeNats.KnownNat csz => GHC.Exception.Type.Exception (Cardano.Mnemonic.MnemonicException csz)
 
@@ -224,10 +224,10 @@ indexFromWord32 :: forall ix derivationType depth. (ix ~ Index derivationType de
 
 -- | Constructs a full domain <a>Index</a>. This can't fail, unlike
 --   <tt>fromWord32</tt>.
-wholeDomainIndex :: Word32 -> Index  'WholeDomain depth
+wholeDomainIndex :: Word32 -> Index 'WholeDomain depth
 
 -- | Upcasts an <a>Index</a> to one with the full <a>Word32</a> domain.
-coerceWholeDomainIndex :: Index ty depth0 -> Index  'WholeDomain depth1
+coerceWholeDomainIndex :: Index ty depth0 -> Index 'WholeDomain depth1
 
 -- | Increment an index, if possible.
 nextIndex :: forall ix derivationType depth. (ix ~ Index derivationType depth, Bounded ix) => ix -> Maybe ix
@@ -263,36 +263,36 @@ Soft :: DerivationType
 WholeDomain :: DerivationType
 
 -- | Abstract interface for constructing a <i>Master Key</i>.
-class GenMasterKey (key :: Depth -> * -> *) where {
-    type family SecondFactor key :: *;
+class GenMasterKey (key :: Depth -> Type -> Type) where {
+    type family SecondFactor key :: Type;
 }
 
 -- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: GenMasterKey key => SomeMnemonic -> SecondFactor key -> key  'RootK XPrv
+genMasterKeyFromMnemonic :: GenMasterKey key => SomeMnemonic -> SecondFactor key -> key 'RootK XPrv
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: GenMasterKey key => XPrv -> key  'RootK XPrv
+genMasterKeyFromXPrv :: GenMasterKey key => XPrv -> key 'RootK XPrv
 
 -- | An interface for doing hard derivations from the root private key,
 --   <i>Master Key</i>
-class HardDerivation (key :: Depth -> * -> *) where {
+class HardDerivation (key :: Depth -> Type -> Type) where {
     type family AccountIndexDerivationType key :: DerivationType;
     type family AddressIndexDerivationType key :: DerivationType;
-    type family WithRole key :: *;
+    type family WithRole key :: Type;
 }
 
 -- | Derives account private key from the given root private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAccountPrivateKey :: HardDerivation key => key  'RootK XPrv -> Index (AccountIndexDerivationType key)  'AccountK -> key  'AccountK XPrv
+deriveAccountPrivateKey :: HardDerivation key => key 'RootK XPrv -> Index (AccountIndexDerivationType key) 'AccountK -> key 'AccountK XPrv
 
 -- | Derives address private key from the given account private key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
 --   details).
-deriveAddressPrivateKey :: HardDerivation key => key  'AccountK XPrv -> WithRole key -> Index (AddressIndexDerivationType key)  'PaymentK -> key  'PaymentK XPrv
+deriveAddressPrivateKey :: HardDerivation key => key 'AccountK XPrv -> WithRole key -> Index (AddressIndexDerivationType key) 'PaymentK -> key 'PaymentK XPrv
 
 -- | An interface for doing soft derivations from an account public key
-class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
+class HardDerivation key => SoftDerivation (key :: Depth -> Type -> Type)
 
 -- | Derives address public key from the given account public key, using
 --   derivation scheme 2 (see <a>cardano-crypto</a> package for more
@@ -300,7 +300,7 @@ class HardDerivation key => SoftDerivation (key :: Depth -> * -> *)
 --   
 --   This is the preferred way of deriving new sequential address public
 --   keys.
-deriveAddressPublicKey :: SoftDerivation key => key  'AccountK XPub -> WithRole key -> Index  'Soft  'PaymentK -> key  'PaymentK XPub
+deriveAddressPublicKey :: SoftDerivation key => key 'AccountK XPub -> WithRole key -> Index 'Soft 'PaymentK -> key 'PaymentK XPub
 
 -- | An opaque type representing an extended private key.
 --   
@@ -390,13 +390,13 @@ module Cardano.Address.Script
 
 -- | A <a>Script</a> type represents multi signature script. The script
 --   embodies conditions that need to be satisfied to make it valid.
-data Script (elem :: *)
-RequireSignatureOf :: !elem -> Script
-RequireAllOf :: ![Script elem] -> Script
-RequireAnyOf :: ![Script elem] -> Script
-RequireSomeOf :: Word8 -> ![Script elem] -> Script
-ActiveFromSlot :: Natural -> Script
-ActiveUntilSlot :: Natural -> Script
+data Script (elem :: Type)
+RequireSignatureOf :: !elem -> Script (elem :: Type)
+RequireAllOf :: ![Script elem] -> Script (elem :: Type)
+RequireAnyOf :: ![Script elem] -> Script (elem :: Type)
+RequireSomeOf :: Word8 -> ![Script elem] -> Script (elem :: Type)
+ActiveFromSlot :: Natural -> Script (elem :: Type)
+ActiveUntilSlot :: Natural -> Script (elem :: Type)
 
 -- | This function realizes what cardano-node's `Api.serialiseToCBOR
 --   script` realizes This is basically doing the symbolically following:
@@ -493,39 +493,39 @@ keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 -- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
 --   <tt>script_vkh</tt> as a human readable prefix.
 keyHashToText :: KeyHash -> Text
-instance GHC.Show.Show Cardano.Address.Script.ErrValidateScriptTemplate
-instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScriptTemplate
-instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
-instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
-instance GHC.Show.Show Cardano.Address.Script.ErrRecommendedValidateScript
-instance GHC.Classes.Eq Cardano.Address.Script.ErrRecommendedValidateScript
-instance GHC.Classes.Eq Cardano.Address.Script.ErrKeyHashFromText
-instance GHC.Show.Show Cardano.Address.Script.ErrKeyHashFromText
-instance GHC.Generics.Generic Cardano.Address.Script.ValidationLevel
-instance GHC.Classes.Eq Cardano.Address.Script.ValidationLevel
-instance GHC.Show.Show Cardano.Address.Script.ValidationLevel
-instance GHC.Classes.Eq Cardano.Address.Script.KeyHash
-instance GHC.Classes.Ord Cardano.Address.Script.KeyHash
-instance GHC.Show.Show Cardano.Address.Script.KeyHash
-instance GHC.Generics.Generic Cardano.Address.Script.KeyHash
-instance GHC.Classes.Eq Cardano.Address.Script.KeyRole
-instance GHC.Classes.Ord Cardano.Address.Script.KeyRole
-instance GHC.Show.Show Cardano.Address.Script.KeyRole
-instance GHC.Generics.Generic Cardano.Address.Script.KeyRole
-instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
-instance GHC.Classes.Ord Cardano.Address.Script.ScriptHash
-instance GHC.Show.Show Cardano.Address.Script.ScriptHash
-instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
-instance GHC.Classes.Eq Cardano.Address.Script.ScriptTemplate
-instance GHC.Show.Show Cardano.Address.Script.ScriptTemplate
-instance GHC.Generics.Generic Cardano.Address.Script.ScriptTemplate
+instance GHC.Classes.Eq elem => GHC.Classes.Eq (Cardano.Address.Script.Script elem)
+instance GHC.Show.Show elem => GHC.Show.Show (Cardano.Address.Script.Script elem)
+instance GHC.Generics.Generic (Cardano.Address.Script.Script elem)
 instance GHC.Classes.Eq Cardano.Address.Script.Cosigner
 instance GHC.Classes.Ord Cardano.Address.Script.Cosigner
 instance GHC.Show.Show Cardano.Address.Script.Cosigner
 instance GHC.Generics.Generic Cardano.Address.Script.Cosigner
-instance GHC.Classes.Eq elem => GHC.Classes.Eq (Cardano.Address.Script.Script elem)
-instance GHC.Show.Show elem => GHC.Show.Show (Cardano.Address.Script.Script elem)
-instance GHC.Generics.Generic (Cardano.Address.Script.Script elem)
+instance GHC.Classes.Eq Cardano.Address.Script.ScriptTemplate
+instance GHC.Show.Show Cardano.Address.Script.ScriptTemplate
+instance GHC.Generics.Generic Cardano.Address.Script.ScriptTemplate
+instance GHC.Classes.Eq Cardano.Address.Script.ScriptHash
+instance GHC.Classes.Ord Cardano.Address.Script.ScriptHash
+instance GHC.Show.Show Cardano.Address.Script.ScriptHash
+instance GHC.Generics.Generic Cardano.Address.Script.ScriptHash
+instance GHC.Classes.Eq Cardano.Address.Script.KeyRole
+instance GHC.Classes.Ord Cardano.Address.Script.KeyRole
+instance GHC.Show.Show Cardano.Address.Script.KeyRole
+instance GHC.Generics.Generic Cardano.Address.Script.KeyRole
+instance GHC.Classes.Eq Cardano.Address.Script.KeyHash
+instance GHC.Classes.Ord Cardano.Address.Script.KeyHash
+instance GHC.Show.Show Cardano.Address.Script.KeyHash
+instance GHC.Generics.Generic Cardano.Address.Script.KeyHash
+instance GHC.Generics.Generic Cardano.Address.Script.ValidationLevel
+instance GHC.Classes.Eq Cardano.Address.Script.ValidationLevel
+instance GHC.Show.Show Cardano.Address.Script.ValidationLevel
+instance GHC.Classes.Eq Cardano.Address.Script.ErrKeyHashFromText
+instance GHC.Show.Show Cardano.Address.Script.ErrKeyHashFromText
+instance GHC.Show.Show Cardano.Address.Script.ErrRecommendedValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.ErrRecommendedValidateScript
+instance GHC.Show.Show Cardano.Address.Script.ErrValidateScript
+instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScript
+instance GHC.Show.Show Cardano.Address.Script.ErrValidateScriptTemplate
+instance GHC.Classes.Eq Cardano.Address.Script.ErrValidateScriptTemplate
 instance Control.DeepSeq.NFData Cardano.Address.Script.ValidationLevel
 instance Control.DeepSeq.NFData Cardano.Address.Script.KeyHash
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.KeyHash
@@ -592,14 +592,14 @@ class HasNetworkDiscriminant key => PaymentAddress key
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: PaymentAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> Address
+paymentAddress :: PaymentAddress key => NetworkDiscriminant key -> key 'PaymentK XPub -> Address
 
 -- | Encoding of addresses for certain key types and backend targets.
 class HasNetworkDiscriminant key => StakeAddress key
 
 -- | Convert a delegation key to a stake <a>Address</a> (aka: reward
 --   account address) valid for the given network discrimination.
-stakeAddress :: StakeAddress key => NetworkDiscriminant key -> key  'DelegationK XPub -> Address
+stakeAddress :: StakeAddress key => NetworkDiscriminant key -> key 'DelegationK XPub -> Address
 
 -- | Encoding of delegation addresses for certain key types and backend
 --   targets.
@@ -609,7 +609,7 @@ class PaymentAddress key => DelegationAddress key
 --   <a>Address</a> valid for the given network discrimination. Funds sent
 --   to this address will be delegated according to the delegation settings
 --   attached to the delegation key.
-delegationAddress :: DelegationAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> key  'DelegationK XPub -> Address
+delegationAddress :: DelegationAddress key => NetworkDiscriminant key -> key 'PaymentK XPub -> key 'DelegationK XPub -> Address
 
 -- | Encoding of pointer addresses for payment key type, pointer to
 --   delegation certificate in the blockchain and backend targets.
@@ -620,7 +620,7 @@ class PaymentAddress key => PointerAddress key
 --   discrimination. Funds sent to this address will be delegated according
 --   to the delegation settings attached to the delegation key located by
 --   <a>ChainPointer</a>.
-pointerAddress :: PointerAddress key => NetworkDiscriminant key -> key  'PaymentK XPub -> ChainPointer -> Address
+pointerAddress :: PointerAddress key => NetworkDiscriminant key -> key 'PaymentK XPub -> ChainPointer -> Address
 
 -- | A <a>ChainPointer</a> type representing location of some object in the
 --   blockchain (eg., delegation certificate). This can be achieved
@@ -657,20 +657,20 @@ bech32With :: HumanReadablePart -> Address -> Text
 
 -- | Decode a bech32-encoded <a>Text</a> into an <a>Address</a>
 fromBech32 :: Text -> Maybe Address
-instance GHC.Classes.Eq Cardano.Address.AddressDiscrimination
-instance GHC.Show.Show Cardano.Address.AddressDiscrimination
-instance GHC.Generics.Generic Cardano.Address.AddressDiscrimination
-instance GHC.Classes.Eq Cardano.Address.NetworkTag
-instance GHC.Show.Show Cardano.Address.NetworkTag
-instance GHC.Generics.Generic Cardano.Address.NetworkTag
-instance GHC.Classes.Ord Cardano.Address.ChainPointer
-instance GHC.Classes.Eq Cardano.Address.ChainPointer
-instance GHC.Show.Show Cardano.Address.ChainPointer
-instance GHC.Generics.Generic Cardano.Address.ChainPointer
 instance GHC.Classes.Ord Cardano.Address.Address
 instance GHC.Classes.Eq Cardano.Address.Address
 instance GHC.Show.Show Cardano.Address.Address
 instance GHC.Generics.Generic Cardano.Address.Address
+instance GHC.Classes.Ord Cardano.Address.ChainPointer
+instance GHC.Classes.Eq Cardano.Address.ChainPointer
+instance GHC.Show.Show Cardano.Address.ChainPointer
+instance GHC.Generics.Generic Cardano.Address.ChainPointer
+instance GHC.Classes.Eq Cardano.Address.NetworkTag
+instance GHC.Show.Show Cardano.Address.NetworkTag
+instance GHC.Generics.Generic Cardano.Address.NetworkTag
+instance GHC.Classes.Eq Cardano.Address.AddressDiscrimination
+instance GHC.Show.Show Cardano.Address.AddressDiscrimination
+instance GHC.Generics.Generic Cardano.Address.AddressDiscrimination
 instance Control.DeepSeq.NFData Cardano.Address.AddressDiscrimination
 instance Control.DeepSeq.NFData Cardano.Address.NetworkTag
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.NetworkTag
@@ -690,7 +690,7 @@ data Byron (depth :: Depth) key
 -- | The hierarchical derivation indices for a given level/depth.
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-type family DerivationPath (depth :: Depth) :: *
+type family DerivationPath (depth :: Depth) :: Type
 
 -- | Used for encryption of the derivation path payload within an address.
 
@@ -710,22 +710,22 @@ type family DerivationPath (depth :: Depth) :: *
 -- | Generate a root key from a corresponding root <a>XPrv</a>
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-genMasterKeyFromXPrv :: XPrv -> Byron  'RootK XPrv
+genMasterKeyFromXPrv :: XPrv -> Byron 'RootK XPrv
 
 -- | Generate a root key from a corresponding mnemonic.
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-genMasterKeyFromMnemonic :: SomeMnemonic -> Byron  'RootK XPrv
+genMasterKeyFromMnemonic :: SomeMnemonic -> Byron 'RootK XPrv
 
 -- | Derives an account private key from the given root private key.
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-deriveAccountPrivateKey :: Byron  'RootK XPrv -> Index  'WholeDomain  'AccountK -> Byron  'AccountK XPrv
+deriveAccountPrivateKey :: Byron 'RootK XPrv -> Index 'WholeDomain 'AccountK -> Byron 'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
-deriveAddressPrivateKey :: Byron  'AccountK XPrv -> Index  'WholeDomain  'PaymentK -> Byron  'PaymentK XPrv
+deriveAddressPrivateKey :: Byron 'AccountK XPrv -> Index 'WholeDomain 'PaymentK -> Byron 'PaymentK XPrv
 
 -- | The result of <a>eitherInspectAddress</a> for Byron addresses.
 data AddressInfo
@@ -748,7 +748,7 @@ inspectAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: NetworkDiscriminant Byron -> Byron  'PaymentK XPub -> Address
+paymentAddress :: NetworkDiscriminant Byron -> Byron 'PaymentK XPub -> Address
 
 -- | Possible errors from inspecting a Byron address
 data ErrInspectAddress
@@ -809,13 +809,13 @@ liftXPrv :: XPub -> DerivationPath depth -> XPrv -> Byron depth XPrv
 
 -- | <i>Deprecated: see <a>Icarus</a></i>
 liftXPub :: XPub -> DerivationPath depth -> XPub -> Byron depth XPub
-instance GHC.Classes.Eq Cardano.Address.Style.Byron.AddressInfo
-instance GHC.Show.Show Cardano.Address.Style.Byron.AddressInfo
-instance GHC.Generics.Generic Cardano.Address.Style.Byron.AddressInfo
+instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
 instance GHC.Classes.Eq Cardano.Address.Style.Byron.PayloadInfo
 instance GHC.Show.Show Cardano.Address.Style.Byron.PayloadInfo
 instance GHC.Generics.Generic Cardano.Address.Style.Byron.PayloadInfo
-instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
+instance GHC.Classes.Eq Cardano.Address.Style.Byron.AddressInfo
+instance GHC.Show.Show Cardano.Address.Style.Byron.AddressInfo
+instance GHC.Generics.Generic Cardano.Address.Style.Byron.AddressInfo
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.Address.Style.Byron.Byron depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Byron.Byron depth)
@@ -847,19 +847,19 @@ data Icarus (depth :: Depth) key
 getKey :: Icarus depth key -> key
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: XPrv -> Icarus  'RootK XPrv
+genMasterKeyFromXPrv :: XPrv -> Icarus 'RootK XPrv
 
 -- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Icarus  'RootK XPrv
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Icarus 'RootK XPrv
 
 -- | Derives an account private key from the given root private key.
-deriveAccountPrivateKey :: Icarus  'RootK XPrv -> Index  'Hardened  'AccountK -> Icarus  'AccountK XPrv
+deriveAccountPrivateKey :: Icarus 'RootK XPrv -> Index 'Hardened 'AccountK -> Icarus 'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Icarus  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Icarus  'PaymentK XPrv
+deriveAddressPrivateKey :: Icarus 'AccountK XPrv -> Role -> Index 'Soft 'PaymentK -> Icarus 'PaymentK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Icarus  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Icarus  'PaymentK XPub
+deriveAddressPublicKey :: Icarus 'AccountK XPub -> Role -> Index 'Soft 'PaymentK -> Icarus 'PaymentK XPub
 
 -- | The result of <a>eitherInspectAddress</a> for Icarus addresses.
 data AddressInfo
@@ -881,7 +881,7 @@ inspectAddress :: MonadThrow m => Address -> m Value
 
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
-paymentAddress :: NetworkDiscriminant Icarus -> Icarus  'PaymentK XPub -> Address
+paymentAddress :: NetworkDiscriminant Icarus -> Icarus 'PaymentK XPub -> Address
 
 -- | Possible errors from inspecting a Shelley address
 data ErrInspectAddress
@@ -915,17 +915,17 @@ liftXPrv :: XPrv -> Icarus depth XPrv
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPub :: XPub -> Icarus depth XPub
-instance GHC.Classes.Eq Cardano.Address.Style.Icarus.AddressInfo
-instance GHC.Show.Show Cardano.Address.Style.Icarus.AddressInfo
-instance GHC.Generics.Generic Cardano.Address.Style.Icarus.AddressInfo
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Icarus.Icarus depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Icarus.Icarus depth key)
+instance GHC.Generics.Generic (Cardano.Address.Style.Icarus.Icarus depth key)
 instance GHC.Enum.Bounded Cardano.Address.Style.Icarus.Role
 instance GHC.Classes.Ord Cardano.Address.Style.Icarus.Role
 instance GHC.Classes.Eq Cardano.Address.Style.Icarus.Role
 instance GHC.Show.Show Cardano.Address.Style.Icarus.Role
 instance GHC.Generics.Generic Cardano.Address.Style.Icarus.Role
-instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Icarus.Icarus depth key)
-instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Icarus.Icarus depth key)
-instance GHC.Generics.Generic (Cardano.Address.Style.Icarus.Icarus depth key)
+instance GHC.Classes.Eq Cardano.Address.Style.Icarus.AddressInfo
+instance GHC.Show.Show Cardano.Address.Style.Icarus.AddressInfo
+instance GHC.Generics.Generic Cardano.Address.Style.Icarus.AddressInfo
 instance GHC.Base.Functor (Cardano.Address.Style.Icarus.Icarus depth)
 instance GHC.Show.Show Cardano.Address.Style.Icarus.ErrInspectAddress
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Icarus.AddressInfo
@@ -991,16 +991,16 @@ Stake :: Role
 data family Credential (purpose :: Depth)
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: XPrv -> Shelley  'RootK XPrv
+genMasterKeyFromXPrv :: XPrv -> Shelley 'RootK XPrv
 
 -- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley  'RootK XPrv
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shelley 'RootK XPrv
 
 -- | Derives an account private key from the given root private key.
-deriveAccountPrivateKey :: Shelley  'RootK XPrv -> Index  'Hardened  'AccountK -> Shelley  'AccountK XPrv
+deriveAccountPrivateKey :: Shelley 'RootK XPrv -> Index 'Hardened 'AccountK -> Shelley 'AccountK XPrv
 
 -- | Derives an address private key from the given account private key.
-deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> Role -> Index  'Soft  'PaymentK -> Shelley  'PaymentK XPrv
+deriveAddressPrivateKey :: Shelley 'AccountK XPrv -> Role -> Index 'Soft 'PaymentK -> Shelley 'PaymentK XPrv
 
 -- | Derive a delegation key for a corresponding <a>AccountK</a>. Note that
 --   wallet software are by convention only using one delegation key per
@@ -1009,10 +1009,10 @@ deriveAddressPrivateKey :: Shelley  'AccountK XPrv -> Role -> Index  'Soft  'Pay
 --   Deriving delegation keys for something else than the initial account
 --   is not recommended and can lead to incompatibility with existing
 --   wallet softwares (Daedalus, Yoroi, Adalite...).
-deriveDelegationPrivateKey :: Shelley  'AccountK XPrv -> Shelley  'DelegationK XPrv
+deriveDelegationPrivateKey :: Shelley 'AccountK XPrv -> Shelley 'DelegationK XPrv
 
 -- | Derives an address public key from the given account public key.
-deriveAddressPublicKey :: Shelley  'AccountK XPub -> Role -> Index  'Soft  'PaymentK -> Shelley  'PaymentK XPub
+deriveAddressPublicKey :: Shelley 'AccountK XPub -> Role -> Index 'Soft 'PaymentK -> Shelley 'PaymentK XPub
 
 -- | The result of <a>eitherInspectAddress</a>.
 data InspectAddress
@@ -1048,27 +1048,27 @@ inspectAddress :: (Alternative m, MonadThrow m) => Maybe XPub -> Address -> m Va
 
 -- | Convert a payment credential (key or script) to a payment
 --   <a>Address</a> valid for the given network discrimination.
-paymentAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> Address
+paymentAddress :: NetworkDiscriminant Shelley -> Credential 'PaymentK -> Address
 
 -- | Convert a payment credential (key or script) and a delegation
 --   credential (key or script) to a delegation <a>Address</a> valid for
 --   the given network discrimination. Funds sent to this address will be
 --   delegated according to the delegation settings attached to the
 --   delegation key.
-delegationAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> Credential  'DelegationK -> Address
+delegationAddress :: NetworkDiscriminant Shelley -> Credential 'PaymentK -> Credential 'DelegationK -> Address
 
 -- | Convert a payment credential (key or script) and pointer to delegation
 --   certificate in blockchain to a pointer <a>Address</a> valid for the
 --   given network discrimination.
-pointerAddress :: NetworkDiscriminant Shelley -> Credential  'PaymentK -> ChainPointer -> Address
+pointerAddress :: NetworkDiscriminant Shelley -> Credential 'PaymentK -> ChainPointer -> Address
 
 -- | Convert a delegation credential (key or script) to a stake Address
 --   (aka reward account address) for the given network discrimination.
-stakeAddress :: NetworkDiscriminant Shelley -> Credential  'DelegationK -> Either ErrInvalidStakeAddress Address
+stakeAddress :: NetworkDiscriminant Shelley -> Credential 'DelegationK -> Either ErrInvalidStakeAddress Address
 
 -- | Extend an existing payment <a>Address</a> to make it a delegation
 --   address.
-extendAddress :: Address -> Credential  'DelegationK -> Either ErrExtendAddress Address
+extendAddress :: Address -> Credential 'DelegationK -> Either ErrExtendAddress Address
 
 -- | Captures error occuring when trying to extend an invalid address.
 data ErrExtendAddress
@@ -1139,40 +1139,40 @@ liftXPrv :: XPrv -> Shelley depth XPrv
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPub :: XPub -> Shelley depth XPub
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.AddressType
-instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressType
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.CredentialType
-instance GHC.Show.Show Cardano.Address.Style.Shelley.CredentialType
-instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrExtendAddress
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
-instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
-instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressParts
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.InspectAddress
-instance GHC.Show.Show Cardano.Address.Style.Shelley.InspectAddress
-instance GHC.Generics.Generic Cardano.Address.Style.Shelley.InspectAddress
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.AddressInfo
-instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressInfo
-instance GHC.Generics.Generic Cardano.Address.Style.Shelley.AddressInfo
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ReferenceInfo
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ReferenceInfo
-instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ReferenceInfo
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddress
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddress
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
-instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
+instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Enum.Bounded Cardano.Address.Style.Shelley.Role
 instance GHC.Classes.Ord Cardano.Address.Style.Shelley.Role
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.Role
 instance GHC.Show.Show Cardano.Address.Style.Shelley.Role
 instance GHC.Generics.Generic Cardano.Address.Style.Shelley.Role
-instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
-instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddress
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddress
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ReferenceInfo
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ReferenceInfo
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ReferenceInfo
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.AddressInfo
+instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressInfo
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.AddressInfo
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.InspectAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.InspectAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.InspectAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressParts
 instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.PaymentK)
 instance GHC.Show.Show (Cardano.Address.Style.Shelley.Credential 'Cardano.Address.Derivation.DelegationK)
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ErrInvalidStakeAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrExtendAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.CredentialType
+instance GHC.Show.Show Cardano.Address.Style.Shelley.CredentialType
+instance GHC.Classes.Eq Cardano.Address.Style.Shelley.AddressType
+instance GHC.Show.Show Cardano.Address.Style.Shelley.AddressType
 instance GHC.Base.Functor (Cardano.Address.Style.Shelley.Shelley depth)
 instance Formatting.Buildable.Buildable Cardano.Address.Style.Shelley.MkNetworkDiscriminantError
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Shelley.InspectAddress
@@ -1223,29 +1223,29 @@ liftXPrv :: XPrv -> Shared depth XPrv
 liftXPub :: XPub -> Shared depth XPub
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
-genMasterKeyFromXPrv :: XPrv -> Shared  'RootK XPrv
+genMasterKeyFromXPrv :: XPrv -> Shared 'RootK XPrv
 
 -- | Generate a root key from a corresponding mnemonic.
-genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shared  'RootK XPrv
+genMasterKeyFromMnemonic :: SomeMnemonic -> ScrubbedBytes -> Shared 'RootK XPrv
 
 -- | Derives an account private key from the given root private key.
-deriveAccountPrivateKey :: Shared  'RootK XPrv -> Index  'Hardened  'AccountK -> Shared  'AccountK XPrv
+deriveAccountPrivateKey :: Shared 'RootK XPrv -> Index 'Hardened 'AccountK -> Shared 'AccountK XPrv
 
 -- | Derives a multisig private key from the given account private key for
 --   payment credential.
-deriveAddressPrivateKey :: Shared  'AccountK XPrv -> Index  'Soft  'PaymentK -> Shared  'ScriptK XPrv
+deriveAddressPrivateKey :: Shared 'AccountK XPrv -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPrv
 
 -- | Derives a multisig public key from the given account public key for
 --   payment credential.
-deriveAddressPublicKey :: Shared  'AccountK XPub -> Index  'Soft  'PaymentK -> Shared  'ScriptK XPub
+deriveAddressPublicKey :: Shared 'AccountK XPub -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPub
 
 -- | Derives a multisig private key from the given account private key for
 --   delegation credential.
-deriveDelegationPrivateKey :: Shared  'AccountK XPrv -> Index  'Soft  'PaymentK -> Shared  'ScriptK XPrv
+deriveDelegationPrivateKey :: Shared 'AccountK XPrv -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPrv
 
 -- | Derives a multisig public key from the given account public key for
 --   delegation credential.
-deriveDelegationPublicKey :: Shared  'AccountK XPub -> Index  'Soft  'PaymentK -> Shared  'ScriptK XPub
+deriveDelegationPublicKey :: Shared 'AccountK XPub -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPub
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shared.Shared depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shared.Shared depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shared.Shared depth key)
