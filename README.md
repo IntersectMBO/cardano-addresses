@@ -57,6 +57,25 @@ addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3
 </details>
 
 <details>
+  <summary>How to generate a non-extended signing key (<strong>addr.xsk</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/0/0 --with-chain-code < root.xsk
+addr_xsk1ppxa0t64fwwgclj6wa7u228d2ux06dkmx27zhc6eessgmj2849pn8k40xgjk5cd7jaw377gg558tlt5kgkfsnyr00mzqkxtfg5qn00wd8t99f5a37drp8k04ggj2rfkjx60y708m34n6udptx0hrdykllv9n5zcs
+
+$ cardano-address key child 1852H/1815H/0H/0/0 < root.xsk
+addr_xsk1ppxa0t64fwwgclj6wa7u228d2ux06dkmx27zhc6eessgmj2849pn8k40xgjk5cd7jaw377gg558tlt5kgkfsnyr00mzqkxtfg5qn00wd8t99f5a37drp8k04ggj2rfkjx60y708m34n6udptx0hrdykllv9n5zcs
+
+$ cardano-address key child 1852H/1815H/0H/0/0 --without-chain-code < root.xsk
+addr_xsk1ppxa0t64fwwgclj6wa7u228d2ux06dkmx27zhc6eessgmj2849pn8k40xgjk5cd7jaw377gg558tlt5kgkfsnyr00mzqkxtfg5qn00ga9r8zv
+
+```
+
+> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
+</details>
+
+
+<details>
   <summary>How to generate a stake verification key (<strong>stake.xvk</strong>)</summary>
 
 ```console
