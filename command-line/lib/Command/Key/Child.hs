@@ -20,7 +20,9 @@ import Cardano.Address.Derivation
     , deriveXPrv
     , deriveXPub
     , indexToWord32
+    , xprvPrivateKey
     , xprvToBytes
+    , xpubPublicKey
     , xpubToBytes
     )
 import Codec.Binary.Encoding
@@ -54,7 +56,7 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 data Cmd = Child
     { path :: DerivationPath
-    , chainCode :: Maybe PublicType
+    , chainCodeM :: Maybe PublicType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -72,13 +74,19 @@ mod liftCmd = command "child" $
         <*> optional publicOpt
 
 run :: Cmd -> IO ()
-run Child{path} = do
+run Child{path, chainCodeM} = do
+    let cc = case chainCodeM of
+                 Just WithoutChainCode -> WithoutChainCode
+                 _ -> WithChainCode
     (hrp, child) <- hGetXP__ stdin allowedPrefixes >>= \case
         Left (hrp, xpub) -> do
             let ixs = castDerivationPath path
+            let bytes xpub' = case chainCodeM of
+                    Just WithoutChainCode -> xpubPublicKey xpub'
+                    _    -> xpubToBytes xpub'
             case foldM (deriveXPub DerivationScheme2) xpub ixs of
                 Just child ->
-                    (,xpubToBytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp
+                    (,bytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp cc
                 Nothing ->
                     fail
                         "Couldn't derive child key. If you're trying to derive \
@@ -90,7 +98,10 @@ run Child{path} = do
                     then DerivationScheme1
                     else DerivationScheme2
             let Identity child = foldM (\k -> pure . deriveXPrv scheme k) xprv ixs
-            (,xprvToBytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp
+            let bytes xprv' = case chainCodeM of
+                    Just WithoutChainCode -> xprvPrivateKey xprv'
+                    _    -> xprvToBytes xprv'
+            (,bytes child) <$> childHrpFor (indexToWord32 <$> ixs) hrp WithChainCode
 
     hPutBytes stdout child (EBech32 hrp)
   where
@@ -158,32 +169,36 @@ run Child{path} = do
     --
     -- There's no use-case at the moment for accessing intermediate paths such
     -- as m / purpose' or m / purpose' / coin_type' so we do not expose them.
-    childHrpFor [_,_,_,2,_] hrp
+    childHrpFor [_,_,_,2,_] hrp _
         | hrp == CIP5.root_xsk = pure CIP5.stake_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.stake_shared_xsk
 
-    childHrpFor [_,_,_,_,_] hrp
+    childHrpFor [_,_,_,_,_] hrp _
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.addr_shared_xsk
 
-    childHrpFor [_,_,_] hrp
+    childHrpFor [_,_,_] hrp _
         | hrp == CIP5.root_xsk = pure CIP5.acct_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.acct_shared_xsk
 
-    childHrpFor [2,_] hrp
+    childHrpFor [2,_] hrp cc
         | hrp == CIP5.acct_xsk = pure CIP5.stake_xsk
-        | hrp == CIP5.acct_xvk = pure CIP5.stake_xvk
+        | hrp == CIP5.acct_xvk && cc == WithChainCode = pure CIP5.stake_xvk
+        | hrp == CIP5.acct_xvk && cc == WithoutChainCode = pure CIP5.stake_vk
         | hrp == CIP5.acct_shared_xsk = pure CIP5.stake_shared_xsk
-        | hrp == CIP5.acct_shared_xvk = pure CIP5.stake_shared_xvk
+        | hrp == CIP5.acct_shared_xvk && cc == WithChainCode = pure CIP5.stake_shared_xvk
+        | hrp == CIP5.acct_shared_xvk && cc == WithoutChainCode = pure CIP5.stake_shared_vk
 
-    childHrpFor [_,_] hrp
+    childHrpFor [_,_] hrp cc
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
         | hrp == CIP5.acct_xsk = pure CIP5.addr_xsk
-        | hrp == CIP5.acct_xvk = pure CIP5.addr_xvk
+        | hrp == CIP5.acct_xvk && cc == WithChainCode = pure CIP5.addr_xvk
+        | hrp == CIP5.acct_xvk && cc == WithoutChainCode = pure CIP5.addr_vk
         | hrp == CIP5.acct_shared_xsk = pure CIP5.addr_shared_xsk
-        | hrp == CIP5.acct_shared_xvk = pure CIP5.addr_shared_xvk
+        | hrp == CIP5.acct_shared_xvk && cc == WithChainCode = pure CIP5.addr_shared_xvk
+        | hrp == CIP5.acct_shared_xvk && cc == WithoutChainCode = pure CIP5.addr_shared_vk
 
-    childHrpFor _ hrp
+    childHrpFor _ hrp _
         | hrp == CIP5.root_xsk = fail
             "When deriving child keys from a parent root key, you must \
             \provide either 2, 3 or 5 path segments. Provide 2 (account and \
