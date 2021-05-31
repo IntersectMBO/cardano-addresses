@@ -15,20 +15,24 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "key", "child" ] $ do
-    specChildValidPath "acct_xsk" ["1852H/1815H/0H"]
-    specChildValidPath "addr_xsk" ["1852H/1815H/0H/0/0"]
-    specChildValidPath "addr_xsk" ["1852H/1815H/0H", "0/0"]
-    specChildValidPath "addr_xsk" ["14H/42H"]
+    specChildValidPath "acct_xsk" "shelley" ["1852H/1815H/0H"]
+    specChildValidPath "addr_xsk" "shelley" ["1852H/1815H/0H/0/0"]
+    specChildValidPath "addr_xsk" "shelley" ["1852H/1815H/0H", "0/0"]
+    specChildValidPath "addr_xsk" "shelley" ["14H/42H"]
+
+    specChildValidPath "acct_shared_xsk" "shared" ["1854H/1815H/0H"]
+    specChildValidPath "addr_shared_xsk" "shared" ["1854H/1815H/0H/0/0"]
+    specChildValidPath "addr_shared_xsk" "shared" ["1854H/1815H/0H", "0/0"]
 
     specChildInvalidPath "from a parent root key" ["0H"]
     specChildInvalidPath "from a parent account key" ["1852H/1815H/0H", "0H"]
 
     specPublicDerivationUsesSoft
 
-specChildValidPath :: String -> [String] -> SpecWith ()
-specChildValidPath hrp paths = it ("Can derive given path(s) from root: " <> show paths) $ do
+specChildValidPath :: String -> String -> [String] -> SpecWith ()
+specChildValidPath hrp style paths = it ("Can derive given path(s) from root: " <> show paths) $ do
     out <- cli [ "recovery-phrase", "generate" ] ""
-       >>= cli [ "key", "from-recovery-phrase", "shelley" ]
+       >>= cli [ "key", "from-recovery-phrase", style ]
        >>= flip (foldM (\stdin path -> cli ["key", "child", path] stdin)) paths
     out `shouldStartWith` hrp
 
