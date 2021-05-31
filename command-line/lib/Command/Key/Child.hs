@@ -30,11 +30,21 @@ import Control.Monad
 import Data.Functor.Identity
     ( Identity (..) )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Derivation
     ( DerivationPath, castDerivationPath, derivationPathArg )
 import Options.Applicative.Help.Pretty
     ( string )
+import Options.Applicative.Public
+    ( PublicType (..), publicOpt )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -42,8 +52,9 @@ import System.IO.Extra
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-newtype Cmd = Child
+data Cmd = Child
     { path :: DerivationPath
+    , chainCode :: Maybe PublicType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -52,10 +63,13 @@ mod liftCmd = command "child" $
         <> progDesc "Derive child keys from a parent public/private key"
         <> footerDoc (Just $ string $ mconcat
             [ "The parent key is read from stdin."
+            , "To get extended key pass '--with-chain-code' or nothing."
+            , "To get non-extended key pass '--without-chain-code'."
             ])
   where
     parser = Child
         <$> derivationPathArg
+        <*> optional publicOpt
 
 run :: Cmd -> IO ()
 run Child{path} = do
@@ -89,7 +103,7 @@ run Child{path} = do
         , CIP5.acct_shared_xvk
         ]
 
-    -- As a reminder, we really have two scenarios:
+    -- As a reminder, we really have three scenarios:
     --
     -- Byron Legacy:
     --
