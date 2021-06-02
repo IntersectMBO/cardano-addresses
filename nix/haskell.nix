@@ -132,6 +132,7 @@ let
       in lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
         packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
         packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+        packages.cardano-addresses-api.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
         packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
         # Disable CLI running tests under ghcjs
         packages.cardano-addresses-cli.components.tests.unit.preCheck = ''

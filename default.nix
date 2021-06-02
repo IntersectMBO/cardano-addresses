@@ -40,7 +40,12 @@ let
       tools.cabal = {};
       tools.hpack = {};
       buildInputs = [ pkgs.nodejs ];
-      packages = ps: [ ps.cardano-addresses ps.cardano-addresses-cli ];
+      packages = ps: [ ps.cardano-addresses ps.cardano-addresses-cli ps.cardano-addresses-api  ];
     };
+
+    ghcjs-api = pkgs.runCommand "cardano-addresses-api" {} ''
+      cd ${pkgs.cardanoAddressesHaskellPackages.projectCross.ghcjs.hsPkgs.cardano-addresses-api.components.exes.cardano-addresses-api}/bin/cardano-addresses-api.jsexe
+      cat rts.js lib.js out.js ${./api/jsbits/runmain.js} > $out
+    '';
   };
 in self
