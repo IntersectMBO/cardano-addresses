@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -18,7 +18,7 @@
 {-# OPTIONS_HADDOCK prune #-}
 
 -- |
--- Copyright: © 2018-2020 IOHK
+-- Copyright: © 2018-2021 IOHK
 -- License: Apache-2.0
 
 module Cardano.Address.Style.Shelley
@@ -108,6 +108,8 @@ import Cardano.Address.Derivation
     , unsafeMkIndex
     , xpubPublicKey
     )
+import Cardano.Address.Internal
+    ( WithErrorMessage (..), orElse )
 import Cardano.Address.Script
     ( ScriptHash (..) )
 import Cardano.Mnemonic
@@ -414,7 +416,8 @@ data ErrInspectAddress
     | ErrShelley ErrInspectAddressOnlyShelley
     | ErrIcarus Icarus.ErrInspectAddress
     | ErrByron Byron.ErrInspectAddress
-    deriving (Eq, Show)
+    deriving (Generic, Show, Eq)
+    deriving ToJSON via WithErrorMessage ErrInspectAddress
 
 instance Exception ErrInspectAddress where
     displayException = prettyErrInspectAddress
@@ -425,7 +428,8 @@ instance Exception ErrInspectAddress where
 data ErrInspectAddressOnlyShelley
     = PtrRetrieveError String -- ^ Human readable error of underlying operation
     | UnknownType Word8 -- ^ Unknown value in address type field
-    deriving (Eq, Show)
+    deriving (Generic, Eq, Show)
+    deriving ToJSON via WithErrorMessage ErrInspectAddressOnlyShelley
 
 instance Exception ErrInspectAddressOnlyShelley where
     displayException = prettyErrInspectAddressOnlyShelley
@@ -597,10 +601,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             <*> getVariableLengthNat
             <*> getVariableLengthNat
         err = Left . PtrRetrieveError
-
-orElse :: Either e a -> Either e a -> Either e a
-orElse (Right a) _ = Right a
-orElse (Left _) ea = ea
 
 -- | The result of 'eitherInspectAddress'.
 --

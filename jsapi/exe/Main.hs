@@ -5,9 +5,12 @@
 #endif
 module Main (main) where
 
-import Cardano.Address.Api (startApi)
-import Language.Javascript.JSaddle (Object)
-import Language.Javascript.JSaddle.Warp (run)
+import Cardano.Address.JSAPI
+    ( startApi )
+import Language.Javascript.JSaddle
+    ( Object )
+import Language.Javascript.JSaddle.Warp
+    ( run )
 
 #ifdef ghcjs_HOST_OS
 foreign import javascript interruptible "cardanoAddressesInitComplete($1, $c);" initComplete

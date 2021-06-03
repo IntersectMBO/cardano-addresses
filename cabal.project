@@ -7,7 +7,7 @@ constraints: ghcjs-base >=0.2.0.3
 packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
-  api/cardano-addresses-api.cabal
+  jsapi/cardano-addresses-jsapi.cabal
 
 -- Needed for ghcjs
 -- See https://github.com/haskell-crypto/cryptonite/pull/345

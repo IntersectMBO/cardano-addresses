@@ -1,0 +1,6 @@
+*.log
+.DS_Store
+/node_modules
+/dist
+/_docs
+/src/version.ts

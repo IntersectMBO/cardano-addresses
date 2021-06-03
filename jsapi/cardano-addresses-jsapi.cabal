@@ -1,6 +1,6 @@
 cabal-version: 3.0
-name:          cardano-addresses-api
-version:       3.4.0
+name:          cardano-addresses-jsapi
+version:       3.5.0
 license:       Apache-2.0
 copyright:     2021 IOHK
 maintainer:    operations@iohk.io
@@ -22,13 +22,13 @@ source-repository head
 
 library
     exposed-modules:
-        Cardano.Address.Api
-        Cardano.Address.Api.InspectAddress
-        Cardano.Address.Api.Version
+        Cardano.Address.JSAPI
+        Cardano.Address.JSAPI.InspectAddress
+        Cardano.Address.JSAPI.Version
 
-    js-sources:         jsbits/test.js
+    js-sources:         glue/test.js
     hs-source-dirs:     lib
-    other-modules:      Paths_cardano_addresses_api
+    other-modules:      Paths_cardano_addresses_jsapi
     default-language:   Haskell2010
     default-extensions: NoImplicitPrelude
     ghc-options:        -Wall -Wcompat -fwarn-redundant-constraints
@@ -50,28 +50,30 @@ library
             cardano-addresses-jsbits -any,
             ghcjs-base -any
 
-executable cardano-addresses-api
+executable cardano-addresses-jsapi
     main-is:        Main.hs
     hs-source-dirs: exe
-    other-modules:  Paths_cardano_addresses_api
+    other-modules:  Paths_cardano_addresses_jsapi
     ghcjs-options:    -no-hs-main
     build-depends:
         base ==4.*,
-        cardano-addresses-api -any,
+        cardano-addresses-jsapi -any,
         jsaddle -any,
         jsaddle-warp -any,
         lens -any,
         text -any
     default-language: Haskell2010
+    if !(impl(ghcjs -any) || os(ghcjs))
+      buildable: false
 
-test-suite unit
+test-suite jsapi-test
     type: exitcode-stdio-1.0
     main-is: Main.hs
     hs-source-dirs: test
-    other-modules:  Paths_cardano_addresses_api
+    other-modules:  Paths_cardano_addresses_jsapi
     build-depends:
         base ==4.*,
-        cardano-addresses-api -any,
+        cardano-addresses-jsapi -any,
         jsaddle -any,
         jsaddle-warp -any,
         lens -any,

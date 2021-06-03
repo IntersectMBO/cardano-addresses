@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -86,6 +86,8 @@ import Cardano.Address.Derivation
     , toXPub
     , xpubToBytes
     )
+import Cardano.Address.Internal
+    ( DeserialiseFailure, WithErrorMessage (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
 import Codec.Binary.Encoding
@@ -116,8 +118,6 @@ import Data.List
     ( find )
 import Data.Word
     ( Word32, Word8 )
-import Fmt
-    ( format )
 import GHC.Generics
     ( Generic )
 
@@ -311,13 +311,10 @@ deriveAddressPrivateKey acctK =
 -- @since 3.0.0
 data ErrInspectAddress
     = MissingExpectedDerivationPath
-    | forall e . (Exception e, Show e) => DeserialiseError e
+    | DeserialiseError DeserialiseFailure
     | FailedToDecryptPath
-
-deriving instance Show ErrInspectAddress
-
-instance Eq ErrInspectAddress where
-    a == b = show a == show b
+    deriving (Generic, Show, Eq)
+    deriving ToJSON via WithErrorMessage ErrInspectAddress
 
 instance Exception ErrInspectAddress where
   displayException = prettyErrInspectAddress
@@ -330,7 +327,7 @@ prettyErrInspectAddress = \case
     MissingExpectedDerivationPath ->
         "Missing expected derivation path"
     DeserialiseError e ->
-        format "Deserialisation error (was: {})" (show e)
+        displayException e
     FailedToDecryptPath ->
         "Failed to decrypt derivation path"
 

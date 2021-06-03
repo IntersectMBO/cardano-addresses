@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -85,6 +85,8 @@ import Cardano.Address.Derivation
     , unsafeMkIndex
     , xprvFromBytes
     )
+import Cardano.Address.Internal
+    ( DeserialiseFailure, WithErrorMessage (..) )
 import Cardano.Address.Style.Byron
     ( byronMainnet, byronStaging, byronTestnet )
 import Cardano.Mnemonic
@@ -346,12 +348,9 @@ deriveAddressPublicKey =
 -- @since 3.0.0
 data ErrInspectAddress
     = UnexpectedDerivationPath
-    | forall e . (Exception e, Show e) => DeserialiseError e
-
-deriving instance Show ErrInspectAddress
-
-instance Eq ErrInspectAddress where
-    a == b = show a == show b
+    | DeserialiseError DeserialiseFailure
+    deriving (Generic, Show, Eq)
+    deriving ToJSON via WithErrorMessage ErrInspectAddress
 
 instance Exception ErrInspectAddress where
   displayException = prettyErrInspectAddress

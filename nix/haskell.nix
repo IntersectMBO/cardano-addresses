@@ -105,8 +105,8 @@ let
         packages.semigroupoids.package.buildType = lib.mkForce "Simple";
       })
 
-      ({pkgs, config, ... }:
-      let
+      # GHCJS build configuration
+      ({ pkgs, config, ... }: let
         # Run the script to build the C sources from cryptonite and cardano-crypto
         # and place the result in jsbits/cardano-crypto.js
         jsbits = pkgs.runCommand "cardano-addresses-jsbits" {} ''
@@ -129,20 +129,26 @@ let
           cp ${jsbits}/* jsbits
         '';
 
-      in lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
-        packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
-        packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
-        packages.cardano-addresses-api.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
-        packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
-        # Disable CLI running tests under ghcjs
-        packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
-          export CARDANO_ADDRESSES_CLI="${config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address}/bin"
-        '';
-        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
-          config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
-          pkgs.buildPackages.nodejs
-        ];
-      })
+      in lib.mkMerge
+        [ (lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+          packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+          packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
+          packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
+          # Disable CLI running tests under ghcjs
+          packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
+            export CARDANO_ADDRESSES_CLI="${config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address}/bin"
+          '';
+          packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+            config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
+            pkgs.buildPackages.nodejs
+          ];
+        })
+        # Disable jsapi-test on jsaddle/native. It's not working yet.
+        (lib.mkIf (!pkgs.stdenv.hostPlatform.isGhcjs) {
+          packages.cardano-addresses-jsapi.components.tests.jsapi-test.doCheck = false;
+        })
+      ])
     ];
   });
 in
