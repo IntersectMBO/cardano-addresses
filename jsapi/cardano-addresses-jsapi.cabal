@@ -1,0 +1,81 @@
+cabal-version: 3.0
+name:          cardano-addresses-jsapi
+version:       3.5.0
+license:       Apache-2.0
+copyright:     2021 IOHK
+maintainer:    operations@iohk.io
+author:        IOHK
+homepage:      https://github.com/input-output-hk/cardano-addresses#readme
+bug-reports:   https://github.com/input-output-hk/cardano-addresses/issues
+synopsis:
+    Library utilities for mnemonic generation and address derivation.
+
+description:
+    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+
+category:      Cardano
+build-type:    Simple
+
+source-repository head
+    type:     git
+    location: https://github.com/input-output-hk/cardano-addresses
+
+library
+    exposed-modules:
+        Cardano.Address.JSAPI
+        Cardano.Address.JSAPI.InspectAddress
+        Cardano.Address.JSAPI.Version
+
+    js-sources:         glue/test.js
+    hs-source-dirs:     lib
+    other-modules:      Paths_cardano_addresses_jsapi
+    default-language:   Haskell2010
+    default-extensions: NoImplicitPrelude
+    ghc-options:        -Wall -Wcompat -fwarn-redundant-constraints
+    build-depends:
+        aeson -any,
+        aeson-pretty -any,
+        base >=4.7 && <5,
+        bytestring -any,
+        cardano-addresses -any,
+        cardano-addresses-cli -any,
+        exceptions -any,
+        jsaddle -any,
+        lens -any,
+        mtl -any,
+        text -any
+
+    if (impl(ghcjs -any) || os(ghcjs))
+        build-depends:
+            cardano-addresses-jsbits -any,
+            ghcjs-base -any
+
+executable cardano-addresses-jsapi
+    main-is:        Main.hs
+    hs-source-dirs: exe
+    other-modules:  Paths_cardano_addresses_jsapi
+    ghcjs-options:    -no-hs-main
+    build-depends:
+        base ==4.*,
+        cardano-addresses-jsapi -any,
+        jsaddle -any,
+        jsaddle-warp -any,
+        lens -any,
+        text -any
+    default-language: Haskell2010
+    if !(impl(ghcjs -any) || os(ghcjs))
+      buildable: false
+
+test-suite jsapi-test
+    type: exitcode-stdio-1.0
+    main-is: Main.hs
+    hs-source-dirs: test
+    other-modules:  Paths_cardano_addresses_jsapi
+    build-depends:
+        base ==4.*,
+        cardano-addresses-jsapi -any,
+        jsaddle -any,
+        jsaddle-warp -any,
+        lens -any,
+        text -any
+    default-language: Haskell2010

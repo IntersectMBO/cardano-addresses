@@ -103,9 +103,8 @@ base58 = T.decodeUtf8 . encode EBase58 . unAddress
 -- @since 1.0.0
 fromBase58 :: Text -> Maybe Address
 fromBase58 =
-    deserialiseCbor (unsafeMkAddress <$> decodeAddress)
-   <=<
-    eitherToMaybe . E.fromBase58 . T.encodeUtf8
+    (eitherToMaybe . deserialiseCbor (unsafeMkAddress <$> decodeAddress)
+    <=< (eitherToMaybe . E.fromBase58 . T.encodeUtf8))
 
 -- | Encode a Shelley 'Address' to bech32 'Text', using @addr@ or @addr_test@ as
 -- a human readable prefix (depending on the network tag in the address).

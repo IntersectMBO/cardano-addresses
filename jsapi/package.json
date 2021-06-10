@@ -1,0 +1,61 @@
+{
+  "version": "3.5.0",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+    "postbuild": "test -n \"$CARDANO_ADDRESSES_JS\" && cp -v $CARDANO_ADDRESSES_JS/* dist || true",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "typedoc": "typedoc src"
+  },
+  "bin": {
+    "js-inspect-address": "bin/js-inspect-address"
+  },
+  "peerDependencies": {},
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "arrowParens": "avoid"
+  },
+  "name": "cardano-addresses",
+  "author": "IOHK <adrestia@iohk.io>",
+  "repository": "github:input-output-hk/cardano-addresses",
+  "module": "dist/cardano-addresses.esm.js",
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.2",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "eslint": "^7.28.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest": "^24.3.6",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "jest": "^27.0.4",
+    "shx": "0.3.2",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.0.0",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.2.0",
+    "typedoc": "^0.20.36",
+    "typescript": "~4.2.4"
+  },
+  "dependencies": {}
+}

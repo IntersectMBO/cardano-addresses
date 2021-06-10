@@ -1,0 +1,23 @@
+#!@runtimeShell@
+
+set -euo pipefail
+
+webroot="$(mktemp -d)"
+trap 'rm -rf "$webroot"' EXIT
+
+cp --no-preserve=all -R @out@/share/doc/@pname@/* "$webroot/"
+
+dist=@local_build@/dist
+
+if [ -d "$dist" ]; then
+  cp --no-preserve=all -R "$dist/" "$webroot/"
+fi
+
+if [ ! -f "$webroot/dist/index.js" ]; then
+  2>&1 echo "You need to do an NPM build first"
+  exit 1
+fi
+
+echo "Serving files from $webroot"
+cd "$webroot"
+exec @python3@/bin/python -m http.server "$@"

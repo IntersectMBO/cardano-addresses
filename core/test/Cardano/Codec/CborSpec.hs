@@ -53,7 +53,7 @@ import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
-{-# ANN spec ("HLint: ignore Use head" :: String) #-}
+{- HLINT ignore "Use head" -}
 
 spec :: Spec
 spec = do
@@ -137,7 +137,7 @@ arbitraryMnemonic =
 
 decodeDerivationPathTest :: DecodeDerivationPath -> Expectation
 decodeDerivationPathTest DecodeDerivationPath{..} =
-    decoded `shouldBe` Just (Just (accIndex, addrIndex))
+    decoded `shouldBe` Right (Just (accIndex, addrIndex))
   where
     payload = unsafeDeserialiseCbor decodeAddressPayload $
         BL.fromStrict (unsafeFromHex addr)

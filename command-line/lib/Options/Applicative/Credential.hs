@@ -11,6 +11,8 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( Depth (..) )
+import Cardano.Address.Internal
+    ( orElse )
 import Cardano.Address.Style.Shelley
     ( Credential (..), liftXPub )
 import Options.Applicative
@@ -43,7 +45,3 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
     allowedPrefixes =
         [ CIP5.stake_xvk
         ]
-
-    orElse :: Either e result -> Either e result -> Either e result
-    orElse _1st@Right{} _2nd = _1st
-    orElse _1st@Left{}  _2nd = _2nd

@@ -47,8 +47,6 @@ import Cardano.Crypto.Wallet
     ( ChainCode (..), XPub (..) )
 import Control.Monad
     ( replicateM, when )
-import Control.Monad.Catch
-    ( MonadThrow, throwM )
 import Crypto.Error
     ( CryptoError (..), CryptoFailable (..) )
 import Crypto.Hash
@@ -298,8 +296,8 @@ decodeProtocolMagicAttr = do
     case find ((== 2) . fst) attrs of
         Nothing -> pure Nothing
         Just (_, bytes) -> case deserialiseCbor CBOR.decodeWord32 bytes of
-            Nothing -> fail "unable to decode attribute into protocol magic"
-            Just pm -> pure (Just pm)
+            Left _ -> fail "unable to decode attribute into protocol magic"
+            Right pm -> pure (Just pm)
 
 -- | The attributes are pairs of numeric tags and bytes, where the bytes will be
 -- CBOR-encoded stuff. This decoder does not enforce "canonicity" of entries.
@@ -317,8 +315,7 @@ decodeDerivationPathAttr
     -> CBOR.Decoder s (Maybe (Word32, Word32))
 decodeDerivationPathAttr pwd attrs = do
     case lookup derPathTag attrs of
-        Just payload -> do
-            decodeNestedBytes decoder payload
+        Just payload -> decodeNestedBytes decoder payload
         Nothing -> fail $ mconcat
             [ "decodeDerivationPathAttr: Missing attribute "
             , show derPathTag
@@ -398,12 +395,11 @@ decodeNestedBytes dec bytes =
 
 -- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.
 deserialiseCbor
-    :: MonadThrow m
-    => (forall s. CBOR.Decoder s a)
+    :: (forall s. CBOR.Decoder s a)
     -> ByteString
-    -> m a
+    -> Either CBOR.DeserialiseFailure a
 deserialiseCbor dec =
-  fmap snd . either throwM pure . CBOR.deserialiseFromBytes dec . BL.fromStrict
+  fmap snd . CBOR.deserialiseFromBytes dec . BL.fromStrict
 
 -- | CBOR deserialise without error handling - handy for prototypes or testing.
 unsafeDeserialiseCbor

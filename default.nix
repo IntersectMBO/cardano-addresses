@@ -40,7 +40,8 @@ let
       tools.cabal = {};
       tools.hpack = {};
       buildInputs = [ pkgs.nodejs ];
-      packages = ps: [ ps.cardano-addresses ps.cardano-addresses-cli ];
+      packages = ps: [ ps.cardano-addresses ps.cardano-addresses-cli ps.cardano-addresses-jsapi  ];
     };
   };
-in self
+in
+  self
