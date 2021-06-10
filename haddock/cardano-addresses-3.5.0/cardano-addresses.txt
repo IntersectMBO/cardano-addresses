@@ -20,6 +20,18 @@ module Cardano.Address.Compat
 ghcjsBuildSupport :: IO ()
 
 
+-- | Utility functions for internal use of the library.
+module Cardano.Address.Internal
+orElse :: Either e a -> Either e a -> Either e a
+newtype WithErrorMessage e
+WithErrorMessage :: e -> WithErrorMessage e
+[withErrorMessage] :: WithErrorMessage e -> e
+data DeserialiseFailure
+DeserialiseFailure :: ByteOffset -> String -> DeserialiseFailure
+instance (GHC.Exception.Type.Exception e, GHC.Generics.Generic e, Data.Aeson.Types.Class.GToJSON Data.Aeson.Types.Generic.Zero (GHC.Generics.Rep e)) => Data.Aeson.Types.ToJSON.ToJSON (Cardano.Address.Internal.WithErrorMessage e)
+instance Data.Aeson.Types.ToJSON.ToJSON Codec.CBOR.Read.DeserialiseFailure
+
+
 -- | List common bech32 prefixes used for objects in the Cardano
 --   eco-systems.
 --   
@@ -755,7 +767,7 @@ paymentAddress :: NetworkDiscriminant Byron -> Byron 'PaymentK XPub -> Address
 -- | Possible errors from inspecting a Byron address
 data ErrInspectAddress
 MissingExpectedDerivationPath :: ErrInspectAddress
-DeserialiseError :: e -> ErrInspectAddress
+DeserialiseError :: DeserialiseFailure -> ErrInspectAddress
 FailedToDecryptPath :: ErrInspectAddress
 
 -- | Pretty-print an <a>ErrInspectAddress</a>
@@ -812,6 +824,10 @@ liftXPrv :: XPub -> DerivationPath depth -> XPrv -> Byron depth XPrv
 -- | <i>Deprecated: see <a>Icarus</a></i>
 liftXPub :: XPub -> DerivationPath depth -> XPub -> Byron depth XPub
 instance GHC.Generics.Generic (Cardano.Address.Style.Byron.Byron depth key)
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Byron.ErrInspectAddress
+instance GHC.Classes.Eq Cardano.Address.Style.Byron.ErrInspectAddress
+instance GHC.Show.Show Cardano.Address.Style.Byron.ErrInspectAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Byron.ErrInspectAddress
 instance GHC.Classes.Eq Cardano.Address.Style.Byron.PayloadInfo
 instance GHC.Show.Show Cardano.Address.Style.Byron.PayloadInfo
 instance GHC.Generics.Generic Cardano.Address.Style.Byron.PayloadInfo
@@ -821,10 +837,8 @@ instance GHC.Generics.Generic Cardano.Address.Style.Byron.AddressInfo
 instance (GHC.Show.Show key, GHC.Show.Show (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Show.Show (Cardano.Address.Style.Byron.Byron depth key)
 instance (GHC.Classes.Eq key, GHC.Classes.Eq (Cardano.Address.Style.Byron.DerivationPath depth)) => GHC.Classes.Eq (Cardano.Address.Style.Byron.Byron depth key)
 instance GHC.Base.Functor (Cardano.Address.Style.Byron.Byron depth)
-instance GHC.Show.Show Cardano.Address.Style.Byron.ErrInspectAddress
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Byron.AddressInfo
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Byron.PayloadInfo
-instance GHC.Classes.Eq Cardano.Address.Style.Byron.ErrInspectAddress
 instance GHC.Exception.Type.Exception Cardano.Address.Style.Byron.ErrInspectAddress
 instance (Control.DeepSeq.NFData key, Control.DeepSeq.NFData (Cardano.Address.Style.Byron.DerivationPath depth)) => Control.DeepSeq.NFData (Cardano.Address.Style.Byron.Byron depth key)
 instance Cardano.Address.Derivation.GenMasterKey Cardano.Address.Style.Byron.Byron
@@ -925,13 +939,15 @@ instance GHC.Classes.Ord Cardano.Address.Style.Icarus.Role
 instance GHC.Classes.Eq Cardano.Address.Style.Icarus.Role
 instance GHC.Show.Show Cardano.Address.Style.Icarus.Role
 instance GHC.Generics.Generic Cardano.Address.Style.Icarus.Role
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Icarus.ErrInspectAddress
+instance GHC.Classes.Eq Cardano.Address.Style.Icarus.ErrInspectAddress
+instance GHC.Show.Show Cardano.Address.Style.Icarus.ErrInspectAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Icarus.ErrInspectAddress
 instance GHC.Classes.Eq Cardano.Address.Style.Icarus.AddressInfo
 instance GHC.Show.Show Cardano.Address.Style.Icarus.AddressInfo
 instance GHC.Generics.Generic Cardano.Address.Style.Icarus.AddressInfo
 instance GHC.Base.Functor (Cardano.Address.Style.Icarus.Icarus depth)
-instance GHC.Show.Show Cardano.Address.Style.Icarus.ErrInspectAddress
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Icarus.AddressInfo
-instance GHC.Classes.Eq Cardano.Address.Style.Icarus.ErrInspectAddress
 instance GHC.Exception.Type.Exception Cardano.Address.Style.Icarus.ErrInspectAddress
 instance Control.DeepSeq.NFData Cardano.Address.Style.Icarus.Role
 instance Cardano.Address.Derivation.HardDerivation Cardano.Address.Style.Icarus.Icarus
@@ -1149,10 +1165,14 @@ instance GHC.Classes.Ord Cardano.Address.Style.Shelley.Role
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.Role
 instance GHC.Show.Show Cardano.Address.Style.Shelley.Role
 instance GHC.Generics.Generic Cardano.Address.Style.Shelley.Role
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
 instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
-instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ErrInspectAddressOnlyShelley
+instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Style.Shelley.ErrInspectAddress
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ErrInspectAddress
+instance GHC.Show.Show Cardano.Address.Style.Shelley.ErrInspectAddress
+instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ErrInspectAddress
 instance GHC.Classes.Eq Cardano.Address.Style.Shelley.ReferenceInfo
 instance GHC.Show.Show Cardano.Address.Style.Shelley.ReferenceInfo
 instance GHC.Generics.Generic Cardano.Address.Style.Shelley.ReferenceInfo

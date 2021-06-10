@@ -79,7 +79,7 @@
 </span><span id="line-79"></span><span>
 </span><span id="line-80"></span><span class="hs-comment">-- | Represent a user-provided 'DerivationPath'.</span><span>
 </span><span id="line-81"></span><span class="hs-keyword">newtype</span><span> </span><span id="DerivationPath"><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-var">DerivationPath</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DerivationPath"><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-var">DerivationPath</span></a></span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-82"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105397"><span id="local-6989586621679105399"><span id="local-6989586621679105401"><span class="annot"><span class="annottext">Int -&gt; DerivationPath -&gt; ShowS
+</span><span id="line-82"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105714"><span id="local-6989586621679105716"><span id="local-6989586621679105718"><span class="annot"><span class="annottext">Int -&gt; DerivationPath -&gt; ShowS
 [DerivationPath] -&gt; ShowS
 DerivationPath -&gt; String
 (Int -&gt; DerivationPath -&gt; ShowS)
@@ -94,7 +94,7 @@ show :: DerivationPath -&gt; String
 $cshow :: DerivationPath -&gt; String
 showsPrec :: Int -&gt; DerivationPath -&gt; ShowS
 $cshowsPrec :: Int -&gt; DerivationPath -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105392"><span id="local-6989586621679105394"><span class="annot"><span class="annottext">DerivationPath -&gt; DerivationPath -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105709"><span id="local-6989586621679105711"><span class="annot"><span class="annottext">DerivationPath -&gt; DerivationPath -&gt; Bool
 (DerivationPath -&gt; DerivationPath -&gt; Bool)
 -&gt; (DerivationPath -&gt; DerivationPath -&gt; Bool) -&gt; Eq DerivationPath
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -106,8 +106,8 @@ $c== :: DerivationPath -&gt; DerivationPath -&gt; Bool
 </span><span id="line-83"></span><span>
 </span><span id="line-84"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationPathFromString"><span class="hs-identifier hs-type">derivationPathFromString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span>
 </span><span id="line-85"></span><span id="derivationPathFromString"><span class="annot"><span class="annottext">derivationPathFromString :: String -&gt; Either String DerivationPath
-</span><a href="Options.Applicative.Derivation.html#derivationPathFromString"><span class="hs-identifier hs-var hs-var">derivationPathFromString</span></a></span></span><span> </span><span id="local-6989586621679105390"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105390"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Derivation.html#derivationPathFromString"><span class="hs-identifier hs-var hs-var">derivationPathFromString</span></a></span></span><span> </span><span id="local-6989586621679105707"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105707"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-86"></span><span>    </span><span class="annot"><span class="annottext">[DerivationIndex] -&gt; DerivationPath
 </span><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-var">DerivationPath</span></a></span><span>
 </span><span id="line-87"></span><span>        </span><span class="annot"><span class="annottext">([DerivationIndex] -&gt; DerivationPath)
@@ -126,17 +126,17 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-identifier hs-var">T.unpack</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; [Text]
 </span><span class="hs-identifier hs-var">T.splitOn</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;/&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679105384"><span class="hs-identifier hs-var">txt</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679105701"><span class="hs-identifier hs-var">txt</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-88"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-89"></span><span>    </span><span id="local-6989586621679105384"><span class="annot"><span class="annottext">txt :: Text
-</span><a href="#local-6989586621679105384"><span class="hs-identifier hs-var hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span id="line-89"></span><span>    </span><span id="local-6989586621679105701"><span class="annot"><span class="annottext">txt :: Text
+</span><a href="#local-6989586621679105701"><span class="hs-identifier hs-var hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105390"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><a href="#local-6989586621679105707"><span class="hs-identifier hs-var">str</span></a></span><span>
 </span><span id="line-90"></span><span>
 </span><span id="line-91"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationPathToString"><span class="hs-identifier hs-type">derivationPathToString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
 </span><span id="line-92"></span><span id="derivationPathToString"><span class="annot"><span class="annottext">derivationPathToString :: DerivationPath -&gt; String
-</span><a href="Options.Applicative.Derivation.html#derivationPathToString"><span class="hs-identifier hs-var hs-var">derivationPathToString</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span id="local-6989586621679105382"><span class="annot"><span class="annottext">[DerivationIndex]
-</span><a href="#local-6989586621679105382"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Derivation.html#derivationPathToString"><span class="hs-identifier hs-var hs-var">derivationPathToString</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span id="local-6989586621679105699"><span class="annot"><span class="annottext">[DerivationIndex]
+</span><a href="#local-6989586621679105699"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-93"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; String
 forall a. [a] -&gt; [[a]] -&gt; [a]
 </span><span class="hs-identifier hs-var">intercalate</span></span><span> </span><span class="annot"><span class="annottext">String
@@ -146,12 +146,12 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; String
 </span><a href="Options.Applicative.Derivation.html#derivationIndexToString"><span class="hs-identifier hs-var">derivationIndexToString</span></a></span><span> </span><span class="annot"><span class="annottext">[DerivationIndex]
-</span><a href="#local-6989586621679105382"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><a href="#local-6989586621679105699"><span class="hs-identifier hs-var">xs</span></a></span><span>
 </span><span id="line-94"></span><span>
-</span><span id="line-95"></span><span id="local-6989586621679105381"><span class="annot"><a href="Options.Applicative.Derivation.html#castDerivationPath"><span class="hs-identifier hs-type">castDerivationPath</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Index</span></span><span> </span><span class="hs-special">'</span><span class="annot"><span class="hs-identifier hs-type">WholeDomain</span></span><span> </span><span class="annot"><a href="#local-6989586621679105381"><span class="hs-identifier hs-type">depth</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-95"></span><span id="local-6989586621679105698"><span class="annot"><a href="Options.Applicative.Derivation.html#castDerivationPath"><span class="hs-identifier hs-type">castDerivationPath</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Index</span></span><span> </span><span class="hs-special">'</span><span class="annot"><span class="hs-identifier hs-type">WholeDomain</span></span><span> </span><span class="annot"><a href="#local-6989586621679105698"><span class="hs-identifier hs-type">depth</span></a></span><span class="hs-special">]</span></span><span>
 </span><span id="line-96"></span><span id="castDerivationPath"><span class="annot"><span class="annottext">castDerivationPath :: DerivationPath -&gt; [Index 'WholeDomain depth]
-</span><a href="Options.Applicative.Derivation.html#castDerivationPath"><span class="hs-identifier hs-var hs-var">castDerivationPath</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span id="local-6989586621679105380"><span class="annot"><span class="annottext">[DerivationIndex]
-</span><a href="#local-6989586621679105380"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(DerivationIndex -&gt; Index 'WholeDomain depth)
+</span><a href="Options.Applicative.Derivation.html#castDerivationPath"><span class="hs-identifier hs-var hs-var">castDerivationPath</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span> </span><span id="local-6989586621679105697"><span class="annot"><span class="annottext">[DerivationIndex]
+</span><a href="#local-6989586621679105697"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(DerivationIndex -&gt; Index 'WholeDomain depth)
 -&gt; [DerivationIndex] -&gt; [Index 'WholeDomain depth]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32 -&gt; Index 'WholeDomain depth
@@ -163,7 +163,7 @@ forall (depth :: Depth). Word32 -&gt; Index 'WholeDomain depth
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; Word32
 </span><a href="Options.Applicative.Derivation.html#getDerivationIndex"><span class="hs-identifier hs-var hs-var">getDerivationIndex</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[DerivationIndex]
-</span><a href="#local-6989586621679105380"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><a href="#local-6989586621679105697"><span class="hs-identifier hs-var">xs</span></a></span><span>
 </span><span id="line-97"></span><span>
 </span><span id="line-98"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationPathArg"><span class="hs-identifier hs-type">derivationPathArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationPath"><span class="hs-identifier hs-type">DerivationPath</span></a></span><span>
 </span><span id="line-99"></span><span id="derivationPathArg"><span class="annot"><span class="annottext">derivationPathArg :: Parser DerivationPath
@@ -214,7 +214,7 @@ forall (f :: * -&gt; *) a. HasCompleter f =&gt; Completer -&gt; Mod f a
 </span><span id="line-109"></span><span>
 </span><span id="line-110"></span><span class="hs-keyword">newtype</span><span> </span><span id="DerivationIndex"><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-var">DerivationIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DerivationIndex"><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-var">DerivationIndex</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="getDerivationIndex"><span class="annot"><span class="annottext">DerivationIndex -&gt; Word32
 </span><a href="Options.Applicative.Derivation.html#getDerivationIndex"><span class="hs-identifier hs-var hs-var">getDerivationIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span> </span><span class="hs-special">}</span><span>
-</span><span id="line-111"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span>   </span><span class="hs-special">(</span><span id="local-6989586621679105372"><span id="local-6989586621679105374"><span id="local-6989586621679105376"><span class="annot"><span class="annottext">Int -&gt; DerivationIndex -&gt; ShowS
+</span><span id="line-111"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span>   </span><span class="hs-special">(</span><span id="local-6989586621679105689"><span id="local-6989586621679105691"><span id="local-6989586621679105693"><span class="annot"><span class="annottext">Int -&gt; DerivationIndex -&gt; ShowS
 [DerivationIndex] -&gt; ShowS
 DerivationIndex -&gt; String
 (Int -&gt; DerivationIndex -&gt; ShowS)
@@ -229,7 +229,7 @@ show :: DerivationIndex -&gt; String
 $cshow :: DerivationIndex -&gt; String
 showsPrec :: Int -&gt; DerivationIndex -&gt; ShowS
 $cshowsPrec :: Int -&gt; DerivationIndex -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105368"><span id="local-6989586621679105370"><span class="annot"><span class="annottext">DerivationIndex -&gt; DerivationIndex -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105685"><span id="local-6989586621679105687"><span class="annot"><span class="annottext">DerivationIndex -&gt; DerivationIndex -&gt; Bool
 (DerivationIndex -&gt; DerivationIndex -&gt; Bool)
 -&gt; (DerivationIndex -&gt; DerivationIndex -&gt; Bool)
 -&gt; Eq DerivationIndex
@@ -239,14 +239,14 @@ $c/= :: DerivationIndex -&gt; DerivationIndex -&gt; Bool
 == :: DerivationIndex -&gt; DerivationIndex -&gt; Bool
 $c== :: DerivationIndex -&gt; DerivationIndex -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-112"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105364"><span id="local-6989586621679105366"><span class="annot"><span class="annottext">DerivationIndex
+</span><span id="line-112"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105681"><span id="local-6989586621679105683"><span class="annot"><span class="annottext">DerivationIndex
 DerivationIndex -&gt; DerivationIndex -&gt; Bounded DerivationIndex
 forall a. a -&gt; a -&gt; Bounded a
 maxBound :: DerivationIndex
 $cmaxBound :: DerivationIndex
 minBound :: DerivationIndex
 $cminBound :: DerivationIndex
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105348"><span id="local-6989586621679105350"><span id="local-6989586621679105352"><span id="local-6989586621679105354"><span id="local-6989586621679105356"><span id="local-6989586621679105358"><span id="local-6989586621679105360"><span class="annot"><span class="annottext">Eq DerivationIndex
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105665"><span id="local-6989586621679105667"><span id="local-6989586621679105669"><span id="local-6989586621679105671"><span id="local-6989586621679105673"><span id="local-6989586621679105675"><span id="local-6989586621679105677"><span class="annot"><span class="annottext">Eq DerivationIndex
 Eq DerivationIndex
 -&gt; (DerivationIndex -&gt; DerivationIndex -&gt; Ordering)
 -&gt; (DerivationIndex -&gt; DerivationIndex -&gt; Bool)
@@ -289,11 +289,11 @@ $cp1Ord :: Eq DerivationIndex
 </span><span id="line-114"></span><span class="hs-comment">-- | Safely cast a 'DerivationIndex' to an 'Integer'.</span><span>
 </span><span id="line-115"></span><span class="annot"><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-type">indexToInteger</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-116"></span><span id="indexToInteger"><span class="annot"><span class="annottext">indexToInteger :: DerivationIndex -&gt; Integer
-</span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var hs-var">indexToInteger</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span id="local-6989586621679105346"><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679105346"><span class="hs-identifier hs-var">ix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
+</span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var hs-var">indexToInteger</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span id="local-6989586621679105663"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679105663"><span class="hs-identifier hs-var">ix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679105346"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105663"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-117"></span><span>
 </span><span id="line-118"></span><span class="hs-comment">-- | Get the first 'DerivationIndex' considered /hardened/.</span><span>
 </span><span id="line-119"></span><span class="annot"><a href="Options.Applicative.Derivation.html#firstHardened"><span class="hs-identifier hs-type">firstHardened</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span>
@@ -305,10 +305,10 @@ forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span id="line-122"></span><span class="hs-comment">-- | Smart-constructor for a 'DerivationIndex'</span><span>
 </span><span id="line-123"></span><span class="annot"><a href="Options.Applicative.Derivation.html#mkDerivationIndex"><span class="hs-identifier hs-type">mkDerivationIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span>
 </span><span id="line-124"></span><span id="mkDerivationIndex"><span class="annot"><span class="annottext">mkDerivationIndex :: Integer -&gt; Either String DerivationIndex
-</span><a href="Options.Applicative.Derivation.html#mkDerivationIndex"><span class="hs-identifier hs-var hs-var">mkDerivationIndex</span></a></span></span><span> </span><span id="local-6989586621679105345"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105345"><span class="hs-identifier hs-var">ix</span></a></span></span><span>
+</span><a href="Options.Applicative.Derivation.html#mkDerivationIndex"><span class="hs-identifier hs-var hs-var">mkDerivationIndex</span></a></span></span><span> </span><span id="local-6989586621679105662"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679105662"><span class="hs-identifier hs-var">ix</span></a></span></span><span>
 </span><span id="line-125"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105345"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+</span><a href="#local-6989586621679105662"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
@@ -323,7 +323,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105345"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679105662"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot; is too high to be a derivation index.&quot;</span></span><span>
@@ -340,7 +340,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Word32
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105345"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105662"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-129"></span><span>
 </span><span id="line-130"></span><span class="hs-comment">-- | Convert a string to a derivation index. String must be followed by a</span><span>
 </span><span id="line-131"></span><span class="hs-comment">-- capital /H/ to mark hardened index. For example @0@ refers to the first soft</span><span>
@@ -352,55 +352,55 @@ forall a b. (Integral a, Num b) =&gt; a -&gt; b
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;An empty string is not a derivation index!&quot;</span></span><span>
-</span><span id="line-135"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationIndexFromString"><span class="hs-identifier hs-var">derivationIndexFromString</span></a></span><span> </span><span id="local-6989586621679105341"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105341"><span class="hs-identifier hs-var">str</span></a></span></span><span>
+</span><span id="line-135"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationIndexFromString"><span class="hs-identifier hs-var">derivationIndexFromString</span></a></span><span> </span><span id="local-6989586621679105658"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105658"><span class="hs-identifier hs-var">str</span></a></span></span><span>
 </span><span id="line-136"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;H&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; Bool
 forall a. Eq a =&gt; [a] -&gt; [a] -&gt; Bool
 </span><span class="hs-operator hs-var">`isSuffixOf`</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105341"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="#local-6989586621679105658"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-137"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Either String DerivationIndex
-</span><a href="#local-6989586621679105340"><span class="hs-identifier hs-var">parseHardenedIndex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ShowS
+</span><a href="#local-6989586621679105657"><span class="hs-identifier hs-var">parseHardenedIndex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ShowS
 forall a. [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">init</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105341"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679105658"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-138"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-139"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; Either String DerivationIndex
-</span><a href="#local-6989586621679105338"><span class="hs-identifier hs-var">parseSoftIndex</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105341"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><a href="#local-6989586621679105655"><span class="hs-identifier hs-var">parseSoftIndex</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105658"><span class="hs-identifier hs-var">str</span></a></span><span>
 </span><span id="line-140"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-141"></span><span>    </span><span id="local-6989586621679105340"><span class="annot"><span class="annottext">parseHardenedIndex :: String -&gt; Either String DerivationIndex
-</span><a href="#local-6989586621679105340"><span class="hs-identifier hs-var hs-var">parseHardenedIndex</span></a></span></span><span> </span><span id="local-6989586621679105337"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105337"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-142"></span><span>        </span><span id="local-6989586621679105336"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105336"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; Either String Integer -&gt; Either String Integer
+</span><span id="line-141"></span><span>    </span><span id="local-6989586621679105657"><span class="annot"><span class="annottext">parseHardenedIndex :: String -&gt; Either String DerivationIndex
+</span><a href="#local-6989586621679105657"><span class="hs-identifier hs-var hs-var">parseHardenedIndex</span></a></span></span><span> </span><span id="local-6989586621679105654"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105654"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-142"></span><span>        </span><span id="local-6989586621679105653"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679105653"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; Either String Integer -&gt; Either String Integer
 forall (a :: * -&gt; * -&gt; *) b c d.
 ArrowChoice a =&gt;
 a b c -&gt; a (Either b d) (Either c d)
 </span><span class="hs-identifier hs-var">left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a b. a -&gt; b -&gt; a
 </span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105334"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String Integer -&gt; Either String Integer)
+</span><a href="#local-6989586621679105651"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String Integer -&gt; Either String Integer)
 -&gt; Either String Integer -&gt; Either String Integer
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String Integer
 forall a. Read a =&gt; String -&gt; Either String a
 </span><span class="hs-identifier hs-var">readEitherSafe</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105337"><span class="hs-identifier hs-var">txt</span></a></span><span>
+</span><a href="#local-6989586621679105654"><span class="hs-identifier hs-var">txt</span></a></span><span>
 </span><span id="line-143"></span><span>        </span><span class="annot"><span class="annottext">Integer -&gt; Either String DerivationIndex
 </span><a href="Options.Applicative.Derivation.html#mkDerivationIndex"><span class="hs-identifier hs-var">mkDerivationIndex</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Either String DerivationIndex)
 -&gt; Integer -&gt; Either String DerivationIndex
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105336"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621679105653"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; Integer
 </span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var">indexToInteger</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex
 </span><a href="Options.Applicative.Derivation.html#firstHardened"><span class="hs-identifier hs-var">firstHardened</span></a></span><span>
 </span><span id="line-144"></span><span>      </span><span class="hs-keyword">where</span><span>
-</span><span id="line-145"></span><span>        </span><span id="local-6989586621679105334"><span class="annot"><span class="annottext">msg :: String
-</span><a href="#local-6989586621679105334"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
+</span><span id="line-145"></span><span>        </span><span id="local-6989586621679105651"><span class="annot"><span class="annottext">msg :: String
+</span><a href="#local-6989586621679105651"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
 forall a. Monoid a =&gt; [a] -&gt; a
 </span><span class="hs-identifier hs-var">mconcat</span></span><span>
 </span><span id="line-146"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
@@ -424,36 +424,36 @@ forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-string">&quot; ending with a capital 'H'. For example: \&quot;42H\&quot;,&quot;</span></span><span>
 </span><span id="line-152"></span><span>            </span><span class="hs-special">]</span><span>
 </span><span id="line-153"></span><span>
-</span><span id="line-154"></span><span>    </span><span id="local-6989586621679105338"><span class="annot"><span class="annottext">parseSoftIndex :: String -&gt; Either String DerivationIndex
-</span><a href="#local-6989586621679105338"><span class="hs-identifier hs-var hs-var">parseSoftIndex</span></a></span></span><span> </span><span id="local-6989586621679105331"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105331"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-155"></span><span>        </span><span id="local-6989586621679105330"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105330"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; Either String Integer -&gt; Either String Integer
+</span><span id="line-154"></span><span>    </span><span id="local-6989586621679105655"><span class="annot"><span class="annottext">parseSoftIndex :: String -&gt; Either String DerivationIndex
+</span><a href="#local-6989586621679105655"><span class="hs-identifier hs-var hs-var">parseSoftIndex</span></a></span></span><span> </span><span id="local-6989586621679105648"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105648"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-155"></span><span>        </span><span id="local-6989586621679105647"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679105647"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; Either String Integer -&gt; Either String Integer
 forall (a :: * -&gt; * -&gt; *) b c d.
 ArrowChoice a =&gt;
 a b c -&gt; a (Either b d) (Either c d)
 </span><span class="hs-identifier hs-var">left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a b. a -&gt; b -&gt; a
 </span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105329"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String Integer -&gt; Either String Integer)
+</span><a href="#local-6989586621679105646"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String Integer -&gt; Either String Integer)
 -&gt; Either String Integer -&gt; Either String Integer
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String Integer
 forall a. Read a =&gt; String -&gt; Either String a
 </span><span class="hs-identifier hs-var">readEitherSafe</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105331"><span class="hs-identifier hs-var">txt</span></a></span><span>
+</span><a href="#local-6989586621679105648"><span class="hs-identifier hs-var">txt</span></a></span><span>
 </span><span id="line-156"></span><span>        </span><span class="annot"><span class="annottext">Integer -&gt; Either String ()
-</span><a href="#local-6989586621679105328"><span class="hs-identifier hs-var">guardSoftIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105330"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105645"><span class="hs-identifier hs-var">guardSoftIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679105647"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-157"></span><span>        </span><span class="annot"><span class="annottext">Integer -&gt; Either String DerivationIndex
 </span><a href="Options.Applicative.Derivation.html#mkDerivationIndex"><span class="hs-identifier hs-var">mkDerivationIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105330"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105647"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-158"></span><span>      </span><span class="hs-keyword">where</span><span>
-</span><span id="line-159"></span><span>        </span><span id="local-6989586621679105328"><span class="annot"><span class="annottext">guardSoftIndex :: Integer -&gt; Either String ()
-</span><a href="#local-6989586621679105328"><span class="hs-identifier hs-var hs-var">guardSoftIndex</span></a></span></span><span> </span><span id="local-6989586621679105327"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105327"><span class="hs-identifier hs-var">ix</span></a></span></span><span>
+</span><span id="line-159"></span><span>        </span><span id="local-6989586621679105645"><span class="annot"><span class="annottext">guardSoftIndex :: Integer -&gt; Either String ()
+</span><a href="#local-6989586621679105645"><span class="hs-identifier hs-var hs-var">guardSoftIndex</span></a></span></span><span> </span><span id="local-6989586621679105644"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679105644"><span class="hs-identifier hs-var">ix</span></a></span></span><span>
 </span><span id="line-160"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105327"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+</span><a href="#local-6989586621679105644"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; Integer
 </span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var">indexToInteger</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex
@@ -468,7 +468,7 @@ forall a. Monoid a =&gt; [a] -&gt; a
 </span><span id="line-162"></span><span>                    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105327"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105644"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-163"></span><span>                    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot; is too high to be a soft derivation index. &quot;</span></span><span>
 </span><span id="line-164"></span><span>                    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
@@ -476,7 +476,7 @@ forall a. Show a =&gt; a -&gt; String
 </span><span id="line-165"></span><span>                    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105327"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621679105644"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; Integer
 </span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var">indexToInteger</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex
@@ -490,8 +490,8 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-170"></span><span>
-</span><span id="line-171"></span><span>        </span><span id="local-6989586621679105329"><span class="annot"><span class="annottext">msg :: String
-</span><a href="#local-6989586621679105329"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
+</span><span id="line-171"></span><span>        </span><span id="local-6989586621679105646"><span class="annot"><span class="annottext">msg :: String
+</span><a href="#local-6989586621679105646"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
 forall a. Monoid a =&gt; [a] -&gt; a
 </span><span class="hs-identifier hs-var">mconcat</span></span><span>
 </span><span id="line-172"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String
@@ -518,17 +518,17 @@ forall a. Show a =&gt; a -&gt; String
 </span><span id="line-180"></span><span class="hs-comment">-- | Convert a 'DerivationIndex' back to string.</span><span>
 </span><span id="line-181"></span><span class="annot"><a href="Options.Applicative.Derivation.html#derivationIndexToString"><span class="hs-identifier hs-type">derivationIndexToString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
 </span><span id="line-182"></span><span id="derivationIndexToString"><span class="annot"><span class="annottext">derivationIndexToString :: DerivationIndex -&gt; String
-</span><a href="Options.Applicative.Derivation.html#derivationIndexToString"><span class="hs-identifier hs-var hs-var">derivationIndexToString</span></a></span></span><span> </span><span id="local-6989586621679105326"><span class="annot"><span class="annottext">ix_ :: DerivationIndex
-</span><a href="#local-6989586621679105326"><span class="hs-identifier hs-var">ix_</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span id="local-6989586621679105325"><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679105325"><span class="hs-identifier hs-var">ix</span></a></span></span><span class="hs-special">)</span><span>
+</span><a href="Options.Applicative.Derivation.html#derivationIndexToString"><span class="hs-identifier hs-var hs-var">derivationIndexToString</span></a></span></span><span> </span><span id="local-6989586621679105643"><span class="annot"><span class="annottext">ix_ :: DerivationIndex
+</span><a href="#local-6989586621679105643"><span class="hs-identifier hs-var">ix_</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Options.Applicative.Derivation.html#DerivationIndex"><span class="hs-identifier hs-type">DerivationIndex</span></a></span><span> </span><span id="local-6989586621679105642"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679105642"><span class="hs-identifier hs-var">ix</span></a></span></span><span class="hs-special">)</span><span>
 </span><span id="line-183"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">DerivationIndex
-</span><a href="#local-6989586621679105326"><span class="hs-identifier hs-var">ix_</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; DerivationIndex -&gt; Bool
+</span><a href="#local-6989586621679105643"><span class="hs-identifier hs-var">ix_</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; DerivationIndex -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex
 </span><a href="Options.Applicative.Derivation.html#firstHardened"><span class="hs-identifier hs-var">firstHardened</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679105324"><span class="hs-identifier hs-var">ix'</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679105641"><span class="hs-identifier hs-var">ix'</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;H&quot;</span></span><span>
@@ -536,13 +536,13 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">otherwise</span></span><span>            </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679105325"><span class="hs-identifier hs-var">ix</span></a></span><span>
+</span><a href="#local-6989586621679105642"><span class="hs-identifier hs-var">ix</span></a></span><span>
 </span><span id="line-185"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-186"></span><span>    </span><span id="local-6989586621679105324"><span class="annot"><span class="annottext">ix' :: Integer
-</span><a href="#local-6989586621679105324"><span class="hs-identifier hs-var hs-var">ix'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
+</span><span id="line-186"></span><span>    </span><span id="local-6989586621679105641"><span class="annot"><span class="annottext">ix' :: Integer
+</span><a href="#local-6989586621679105641"><span class="hs-identifier hs-var hs-var">ix'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679105325"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621679105642"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">DerivationIndex -&gt; Integer
 </span><a href="Options.Applicative.Derivation.html#indexToInteger"><span class="hs-identifier hs-var">indexToInteger</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationIndex
@@ -554,24 +554,24 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span id="line-191"></span><span>
 </span><span id="line-192"></span><span class="annot"><a href="Options.Applicative.Derivation.html#xpubReader"><span class="hs-identifier hs-type">xpubReader</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">XPub</span></span><span>
 </span><span id="line-193"></span><span id="xpubReader"><span class="annot"><span class="annottext">xpubReader :: [HumanReadablePart] -&gt; String -&gt; Either String XPub
-</span><a href="Options.Applicative.Derivation.html#xpubReader"><span class="hs-identifier hs-var hs-var">xpubReader</span></a></span></span><span> </span><span id="local-6989586621679105323"><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105323"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105322"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105322"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-194"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679105321"><span class="annot"><span class="annottext">HumanReadablePart
-</span><a href="#local-6989586621679105321"><span class="hs-identifier hs-var">_hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105320"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679105320"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="Options.Applicative.Derivation.html#xpubReader"><span class="hs-identifier hs-var hs-var">xpubReader</span></a></span></span><span> </span><span id="local-6989586621679105640"><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="#local-6989586621679105640"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105639"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105639"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-194"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679105638"><span class="annot"><span class="annottext">HumanReadablePart
+</span><a href="#local-6989586621679105638"><span class="hs-identifier hs-var">_hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105637"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679105637"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
 -&gt; String -&gt; Either String (HumanReadablePart, ByteString)
 </span><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier hs-var">bech32Reader</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105323"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105322"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><a href="#local-6989586621679105640"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105639"><span class="hs-identifier hs-var">str</span></a></span><span>
 </span><span id="line-195"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Maybe XPub
 </span><span class="hs-identifier hs-var">xpubFromBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679105320"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-196"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679105319"><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679105319"><span class="hs-identifier hs-var">xpub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Either String XPub
+</span><a href="#local-6989586621679105637"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-196"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679105636"><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679105636"><span class="hs-identifier hs-var">xpub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Either String XPub
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679105319"><span class="hs-identifier hs-var">xpub</span></a></span><span>
+</span><a href="#local-6989586621679105636"><span class="hs-identifier hs-var">xpub</span></a></span><span>
 </span><span id="line-197"></span><span>        </span><span class="annot"><span class="annottext">Maybe XPub
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String XPub
 forall a b. a -&gt; Either a b
@@ -581,17 +581,17 @@ forall a b. a -&gt; Either a b
 </span><span id="line-199"></span><span>
 </span><span id="line-200"></span><span class="annot"><a href="Options.Applicative.Derivation.html#xpubOpt"><span class="hs-identifier hs-type">xpubOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">XPub</span></span><span>
 </span><span id="line-201"></span><span id="xpubOpt"><span class="annot"><span class="annottext">xpubOpt :: [HumanReadablePart] -&gt; String -&gt; String -&gt; Parser XPub
-</span><a href="Options.Applicative.Derivation.html#xpubOpt"><span class="hs-identifier hs-var hs-var">xpubOpt</span></a></span></span><span> </span><span id="local-6989586621679105318"><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105318"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105317"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105317"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679105316"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105316"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Derivation.html#xpubOpt"><span class="hs-identifier hs-var hs-var">xpubOpt</span></a></span></span><span> </span><span id="local-6989586621679105635"><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="#local-6989586621679105635"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105634"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105634"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679105633"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105633"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-202"></span><span>    </span><span class="annot"><span class="annottext">ReadM XPub -&gt; Mod OptionFields XPub -&gt; Parser XPub
 forall a. ReadM a -&gt; Mod OptionFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">option</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Either String XPub) -&gt; ReadM XPub
 forall a. (String -&gt; Either String a) -&gt; ReadM a
 </span><span class="hs-identifier hs-var">eitherReader</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[HumanReadablePart] -&gt; String -&gt; Either String XPub
 </span><a href="Options.Applicative.Derivation.html#xpubReader"><span class="hs-identifier hs-var">xpubReader</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105318"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod OptionFields XPub -&gt; Parser XPub)
+</span><a href="#local-6989586621679105635"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod OptionFields XPub -&gt; Parser XPub)
 -&gt; Mod OptionFields XPub -&gt; Parser XPub
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields XPub
@@ -603,7 +603,7 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields XPub
 forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105317"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><a href="#local-6989586621679105634"><span class="hs-identifier hs-var">name</span></a></span><span>
 </span><span id="line-204"></span><span>        </span><span class="annot"><span class="annottext">Mod OptionFields XPub
 -&gt; Mod OptionFields XPub -&gt; Mod OptionFields XPub
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -617,20 +617,20 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields XPub
 forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105316"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
+</span><a href="#local-6989586621679105633"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
 </span><span id="line-206"></span><span>
 </span><span id="line-207"></span><span class="annot"><a href="Options.Applicative.Derivation.html#xpubArg"><span class="hs-identifier hs-type">xpubArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">XPub</span></span><span>
 </span><span id="line-208"></span><span id="xpubArg"><span class="annot"><span class="annottext">xpubArg :: [HumanReadablePart] -&gt; String -&gt; Parser XPub
-</span><a href="Options.Applicative.Derivation.html#xpubArg"><span class="hs-identifier hs-var hs-var">xpubArg</span></a></span></span><span> </span><span id="local-6989586621679105315"><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105315"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105314"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105314"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Derivation.html#xpubArg"><span class="hs-identifier hs-var hs-var">xpubArg</span></a></span></span><span> </span><span id="local-6989586621679105632"><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="#local-6989586621679105632"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105631"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105631"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-209"></span><span>    </span><span class="annot"><span class="annottext">ReadM XPub -&gt; Mod ArgumentFields XPub -&gt; Parser XPub
 forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">argument</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Either String XPub) -&gt; ReadM XPub
 forall a. (String -&gt; Either String a) -&gt; ReadM a
 </span><span class="hs-identifier hs-var">eitherReader</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[HumanReadablePart] -&gt; String -&gt; Either String XPub
 </span><a href="Options.Applicative.Derivation.html#xpubReader"><span class="hs-identifier hs-var">xpubReader</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105315"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields XPub -&gt; Parser XPub)
+</span><a href="#local-6989586621679105632"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields XPub -&gt; Parser XPub)
 -&gt; Mod ArgumentFields XPub -&gt; Parser XPub
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Mod ArgumentFields XPub
@@ -649,7 +649,7 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields XPub
 forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105314"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
+</span><a href="#local-6989586621679105631"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
 </span><span id="line-212"></span><span>
 </span><span id="line-213"></span><span class="hs-comment">--</span><span>
 </span><span id="line-214"></span><span class="hs-comment">-- Internal</span><span>
@@ -661,25 +661,25 @@ forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span id="line-220"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span class="hs-special">)</span><span>
 </span><span id="line-221"></span><span id="bech32Reader"><span class="annot"><span class="annottext">bech32Reader :: [HumanReadablePart]
 -&gt; String -&gt; Either String (HumanReadablePart, ByteString)
-</span><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier hs-var hs-var">bech32Reader</span></a></span></span><span> </span><span id="local-6989586621679105313"><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105313"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105312"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105312"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-222"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679105311"><span class="annot"><span class="annottext">HumanReadablePart
-</span><a href="#local-6989586621679105311"><span class="hs-identifier hs-var">hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105310"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679105310"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; ShowS)
+</span><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier hs-var hs-var">bech32Reader</span></a></span></span><span> </span><span id="local-6989586621679105630"><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="#local-6989586621679105630"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span></span><span> </span><span id="local-6989586621679105629"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105629"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-222"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679105628"><span class="annot"><span class="annottext">HumanReadablePart
+</span><a href="#local-6989586621679105628"><span class="hs-identifier hs-var">hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679105627"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679105627"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">([Int] -&gt; ShowS)
 -&gt; ByteString -&gt; Either String (HumanReadablePart, ByteString)
 </span><span class="hs-identifier hs-var">fromBech32</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; ShowS
 forall i. Integral i =&gt; [i] -&gt; ShowS
 </span><a href="System.IO.Extra.html#markCharsRedAtIndices"><span class="hs-identifier hs-var">markCharsRedAtIndices</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ByteString
-</span><a href="#local-6989586621679105309"><span class="hs-identifier hs-var">toBytes</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679105312"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679105626"><span class="hs-identifier hs-var">toBytes</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679105629"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-223"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; Either String () -&gt; Either String ()
 forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
 </span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HumanReadablePart
-</span><a href="#local-6989586621679105311"><span class="hs-identifier hs-var">hrp</span></a></span><span> </span><span class="annot"><span class="annottext">HumanReadablePart -&gt; [HumanReadablePart] -&gt; Bool
+</span><a href="#local-6989586621679105628"><span class="hs-identifier hs-var">hrp</span></a></span><span> </span><span class="annot"><span class="annottext">HumanReadablePart -&gt; [HumanReadablePart] -&gt; Bool
 forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><span class="hs-operator hs-var">`notElem`</span></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105313"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String () -&gt; Either String ())
+</span><a href="#local-6989586621679105630"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either String () -&gt; Either String ())
 -&gt; Either String () -&gt; Either String ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String ()
@@ -694,29 +694,29 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HumanReadablePart -&gt; String
-</span><a href="#local-6989586621679105307"><span class="hs-identifier hs-var">showHrp</span></a></span><span> </span><span class="annot"><span class="annottext">(HumanReadablePart -&gt; String) -&gt; [HumanReadablePart] -&gt; [String]
+</span><a href="#local-6989586621679105624"><span class="hs-identifier hs-var">showHrp</span></a></span><span> </span><span class="annot"><span class="annottext">(HumanReadablePart -&gt; String) -&gt; [HumanReadablePart] -&gt; [String]
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679105313"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679105630"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-226"></span><span>    </span><span class="annot"><span class="annottext">(HumanReadablePart, ByteString)
 -&gt; Either String (HumanReadablePart, ByteString)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HumanReadablePart
-</span><a href="#local-6989586621679105311"><span class="hs-identifier hs-var">hrp</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679105310"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679105628"><span class="hs-identifier hs-var">hrp</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679105627"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-227"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-228"></span><span>    </span><span class="annot"><a href="#local-6989586621679105307"><span class="hs-identifier hs-type">showHrp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-229"></span><span>    </span><span id="local-6989586621679105307"><span class="annot"><span class="annottext">showHrp :: HumanReadablePart -&gt; String
-</span><a href="#local-6989586621679105307"><span class="hs-identifier hs-var hs-var">showHrp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><span id="line-228"></span><span>    </span><span class="annot"><a href="#local-6989586621679105624"><span class="hs-identifier hs-type">showHrp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-229"></span><span>    </span><span id="local-6989586621679105624"><span class="annot"><span class="annottext">showHrp :: HumanReadablePart -&gt; String
+</span><a href="#local-6989586621679105624"><span class="hs-identifier hs-var hs-var">showHrp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">T.unpack</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; String)
 -&gt; (HumanReadablePart -&gt; Text) -&gt; HumanReadablePart -&gt; String
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">HumanReadablePart -&gt; Text
 </span><span class="hs-identifier hs-var">humanReadablePartToText</span></span><span>
 </span><span id="line-230"></span><span>
-</span><span id="line-231"></span><span>    </span><span class="annot"><a href="#local-6989586621679105309"><span class="hs-identifier hs-type">toBytes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
-</span><span id="line-232"></span><span>    </span><span id="local-6989586621679105309"><span class="annot"><span class="annottext">toBytes :: String -&gt; ByteString
-</span><a href="#local-6989586621679105309"><span class="hs-identifier hs-var hs-var">toBytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span id="line-231"></span><span>    </span><span class="annot"><a href="#local-6989586621679105626"><span class="hs-identifier hs-type">toBytes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-232"></span><span>    </span><span id="local-6989586621679105626"><span class="annot"><span class="annottext">toBytes :: String -&gt; ByteString
+</span><a href="#local-6989586621679105626"><span class="hs-identifier hs-var hs-var">toBytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
 </span><span class="hs-identifier hs-var">T.encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; (String -&gt; Text) -&gt; String -&gt; ByteString
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text

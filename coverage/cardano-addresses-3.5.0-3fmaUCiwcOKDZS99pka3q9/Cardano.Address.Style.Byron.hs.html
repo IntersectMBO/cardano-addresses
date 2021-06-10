@@ -20,7 +20,7 @@ span.spaces    { background: white }
 <span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
 <span class="lineno">    2 </span>{-# LANGUAGE DeriveFunctor #-}
 <span class="lineno">    3 </span>{-# LANGUAGE DeriveGeneric #-}
-<span class="lineno">    4 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    4 </span>{-# LANGUAGE DerivingVia #-}
 <span class="lineno">    5 </span>{-# LANGUAGE DuplicateRecordFields #-}
 <span class="lineno">    6 </span>{-# LANGUAGE ExistentialQuantification #-}
 <span class="lineno">    7 </span>{-# LANGUAGE FlexibleContexts #-}
@@ -105,38 +105,38 @@ span.spaces    { background: white }
 <span class="lineno">   86 </span>    , toXPub
 <span class="lineno">   87 </span>    , xpubToBytes
 <span class="lineno">   88 </span>    )
-<span class="lineno">   89 </span>import Cardano.Mnemonic
-<span class="lineno">   90 </span>    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
-<span class="lineno">   91 </span>import Codec.Binary.Encoding
-<span class="lineno">   92 </span>    ( AbstractEncoding (..), encode )
-<span class="lineno">   93 </span>import Control.DeepSeq
-<span class="lineno">   94 </span>    ( NFData )
-<span class="lineno">   95 </span>import Control.Exception
-<span class="lineno">   96 </span>    ( Exception, displayException )
-<span class="lineno">   97 </span>import Control.Exception.Base
-<span class="lineno">   98 </span>    ( assert )
-<span class="lineno">   99 </span>import Control.Monad.Catch
-<span class="lineno">  100 </span>    ( MonadThrow, throwM )
-<span class="lineno">  101 </span>import Crypto.Hash
-<span class="lineno">  102 </span>    ( hash )
-<span class="lineno">  103 </span>import Crypto.Hash.Algorithms
-<span class="lineno">  104 </span>    ( Blake2b_256, SHA512 (..) )
-<span class="lineno">  105 </span>import Data.Aeson
-<span class="lineno">  106 </span>    ( ToJSON (..), (.=) )
-<span class="lineno">  107 </span>import Data.Bifunctor
-<span class="lineno">  108 </span>    ( bimap, first )
-<span class="lineno">  109 </span>import Data.ByteArray
-<span class="lineno">  110 </span>    ( ScrubbedBytes )
-<span class="lineno">  111 </span>import Data.ByteString
-<span class="lineno">  112 </span>    ( ByteString )
-<span class="lineno">  113 </span>import Data.Kind
-<span class="lineno">  114 </span>    ( Type )
-<span class="lineno">  115 </span>import Data.List
-<span class="lineno">  116 </span>    ( find )
-<span class="lineno">  117 </span>import Data.Word
-<span class="lineno">  118 </span>    ( Word32, Word8 )
-<span class="lineno">  119 </span>import Fmt
-<span class="lineno">  120 </span>    ( format )
+<span class="lineno">   89 </span>import Cardano.Address.Internal
+<span class="lineno">   90 </span>    ( DeserialiseFailure, WithErrorMessage (..) )
+<span class="lineno">   91 </span>import Cardano.Mnemonic
+<span class="lineno">   92 </span>    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy )
+<span class="lineno">   93 </span>import Codec.Binary.Encoding
+<span class="lineno">   94 </span>    ( AbstractEncoding (..), encode )
+<span class="lineno">   95 </span>import Control.DeepSeq
+<span class="lineno">   96 </span>    ( NFData )
+<span class="lineno">   97 </span>import Control.Exception
+<span class="lineno">   98 </span>    ( Exception, displayException )
+<span class="lineno">   99 </span>import Control.Exception.Base
+<span class="lineno">  100 </span>    ( assert )
+<span class="lineno">  101 </span>import Control.Monad.Catch
+<span class="lineno">  102 </span>    ( MonadThrow, throwM )
+<span class="lineno">  103 </span>import Crypto.Hash
+<span class="lineno">  104 </span>    ( hash )
+<span class="lineno">  105 </span>import Crypto.Hash.Algorithms
+<span class="lineno">  106 </span>    ( Blake2b_256, SHA512 (..) )
+<span class="lineno">  107 </span>import Data.Aeson
+<span class="lineno">  108 </span>    ( ToJSON (..), (.=) )
+<span class="lineno">  109 </span>import Data.Bifunctor
+<span class="lineno">  110 </span>    ( bimap, first )
+<span class="lineno">  111 </span>import Data.ByteArray
+<span class="lineno">  112 </span>    ( ScrubbedBytes )
+<span class="lineno">  113 </span>import Data.ByteString
+<span class="lineno">  114 </span>    ( ByteString )
+<span class="lineno">  115 </span>import Data.Kind
+<span class="lineno">  116 </span>    ( Type )
+<span class="lineno">  117 </span>import Data.List
+<span class="lineno">  118 </span>    ( find )
+<span class="lineno">  119 </span>import Data.Word
+<span class="lineno">  120 </span>    ( Word32, Word8 )
 <span class="lineno">  121 </span>import GHC.Generics
 <span class="lineno">  122 </span>    ( Generic )
 <span class="lineno">  123 </span>
@@ -330,298 +330,295 @@ span.spaces    { background: white }
 <span class="lineno">  311 </span>-- @since 3.0.0
 <span class="lineno">  312 </span>data ErrInspectAddress
 <span class="lineno">  313 </span>    = MissingExpectedDerivationPath
-<span class="lineno">  314 </span>    | forall e . (Exception e, Show e) =&gt; DeserialiseError e
+<span class="lineno">  314 </span>    | DeserialiseError DeserialiseFailure
 <span class="lineno">  315 </span>    | FailedToDecryptPath
-<span class="lineno">  316 </span>
-<span class="lineno">  317 </span><span class="decl"><span class="istickedoff">deriving instance Show ErrInspectAddress</span></span>
+<span class="lineno">  316 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  317 </span>    deriving <span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff"><span class="decl"><span class="nottickedoff">ToJSON</span></span></span></span></span></span></span></span> via WithErrorMessage ErrInspectAddress
 <span class="lineno">  318 </span>
-<span class="lineno">  319 </span>instance Eq ErrInspectAddress where
-<span class="lineno">  320 </span>    <span class="decl"><span class="istickedoff">a == b = show a == show b</span></span>
+<span class="lineno">  319 </span>instance Exception ErrInspectAddress where
+<span class="lineno">  320 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyErrInspectAddress</span></span>
 <span class="lineno">  321 </span>
-<span class="lineno">  322 </span>instance Exception ErrInspectAddress where
-<span class="lineno">  323 </span>  <span class="decl"><span class="nottickedoff">displayException = prettyErrInspectAddress</span></span>
-<span class="lineno">  324 </span>
-<span class="lineno">  325 </span>-- | Pretty-print an 'ErrInspectAddress'
-<span class="lineno">  326 </span>--
-<span class="lineno">  327 </span>-- @since 3.0.0
-<span class="lineno">  328 </span>prettyErrInspectAddress :: ErrInspectAddress -&gt; String
-<span class="lineno">  329 </span><span class="decl"><span class="istickedoff">prettyErrInspectAddress = \case</span>
-<span class="lineno">  330 </span><span class="spaces">    </span><span class="istickedoff">MissingExpectedDerivationPath -&gt;</span>
-<span class="lineno">  331 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&quot;Missing expected derivation path&quot;</span></span>
-<span class="lineno">  332 </span><span class="spaces">    </span><span class="istickedoff">DeserialiseError e -&gt;</span>
-<span class="lineno">  333 </span><span class="spaces">        </span><span class="istickedoff">format &quot;Deserialisation error (was: {})&quot; (show e)</span>
-<span class="lineno">  334 </span><span class="spaces">    </span><span class="istickedoff">FailedToDecryptPath -&gt;</span>
-<span class="lineno">  335 </span><span class="spaces">        </span><span class="istickedoff">&quot;Failed to decrypt derivation path&quot;</span></span>
-<span class="lineno">  336 </span>
-<span class="lineno">  337 </span>-- Determines whether an 'Address' is a Byron address.
+<span class="lineno">  322 </span>-- | Pretty-print an 'ErrInspectAddress'
+<span class="lineno">  323 </span>--
+<span class="lineno">  324 </span>-- @since 3.0.0
+<span class="lineno">  325 </span>prettyErrInspectAddress :: ErrInspectAddress -&gt; String
+<span class="lineno">  326 </span><span class="decl"><span class="istickedoff">prettyErrInspectAddress = \case</span>
+<span class="lineno">  327 </span><span class="spaces">    </span><span class="istickedoff">MissingExpectedDerivationPath -&gt;</span>
+<span class="lineno">  328 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&quot;Missing expected derivation path&quot;</span></span>
+<span class="lineno">  329 </span><span class="spaces">    </span><span class="istickedoff">DeserialiseError e -&gt;</span>
+<span class="lineno">  330 </span><span class="spaces">        </span><span class="istickedoff">displayException e</span>
+<span class="lineno">  331 </span><span class="spaces">    </span><span class="istickedoff">FailedToDecryptPath -&gt;</span>
+<span class="lineno">  332 </span><span class="spaces">        </span><span class="istickedoff">&quot;Failed to decrypt derivation path&quot;</span></span>
+<span class="lineno">  333 </span>
+<span class="lineno">  334 </span>-- Determines whether an 'Address' is a Byron address.
+<span class="lineno">  335 </span>--
+<span class="lineno">  336 </span>-- Returns a JSON object with information about the address, or throws
+<span class="lineno">  337 </span>-- 'ErrInspectAddress' if the address isn't a byron address.
 <span class="lineno">  338 </span>--
-<span class="lineno">  339 </span>-- Returns a JSON object with information about the address, or throws
-<span class="lineno">  340 </span>-- 'ErrInspectAddress' if the address isn't a byron address.
-<span class="lineno">  341 </span>--
-<span class="lineno">  342 </span>-- @since 2.0.0
-<span class="lineno">  343 </span>inspectByronAddress :: forall m. MonadThrow m =&gt; Maybe XPub -&gt; Address -&gt; m Json.Value
-<span class="lineno">  344 </span><span class="decl"><span class="nottickedoff">inspectByronAddress = inspectAddress</span></span>
-<span class="lineno">  345 </span>{-# DEPRECATED inspectByronAddress &quot;use qualified 'inspectAddress' instead.&quot; #-}
-<span class="lineno">  346 </span>
-<span class="lineno">  347 </span>-- | Determines whether an 'Address' is a Byron address.
+<span class="lineno">  339 </span>-- @since 2.0.0
+<span class="lineno">  340 </span>inspectByronAddress :: forall m. MonadThrow m =&gt; Maybe XPub -&gt; Address -&gt; m Json.Value
+<span class="lineno">  341 </span><span class="decl"><span class="nottickedoff">inspectByronAddress = inspectAddress</span></span>
+<span class="lineno">  342 </span>{-# DEPRECATED inspectByronAddress &quot;use qualified 'inspectAddress' instead.&quot; #-}
+<span class="lineno">  343 </span>
+<span class="lineno">  344 </span>-- | Determines whether an 'Address' is a Byron address.
+<span class="lineno">  345 </span>--
+<span class="lineno">  346 </span>-- Returns a JSON object with information about the address, or throws
+<span class="lineno">  347 </span>-- 'ErrInspectAddress' if the address isn't a byron address.
 <span class="lineno">  348 </span>--
-<span class="lineno">  349 </span>-- Returns a JSON object with information about the address, or throws
-<span class="lineno">  350 </span>-- 'ErrInspectAddress' if the address isn't a byron address.
-<span class="lineno">  351 </span>--
-<span class="lineno">  352 </span>-- @since 3.0.0
-<span class="lineno">  353 </span>inspectAddress :: forall m. MonadThrow m =&gt; Maybe XPub -&gt; Address -&gt; m Json.Value
-<span class="lineno">  354 </span><span class="decl"><span class="nottickedoff">inspectAddress mRootPub addr = either throwM (pure . toJSON) $</span>
-<span class="lineno">  355 </span><span class="spaces">    </span><span class="nottickedoff">eitherInspectAddress mRootPub addr</span></span>
-<span class="lineno">  356 </span>
-<span class="lineno">  357 </span>-- | Determines whether an 'Address' is a Byron address.
+<span class="lineno">  349 </span>-- @since 3.0.0
+<span class="lineno">  350 </span>inspectAddress :: forall m. MonadThrow m =&gt; Maybe XPub -&gt; Address -&gt; m Json.Value
+<span class="lineno">  351 </span><span class="decl"><span class="nottickedoff">inspectAddress mRootPub addr = either throwM (pure . toJSON) $</span>
+<span class="lineno">  352 </span><span class="spaces">    </span><span class="nottickedoff">eitherInspectAddress mRootPub addr</span></span>
+<span class="lineno">  353 </span>
+<span class="lineno">  354 </span>-- | Determines whether an 'Address' is a Byron address.
+<span class="lineno">  355 </span>--
+<span class="lineno">  356 </span>-- Returns either details about the 'Address', or 'ErrInspectAddress' if it's
+<span class="lineno">  357 </span>-- not a valid address.
 <span class="lineno">  358 </span>--
-<span class="lineno">  359 </span>-- Returns either details about the 'Address', or 'ErrInspectAddress' if it's
-<span class="lineno">  360 </span>-- not a valid address.
-<span class="lineno">  361 </span>--
-<span class="lineno">  362 </span>-- @since 3.4.0
-<span class="lineno">  363 </span>eitherInspectAddress :: Maybe XPub -&gt; Address -&gt; Either ErrInspectAddress AddressInfo
-<span class="lineno">  364 </span><span class="decl"><span class="istickedoff">eitherInspectAddress mRootPub addr = do</span>
-<span class="lineno">  365 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- first DeserialiseError $</span>
-<span class="lineno">  366 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
+<span class="lineno">  359 </span>-- @since 3.4.0
+<span class="lineno">  360 </span>eitherInspectAddress :: Maybe XPub -&gt; Address -&gt; Either ErrInspectAddress AddressInfo
+<span class="lineno">  361 </span><span class="decl"><span class="istickedoff">eitherInspectAddress mRootPub addr = do</span>
+<span class="lineno">  362 </span><span class="spaces">    </span><span class="istickedoff">payload &lt;- first DeserialiseError $</span>
+<span class="lineno">  363 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor CBOR.decodeAddressPayload bytes</span>
+<span class="lineno">  364 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  365 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- first <span class="nottickedoff">DeserialiseError</span> $</span>
+<span class="lineno">  366 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor decodePayload payload</span>
 <span class="lineno">  367 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  368 </span><span class="spaces">    </span><span class="istickedoff">(root, attrs) &lt;- first <span class="nottickedoff">DeserialiseError</span> $</span>
-<span class="lineno">  369 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor decodePayload payload</span>
-<span class="lineno">  370 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  371 </span><span class="spaces">    </span><span class="istickedoff">path &lt;- do</span>
-<span class="lineno">  372 </span><span class="spaces">        </span><span class="istickedoff">attr &lt;- maybe <span class="nottickedoff">(Left MissingExpectedDerivationPath)</span> Right $</span>
-<span class="lineno">  373 </span><span class="spaces">            </span><span class="istickedoff">find ((== 1) . fst) attrs</span>
-<span class="lineno">  374 </span><span class="spaces">        </span><span class="istickedoff">case mRootPub of</span>
-<span class="lineno">  375 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; Right $ EncryptedDerivationPath $ snd attr</span>
-<span class="lineno">  376 </span><span class="spaces">            </span><span class="istickedoff">Just rootPub -&gt; decryptPath attr rootPub</span>
+<span class="lineno">  368 </span><span class="spaces">    </span><span class="istickedoff">path &lt;- do</span>
+<span class="lineno">  369 </span><span class="spaces">        </span><span class="istickedoff">attr &lt;- maybe <span class="nottickedoff">(Left MissingExpectedDerivationPath)</span> Right $</span>
+<span class="lineno">  370 </span><span class="spaces">            </span><span class="istickedoff">find ((== 1) . fst) attrs</span>
+<span class="lineno">  371 </span><span class="spaces">        </span><span class="istickedoff">case mRootPub of</span>
+<span class="lineno">  372 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; Right $ EncryptedDerivationPath $ snd attr</span>
+<span class="lineno">  373 </span><span class="spaces">            </span><span class="istickedoff">Just rootPub -&gt; decryptPath attr rootPub</span>
+<span class="lineno">  374 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  375 </span><span class="spaces">    </span><span class="istickedoff">ntwrk &lt;- bimap <span class="nottickedoff">DeserialiseError</span> (fmap NetworkTag) $</span>
+<span class="lineno">  376 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
 <span class="lineno">  377 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  378 </span><span class="spaces">    </span><span class="istickedoff">ntwrk &lt;- bimap <span class="nottickedoff">DeserialiseError</span> (fmap NetworkTag) $</span>
-<span class="lineno">  379 </span><span class="spaces">        </span><span class="istickedoff">CBOR.deserialiseCbor CBOR.decodeProtocolMagicAttr payload</span>
-<span class="lineno">  380 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  381 </span><span class="spaces">    </span><span class="istickedoff">pure AddressInfo</span>
-<span class="lineno">  382 </span><span class="spaces">        </span><span class="istickedoff">{ infoAddressRoot = root</span>
-<span class="lineno">  383 </span><span class="spaces">        </span><span class="istickedoff">, infoPayload = path</span>
-<span class="lineno">  384 </span><span class="spaces">        </span><span class="istickedoff">, infoNetworkTag = ntwrk</span>
-<span class="lineno">  385 </span><span class="spaces">        </span><span class="istickedoff">}</span>
-<span class="lineno">  386 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  387 </span><span class="spaces">    </span><span class="istickedoff">bytes :: ByteString</span>
-<span class="lineno">  388 </span><span class="spaces">    </span><span class="istickedoff">bytes = unAddress addr</span>
-<span class="lineno">  389 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  390 </span><span class="spaces">    </span><span class="istickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
-<span class="lineno">  391 </span><span class="spaces">    </span><span class="istickedoff">decodePayload = do</span>
-<span class="lineno">  392 </span><span class="spaces">        </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
-<span class="lineno">  393 </span><span class="spaces">        </span><span class="istickedoff">root &lt;- CBOR.decodeBytes</span>
-<span class="lineno">  394 </span><span class="spaces">        </span><span class="istickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span>
-<span class="lineno">  395 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  396 </span><span class="spaces">    </span><span class="istickedoff">decryptPath :: (Word8, ByteString) -&gt; XPub -&gt; Either ErrInspectAddress PayloadInfo</span>
-<span class="lineno">  397 </span><span class="spaces">    </span><span class="istickedoff">decryptPath attr rootPub = do</span>
-<span class="lineno">  398 </span><span class="spaces">        </span><span class="istickedoff">let pwd = hdPassphrase rootPub</span>
-<span class="lineno">  399 </span><span class="spaces">        </span><span class="istickedoff">path &lt;- first <span class="nottickedoff">(const FailedToDecryptPath)</span> $</span>
-<span class="lineno">  400 </span><span class="spaces">            </span><span class="istickedoff">CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) <span class="nottickedoff">mempty</span></span>
-<span class="lineno">  401 </span><span class="spaces">        </span><span class="istickedoff">case path of</span>
-<span class="lineno">  402 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; Left FailedToDecryptPath</span>
-<span class="lineno">  403 </span><span class="spaces">            </span><span class="istickedoff">Just (accountIndex, addressIndex) -&gt; Right PayloadDerivationPath{..}</span></span>
-<span class="lineno">  404 </span>
-<span class="lineno">  405 </span>-- | The result of 'eitherInspectAddress' for Byron addresses.
-<span class="lineno">  406 </span>--
-<span class="lineno">  407 </span>-- @since 3.4.0
-<span class="lineno">  408 </span>data AddressInfo = AddressInfo
-<span class="lineno">  409 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoAddressRoot</span></span></span> :: !ByteString
-<span class="lineno">  410 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoPayload</span></span></span> :: !PayloadInfo
-<span class="lineno">  411 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoNetworkTag</span></span></span> :: !(Maybe NetworkTag)
-<span class="lineno">  412 </span>    } deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
-<span class="lineno">  413 </span>
-<span class="lineno">  414 </span>-- | The derivation path in a Byron address payload.
-<span class="lineno">  415 </span>--
-<span class="lineno">  416 </span>-- @since 3.4.0
-<span class="lineno">  417 </span>data PayloadInfo
-<span class="lineno">  418 </span>    = PayloadDerivationPath
-<span class="lineno">  419 </span>        { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">accountIndex</span></span></span> :: !Word32
-<span class="lineno">  420 </span>        , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">addressIndex</span></span></span> :: !Word32
+<span class="lineno">  378 </span><span class="spaces">    </span><span class="istickedoff">pure AddressInfo</span>
+<span class="lineno">  379 </span><span class="spaces">        </span><span class="istickedoff">{ infoAddressRoot = root</span>
+<span class="lineno">  380 </span><span class="spaces">        </span><span class="istickedoff">, infoPayload = path</span>
+<span class="lineno">  381 </span><span class="spaces">        </span><span class="istickedoff">, infoNetworkTag = ntwrk</span>
+<span class="lineno">  382 </span><span class="spaces">        </span><span class="istickedoff">}</span>
+<span class="lineno">  383 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  384 </span><span class="spaces">    </span><span class="istickedoff">bytes :: ByteString</span>
+<span class="lineno">  385 </span><span class="spaces">    </span><span class="istickedoff">bytes = unAddress addr</span>
+<span class="lineno">  386 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  387 </span><span class="spaces">    </span><span class="istickedoff">decodePayload :: forall s. CBOR.Decoder s (ByteString, [(Word8, ByteString)])</span>
+<span class="lineno">  388 </span><span class="spaces">    </span><span class="istickedoff">decodePayload = do</span>
+<span class="lineno">  389 </span><span class="spaces">        </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  390 </span><span class="spaces">        </span><span class="istickedoff">root &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  391 </span><span class="spaces">        </span><span class="istickedoff">(root,) &lt;$&gt; CBOR.decodeAllAttributes</span>
+<span class="lineno">  392 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  393 </span><span class="spaces">    </span><span class="istickedoff">decryptPath :: (Word8, ByteString) -&gt; XPub -&gt; Either ErrInspectAddress PayloadInfo</span>
+<span class="lineno">  394 </span><span class="spaces">    </span><span class="istickedoff">decryptPath attr rootPub = do</span>
+<span class="lineno">  395 </span><span class="spaces">        </span><span class="istickedoff">let pwd = hdPassphrase rootPub</span>
+<span class="lineno">  396 </span><span class="spaces">        </span><span class="istickedoff">path &lt;- first <span class="nottickedoff">(const FailedToDecryptPath)</span> $</span>
+<span class="lineno">  397 </span><span class="spaces">            </span><span class="istickedoff">CBOR.deserialiseCbor (CBOR.decodeDerivationPathAttr pwd [attr]) <span class="nottickedoff">mempty</span></span>
+<span class="lineno">  398 </span><span class="spaces">        </span><span class="istickedoff">case path of</span>
+<span class="lineno">  399 </span><span class="spaces">            </span><span class="istickedoff">Nothing -&gt; Left FailedToDecryptPath</span>
+<span class="lineno">  400 </span><span class="spaces">            </span><span class="istickedoff">Just (accountIndex, addressIndex) -&gt; Right PayloadDerivationPath{..}</span></span>
+<span class="lineno">  401 </span>
+<span class="lineno">  402 </span>-- | The result of 'eitherInspectAddress' for Byron addresses.
+<span class="lineno">  403 </span>--
+<span class="lineno">  404 </span>-- @since 3.4.0
+<span class="lineno">  405 </span>data AddressInfo = AddressInfo
+<span class="lineno">  406 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoAddressRoot</span></span></span> :: !ByteString
+<span class="lineno">  407 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoPayload</span></span></span> :: !PayloadInfo
+<span class="lineno">  408 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">infoNetworkTag</span></span></span> :: !(Maybe NetworkTag)
+<span class="lineno">  409 </span>    } deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  410 </span>
+<span class="lineno">  411 </span>-- | The derivation path in a Byron address payload.
+<span class="lineno">  412 </span>--
+<span class="lineno">  413 </span>-- @since 3.4.0
+<span class="lineno">  414 </span>data PayloadInfo
+<span class="lineno">  415 </span>    = PayloadDerivationPath
+<span class="lineno">  416 </span>        { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">accountIndex</span></span></span> :: !Word32
+<span class="lineno">  417 </span>        , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">addressIndex</span></span></span> :: !Word32
+<span class="lineno">  418 </span>        }
+<span class="lineno">  419 </span>    | EncryptedDerivationPath
+<span class="lineno">  420 </span>        { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">encryptedDerivationPath</span></span></span> :: !ByteString
 <span class="lineno">  421 </span>        }
-<span class="lineno">  422 </span>    | EncryptedDerivationPath
-<span class="lineno">  423 </span>        { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">encryptedDerivationPath</span></span></span> :: !ByteString
-<span class="lineno">  424 </span>        }
-<span class="lineno">  425 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
-<span class="lineno">  426 </span>
-<span class="lineno">  427 </span>instance ToJSON AddressInfo where
-<span class="lineno">  428 </span>    <span class="decl"><span class="istickedoff">toJSON AddressInfo{..} = Json.object</span>
-<span class="lineno">  429 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;address_root&quot;    .= T.decodeUtf8 (encode EBase16 infoAddressRoot)</span>
-<span class="lineno">  430 </span><span class="spaces">        </span><span class="istickedoff">, &quot;derivation_path&quot; .= infoPayload</span>
-<span class="lineno">  431 </span><span class="spaces">        </span><span class="istickedoff">, &quot;network_tag&quot;     .= maybe Json.Null toJSON infoNetworkTag</span>
-<span class="lineno">  432 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
-<span class="lineno">  433 </span>
-<span class="lineno">  434 </span>instance ToJSON PayloadInfo where
-<span class="lineno">  435 </span>    <span class="decl"><span class="istickedoff">toJSON PayloadDerivationPath{..} = Json.object</span>
-<span class="lineno">  436 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;account_index&quot; .= prettyIndex accountIndex</span>
-<span class="lineno">  437 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_index&quot; .= prettyIndex addressIndex</span>
-<span class="lineno">  438 </span><span class="spaces">        </span><span class="istickedoff">]</span>
-<span class="lineno">  439 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  440 </span><span class="spaces">        </span><span class="istickedoff">prettyIndex :: Word32 -&gt; String</span>
-<span class="lineno">  441 </span><span class="spaces">        </span><span class="istickedoff">prettyIndex ix</span>
-<span class="lineno">  442 </span><span class="spaces">            </span><span class="istickedoff">| <span class="tickonlytrue">ix &gt;= firstHardened</span> = show (ix - firstHardened) &lt;&gt; &quot;H&quot;</span>
-<span class="lineno">  443 </span><span class="spaces">            </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">show ix</span></span>
-<span class="lineno">  444 </span><span class="spaces">          </span><span class="istickedoff">where</span>
-<span class="lineno">  445 </span><span class="spaces">            </span><span class="istickedoff">firstHardened = 0x80000000</span>
-<span class="lineno">  446 </span><span class="spaces">    </span><span class="istickedoff">toJSON EncryptedDerivationPath{..} = Json.String $</span>
-<span class="lineno">  447 </span><span class="spaces">        </span><span class="istickedoff">T.decodeUtf8 $ encode EBase16 encryptedDerivationPath</span></span>
-<span class="lineno">  448 </span>
-<span class="lineno">  449 </span>instance Internal.PaymentAddress Byron where
-<span class="lineno">  450 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
-<span class="lineno">  451 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.toStrictByteString</span>
-<span class="lineno">  452 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.encodeAddress (getKey k) attrs</span>
-<span class="lineno">  453 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  454 </span><span class="spaces">        </span><span class="istickedoff">(acctIx, addrIx) = bimap indexToWord32 indexToWord32 $ derivationPath k</span>
-<span class="lineno">  455 </span><span class="spaces">        </span><span class="istickedoff">pwd = payloadPassphrase k</span>
-<span class="lineno">  456 </span><span class="spaces">        </span><span class="istickedoff">NetworkTag magic = networkTag @Byron discrimination</span>
-<span class="lineno">  457 </span><span class="spaces">        </span><span class="istickedoff">attrs = case addressDiscrimination @Byron discrimination of</span>
-<span class="lineno">  458 </span><span class="spaces">            </span><span class="istickedoff">RequiresNetworkTag -&gt;</span>
-<span class="lineno">  459 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeDerivationPathAttr pwd acctIx addrIx</span>
-<span class="lineno">  460 </span><span class="spaces">                </span><span class="istickedoff">, CBOR.encodeProtocolMagicAttr magic</span>
-<span class="lineno">  461 </span><span class="spaces">                </span><span class="istickedoff">]</span>
-<span class="lineno">  462 </span><span class="spaces">            </span><span class="istickedoff">RequiresNoTag -&gt;</span>
-<span class="lineno">  463 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeDerivationPathAttr pwd acctIx addrIx</span>
-<span class="lineno">  464 </span><span class="spaces">                </span><span class="istickedoff">]</span></span>
-<span class="lineno">  465 </span>
-<span class="lineno">  466 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  422 </span>    deriving (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  423 </span>
+<span class="lineno">  424 </span>instance ToJSON AddressInfo where
+<span class="lineno">  425 </span>    <span class="decl"><span class="istickedoff">toJSON AddressInfo{..} = Json.object</span>
+<span class="lineno">  426 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;address_root&quot;    .= T.decodeUtf8 (encode EBase16 infoAddressRoot)</span>
+<span class="lineno">  427 </span><span class="spaces">        </span><span class="istickedoff">, &quot;derivation_path&quot; .= infoPayload</span>
+<span class="lineno">  428 </span><span class="spaces">        </span><span class="istickedoff">, &quot;network_tag&quot;     .= maybe Json.Null toJSON infoNetworkTag</span>
+<span class="lineno">  429 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">  430 </span>
+<span class="lineno">  431 </span>instance ToJSON PayloadInfo where
+<span class="lineno">  432 </span>    <span class="decl"><span class="istickedoff">toJSON PayloadDerivationPath{..} = Json.object</span>
+<span class="lineno">  433 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;account_index&quot; .= prettyIndex accountIndex</span>
+<span class="lineno">  434 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_index&quot; .= prettyIndex addressIndex</span>
+<span class="lineno">  435 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  436 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  437 </span><span class="spaces">        </span><span class="istickedoff">prettyIndex :: Word32 -&gt; String</span>
+<span class="lineno">  438 </span><span class="spaces">        </span><span class="istickedoff">prettyIndex ix</span>
+<span class="lineno">  439 </span><span class="spaces">            </span><span class="istickedoff">| <span class="tickonlytrue">ix &gt;= firstHardened</span> = show (ix - firstHardened) &lt;&gt; &quot;H&quot;</span>
+<span class="lineno">  440 </span><span class="spaces">            </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> = <span class="nottickedoff">show ix</span></span>
+<span class="lineno">  441 </span><span class="spaces">          </span><span class="istickedoff">where</span>
+<span class="lineno">  442 </span><span class="spaces">            </span><span class="istickedoff">firstHardened = 0x80000000</span>
+<span class="lineno">  443 </span><span class="spaces">    </span><span class="istickedoff">toJSON EncryptedDerivationPath{..} = Json.String $</span>
+<span class="lineno">  444 </span><span class="spaces">        </span><span class="istickedoff">T.decodeUtf8 $ encode EBase16 encryptedDerivationPath</span></span>
+<span class="lineno">  445 </span>
+<span class="lineno">  446 </span>instance Internal.PaymentAddress Byron where
+<span class="lineno">  447 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
+<span class="lineno">  448 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.toStrictByteString</span>
+<span class="lineno">  449 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.encodeAddress (getKey k) attrs</span>
+<span class="lineno">  450 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  451 </span><span class="spaces">        </span><span class="istickedoff">(acctIx, addrIx) = bimap indexToWord32 indexToWord32 $ derivationPath k</span>
+<span class="lineno">  452 </span><span class="spaces">        </span><span class="istickedoff">pwd = payloadPassphrase k</span>
+<span class="lineno">  453 </span><span class="spaces">        </span><span class="istickedoff">NetworkTag magic = networkTag @Byron discrimination</span>
+<span class="lineno">  454 </span><span class="spaces">        </span><span class="istickedoff">attrs = case addressDiscrimination @Byron discrimination of</span>
+<span class="lineno">  455 </span><span class="spaces">            </span><span class="istickedoff">RequiresNetworkTag -&gt;</span>
+<span class="lineno">  456 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeDerivationPathAttr pwd acctIx addrIx</span>
+<span class="lineno">  457 </span><span class="spaces">                </span><span class="istickedoff">, CBOR.encodeProtocolMagicAttr magic</span>
+<span class="lineno">  458 </span><span class="spaces">                </span><span class="istickedoff">]</span>
+<span class="lineno">  459 </span><span class="spaces">            </span><span class="istickedoff">RequiresNoTag -&gt;</span>
+<span class="lineno">  460 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeDerivationPathAttr pwd acctIx addrIx</span>
+<span class="lineno">  461 </span><span class="spaces">                </span><span class="istickedoff">]</span></span>
+<span class="lineno">  462 </span>
+<span class="lineno">  463 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  464 </span>--
+<span class="lineno">  465 </span>-- | Convert a public key to a payment 'Address' valid for the given
+<span class="lineno">  466 </span>-- network discrimination.
 <span class="lineno">  467 </span>--
-<span class="lineno">  468 </span>-- | Convert a public key to a payment 'Address' valid for the given
-<span class="lineno">  469 </span>-- network discrimination.
-<span class="lineno">  470 </span>--
-<span class="lineno">  471 </span>-- @since 1.0.0
-<span class="lineno">  472 </span>paymentAddress
-<span class="lineno">  473 </span>    :: NetworkDiscriminant Byron
-<span class="lineno">  474 </span>    -&gt; Byron 'PaymentK XPub
-<span class="lineno">  475 </span>    -&gt; Address
-<span class="lineno">  476 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
-<span class="lineno">  477 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
-<span class="lineno">  478 </span>
-<span class="lineno">  479 </span>--
-<span class="lineno">  480 </span>-- Network Discrimination
-<span class="lineno">  481 </span>--
-<span class="lineno">  482 </span>
-<span class="lineno">  483 </span>instance HasNetworkDiscriminant Byron where
-<span class="lineno">  484 </span>    type NetworkDiscriminant Byron = (AddressDiscrimination, NetworkTag)
-<span class="lineno">  485 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination = fst</span></span>
-<span class="lineno">  486 </span>    <span class="decl"><span class="istickedoff">networkTag = snd</span></span>
-<span class="lineno">  487 </span>
-<span class="lineno">  488 </span>-- | 'NetworkDiscriminant' for Cardano MainNet &amp; Byron
-<span class="lineno">  489 </span>--
-<span class="lineno">  490 </span>-- @since 2.0.0
-<span class="lineno">  491 </span>byronMainnet :: NetworkDiscriminant Byron
-<span class="lineno">  492 </span><span class="decl"><span class="istickedoff">byronMainnet = (RequiresNoTag, NetworkTag 764824073)</span></span>
-<span class="lineno">  493 </span>
-<span class="lineno">  494 </span>-- | 'NetworkDiscriminant' for Cardano Staging &amp; Byron
-<span class="lineno">  495 </span>--
-<span class="lineno">  496 </span>-- @since 2.0.0
-<span class="lineno">  497 </span>byronStaging :: NetworkDiscriminant Byron
-<span class="lineno">  498 </span><span class="decl"><span class="istickedoff">byronStaging = (RequiresNetworkTag, NetworkTag 633343913)</span></span>
-<span class="lineno">  499 </span>
-<span class="lineno">  500 </span>-- | 'NetworkDiscriminant' for Cardano TestNet &amp; Byron
-<span class="lineno">  501 </span>--
-<span class="lineno">  502 </span>-- @since 2.0.0
-<span class="lineno">  503 </span>byronTestnet :: NetworkDiscriminant Byron
-<span class="lineno">  504 </span><span class="decl"><span class="istickedoff">byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)</span></span>
-<span class="lineno">  505 </span>
-<span class="lineno">  506 </span>--
-<span class="lineno">  507 </span>-- Unsafe
+<span class="lineno">  468 </span>-- @since 1.0.0
+<span class="lineno">  469 </span>paymentAddress
+<span class="lineno">  470 </span>    :: NetworkDiscriminant Byron
+<span class="lineno">  471 </span>    -&gt; Byron 'PaymentK XPub
+<span class="lineno">  472 </span>    -&gt; Address
+<span class="lineno">  473 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  474 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  475 </span>
+<span class="lineno">  476 </span>--
+<span class="lineno">  477 </span>-- Network Discrimination
+<span class="lineno">  478 </span>--
+<span class="lineno">  479 </span>
+<span class="lineno">  480 </span>instance HasNetworkDiscriminant Byron where
+<span class="lineno">  481 </span>    type NetworkDiscriminant Byron = (AddressDiscrimination, NetworkTag)
+<span class="lineno">  482 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination = fst</span></span>
+<span class="lineno">  483 </span>    <span class="decl"><span class="istickedoff">networkTag = snd</span></span>
+<span class="lineno">  484 </span>
+<span class="lineno">  485 </span>-- | 'NetworkDiscriminant' for Cardano MainNet &amp; Byron
+<span class="lineno">  486 </span>--
+<span class="lineno">  487 </span>-- @since 2.0.0
+<span class="lineno">  488 </span>byronMainnet :: NetworkDiscriminant Byron
+<span class="lineno">  489 </span><span class="decl"><span class="istickedoff">byronMainnet = (RequiresNoTag, NetworkTag 764824073)</span></span>
+<span class="lineno">  490 </span>
+<span class="lineno">  491 </span>-- | 'NetworkDiscriminant' for Cardano Staging &amp; Byron
+<span class="lineno">  492 </span>--
+<span class="lineno">  493 </span>-- @since 2.0.0
+<span class="lineno">  494 </span>byronStaging :: NetworkDiscriminant Byron
+<span class="lineno">  495 </span><span class="decl"><span class="istickedoff">byronStaging = (RequiresNetworkTag, NetworkTag 633343913)</span></span>
+<span class="lineno">  496 </span>
+<span class="lineno">  497 </span>-- | 'NetworkDiscriminant' for Cardano TestNet &amp; Byron
+<span class="lineno">  498 </span>--
+<span class="lineno">  499 </span>-- @since 2.0.0
+<span class="lineno">  500 </span>byronTestnet :: NetworkDiscriminant Byron
+<span class="lineno">  501 </span><span class="decl"><span class="istickedoff">byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)</span></span>
+<span class="lineno">  502 </span>
+<span class="lineno">  503 </span>--
+<span class="lineno">  504 </span>-- Unsafe
+<span class="lineno">  505 </span>--
+<span class="lineno">  506 </span>
+<span class="lineno">  507 </span>-- | Backdoor for generating a new key from a raw 'XPrv'.
 <span class="lineno">  508 </span>--
-<span class="lineno">  509 </span>
-<span class="lineno">  510 </span>-- | Backdoor for generating a new key from a raw 'XPrv'.
-<span class="lineno">  511 </span>--
-<span class="lineno">  512 </span>-- Note that the @depth@ is left open so that the caller gets to decide what type
-<span class="lineno">  513 </span>-- of key this is. This is mostly for testing, in practice, seeds are used to
-<span class="lineno">  514 </span>-- represent root keys, and one should 'genMasterKeyFromXPrv'
+<span class="lineno">  509 </span>-- Note that the @depth@ is left open so that the caller gets to decide what type
+<span class="lineno">  510 </span>-- of key this is. This is mostly for testing, in practice, seeds are used to
+<span class="lineno">  511 </span>-- represent root keys, and one should 'genMasterKeyFromXPrv'
+<span class="lineno">  512 </span>--
+<span class="lineno">  513 </span>-- The first argument is a type-family 'DerivationPath' and its type depends on
+<span class="lineno">  514 </span>-- the 'depth' of the key.
 <span class="lineno">  515 </span>--
-<span class="lineno">  516 </span>-- The first argument is a type-family 'DerivationPath' and its type depends on
-<span class="lineno">  517 </span>-- the 'depth' of the key.
-<span class="lineno">  518 </span>--
-<span class="lineno">  519 </span>-- __examples:__
+<span class="lineno">  516 </span>-- __examples:__
+<span class="lineno">  517 </span>--
+<span class="lineno">  518 </span>-- &gt;&gt;&gt; liftXPrv rootPrv () prv
+<span class="lineno">  519 </span>-- _ :: Byron RootK XPrv
 <span class="lineno">  520 </span>--
-<span class="lineno">  521 </span>-- &gt;&gt;&gt; liftXPrv rootPrv () prv
-<span class="lineno">  522 </span>-- _ :: Byron RootK XPrv
+<span class="lineno">  521 </span>-- &gt;&gt;&gt; liftXPrv rootPrv minBound prv
+<span class="lineno">  522 </span>-- _ :: Byron AccountK XPrv
 <span class="lineno">  523 </span>--
-<span class="lineno">  524 </span>-- &gt;&gt;&gt; liftXPrv rootPrv minBound prv
-<span class="lineno">  525 </span>-- _ :: Byron AccountK XPrv
+<span class="lineno">  524 </span>-- &gt;&gt;&gt; liftXPrv rootPrv (minBound, minBound) prv
+<span class="lineno">  525 </span>-- _ :: Byron PaymentK XPrv
 <span class="lineno">  526 </span>--
-<span class="lineno">  527 </span>-- &gt;&gt;&gt; liftXPrv rootPrv (minBound, minBound) prv
-<span class="lineno">  528 </span>-- _ :: Byron PaymentK XPrv
-<span class="lineno">  529 </span>--
-<span class="lineno">  530 </span>-- @since 2.0.0
-<span class="lineno">  531 </span>liftXPrv
-<span class="lineno">  532 </span>    :: XPub -- ^ A root public key
-<span class="lineno">  533 </span>    -&gt; DerivationPath depth
-<span class="lineno">  534 </span>    -&gt; XPrv
-<span class="lineno">  535 </span>    -&gt; Byron depth XPrv
-<span class="lineno">  536 </span><span class="decl"><span class="istickedoff">liftXPrv rootPub derivationPath getKey = Byron</span>
-<span class="lineno">  537 </span><span class="spaces">    </span><span class="istickedoff">{ getKey</span>
-<span class="lineno">  538 </span><span class="spaces">    </span><span class="istickedoff">, <span class="nottickedoff">derivationPath</span></span>
-<span class="lineno">  539 </span><span class="spaces">    </span><span class="istickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
-<span class="lineno">  540 </span><span class="spaces">    </span><span class="istickedoff">}</span></span>
-<span class="lineno">  541 </span>{-# DEPRECATED liftXPrv &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
-<span class="lineno">  542 </span>
-<span class="lineno">  543 </span>-- | Backdoor for generating a new key from a raw 'XPub'.
-<span class="lineno">  544 </span>--
-<span class="lineno">  545 </span>-- Note that the @depth@ is left open so that the caller gets to decide what type
-<span class="lineno">  546 </span>-- of key this is. This is mostly for testing, in practice, seeds are used to
-<span class="lineno">  547 </span>-- represent root keys, and one should 'genMasterKeyFromXPrv'
-<span class="lineno">  548 </span>--
-<span class="lineno">  549 </span>-- see also 'liftXPrv'
-<span class="lineno">  550 </span>--
-<span class="lineno">  551 </span>-- @since 2.0.0
-<span class="lineno">  552 </span>liftXPub
-<span class="lineno">  553 </span>    :: XPub -- ^ A root public key
-<span class="lineno">  554 </span>    -&gt; DerivationPath depth
-<span class="lineno">  555 </span>    -&gt; XPub
-<span class="lineno">  556 </span>    -&gt; Byron depth XPub
-<span class="lineno">  557 </span><span class="decl"><span class="istickedoff">liftXPub rootPub derivationPath getKey = Byron</span>
-<span class="lineno">  558 </span><span class="spaces">    </span><span class="istickedoff">{ getKey</span>
-<span class="lineno">  559 </span><span class="spaces">    </span><span class="istickedoff">, derivationPath</span>
-<span class="lineno">  560 </span><span class="spaces">    </span><span class="istickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
-<span class="lineno">  561 </span><span class="spaces">    </span><span class="istickedoff">}</span></span>
-<span class="lineno">  562 </span>{-# DEPRECATED liftXPub &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
-<span class="lineno">  563 </span>
-<span class="lineno">  564 </span>--
-<span class="lineno">  565 </span>-- Internal
-<span class="lineno">  566 </span>--
-<span class="lineno">  567 </span>
-<span class="lineno">  568 </span>-- The amount of entropy carried by a BIP-39 12-word mnemonic is 16 bytes.
-<span class="lineno">  569 </span>minSeedLengthBytes :: Int
-<span class="lineno">  570 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
-<span class="lineno">  571 </span>
-<span class="lineno">  572 </span>-- Hash the seed entropy (generated from mnemonic) used to initiate a HD
-<span class="lineno">  573 </span>-- wallet. This increases the key length to 34 bytes, selectKey is greater than the
-<span class="lineno">  574 </span>-- minimum for 'generate' (32 bytes).
+<span class="lineno">  527 </span>-- @since 2.0.0
+<span class="lineno">  528 </span>liftXPrv
+<span class="lineno">  529 </span>    :: XPub -- ^ A root public key
+<span class="lineno">  530 </span>    -&gt; DerivationPath depth
+<span class="lineno">  531 </span>    -&gt; XPrv
+<span class="lineno">  532 </span>    -&gt; Byron depth XPrv
+<span class="lineno">  533 </span><span class="decl"><span class="istickedoff">liftXPrv rootPub derivationPath getKey = Byron</span>
+<span class="lineno">  534 </span><span class="spaces">    </span><span class="istickedoff">{ getKey</span>
+<span class="lineno">  535 </span><span class="spaces">    </span><span class="istickedoff">, <span class="nottickedoff">derivationPath</span></span>
+<span class="lineno">  536 </span><span class="spaces">    </span><span class="istickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
+<span class="lineno">  537 </span><span class="spaces">    </span><span class="istickedoff">}</span></span>
+<span class="lineno">  538 </span>{-# DEPRECATED liftXPrv &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
+<span class="lineno">  539 </span>
+<span class="lineno">  540 </span>-- | Backdoor for generating a new key from a raw 'XPub'.
+<span class="lineno">  541 </span>--
+<span class="lineno">  542 </span>-- Note that the @depth@ is left open so that the caller gets to decide what type
+<span class="lineno">  543 </span>-- of key this is. This is mostly for testing, in practice, seeds are used to
+<span class="lineno">  544 </span>-- represent root keys, and one should 'genMasterKeyFromXPrv'
+<span class="lineno">  545 </span>--
+<span class="lineno">  546 </span>-- see also 'liftXPrv'
+<span class="lineno">  547 </span>--
+<span class="lineno">  548 </span>-- @since 2.0.0
+<span class="lineno">  549 </span>liftXPub
+<span class="lineno">  550 </span>    :: XPub -- ^ A root public key
+<span class="lineno">  551 </span>    -&gt; DerivationPath depth
+<span class="lineno">  552 </span>    -&gt; XPub
+<span class="lineno">  553 </span>    -&gt; Byron depth XPub
+<span class="lineno">  554 </span><span class="decl"><span class="istickedoff">liftXPub rootPub derivationPath getKey = Byron</span>
+<span class="lineno">  555 </span><span class="spaces">    </span><span class="istickedoff">{ getKey</span>
+<span class="lineno">  556 </span><span class="spaces">    </span><span class="istickedoff">, derivationPath</span>
+<span class="lineno">  557 </span><span class="spaces">    </span><span class="istickedoff">, payloadPassphrase = hdPassphrase rootPub</span>
+<span class="lineno">  558 </span><span class="spaces">    </span><span class="istickedoff">}</span></span>
+<span class="lineno">  559 </span>{-# DEPRECATED liftXPub &quot;see 'Cardano.Address.Style.Icarus.Icarus'&quot; #-}
+<span class="lineno">  560 </span>
+<span class="lineno">  561 </span>--
+<span class="lineno">  562 </span>-- Internal
+<span class="lineno">  563 </span>--
+<span class="lineno">  564 </span>
+<span class="lineno">  565 </span>-- The amount of entropy carried by a BIP-39 12-word mnemonic is 16 bytes.
+<span class="lineno">  566 </span>minSeedLengthBytes :: Int
+<span class="lineno">  567 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
+<span class="lineno">  568 </span>
+<span class="lineno">  569 </span>-- Hash the seed entropy (generated from mnemonic) used to initiate a HD
+<span class="lineno">  570 </span>-- wallet. This increases the key length to 34 bytes, selectKey is greater than the
+<span class="lineno">  571 </span>-- minimum for 'generate' (32 bytes).
+<span class="lineno">  572 </span>--
+<span class="lineno">  573 </span>-- Note that our current implementation deviates from BIP-39 because we use a
+<span class="lineno">  574 </span>-- hash function (Blake2b) rather than key stretching with PBKDF2.
 <span class="lineno">  575 </span>--
-<span class="lineno">  576 </span>-- Note that our current implementation deviates from BIP-39 because we use a
-<span class="lineno">  577 </span>-- hash function (Blake2b) rather than key stretching with PBKDF2.
-<span class="lineno">  578 </span>--
-<span class="lineno">  579 </span>-- There are two methods of hashing the seed entropy, for different use cases.
+<span class="lineno">  576 </span>-- There are two methods of hashing the seed entropy, for different use cases.
+<span class="lineno">  577 </span>--
+<span class="lineno">  578 </span>-- 1. Normal random derivation wallet seeds. The seed entropy is hashed using
+<span class="lineno">  579 </span>--    Blake2b_256, inside a double CBOR serialization sandwich.
 <span class="lineno">  580 </span>--
-<span class="lineno">  581 </span>-- 1. Normal random derivation wallet seeds. The seed entropy is hashed using
-<span class="lineno">  582 </span>--    Blake2b_256, inside a double CBOR serialization sandwich.
-<span class="lineno">  583 </span>--
-<span class="lineno">  584 </span>-- 2. Seeds for redeeming paper wallets. The seed entropy is hashed using
-<span class="lineno">  585 </span>--    Blake2b_256, without any serialization.
-<span class="lineno">  586 </span>hashSeed :: ScrubbedBytes -&gt; ScrubbedBytes
-<span class="lineno">  587 </span><span class="decl"><span class="istickedoff">hashSeed = serialize . blake2b256 . serialize</span>
-<span class="lineno">  588 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  589 </span><span class="spaces">    </span><span class="istickedoff">serialize = BA.convert . cbor . BA.convert</span>
-<span class="lineno">  590 </span><span class="spaces">    </span><span class="istickedoff">cbor = CBOR.toStrictByteString . CBOR.encodeBytes</span></span>
-<span class="lineno">  591 </span>
-<span class="lineno">  592 </span>-- Hash a byte string through blake2b 256
-<span class="lineno">  593 </span>blake2b256 :: ScrubbedBytes -&gt; ScrubbedBytes
-<span class="lineno">  594 </span><span class="decl"><span class="istickedoff">blake2b256 = BA.convert . hash @ScrubbedBytes @Blake2b_256</span></span>
-<span class="lineno">  595 </span>
-<span class="lineno">  596 </span>-- Derive a symmetric key for encrypting and authenticating the address
-<span class="lineno">  597 </span>-- derivation path. PBKDF2 encryption using HMAC with the hash algorithm SHA512
-<span class="lineno">  598 </span>-- is employed.
-<span class="lineno">  599 </span>hdPassphrase :: XPub -&gt; ScrubbedBytes
-<span class="lineno">  600 </span><span class="decl"><span class="istickedoff">hdPassphrase masterKey =</span>
-<span class="lineno">  601 </span><span class="spaces">    </span><span class="istickedoff">PBKDF2.generate</span>
-<span class="lineno">  602 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
-<span class="lineno">  603 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.Parameters 500 32)</span>
-<span class="lineno">  604 </span><span class="spaces">    </span><span class="istickedoff">(xpubToBytes masterKey)</span>
-<span class="lineno">  605 </span><span class="spaces">    </span><span class="istickedoff">(&quot;address-hashing&quot; :: ByteString)</span></span>
+<span class="lineno">  581 </span>-- 2. Seeds for redeeming paper wallets. The seed entropy is hashed using
+<span class="lineno">  582 </span>--    Blake2b_256, without any serialization.
+<span class="lineno">  583 </span>hashSeed :: ScrubbedBytes -&gt; ScrubbedBytes
+<span class="lineno">  584 </span><span class="decl"><span class="istickedoff">hashSeed = serialize . blake2b256 . serialize</span>
+<span class="lineno">  585 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  586 </span><span class="spaces">    </span><span class="istickedoff">serialize = BA.convert . cbor . BA.convert</span>
+<span class="lineno">  587 </span><span class="spaces">    </span><span class="istickedoff">cbor = CBOR.toStrictByteString . CBOR.encodeBytes</span></span>
+<span class="lineno">  588 </span>
+<span class="lineno">  589 </span>-- Hash a byte string through blake2b 256
+<span class="lineno">  590 </span>blake2b256 :: ScrubbedBytes -&gt; ScrubbedBytes
+<span class="lineno">  591 </span><span class="decl"><span class="istickedoff">blake2b256 = BA.convert . hash @ScrubbedBytes @Blake2b_256</span></span>
+<span class="lineno">  592 </span>
+<span class="lineno">  593 </span>-- Derive a symmetric key for encrypting and authenticating the address
+<span class="lineno">  594 </span>-- derivation path. PBKDF2 encryption using HMAC with the hash algorithm SHA512
+<span class="lineno">  595 </span>-- is employed.
+<span class="lineno">  596 </span>hdPassphrase :: XPub -&gt; ScrubbedBytes
+<span class="lineno">  597 </span><span class="decl"><span class="istickedoff">hdPassphrase masterKey =</span>
+<span class="lineno">  598 </span><span class="spaces">    </span><span class="istickedoff">PBKDF2.generate</span>
+<span class="lineno">  599 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
+<span class="lineno">  600 </span><span class="spaces">    </span><span class="istickedoff">(PBKDF2.Parameters 500 32)</span>
+<span class="lineno">  601 </span><span class="spaces">    </span><span class="istickedoff">(xpubToBytes masterKey)</span>
+<span class="lineno">  602 </span><span class="spaces">    </span><span class="istickedoff">(&quot;address-hashing&quot; :: ByteString)</span></span>
 
 </pre>
 </body>

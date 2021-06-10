@@ -40,7 +40,7 @@
 </span><span id="line-40"></span><span class="hs-keyword">newtype</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span>
 </span><span id="line-41"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="credential"><span class="annot"><span class="annottext">Cmd -&gt; Credential 'DelegationK
 </span><a href="Command.Address.Delegation.html#credential"><span class="hs-identifier hs-var hs-var">credential</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Credential</span></span><span> </span><span class="hs-special">'</span><span class="annot"><span class="hs-identifier hs-type">DelegationK</span></span><span>
-</span><span id="line-42"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679107086"><span id="local-6989586621679107088"><span id="local-6989586621679107090"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-42"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679107397"><span id="local-6989586621679107399"><span id="local-6989586621679107401"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -55,10 +55,10 @@ showsPrec :: Int -&gt; Cmd -&gt; ShowS
 $cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
 </span><span id="line-43"></span><span>
-</span><span id="line-44"></span><span id="local-6989586621679107084"><span class="annot"><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679107084"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679107084"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-44"></span><span id="local-6989586621679107395"><span class="annot"><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679107395"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679107395"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-45"></span><span id="mod"><span class="annot"><span class="annottext">mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679107083"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679107083"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679107394"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679107394"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;delegation&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -74,8 +74,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679107083"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679107082"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679107394"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679107393"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -298,8 +298,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-string">&quot;addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k...&quot;</span></span><span>
 </span><span id="line-66"></span><span>            </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-67"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-68"></span><span>    </span><span id="local-6989586621679107082"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679107082"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK -&gt; Cmd
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621679107393"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679107393"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK -&gt; Cmd
 </span><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span><span>
 </span><span id="line-69"></span><span>        </span><span class="annot"><span class="annottext">(Credential 'DelegationK -&gt; Cmd)
 -&gt; Parser (Credential 'DelegationK) -&gt; Parser Cmd
@@ -310,36 +310,36 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span id="line-70"></span><span>
 </span><span id="line-71"></span><span class="annot"><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-72"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
-</span><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679107080"><span class="annot"><span class="annottext">Credential 'DelegationK
+</span><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679107391"><span class="annot"><span class="annottext">Credential 'DelegationK
 credential :: Credential 'DelegationK
 credential :: Cmd -&gt; Credential 'DelegationK
-</span><a href="#local-6989586621679107080"><span class="hs-identifier hs-var hs-var">credential</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="#local-6989586621679107391"><span class="hs-identifier hs-var hs-var">credential</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-73"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HumanReadablePart
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107079"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679107079"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, ByteString)
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107390"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679107390"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, ByteString)
 </span><a href="System.IO.Extra.html#hGetBech32"><span class="hs-identifier hs-var">hGetBech32</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><span class="hs-identifier hs-var">stdin</span></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679107078"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span>
+</span><a href="#local-6989586621679107389"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span>
 </span><span id="line-74"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Address
 -&gt; Credential 'DelegationK -&gt; Either ErrExtendAddress Address
 </span><span class="hs-identifier hs-var">Shelley.extendAddress</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Address
 </span><span class="hs-identifier hs-var">unsafeMkAddress</span></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679107079"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK
-</span><a href="#local-6989586621679107080"><span class="hs-identifier hs-var">credential</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-75"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ErrInvalidAddressStyle</span></span><span> </span><span id="local-6989586621679107075"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107075"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679107390"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK
+</span><a href="#local-6989586621679107391"><span class="hs-identifier hs-var">credential</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-75"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ErrInvalidAddressStyle</span></span><span> </span><span id="local-6989586621679107386"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107386"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-76"></span><span>            </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107075"><span class="hs-identifier hs-var">msg</span></a></span><span>
-</span><span id="line-77"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ErrInvalidAddressType</span></span><span>  </span><span id="local-6989586621679107073"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107073"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679107386"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-77"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ErrInvalidAddressType</span></span><span>  </span><span id="local-6989586621679107384"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107384"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-78"></span><span>            </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107073"><span class="hs-identifier hs-var">msg</span></a></span><span>
-</span><span id="line-79"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679107072"><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679107072"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679107384"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-79"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679107383"><span class="annot"><span class="annottext">Address
+</span><a href="#local-6989586621679107383"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-80"></span><span>            </span><span class="annot"><span class="annottext">Handle -&gt; ByteString -&gt; IO ()
 </span><span class="hs-identifier hs-var">B8.hPutStr</span></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><span class="hs-identifier hs-var">stdout</span></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; IO ()) -&gt; ByteString -&gt; IO ()
@@ -349,10 +349,10 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Address -&gt; Text
 </span><span class="hs-identifier hs-var">bech32</span></span><span> </span><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679107072"><span class="hs-identifier hs-var">addr</span></a></span><span>
+</span><a href="#local-6989586621679107383"><span class="hs-identifier hs-var">addr</span></a></span><span>
 </span><span id="line-81"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-82"></span><span>    </span><span id="local-6989586621679107078"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
-</span><a href="#local-6989586621679107078"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-82"></span><span>    </span><span id="local-6989586621679107389"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
+</span><a href="#local-6989586621679107389"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-83"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart
 </span><span class="hs-identifier hs-var">CIP5.addr</span></span><span>
 </span><span id="line-84"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart
