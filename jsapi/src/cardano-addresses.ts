@@ -47,9 +47,6 @@ var apiDestroy: undefined|(() => void) = () => {};
 export function init(): Promise<CardanoAddressesApi> {
   if (!apiCreate) {
     var run: CardanoAddressesEntrypoint;
-    if (typeof process != 'undefined' && process?.stdin) {
-      process.stdin.destroy();
-    }
     if (typeof require != 'undefined') {
       const path = typeof process != 'undefined'
         ? process.env?.CARDANO_ADDRESSES_JS

@@ -8,6 +8,9 @@ import { LIB_VERSION } from '../src/version';
 
 beforeAll(() => {
   console.debug("Starting ghcjs RTS...");
+  // Workaround: Prevent registration of nodejs event handlers on
+  // stdin so that the tests can exit.
+  process.stdin.destroy();
   // This is not strictly necessary because the wrapper functions
   // already call init().
   library.init();
