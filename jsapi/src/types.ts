@@ -2,77 +2,100 @@
 // License: Apache-2.0
 
 /**
- * Cardano-addresses types
+ * Cardano-addresses types.
  *
- * @packageDocumentation
+ * @module
  */
 
 /**
  * Hex-encoded bytes.
  *
- * TODO: what's the best way of representing bytestrings in TypeScript
+ * _TODO:_ what's the best way of representing bytestrings in
+ * TypeScript?
  */
 export type Bytes = string;
+/** Verification key hash. */
 export type KeyHash = Bytes;
+/** Hash of a script. */
 export type ScriptHash = Bytes;
+
 /**
  * A Cardano address, encoded as bech32, base58, or hexadecimal.
  */
 export type Address = string;
+
 /**
  * A bech32-encoded extended public key.
  *
- * TODO: Add proper XPub type, which is the result of bech32 parsing a
- * string.
+ * _TODO:_ Add proper XPub type, which is the result of bech32 parsing
+ * a string.
  */
 export type XPub = string;
 
+/** Supported address formats for the Cardano Shelley era. */
 export type AddressStyle = "Shelley" | "Icarus" | "Byron";
 
-export type StakeReference = "none" | "by value" | "by pointer";
+/** How the stake at this address will be delegated. */
+export type StakeReference
+  /** No delegation. */
+  = "none"
+  /** Stake key is in address. */
+  | "by value"
+  /** Look up certificate in transaction at slot. */
+  | "by pointer";
 
+/**
+ * The return value of [[inspectAddress]].
+ */
 export type InspectAddress
     = InspectAddressShelley
     | InspectAddressIcarus
     | InspectAddressByron;
 
+/**
+ * A [[StakeReference | stake reference]] pointer.
+ */
 export interface ChainPointer {
-  slot_num: number
+  slot_num: number;
   transaction_index: number;
   output_index: number;
 };
 
 export interface InspectAddressShelley {
   address_style: "Shelley";
-  stake_reference?: StakeReference;
-  pointer?: ChainPointer;
+  network_tag: number;
   spending_key_hash?: KeyHash;
   spending_key_hash_bech32?: string;
+  stake_reference?: StakeReference;
+  pointer?: ChainPointer;
   stake_key_hash?: KeyHash;
   stake_key_hash_bech32?: string;
   script_hash?: ScriptHash;
   script_hash_bech32?: string;
-  network_tag: number;
 };
 
 /**
  * Corresponds to `Cardano.Address.Style.Icarus.AddressInfo`.
- *
- * TODO: Add fields.
  */
 export interface InspectAddressIcarus {
   address_style: "Icarus";
+  network_tag: number;
+  address_root: Bytes; /** Hex-encoded address payload */
 };
 
 /**
  * Corresponds to `Cardano.Address.Style.Byron.AddressInfo`.
- *
- * TODO: Add fields.
  */
 export interface InspectAddressByron {
   address_style: "Byron";
-};
+  network_tag: number;
+  address_root: Bytes; /** Hex-encoded address payload */
+  payload: Bytes  | { account_index: number; address_index: number; };
+}
 
+/**
+ * Represents a failure to decode the given address.
+ */
 export interface ErrInspectAddress {
   error: {
     code: string;

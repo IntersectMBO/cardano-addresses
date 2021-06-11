@@ -4,7 +4,7 @@
 /**
  * Low-level interface code for the Haskell/ghcjs library functions.
  *
- * @packageDocumentation
+ * @module
  */
 
 import { Address, XPub, InspectAddress, ErrInspectAddress } from './types';

@@ -12,13 +12,13 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "postbuild": "test -n \"$CARDANO_ADDRESSES_JS\" && cp -v $CARDANO_ADDRESSES_JS/* dist || true",
     "build": "tsdx build",
+    "pretest": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "typedoc": "typedoc src"
+    "prepare": "rm -f src/version.ts ; tsdx build && test -n \"$CARDANO_ADDRESSES_JS\" && cp $CARDANO_ADDRESSES_JS/* dist || true",
+    "typedoc": "typedoc"
   },
   "bin": {
     "js-inspect-address": "bin/js-inspect-address"
@@ -33,7 +33,11 @@
   },
   "name": "cardano-addresses",
   "author": "IOHK <adrestia@iohk.io>",
-  "repository": "github:input-output-hk/cardano-addresses",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/input-output-hk/cardano-addresses.git",
+    "directory": "jsapi"
+  },
   "module": "dist/cardano-addresses.esm.js",
   "devDependencies": {
     "@types/jest": "^26.0.23",

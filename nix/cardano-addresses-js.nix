@@ -24,13 +24,17 @@ stdenv.mkDerivation rec {
 
     print_files $jsexe/rts.js $jsexe/lib.js $jsexe/out.js $src/runmain.js > cardano-addresses-jsapi.js
 
-    print_files $src/prelude.js cardano-addresses-jsapi.js $src/postlude.js > cardano-addresses-jsapi.cjs.js
+    for mod in cjs esm; do
+      print_files $src/prelude.$mod.js cardano-addresses-jsapi.js $src/postlude.$mod.js > cardano-addresses-jsapi.$mod.js
+    done
   '';
   doCheck = true;
   checkPhase = ''
     for js in $out/*.js; do
-      ${nodejs}/bin/node --check $js
-      echo "syntax check $js OK"
+      if [[ ! $js =~ esm ]]; then
+        ${nodejs}/bin/node --check $js
+        echo "syntax check $js OK"
+      fi
     done
   '';
   installPhase = "true";

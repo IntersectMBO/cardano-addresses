@@ -25,7 +25,9 @@ afterAll(() => {
 describe('version', () => {
   it('matches package.json', async () => {
     const ver = await version();
-    expect(ver.split(" ")[0]).toEqual(LIB_VERSION)
+    const cabalVersion = ver.split(" ")[0];
+    const npmVersion = LIB_VERSION.split("-")[0];
+    expect(cabalVersion).toEqual(npmVersion)
   });
 });
 

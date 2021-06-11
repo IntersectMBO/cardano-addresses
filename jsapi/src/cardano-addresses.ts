@@ -6,15 +6,18 @@
 /**
  * Typescript bindings for `Cardano.Address`.
  *
- * @packageDocumentation
+ * @module
  */
 
 import { Address, XPub, InspectAddress } from './types';
 
 /**
- * Get information about an address
+ * Get information about an address.
  *
- * @return the fields parsed from the address
+ * If the address can't be parsed, the promise will be rejected with
+ * [[ErrInspectAddress]].
+ *
+ * @returns The fields parsed from the address.
  */
 export async function inspectAddress(address: Address, rootXPub?: XPub): Promise<InspectAddress> {
   const api = await init();
@@ -23,7 +26,7 @@ export async function inspectAddress(address: Address, rootXPub?: XPub): Promise
 }
 
 /**
- * Gets the Cabal package version string and git revision.
+ * @returns The Cabal package version string and git revision.
  */
 export async function version(): Promise<string> {
   const api = await init();
@@ -38,6 +41,8 @@ var apiDestroy: undefined|(() => void) = () => {};
  *
  * There is no need to call this because it's done automatically the
  * first time a library function is used.
+ *
+ * @internal
  */
 export function init(): Promise<CardanoAddressesApi> {
   if (!apiCreate) {
@@ -49,7 +54,7 @@ export function init(): Promise<CardanoAddressesApi> {
       const path = typeof process != 'undefined'
         ? process.env?.CARDANO_ADDRESSES_JS
         : undefined;
-      const filename = 'cardano-addresses-jsapi.cjs.js';
+      const filename = './cardano-addresses-jsapi.cjs.js';
       const mod = require((path ? path + '/' : '') + filename);
       run = mod.runCardanoAddressesApi;
     } else if (typeof window != 'undefined') {
@@ -68,6 +73,8 @@ export function init(): Promise<CardanoAddressesApi> {
 
 /**
  * De-allocates resources used for the runtime system.
+ *
+ * @internal
  */
 export function cleanup() {
   if (apiDestroy) {

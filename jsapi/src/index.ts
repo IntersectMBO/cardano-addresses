@@ -2,9 +2,12 @@
 // License: Apache-2.0
 
 /**
- * Top-level module which re-exports API.
+ * This module is a TypeScript/JavaScript binding for the
+ * [cardano-addresses package](https://input-output-hk.github.io/cardano-addresses/haddock/).
  *
- * @packageDocumentation
+ *
+ *
+ * @module
  */
 
 export * from './types';
