@@ -12,13 +12,15 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "postbuild": "test -n \"$CARDANO_ADDRESSES_JS\" && cp -v $CARDANO_ADDRESSES_JS/* dist || true",
+    "postbuild": "npm run copy_jsapi",
     "build": "tsdx build",
-    "pretest": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+    "pretest": "npm run copy_jsapi ; npm run make_version",
     "test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "rm -f src/version.ts ; tsdx build && test -n \"$CARDANO_ADDRESSES_JS\" && cp $CARDANO_ADDRESSES_JS/* dist || true",
-    "typedoc": "typedoc"
+    "prepare": "rm -f test/version.ts ; tsdx build && npm run copy_jsapi",
+    "typedoc": "typedoc",
+    "copy_jsapi": "test -n \"$CARDANO_ADDRESSES_JS\" && cp --no-preserve=all -v $CARDANO_ADDRESSES_JS/*.js dist || true",
+    "make_version": "node -p \"require('fs').writeFileSync('test/version.ts', 'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';')\""
   },
   "bin": {
     "js-inspect-address": "bin/js-inspect-address"
@@ -53,7 +55,6 @@
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
     "jest": "^27.0.4",
-    "shx": "0.3.2",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.0.0",
     "tsdx": "^0.14.1",

@@ -10,6 +10,7 @@
  */
 
 import { Address, XPub, InspectAddress } from './types';
+import { CardanoAddressesJSModule, CardanoAddressesApi } from './foreign';
 
 /**
  * Get information about an address.
@@ -46,26 +47,31 @@ var apiDestroy: undefined|(() => void) = () => {};
  */
 export function init(): Promise<CardanoAddressesApi> {
   if (!apiCreate) {
-    var run: CardanoAddressesEntrypoint;
-    if (typeof require != 'undefined') {
-      const path = typeof process != 'undefined'
-        ? process.env?.CARDANO_ADDRESSES_JS
-        : undefined;
-      const filename = './cardano-addresses-jsapi.cjs.js';
-      const mod = require((path ? path + '/' : '') + filename);
-      run = mod.runCardanoAddressesApi;
-    } else if (typeof window != 'undefined') {
-      run = window?.runCardanoAddressesApi;
-    } else {
-      throw "Unable to load runCardanoAddressesApi()";
-    }
-
-    apiCreate = new Promise(resolve => run((api, cleanup) => {
-      apiDestroy = cleanup;
-      resolve(api);
-    }));
+    apiCreate = loadJSAPI().then(mod => {
+      const run = mod.runCardanoAddressesApi;
+      return new Promise(resolve => run((api, cleanup) => {
+        apiDestroy = cleanup;
+        resolve(api);
+      }));
+    });
   }
   return apiCreate;
+}
+
+async function loadJSAPI(): Promise<CardanoAddressesJSModule> {
+  const haveProcess = typeof process != 'undefined';
+  const nixPath = haveProcess && process.env?.CARDANO_ADDRESSES_JS;
+  const isNode = haveProcess && process.versions?.node !== 'undefined';
+  const mod = isNode ? 'cjs' : 'esm';
+  const dir = nixPath || '.';
+  const file = `${dir}/cardano-addresses-jsapi.${mod}.js`;
+  try {
+    return await import(file);
+  } catch (err) {
+    console.warn(`${file}: ES module loading failed!`, err);
+    console.info("Using ambient definitions from cardano-addresses-jsapi.js");
+    return { runCardanoAddressesApi };
+  }
 }
 
 /**

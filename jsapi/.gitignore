@@ -3,4 +3,4 @@
 /node_modules
 /dist
 /_docs
-/src/version.ts
+/test/version.ts

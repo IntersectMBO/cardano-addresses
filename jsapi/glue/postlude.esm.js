@@ -1,2 +1,1 @@
-return { runCardanoAddressesApi, stopCardanoAddressesApi };
-})();
+export { runCardanoAddressesApi, stopCardanoAddressesApi };

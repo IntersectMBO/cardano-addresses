@@ -4,7 +4,7 @@
 import { version, inspectAddress } from '../src';
 import * as library from '../src/cardano-addresses';
 
-import { LIB_VERSION } from '../src/version';
+import { LIB_VERSION } from './version';
 
 beforeAll(() => {
   console.debug("Starting ghcjs RTS...");

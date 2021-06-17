@@ -16,7 +16,7 @@ API. It comprises of three parts:
    foreign exports for translating Javascript function calls and
    values into Haskell function calls and values, and vice-versa.
 
-* An NPM package `cardano-addresses` containing CommonJS and
+* An NPM package `cardano-addresses` containing both CommonJS and
   EcmaScript modules written in TypeScript, which thinly wraps the
   GHCJS foreign exports in order to make a proper API.
 
@@ -68,14 +68,9 @@ To initialize, call the `runCardanoAddressesApi` with a continuation that like t
 
 - [ ] More API endpoints depending on user needs.
 - [ ] Used "typed" objects as parameters for the `inspectAddress` API, instead of strings which must be parsed.
-- [ ] Allow using the jsapi as an ES module - `cardano-addresses-jsapi.esm.js` doesn't fully work yet.
-- [ ] Integrate `$CARDANO_ADDRESSES_JS` into the transpiled javascript
-      output at build-time, rather than importing from an environment
-      variable at run-time.
 - [ ] Add a build step to optimise output file sizes (i.e. minification, tree shaking, etc).
 - [ ] Solve issue on `nodejs` where registered event handlers remain after API cleanup, preventing the `nodejs` runtime from exiting.
-- [ ] Add helper functions to the JSaddle API so that it can output
-      code for ES6 Promises.
+- [ ] Add helper functions to the JSaddle API so that it can output code for ES6 Promises.
 - [ ] Bring back headless testing of JSaddle code.
 - [ ] Replace TSDX with a better build system.
 - [ ] Automatically update docs in CI.
