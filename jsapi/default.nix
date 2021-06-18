@@ -31,15 +31,25 @@ rec {
     installPhase = ''
       dest=$out/share/doc/${pname}
       mkdir -p $out/bin $dest
-      install --mode=0644 -D --target-directory=$dest \
-        $src/demo/*.html $src/demo/*.js
+
       if [ -d $src/dist ]; then
         install --mode=0644 -D --target-directory=$dest/dist \
-          $src/dist/*.js $src/dist/*.map
+            $src/dist/*.js $src/dist/*.map
+      else
+        echo "dist directory is missing - you need to 'npm run build' first"
+        exit 1
       fi
-      install --mode=0644 -D --target-directory=$dest/dist ${cardano-addresses-js}/*
-      export local_build=${toString ./.}
-      substituteAll "$src/demo/run.sh.in" "$out/bin/${pname}"
+
+      install --mode=0644 -D --target-directory=$dest \
+        $src/demo/*.html $src/demo/*.js
+      install --mode=0644 -D --target-directory=$dest/dist \
+        ${cardano-addresses-js}/*
+
+      cat > $out/bin/${pname} <<EOF
+      #!${pkgs.runtimeShell}
+      cd ${placeholder "out"}
+      exec ${pkgs.python3}/bin/python -m http.server "$@"
+      EOF
       chmod 755 "$out"/bin/*
     '';
 
