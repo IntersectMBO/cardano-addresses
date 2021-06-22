@@ -1,16 +1,29 @@
 # cardano-addresses TypeScript binding
 
+- 📦 [NPM Package](https://www.npmjs.com/package/cardano-addresses)
+- 📗 [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
+- 🎇 [Web demo](https://input-output-hk.github.io/cardano-addresses/demo/)
+- λ [Haskell Library](https://input-output-hk.github.io/cardano-addresses/haddock/)
+
 This is a Typescript (or Javascript) version of the
-`caardano-addresses` API. It comprises of three parts:
+[`cardano-addresses`](https://github.com/input-output-hk/cardano-addresses)
+API. It comprises of three parts:
 
  * The ghcjs build of `cardano-addresses:library` (supported by the
    `cardano-addresses-jsbits` package.
- * A Cabal package `cardano-addresses-jsapi` containing GHCJS
+
+* A Cabal package `cardano-addresses-jsapi` containing GHCJS
    foreign exports for translating Javascript function calls and
    values into Haskell function calls and values, and vice-versa.
- * An NPM package `cardano-addresses` containing NodeJS modules written in TypeScript, which thinly wraps the GHCJS foreign exports to make a proper API.
 
-## Quick Start
+* An NPM package `cardano-addresses` containing both CommonJS and
+  EcmaScript modules written in TypeScript, which thinly wraps the
+  GHCJS foreign exports in order to make a proper API.
+
+For the time being, this module is **experimental**, and exposes only
+a subset of the functionality of the Haskell API.
+
+## Development Info
 
 ### NodeJS module: Building and testing
 
@@ -55,15 +68,13 @@ To initialize, call the `runCardanoAddressesApi` with a continuation that like t
 
 - [ ] More API endpoints depending on user needs.
 - [ ] Used "typed" objects as parameters for the `inspectAddress` API, instead of strings which must be parsed.
-- [ ] Integrate `$CARDANO_ADDRESSES_JS` into the transpiled javascript
-      output at build-time, rather than importing from an environment
-      variable at run-time.
 - [ ] Add a build step to optimise output file sizes (i.e. minification, tree shaking, etc).
 - [ ] Solve issue on `nodejs` where registered event handlers remain after API cleanup, preventing the `nodejs` runtime from exiting.
-- [ ] Add helper functions to the JSaddle API so that it can output
-      code for ES6 Promises.
+- [ ] Add helper functions to the JSaddle API so that it can output code for ES6 Promises.
 - [ ] Bring back headless testing of JSaddle code.
-
+- [ ] Replace TSDX with a better build system.
+- [ ] Automatically update docs in CI.
+- [ ] Add release workflow to CI which builds the package and uploads to NPM.
 
 ## More details
 

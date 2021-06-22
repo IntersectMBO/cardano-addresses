@@ -4,10 +4,13 @@
 import { version, inspectAddress } from '../src';
 import * as library from '../src/cardano-addresses';
 
-import { LIB_VERSION } from '../src/version';
+import { LIB_VERSION } from './version';
 
 beforeAll(() => {
   console.debug("Starting ghcjs RTS...");
+  // Workaround: Prevent registration of nodejs event handlers on
+  // stdin so that the tests can exit.
+  process.stdin.destroy();
   // This is not strictly necessary because the wrapper functions
   // already call init().
   library.init();
@@ -25,7 +28,9 @@ afterAll(() => {
 describe('version', () => {
   it('matches package.json', async () => {
     const ver = await version();
-    expect(ver.split(" ")[0]).toEqual(LIB_VERSION)
+    const cabalVersion = ver.split(" ")[0];
+    const npmVersion = LIB_VERSION.split("-")[0];
+    expect(cabalVersion).toEqual(npmVersion)
   });
 });
 

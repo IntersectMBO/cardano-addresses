@@ -1,5 +1,5 @@
 {
-  "version": "3.5.0",
+  "version": "3.5.0-alpha5",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -11,14 +11,16 @@
     "node": ">=10"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "postbuild": "test -n \"$CARDANO_ADDRESSES_JS\" && cp -v $CARDANO_ADDRESSES_JS/* dist || true",
+    "start": "npm run copy_jsapi ; tsdx watch --noClean --target node --onFirstSuccess \"node demo/index.js\"",
+    "postbuild": "npm run copy_jsapi",
     "build": "tsdx build",
+    "pretest": "npm run copy_jsapi ; npm run make_version",
     "test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "typedoc": "typedoc src"
+    "prepare": "rm -f test/version.ts ; tsdx build && npm run copy_jsapi",
+    "typedoc": "typedoc",
+    "copy_jsapi": "test -n \"$CARDANO_ADDRESSES_JS\" && cp --no-preserve=all -v $CARDANO_ADDRESSES_JS/*.js dist || true",
+    "make_version": "node -p \"require('fs').writeFileSync('test/version.ts', 'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';')\""
   },
   "bin": {
     "js-inspect-address": "bin/js-inspect-address"
@@ -33,7 +35,11 @@
   },
   "name": "cardano-addresses",
   "author": "IOHK <adrestia@iohk.io>",
-  "repository": "github:input-output-hk/cardano-addresses",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/input-output-hk/cardano-addresses.git",
+    "directory": "jsapi"
+  },
   "module": "dist/cardano-addresses.esm.js",
   "devDependencies": {
     "@types/jest": "^26.0.23",
@@ -48,8 +54,9 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
+    "express": "^4.17.1",
     "jest": "^27.0.4",
-    "shx": "0.3.2",
+    "morgan": "^1.10.0",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.0.0",
     "tsdx": "^0.14.1",

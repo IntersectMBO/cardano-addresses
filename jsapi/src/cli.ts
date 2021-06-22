@@ -8,7 +8,7 @@
  *
  * See also: the entrypoint script `bin/js-inspect-address`.
  *
- * @packageDocumentation
+ * @module
  */
 
 import Process = NodeJS.Process;
@@ -22,6 +22,8 @@ function usage(): void {
 
 /**
  * Main function of the CLI.
+ *
+ * @hidden
  */
 export function cli(argv: Process['argv']): void {
   const args = argv;

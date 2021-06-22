@@ -37,11 +37,11 @@
     <label>Address</label>
     <input type="text" v-model="address" :class="{error:!!inspectError}" placeholder="bech32 / hex / base58">
   </div>
-  <div class="ui negative message" v-if="inspectError">
+  <div class="ui negative message" v-if="inspectError" v-cloak>
     <div class="header">
       Unable to parse address
     </div>
-    <p>{{ inspectError }}</p>
+    <p v-text=inspectError></p>
   </div>
   <div class="field" v-if="address_hex">
     <label>Raw</label>
@@ -153,6 +153,10 @@
 </div>
 
 <style>
+  [v-cloak] {
+    display: none;
+  }
+
   body > .ui.container {
     margin-top: 3em;
   }
@@ -160,7 +164,6 @@
   .tt {
     font-family: monospace;
   }
-
 </style>
 
 <script type="module">
@@ -238,10 +241,7 @@ var app = new Vue({
 window.addEventListener('DOMContentLoaded', ev => {
   app.onLoaded();
 });
-
 </script>
-
-<script src="dist/cardano-addresses-jsapi.js"></script>
 
 </body>
 </html>

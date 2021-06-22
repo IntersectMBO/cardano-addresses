@@ -3,11 +3,45 @@
 stdenv.mkDerivation rec {
   name = "cardano-addresses-js-${version}";
   inherit (cardano-addresses-jsapi.identifier) version;
-  src = lib.cleanSourceWith {
-    name = "cardano-addresses-jsapi-glue";
-    src = lib.sourceFilesBySuffices ../jsapi/glue [".js"];
-  };
-  jsexe = "${cardano-addresses-jsapi.components.exes.cardano-addresses-jsapi}/bin/cardano-addresses-jsapi.jsexe";
+  srcs = [
+    cardano-addresses-jsapi.components.exes.cardano-addresses-jsapi
+    (lib.cleanSourceWith {
+      name = "cardano-addresses-jsapi-glue";
+      src = lib.sourceFilesBySuffices ../jsapi/glue [".js"];
+    })
+  ];
+  setSourceRoot = ''
+    sourceRoot=$(echo */bin/cardano-addresses-jsapi.jsexe)
+    glue=$(pwd)/$(echo *-glue)
+    jsapi=$(pwd)/$sourceRoot
+  '';
+  sourceRoot = ".";
+  postPatch = ''
+    rm -f all.js
+
+    sed_inplace() {
+      local js="$1"
+      shift
+      cmd=(sed --in-place=.bak "$@" "$js")
+      echo "''${cmd[@]}"
+      "''${cmd[@]}"
+      diff -Nur "$js".bak "$js" || true
+    }
+
+    sed_inplace rts.js \
+      -e '0,/function h\$ap_1_0(/s//function extra_h\$ap_1_0(/' \
+      -e '/function h\$ghcjszmprimZCGHCJSziPrimziJSVal_con_e/d' \
+
+    sed_inplace out.js \
+      -e '/function h\$integerzmwiredzminZCGHCziIntegerziTypezi\(Jn\|Jp\|S\)zh_con_e/,+3d'
+
+    # Remove most of the double-return statements. Without this,
+    # the sheer number of "unreachable code after return statement"
+    # warnings slows down Firefox considerably!
+    for js in rts.js out.js lib.js; do
+      sed_inplace "$js" -e '/^  return.*;/!b;n;/^  return.*;/d'
+    done
+  '';
   buildPhase = ''
     print_files() {
       for js in "$@"; do
@@ -20,18 +54,23 @@ stdenv.mkDerivation rec {
     }
 
     mkdir $out
-    cd $out
 
-    print_files $jsexe/rts.js $jsexe/lib.js $jsexe/out.js $src/runmain.js > cardano-addresses-jsapi.js
+    print_files rts.js lib.js out.js $glue/runmain.js > $out/cardano-addresses-jsapi.js
 
-    print_files $src/prelude.js cardano-addresses-jsapi.js $src/postlude.js > cardano-addresses-jsapi.cjs.js
+    for mod in cjs esm; do
+      print_files $glue/prelude.$mod.js $out/cardano-addresses-jsapi.js $glue/postlude.$mod.js > $out/cardano-addresses-jsapi.$mod.js
+    done
+
+    # nodejs needs the .mjs extension for ES modules
+    cp --reflink=auto $out/cardano-addresses-jsapi.esm.js $out/cardano-addresses-jsapi.mjs
   '';
   doCheck = true;
+  checkInputs = [ nodejs ];
   checkPhase = ''
-    for js in $out/*.js; do
-      ${nodejs}/bin/node --check $js
-      echo "syntax check $js OK"
-    done
+    node --check $out/cardano-addresses-jsapi.js
+    node --check $out/cardano-addresses-jsapi.cjs.js
+    node --experimental-modules --check $out/cardano-addresses-jsapi.mjs
+    echo "syntax check OK"
   '';
   installPhase = "true";
   meta = {

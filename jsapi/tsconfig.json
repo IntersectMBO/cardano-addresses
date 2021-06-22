@@ -33,7 +33,10 @@
     "noEmit": true,
   },
   "typedocOptions": {
+    "entryPoints": ["./src/index.ts"],
     "excludeExternals": true,
+    "excludeInternal": true,
+    "readme": "none",
     "out": "_docs"
   }
 }
