@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Cardano Address Inspector</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" integrity="sha256-UXesixbeLkB/UYxVTzuj/gg3+LMzgwAmg3zD+C4ZASQ=" crossorigin="anonymous">
+
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js" integrity="sha256-KSlsysqp7TXtFo/FHjb1T9b425x3hrvzjMWaJyKbpcI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js" integrity="sha256-CgSoWC9w5wNmI1aN8dIMK+6DPelUEtvDr+Bc2m/0Nx8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<div id="app" class="ui container">
+
+<h1 class="ui header">Cardano Address Inspector</h1>
+  <div class="ui icon message" v-if="loading">
+    <i class="notched circle loading icon"></i>
+    <div class="content">
+      <div class="header">
+        Loading...
+      </div>
+      <p>Parsing un-minified js</p>
+    </div>
+  </div>
+
+  <h2 class="ui dividing header">Address</h2>
+
+<form class="ui form big">
+  <div class="field">
+    <label>Address</label>
+    <input type="text" v-model="address" :class="{error:!!inspectError}" placeholder="bech32 / hex / base58">
+  </div>
+  <div class="ui negative message" v-if="inspectError" v-cloak>
+    <div class="header">
+      Unable to parse address
+    </div>
+    <p v-text=inspectError></p>
+  </div>
+  <div class="field" v-if="address_hex">
+    <label>Raw</label>
+    <textarea rows="2" v-model="address_hex" class="tt" readonly="">Hex representation</textarea>
+  </div>
+  <div class="field" v-if="info.address_style === 'Byron'">
+    <label>XPub</label>
+    <input type="text" v-model="xpub" :class="{error:!!inspectError}" placeholder="bech32 root_xvk">
+  </div>
+  <div class="ui submit button primary" v-on:click="inspect" :class="{ disabled: !address || thinking || loading, loading: thinking }">Inspect</div>
+</form>
+
+  <h2 class="ui dividing header">Properties</h2>
+
+<form class="ui form">
+  <div class="fields">
+    <div class="four wide field">
+      <label>Style</label>
+      <select class="ui fluid search dropdown" v-model="info.address_style">
+        <option value="" v-if="!info.address_style">Address Style</option>
+        <option value="Shelley">Shelley</option>
+        <option value="Icarus">Icarus</option>
+        <option value="Byron">Byron</option>
+      </select>
+    </div>
+    <div class="four wide field">
+      <label>Network tag</label>
+      <input type="number" min="0" v-model="info.network_tag" placeholder="Network tag">
+    </div>
+  </div>
+
+  <h4 class="ui dividing header">Keys</h4>
+
+  <div class="field">
+    <label>Spending Key Hash</label>
+    <input type="text" v-model="info.spending_key_hash_bech32" placeholder="bech32 addr_vkh">
+  </div>
+  <div class="field" v-if="info.address_style == 'Shelley'">
+    <label>Script Hash</label>
+    <input type="text" v-model="info.spending_shared_hash_bech32" placeholder="bech32 vkh">
+  </div>
+
+  <div class="field" v-if="info.address_style == 'Byron' || info.address_style == 'Icarus'">
+    <label>Address root</label>
+    <input type="text" v-model="info.address_root" placeholder="Address root">
+  </div>
+
+  <template v-if="info.address_style == 'Byron'">
+  <h4 class="ui dividing header">Derivation path</h4>
+  <div class="ui message" v-if="!xpub">
+    <p>The wallet root XPub is required to decrypt the derivation path in the address payload.</p>
+  </div>
+  <div class="fields">
+    <div class="eight wide field">
+      <label>Account index</label>
+      <input type="text" v-model="info.derivation_path.account_index" placeholder="index" :class="{ disabled: !xpub }">
+    </div>
+    <div class="eight wide field">
+      <label>Address index</label>
+      <input type="text" v-model="info.derivation_path.address_index" placeholder="index" :class="{ disabled: !xpub }">
+    </div>
+  </div>
+  </template>
+
+  <template v-if="info.address_style == 'Shelley'">
+    <h4 class="ui dividing header">Delegation</h4>
+    <div class="fields">
+      <div class="four wide field">
+        <label>Stake Reference</label>
+        <select class="ui fluid search dropdown" v-model="info.stake_reference">
+          <option value="" v-if="!info.stake_reference">Stake Reference</option>
+          <option value="none">None</option>
+          <option value="by value">By value</option>
+          <option value="by pointer">By pointer</option>
+        </select>
+      </div>
+      <div class="twelve wide field" v-if="info.stake_reference == 'by value'">
+        <label>Stake Key Hash</label>
+        <input type="text" v-model="info.stake_key_hash_bech32" placeholder="bech32 stake_vkh">
+      </div>
+      <template v-if="info.stake_reference == 'by pointer'">
+        <div class="four wide field">
+          <label>Slot #</label>
+          <input type="number" v-model="info.pointer.slot_num" min="0" placeholder="Slot #">
+        </div>
+        <div class="four wide field">
+          <label>Tx Index</label>
+          <input type="number" v-model="info.pointer.transaction_index" min="0" placeholder="Transaction Index">
+        </div>
+        <div class="four wide field">
+          <label>Output Index</label>
+          <input type="number" v-model="info.pointer.output_index" min="0" placeholder="Output Index">
+        </div>
+      </template>
+    </div>
+  </template>
+</form>
+
+ <h2 class="ui dividing header">Display Options</h2>
+
+<form class="ui form">
+  <div class="ui buttons">
+    <label>Output Encoding</label>
+    <button class="ui button" v-on:click.stop.prevent="encodeBech32">bech32</button>
+    <button class="ui button disabled" v-on:click.stop.prevent="encodeHex">hex</button>
+  </div>
+</form>
+
+</div>
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+
+  body > .ui.container {
+    margin-top: 3em;
+  }
+
+  .tt {
+    font-family: monospace;
+  }
+</style>
+
+<script type="module">
+import { inspectAddress } from './dist/cardano-addresses.esm.js';
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    loading: true,
+    thinking: false,
+    outputEncoding: 'hex',
+    address: "",
+    address_hex: "",
+    xpub: "",
+    info: {
+      address_style: "",
+      network_tag: 0,
+
+      spending_key_hash: "",
+      spending_key_hash_bech32: "",
+
+      stake_reference: "",
+      stake_key_hash: "",
+      stake_key_hash_bech32: "",
+
+      stake_shared_hash_bech32: "",
+      stake_script_hash_bech32: "",
+
+      pointer: {
+        slot_num: 0,
+        transaction_index: 0,
+        output_index: 0
+      },
+      address_root: "",
+      derivation_path: {
+        account_index: "",
+        address_index: ""
+      },
+    },
+    inspectError: "",
+  },
+  methods: {
+    encodeBech32: function() {
+      console.log("disabled");
+      // this.outputEncoding = 'bech32';
+    },
+    encodeHex: function() {
+      console.log(this.outputEncoding);
+      this.outputEncoding = 'hex';
+    },
+    tryInspect: function() {
+      if (this.address) {
+        const xpub = this.info.address_style === 'Byron' && !!this.xpub ? this.xpub : undefined;
+        return inspectAddress(this.address, xpub)
+          .then(res => {
+            console.log("result is", res);
+            _.assign(this.info, res);
+            this.inspectError = "";
+            return res;
+          });
+      };
+    },
+    inspect: function() {
+      return this.tryInspect()
+        .catch(err => {
+          console.error("error is", err);
+          this.inspectError = err.message || err;
+        });
+    },
+    onLoaded: function() {
+      this.loading = false;
+    }
+  }
+});
+window.addEventListener('DOMContentLoaded', ev => {
+  app.onLoaded();
+});
+</script>
+
+</body>
+</html>
