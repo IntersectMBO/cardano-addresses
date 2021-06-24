@@ -48,7 +48,7 @@
 </span><a href="Command.Script.Validation.html#script"><span class="hs-identifier hs-var hs-var">script</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Script</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KeyHash</span></span><span>
 </span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="validationLevel"><span class="annot"><span class="annottext">Cmd -&gt; Maybe ValidationLevel
 </span><a href="Command.Script.Validation.html#validationLevel"><span class="hs-identifier hs-var hs-var">validationLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ValidationLevel</span></span><span>
-</span><span id="line-49"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105965"><span id="local-6989586621679105967"><span id="local-6989586621679105969"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-49"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679105975"><span id="local-6989586621679105977"><span id="local-6989586621679105979"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -63,10 +63,10 @@ showsPrec :: Int -&gt; Cmd -&gt; ShowS
 $cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-50"></span><span>
-</span><span id="line-51"></span><span id="local-6989586621679105963"><span class="annot"><a href="Command.Script.Validation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679105963"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679105963"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-51"></span><span id="local-6989586621679105973"><span class="annot"><a href="Command.Script.Validation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679105973"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679105973"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-52"></span><span id="mod"><span class="annot"><span class="annottext">mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.Script.Validation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679105962"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679105962"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.Script.Validation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679105972"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679105972"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;validate&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -82,8 +82,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679105962"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679105961"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679105972"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679105971"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -413,8 +413,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-string">&quot;Not validated: The list inside a script has duplicate keys (which is not recommended).&quot;</span></span><span>
 </span><span id="line-97"></span><span>            </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-98"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-99"></span><span>    </span><span id="local-6989586621679105961"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679105961"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Script KeyHash -&gt; Maybe ValidationLevel -&gt; Cmd
+</span><span id="line-99"></span><span>    </span><span id="local-6989586621679105971"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679105971"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Script KeyHash -&gt; Maybe ValidationLevel -&gt; Cmd
 </span><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span><span>
 </span><span id="line-100"></span><span>        </span><span class="annot"><span class="annottext">(Script KeyHash -&gt; Maybe ValidationLevel -&gt; Cmd)
 -&gt; Parser (Script KeyHash) -&gt; Parser (Maybe ValidationLevel -&gt; Cmd)
@@ -431,22 +431,22 @@ forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f (Maybe a)
 </span><span id="line-102"></span><span>
 </span><span id="line-103"></span><span class="annot"><a href="Command.Script.Validation.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-104"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
-</span><a href="Command.Script.Validation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679105959"><span class="annot"><span class="annottext">Script KeyHash
+</span><a href="Command.Script.Validation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Script.Validation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679105969"><span class="annot"><span class="annottext">Script KeyHash
 script :: Script KeyHash
 script :: Cmd -&gt; Script KeyHash
-</span><a href="#local-6989586621679105959"><span class="hs-identifier hs-var hs-var">script</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679105958"><span class="annot"><span class="annottext">Maybe ValidationLevel
+</span><a href="#local-6989586621679105969"><span class="hs-identifier hs-var hs-var">script</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679105968"><span class="annot"><span class="annottext">Maybe ValidationLevel
 validationLevel :: Maybe ValidationLevel
 validationLevel :: Cmd -&gt; Maybe ValidationLevel
-</span><a href="#local-6989586621679105958"><span class="hs-identifier hs-var hs-var">validationLevel</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679105968"><span class="hs-identifier hs-var hs-var">validationLevel</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-105"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ValidationLevel -&gt; Script KeyHash -&gt; Either ErrValidateScript ()
 </span><span class="hs-identifier hs-var">validateScript</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ValidationLevel -&gt; Maybe ValidationLevel -&gt; ValidationLevel
 forall a. a -&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
 </span><span class="hs-identifier hs-var">RequiredValidation</span></span><span> </span><span class="annot"><span class="annottext">Maybe ValidationLevel
-</span><a href="#local-6989586621679105958"><span class="hs-identifier hs-var">validationLevel</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Script KeyHash
-</span><a href="#local-6989586621679105959"><span class="hs-identifier hs-var">script</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-106"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679105956"><span class="annot"><span class="annottext">ErrValidateScript
-</span><a href="#local-6989586621679105956"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; String -&gt; IO ()
+</span><a href="#local-6989586621679105968"><span class="hs-identifier hs-var">validationLevel</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Script KeyHash
+</span><a href="#local-6989586621679105969"><span class="hs-identifier hs-var">script</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-106"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679105966"><span class="annot"><span class="annottext">ErrValidateScript
+</span><a href="#local-6989586621679105966"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; String -&gt; IO ()
 </span><a href="System.IO.Extra.html#hPutString"><span class="hs-identifier hs-var">hPutString</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><span class="hs-identifier hs-var">stderr</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO ()) -&gt; String -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -455,7 +455,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ErrValidateScript -&gt; String
 </span><span class="hs-identifier hs-var">prettyErrValidateScript</span></span><span> </span><span class="annot"><span class="annottext">ErrValidateScript
-</span><a href="#local-6989586621679105956"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><a href="#local-6989586621679105966"><span class="hs-identifier hs-var">err</span></a></span><span>
 </span><span id="line-107"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">()
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; String -&gt; IO ()
 </span><a href="System.IO.Extra.html#hPutString"><span class="hs-identifier hs-var">hPutString</span></a></span><span> </span><span class="annot"><span class="annottext">Handle

@@ -46,7 +46,7 @@ span.spaces    { background: white }
 <span class="lineno">   27 </span>    , Options (..)
 <span class="lineno">   28 </span>    , SumEncoding (..)
 <span class="lineno">   29 </span>    , ToJSON (..)
-<span class="lineno">   30 </span>    , Value
+<span class="lineno">   30 </span>    , Value (..)
 <span class="lineno">   31 </span>    , Zero
 <span class="lineno">   32 </span>    , defaultOptions
 <span class="lineno">   33 </span>    , genericToJSON
@@ -76,7 +76,10 @@ span.spaces    { background: white }
 <span class="lineno">   57 </span>    <span class="decl"><span class="nottickedoff">toJSON = errToJSON . withErrorMessage</span></span>
 <span class="lineno">   58 </span>
 <span class="lineno">   59 </span>instance ToJSON DeserialiseFailure where
-<span class="lineno">   60 </span>    <span class="decl"><span class="nottickedoff">toJSON = toJSON . displayException</span></span>
+<span class="lineno">   60 </span>    <span class="decl"><span class="nottickedoff">toJSON (DeserialiseFailure off msg) = object</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="nottickedoff">[ &quot;code&quot; .= String &quot;Codec.CBOR.DeserialiseFailure&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="nottickedoff">, &quot;details&quot; .= object [ &quot;byteOffset&quot; .= off, &quot;message&quot; .= msg ]</span>
+<span class="lineno">   63 </span><span class="spaces">        </span><span class="nottickedoff">]</span></span>
 
 </pre>
 </body>
