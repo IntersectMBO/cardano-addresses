@@ -814,11 +814,16 @@ try {
 /// <reference path="./foreign.d.ts" />
 
 /**
- * Get information about an address.
+ * Get information about a Cardano address. Three address formats are
+ * supported: Shelley, Icarus, and Byron.
  *
  * If the address can't be parsed, the promise will be rejected with
  * [[ErrInspectAddress]].
  *
+ * @param address the address to inspect.
+ * @param rootXPub an optional bech32-encoded root extended public
+ *   key. This only applies to Byron addresses, and is for decrypting
+ *   the {@link InspectAddressByron.payload} field.
  * @returns The fields parsed from the address.
  */
 function inspectAddress(_x, _x2) {
