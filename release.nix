@@ -57,12 +57,11 @@ let
       map (drv: drv // { inherit packageName; }) (collectJobs' package)
     ) ds);
 
-  disabledMingwW64Tests = recursiveUpdate (if withProblematicWindowsTests then {} else {
+  disabledMingwW64Tests = lib.optionalAttrs withProblematicWindowsTests {
     haskellPackages.Win32-network.checks.test-Win32-network = null;
     checks.tests.Win32-network.test-Win32-network = null;
     haskellPackages.network-mux.checks.test-network-mux = null;
     checks.tests.network-mux.test-network-mux = null;
-  }) {
   };
 
   # Remove build jobs for which cross compiling does not make sense.
