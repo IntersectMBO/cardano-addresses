@@ -64,7 +64,7 @@ executable cardano-addresses-jsapi
         text -any
     default-language: Haskell2010
     if !(impl(ghcjs -any) || os(ghcjs))
-      buildable: false
+      buildable: False
 
 test-suite jsapi-test
     type: exitcode-stdio-1.0

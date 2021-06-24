@@ -16,6 +16,8 @@ import Prelude
 
 import Control.Lens
     ( (^.) )
+import Control.Monad
+    ( void )
 import Data.Version
     ( showVersion )
 import Language.Javascript.JSaddle
@@ -26,7 +28,9 @@ import System.Git.TH
     ( gitRevParseHEAD )
 
 export :: Object -> JSM ()
-export api =
-  api ^. jss "version" (fun $ \ _ _ [success] -> do
-    _ <- call success success [showVersion version <> " @ " <> $(gitRevParseHEAD)]
-    pure ())
+export api = api ^. jss "version" (fun $ \ _ _ -> impl)
+  where
+    impl (success:_) = void $ call success success [versionStr]
+    impl _ = error "version: incorrect number of arguments"
+
+    versionStr = showVersion version <> " @ " <> $(gitRevParseHEAD)

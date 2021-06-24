@@ -128,14 +128,12 @@ let
           mkdir -p jsbits
           cp ${jsbits}/* jsbits
         '';
-
-      in lib.mkMerge
-        [ (lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+      in lib.mkMerge [
+        (lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
           packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
-          # Disable CLI running tests under ghcjs
           packages.cardano-addresses-cli.components.tests.unit.preCheck = ''
             export CARDANO_ADDRESSES_CLI="${config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address}/bin"
           '';
@@ -144,9 +142,12 @@ let
             pkgs.buildPackages.nodejs
           ];
         })
-        # Disable jsapi-test on jsaddle/native. It's not working yet.
         (lib.mkIf (!pkgs.stdenv.hostPlatform.isGhcjs) {
-          packages.cardano-addresses-jsapi.components.tests.jsapi-test.doCheck = false;
+          # Disable jsapi-test on jsaddle/native. It's not working yet.
+          packages.cardano-addresses-jsapi.components.tests.jsapi-test.preCheck =  ''
+            echo "Tests disabled on non-ghcjs"
+            exit 0
+          '';
         })
       ])
     ];

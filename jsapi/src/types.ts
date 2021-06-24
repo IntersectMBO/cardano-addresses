@@ -63,6 +63,7 @@ export interface ChainPointer {
 
 export interface InspectAddressShelley {
   address_style: "Shelley";
+  /** An integer denoting which network the address belongs to. */
   network_tag: number;
   spending_key_hash?: KeyHash;
   spending_key_hash_bech32?: string;
@@ -79,8 +80,10 @@ export interface InspectAddressShelley {
  */
 export interface InspectAddressIcarus {
   address_style: "Icarus";
+  /** Which network the address belongs to. Unset for mainnet. */
   network_tag: number;
-  address_root: Bytes; /** Hex-encoded address payload */
+  /** Hex-encoded address payload */
+  address_root: Bytes;
 };
 
 /**
@@ -88,8 +91,13 @@ export interface InspectAddressIcarus {
  */
 export interface InspectAddressByron {
   address_style: "Byron";
-  network_tag: number;
-  address_root: Bytes; /** Hex-encoded address payload */
+  /** Which network the address belongs to. Unset for mainnet. */
+  network_tag?: number;
+  /** Hex-encoded address payload */
+  address_root: Bytes;
+  /** Heirarchical derivation payload. If a root XPub is provided,
+      the derivation indices are decrypted.
+      Otherwise, it will be the encrypted payload. **/
   payload: Bytes  | { account_index: number; address_index: number; };
 }
 
