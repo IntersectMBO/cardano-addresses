@@ -4,7 +4,9 @@
 
 <p align="center">
   <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
-  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous Integration?style=for-the-badge" /></a>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Linux)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Linux)?style=for-the-badge&label=BUILD%20(Linux)" /></a>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Windows)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Windows)?style=for-the-badge&label=BUILD%20(Windows)" /></a>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"TypeScript NPM Package"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/TypeScript%20NPM%20Package?style=for-the-badge&label=BUILD%20(TypeScript)" /></a>
   <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
 </p>
 
