@@ -27,7 +27,7 @@ import Data.Aeson
     , Options (..)
     , SumEncoding (..)
     , ToJSON (..)
-    , Value
+    , Value (..)
     , Zero
     , defaultOptions
     , genericToJSON
@@ -57,4 +57,7 @@ instance (Exception e, Generic e, GToJSON Zero (Rep e)) => ToJSON (WithErrorMess
     toJSON = errToJSON . withErrorMessage
 
 instance ToJSON DeserialiseFailure where
-    toJSON = toJSON . displayException
+    toJSON (DeserialiseFailure off msg) = object
+        [ "code" .= String "Codec.CBOR.DeserialiseFailure"
+        , "details" .= object [ "byteOffset" .= off, "message" .= msg ]
+        ]

@@ -78,14 +78,16 @@ describe('inspectAddress', () => {
     it('Truncated Shelley', () => {
       const addr = "addr1vpu5vlrf4xkxv2qpwngf6cj";
       return expect(inspectAddress(addr)).rejects.toEqual({
-        error: { code: "decode" },
+        code: "decode",
+        error: {},
         message: "Bech32 error: Invalid character(s) in string"
       });
     });
     it('Typo in Shelley', () => {
       const addr = "addr1q9rad75p5r9qk9pnczhyqhkqfv5j2hp7lrmwxpusfqmc8pp7y5xc6cr99fsjcw0hqksgwv3enatmz9ulpp6zn2kuskaqmq72h5";
       return expect(inspectAddress(addr)).rejects.toEqual({
-        error: { code: "decode" },
+        code: "decode",
+        error: {},
         message: "Bech32 error: Invalid character(s) in string:\naddr1q9rad75p5r9qk9pnczhyqhkqfv5j2hp7lrmwxpusfqmc8pp7y5xc6cr99fsjcw0hqksgwv3enatmz9ulpp6zn2kuskaqmq72h5"
       });
     });
@@ -101,7 +103,7 @@ describe('inspectAddress', () => {
                    message: "Unknown address type 0"
                  },
                },
-        message: "Unknown address type 0"
+        message: "Invalid Shelley address: Unknown address type 0"
       });
     });
     it('Worng Icarus', () => {
@@ -116,13 +118,14 @@ describe('inspectAddress', () => {
                    message: "Unknown address type 192"
                  },
                },
-        message: "Unknown address type 192"
+        message: "Invalid Shelley address: Unknown address type 192"
       });
     });
     it('Cannot detect encoding', () => {
       const addr = "%#@?;''";
       return expect(inspectAddress(addr)).rejects.toEqual({
-        error: { code: "decode" },
+        code: "decode",
+        error: {},
         message: "Couldn't detect input encoding? Data on stdin must be encoded as bech16, bech32 or base58."
       });
     });
@@ -130,7 +133,8 @@ describe('inspectAddress', () => {
       const xpub = "hello";
       const addr = "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZq2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr";
       return expect(inspectAddress(addr, xpub)).rejects.toEqual({
-        error: { code: "xvk" },
+        code: "xvk",
+        error: {},
         message: "Bech32 error: string is too short"
       });
     });

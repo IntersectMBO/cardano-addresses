@@ -450,9 +450,12 @@ prettyErrInspectAddressOnlyShelley = \case
 prettyErrInspectAddress :: ErrInspectAddress -> String
 prettyErrInspectAddress = \case
     WrongInputSize i -> format "Wrong input size of {}" i
-    ErrShelley e -> prettyErrInspectAddressOnlyShelley e
-    ErrIcarus e -> Icarus.prettyErrInspectAddress e
-    ErrByron e -> Byron.prettyErrInspectAddress e
+    ErrShelley e -> "Invalid Shelley address: "
+        <> prettyErrInspectAddressOnlyShelley e
+    ErrIcarus e -> "Invalid Icarus address: "
+        <> Icarus.prettyErrInspectAddress e
+    ErrByron e -> "Invalid Byron address: "
+        <> Byron.prettyErrInspectAddress e
 
 -- Determines whether an 'Address' a Shelley address.
 --

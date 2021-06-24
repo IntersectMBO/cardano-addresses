@@ -70,8 +70,8 @@ getBytes text =
 errorString :: String -> String -> JSM JSVal
 errorString code msg = do
     err <- create
-    err ^. jss "code" (val code)
     ob <- create
+    ob ^. jss "code" (val code)
     ob ^. jss "error" err
     ob ^. jss "message" (val msg)
     toJSVal ob
