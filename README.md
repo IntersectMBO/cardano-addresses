@@ -228,6 +228,26 @@ $ echo "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u" | d
 }
 ```
 
+## NPM Package
+
+There is an experimental NPM module for JavaScript and TypeScript
+available, which works in both NodeJS and the browser.
+
+Here is a code sample showing how it can be used:
+
+```javascript
+var cardanoAddresses = require('cardano-addresses')
+var addr = 'addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u'
+
+cardanoAddresses.inspectAddress(addr)
+  .then(info => console.log(info)
+```
+
+- [NPM Package](https://www.npmjs.com/package/cardano-addresses)
+- [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
+- [Web Demo](https://input-output-hk.github.io/cardano-addresses/demo/)
+- [Development Info](./jsapi/README.md)
+
 ## Contributing
 
 Pull requests are welcome.
