@@ -121,7 +121,6 @@ jobs:
         PRE_RELEASE: "false"
         CHANGELOG_FILE: "ChangeLog.md"
         ALLOW_EMPTY_CHANGELOG: "false"
-        ALLOW_TAG_PREFIX: "true"
       with:
         args: |
           ${{ steps.variables.outputs.pkg_name }}-${{ steps.variables.outputs.tag }}-linux64.tar.gz
