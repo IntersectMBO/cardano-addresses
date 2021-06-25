@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -61,10 +62,14 @@ module Cardano.Mnemonic
 
 import Prelude
 
+import Basement.NormalForm
+    ( NormalForm (..) )
 import Basement.Sized.List
     ( unListN )
 import Control.Arrow
     ( left )
+import Control.DeepSeq
+    ( NFData (..) )
 import Control.Monad.Catch
     ( throwM )
 import Crypto.Encoding.BIP39
@@ -150,13 +155,14 @@ data Mnemonic (mw :: Nat) = Mnemonic
         --
         -- @since 1.0.0
     , mnemonicToSentence :: MnemonicSentence mw
-    } deriving (Eq, Show)
+    } deriving stock (Eq, Show)
 
 -- This wraps EntropyError of "Cardano.Encoding.BIP39"
 newtype MnemonicException csz =
     UnexpectedEntropyError (EntropyError csz)
     -- ^ Invalid entropy length or checksum
-    deriving (Show, Typeable)
+    deriving stock (Show, Typeable)
+    deriving newtype NFData
 
 -- | This wraps errors from "Cardano.Encoding.BIP39"
 data MkMnemonicError csz
@@ -166,11 +172,26 @@ data MkMnemonicError csz
       -- ^ Invalid entropy length or checksum.
     | ErrDictionary DictionaryError
       -- ^ Invalid word in mnemonic.
-    deriving (Eq, Show)
+    deriving stock (Eq, Show)
 
 deriving instance Eq (EntropyError czs)
 deriving instance Eq MnemonicWordsError
 deriving instance Eq DictionaryError
+
+-- NFData instances
+instance NFData (Mnemonic mw) where
+    rnf (Mnemonic ent ws) = toNormalForm ent `seq` toNormalForm ws
+instance NFData (EntropyError csz) where
+    rnf (ErrInvalidEntropyLength a b) = rnf a `seq` rnf b
+    rnf (ErrInvalidEntropyChecksum a b) = toNormalForm a `seq` toNormalForm b
+instance NFData MnemonicWordsError where
+    rnf (ErrWrongNumberOfWords a b) = rnf a `seq` rnf b
+instance NFData DictionaryError where
+    rnf (ErrInvalidDictionaryWord s) = toNormalForm s
+instance NFData (MkMnemonicError csz) where
+    rnf (ErrMnemonicWords e) = rnf e
+    rnf (ErrEntropy e) = rnf e
+    rnf (ErrDictionary e) = rnf e
 
 -- | Smart-constructor for the 'Entropy'. Make sure the 'ByteString' comes from a highly random source or use 'genEntropy'.
 --
@@ -317,6 +338,8 @@ instance Eq SomeMnemonic where
         case typeOf mwa `testEquality` typeOf mwb of
             Nothing -> False
             Just Refl -> mwa == mwb
+instance NFData SomeMnemonic where
+    rnf (SomeMnemonic mnem) = rnf mnem
 
 -- | This class enables caller to parse text list of variable length
 -- into mnemonic sentences.
