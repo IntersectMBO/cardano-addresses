@@ -40,7 +40,7 @@
 </span><span id="line-40"></span><span class="hs-comment">-- Type</span><span>
 </span><span id="line-41"></span><span class="hs-comment">--</span><span>
 </span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span id="local-6989586621679104852"><span id="local-6989586621679104853"></span></span><span class="hs-keyword">data</span><span> </span><span id="MnemonicSize"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier hs-var">MnemonicSize</span></a></span></span><span>
+</span><span id="line-43"></span><span id="local-6989586621679104868"><span id="local-6989586621679104869"></span></span><span class="hs-keyword">data</span><span> </span><span id="MnemonicSize"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier hs-var">MnemonicSize</span></a></span></span><span>
 </span><span id="line-44"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="MS_9"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_9"><span class="hs-identifier hs-var">MS_9</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MS_12"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_12"><span class="hs-identifier hs-var">MS_12</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MS_15"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_15"><span class="hs-identifier hs-var">MS_15</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MS_18"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_18"><span class="hs-identifier hs-var">MS_18</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MS_21"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_21"><span class="hs-identifier hs-var">MS_21</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MS_24"><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MS_24"><span class="hs-identifier hs-var">MS_24</span></a></span></span><span>
 </span><span id="line-45"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall x. MnemonicSize -&gt; Rep MnemonicSize x)
 -&gt; (forall x. Rep MnemonicSize x -&gt; MnemonicSize)
@@ -51,7 +51,7 @@ forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
 $cto :: forall x. Rep MnemonicSize x -&gt; MnemonicSize
 $cfrom :: forall x. MnemonicSize -&gt; Rep MnemonicSize x
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104837"><span id="local-6989586621679104839"><span id="local-6989586621679104841"><span class="annot"><span class="annottext">Int -&gt; MnemonicSize -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104853"><span id="local-6989586621679104855"><span id="local-6989586621679104857"><span class="annot"><span class="annottext">Int -&gt; MnemonicSize -&gt; ShowS
 [MnemonicSize] -&gt; ShowS
 MnemonicSize -&gt; String
 (Int -&gt; MnemonicSize -&gt; ShowS)
@@ -66,14 +66,14 @@ show :: MnemonicSize -&gt; String
 $cshow :: MnemonicSize -&gt; String
 showsPrec :: Int -&gt; MnemonicSize -&gt; ShowS
 $cshowsPrec :: Int -&gt; MnemonicSize -&gt; ShowS
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104832"><span id="local-6989586621679104834"><span class="annot"><span class="annottext">MnemonicSize
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104848"><span id="local-6989586621679104850"><span class="annot"><span class="annottext">MnemonicSize
 MnemonicSize -&gt; MnemonicSize -&gt; Bounded MnemonicSize
 forall a. a -&gt; a -&gt; Bounded a
 maxBound :: MnemonicSize
 $cmaxBound :: MnemonicSize
 minBound :: MnemonicSize
 $cminBound :: MnemonicSize
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104815"><span id="local-6989586621679104817"><span id="local-6989586621679104819"><span id="local-6989586621679104821"><span id="local-6989586621679104823"><span id="local-6989586621679104825"><span id="local-6989586621679104827"><span id="local-6989586621679104829"><span class="annot"><span class="annottext">Int -&gt; MnemonicSize
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104831"><span id="local-6989586621679104833"><span id="local-6989586621679104835"><span id="local-6989586621679104837"><span id="local-6989586621679104839"><span id="local-6989586621679104841"><span id="local-6989586621679104843"><span id="local-6989586621679104845"><span class="annot"><span class="annottext">Int -&gt; MnemonicSize
 MnemonicSize -&gt; Int
 MnemonicSize -&gt; [MnemonicSize]
 MnemonicSize -&gt; MnemonicSize
@@ -114,7 +114,7 @@ pred :: MnemonicSize -&gt; MnemonicSize
 $cpred :: MnemonicSize -&gt; MnemonicSize
 succ :: MnemonicSize -&gt; MnemonicSize
 $csucc :: MnemonicSize -&gt; MnemonicSize
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104810"><span id="local-6989586621679104812"><span class="annot"><span class="annottext">MnemonicSize -&gt; MnemonicSize -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679104826"><span id="local-6989586621679104828"><span class="annot"><span class="annottext">MnemonicSize -&gt; MnemonicSize -&gt; Bool
 (MnemonicSize -&gt; MnemonicSize -&gt; Bool)
 -&gt; (MnemonicSize -&gt; MnemonicSize -&gt; Bool) -&gt; Eq MnemonicSize
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -137,18 +137,18 @@ forall a. Show a =&gt; a -&gt; String
 </span><span id="line-49"></span><span>
 </span><span id="line-50"></span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#mnemonicSizeFromString"><span class="hs-identifier hs-type">mnemonicSizeFromString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier hs-type">MnemonicSize</span></a></span><span>
 </span><span id="line-51"></span><span id="mnemonicSizeFromString"><span class="annot"><span class="annottext">mnemonicSizeFromString :: String -&gt; Either String MnemonicSize
-</span><a href="Options.Applicative.MnemonicSize.html#mnemonicSizeFromString"><span class="hs-identifier hs-var hs-var">mnemonicSizeFromString</span></a></span></span><span> </span><span id="local-6989586621679104805"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679104805"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.MnemonicSize.html#mnemonicSizeFromString"><span class="hs-identifier hs-var hs-var">mnemonicSizeFromString</span></a></span></span><span> </span><span id="local-6989586621679104821"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679104821"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-52"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">String -&gt; [(String, MnemonicSize)] -&gt; Maybe MnemonicSize
 forall a b. Eq a =&gt; a -&gt; [(a, b)] -&gt; Maybe b
 </span><span class="hs-identifier hs-var">lookup</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679104805"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="annot"><span class="annottext">[(String, MnemonicSize)]
-</span><a href="#local-6989586621679104803"><span class="hs-identifier hs-var">sizeMap</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-53"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679104802"><span class="annot"><span class="annottext">MnemonicSize
-</span><a href="#local-6989586621679104802"><span class="hs-identifier hs-var">ms</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MnemonicSize -&gt; Either String MnemonicSize
+</span><a href="#local-6989586621679104821"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="annot"><span class="annottext">[(String, MnemonicSize)]
+</span><a href="#local-6989586621679104819"><span class="hs-identifier hs-var">sizeMap</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-53"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679104818"><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="#local-6989586621679104818"><span class="hs-identifier hs-var">ms</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MnemonicSize -&gt; Either String MnemonicSize
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">MnemonicSize
-</span><a href="#local-6989586621679104802"><span class="hs-identifier hs-var">ms</span></a></span><span>
+</span><a href="#local-6989586621679104818"><span class="hs-identifier hs-var">ms</span></a></span><span>
 </span><span id="line-54"></span><span>        </span><span class="annot"><span class="annottext">Maybe MnemonicSize
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String MnemonicSize
 forall a b. a -&gt; Either a b
@@ -174,8 +174,8 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;.&quot;</span></span><span>
 </span><span id="line-58"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-59"></span><span>    </span><span id="local-6989586621679104803"><span class="annot"><span class="annottext">sizeMap :: [(String, MnemonicSize)]
-</span><a href="#local-6989586621679104803"><span class="hs-identifier hs-var hs-var">sizeMap</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String]
+</span><span id="line-59"></span><span>    </span><span id="local-6989586621679104819"><span class="annot"><span class="annottext">sizeMap :: [(String, MnemonicSize)]
+</span><a href="#local-6989586621679104819"><span class="hs-identifier hs-var hs-var">sizeMap</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[String]
 </span><a href="Options.Applicative.MnemonicSize.html#sizeStrs"><span class="hs-identifier hs-var">sizeStrs</span></a></span><span> </span><span class="annot"><span class="annottext">[String] -&gt; [MnemonicSize] -&gt; [(String, MnemonicSize)]
 forall a b. [a] -&gt; [b] -&gt; [(a, b)]
 </span><span class="hs-operator hs-var">`zip`</span></span><span> </span><span class="annot"><span class="annottext">[MnemonicSize]

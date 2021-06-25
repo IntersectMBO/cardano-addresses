@@ -201,6 +201,7 @@ entropyToBytes :: Entropy n -> ScrubbedBytes
 entropyToMnemonic :: forall mw ent csz. (ValidMnemonicSentence mw, ValidEntropySize ent, ValidChecksumSize ent csz, ent ~ EntropySize mw, mw ~ MnemonicWords ent) => Entropy ent -> Mnemonic mw
 instance GHC.Show.Show (Cardano.Mnemonic.Mnemonic mw)
 instance GHC.Classes.Eq (Cardano.Mnemonic.Mnemonic mw)
+instance Control.DeepSeq.NFData (Cardano.Mnemonic.MnemonicException csz)
 instance GHC.Show.Show (Cardano.Mnemonic.MnemonicException csz)
 instance GHC.Show.Show (Cardano.Mnemonic.MkMnemonicError csz)
 instance GHC.Classes.Eq (Cardano.Mnemonic.MkMnemonicError csz)
@@ -215,7 +216,13 @@ instance Cardano.Mnemonic.NatVals '[]
 instance (GHC.TypeNats.KnownNat n, Cardano.Mnemonic.NatVals rest) => Cardano.Mnemonic.NatVals (n : rest)
 instance (n GHC.Types.~ Crypto.Encoding.BIP39.EntropySize mw, csz GHC.Types.~ Crypto.Encoding.BIP39.CheckSumBits n, Crypto.Encoding.BIP39.ConsistentEntropy n mw csz) => Cardano.Mnemonic.MkSomeMnemonic '[mw]
 instance GHC.Classes.Eq Cardano.Mnemonic.SomeMnemonic
+instance Control.DeepSeq.NFData Cardano.Mnemonic.SomeMnemonic
+instance Control.DeepSeq.NFData (Cardano.Mnemonic.MkMnemonicError csz)
 instance GHC.TypeNats.KnownNat csz => GHC.Exception.Type.Exception (Cardano.Mnemonic.MnemonicException csz)
+instance Control.DeepSeq.NFData (Cardano.Mnemonic.Mnemonic mw)
+instance Control.DeepSeq.NFData (Crypto.Encoding.BIP39.EntropyError csz)
+instance Control.DeepSeq.NFData Crypto.Encoding.BIP39.MnemonicWordsError
+instance Control.DeepSeq.NFData Crypto.Encoding.BIP39.Dictionary.DictionaryError
 
 module Cardano.Address.Derivation
 
