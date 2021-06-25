@@ -4,7 +4,12 @@
 
 <p align="center">
   <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
-  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous Integration?style=for-the-badge" /></a>
+  <a href="https://www.npmjs.com/package/cardano-addresses"><img src="https://img.shields.io/npm/v/cardano-addresses?color=%239b59b6&style=for-the-badge"/></a>
+  <br>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Linux)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Linux)?style=for-the-badge&label=BUILD%20(Linux)" /></a>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Windows)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Windows)?style=for-the-badge&label=BUILD%20(Windows)" /></a>
+  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"TypeScript NPM Package"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/TypeScript%20NPM%20Package?style=for-the-badge&label=BUILD%20(TypeScript)" /></a>
+  <br>
   <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
 </p>
 
@@ -222,6 +227,26 @@ $ echo "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u" | d
     "network_tag": 0
 }
 ```
+
+## NPM Package
+
+There is an experimental NPM module for JavaScript and TypeScript
+available, which works in both NodeJS and the browser.
+
+Here is a code sample showing how it can be used:
+
+```javascript
+var cardanoAddresses = require('cardano-addresses')
+var addr = 'addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u'
+
+cardanoAddresses.inspectAddress(addr)
+  .then(info => console.log(info)
+```
+
+- [NPM Package](https://www.npmjs.com/package/cardano-addresses)
+- [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
+- [Web Demo](https://input-output-hk.github.io/cardano-addresses/demo/)
+- [Development Info](./jsapi/README.md)
 
 ## Contributing
 

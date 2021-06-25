@@ -1,3 +1,18 @@
+## [3.5.0] - 2021-06-xx UNRELEASED
+
+### Added
+
+- Initial release of a [NPM Package](https://www.npmjs.com/package/cardano-addresses)
+  which uses the GHCJS build.
+
+### Changed
+
+- The supported compiler version is now GHC 8.10.4.
+
+- Updated `validateScriptTemplate` and `validateScriptOfTemplate`
+  functions for multi-signature wallets.
+
+
 ## [3.4.0] - 2021-04-30
 
 ### Added

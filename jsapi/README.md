@@ -2,26 +2,37 @@
 
 - 📦 [NPM Package](https://www.npmjs.com/package/cardano-addresses)
 - 📗 [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
-- 🎇 [Web demo](https://input-output-hk.github.io/cardano-addresses/demo/)
+- 🎇 [Web Demo](https://input-output-hk.github.io/cardano-addresses/demo/)
 - λ [Haskell Library](https://input-output-hk.github.io/cardano-addresses/haddock/)
 
 This is a Typescript (or Javascript) version of the
 [`cardano-addresses`](https://github.com/input-output-hk/cardano-addresses)
-API. It comprises of three parts:
-
- * The ghcjs build of `cardano-addresses:library` (supported by the
-   `cardano-addresses-jsbits` package.
-
-* A Cabal package `cardano-addresses-jsapi` containing GHCJS
-   foreign exports for translating Javascript function calls and
-   values into Haskell function calls and values, and vice-versa.
-
-* An NPM package `cardano-addresses` containing both CommonJS and
-  EcmaScript modules written in TypeScript, which thinly wraps the
-  GHCJS foreign exports in order to make a proper API.
+API.
 
 For the time being, this module is **experimental**, and exposes only
-a subset of the functionality of the Haskell API.
+a subset of the functionality of the Haskell API. We would like to
+increase the TypeScript binding's coverage of the Haskell API in
+future, as needs arise.
+
+## How it works
+
+This package comprises of four parts:
+
+ * A [GHCJS](https://github.com/ghcjs/ghcjs) build of the
+   [`cardano-addresses`](../core/cardano-addresses.cabal) library.
+
+ * An [emscripten](https://emscripten.org/) build of the
+   [libsodium](https://github.com/input-output-hk/libsodium) crypto library,
+   supported by the [`cardano-addresses-jsbits`](../jsbits/cardano-addresses-jsbits.cabal) package.
+
+ * A Cabal package [`cardano-addresses-jsapi`](./cardano-addresses-jsapi.cabal)
+   containing GHCJS foreign exports for translating Javascript
+   function calls and values into Haskell function calls and values,
+   and vice-versa.
+
+ * An NPM package [`cardano-addresses`](./package.json) containing both
+   CommonJS and EcmaScript modules written in TypeScript, which thinly
+   wraps the GHCJS foreign exports in order to make a proper API.
 
 ## Development Info
 
