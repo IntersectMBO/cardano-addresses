@@ -210,7 +210,7 @@ Construct extended private key for account ix=0H, role=0 and address ix=0
 $ cardano-address key child 1852H/1815H/0H/0/0 < root.xprv > key.xsk
 addr_xsk1kzl5vgev0u843tfnxqcwg0lmaf7zhdhczddaqhas6dp6m6z98302e3avp8mhu94kxkpj2gss064f74km3rrptafh4fsztekz8k5c469shcvx35wrdmus3xemp984lcwhs0jdtl4pfcsrfspe00h9pej6rg8drvcv
 
-Create signing key using cardano-cli
+Create extended signing key using cardano-cli
 $ cardano-cli key convert-cardano-address-key --shelley-payment-key --signing-key-file key.xsk --out-file key.skey
 {
     "type": "PaymentExtendedSigningKeyShelley_ed25519_bip32",
@@ -248,9 +248,20 @@ $ cardano-address key public --with-chain-code < key.xsk | bech32
 fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
 (but should be prefixed wth '5840' to be the same)
 
-Finally, we can get compute hash (but here we need to use without chain code):
+Then, we can get compute hash (but here we need to use without chain code):
 $ cardano-address key public --without-chain-code < key.xsk | cardano-address key hash | bech32
 0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
+
+Now, we can deal with non-extended keys, and construct non-extended private key for account ix=0H, role=0 and address ix=0
+$ cardano-address key child 1852H/1815H/0H/0/0 -- without-chain-code < root.xprv > key.sk
+addr_xsk1kzl5vgev0u843tfnxqcwg0lmaf7zhdhczddaqhas6dp6m6z98302e3avp8mhu94kxkpj2gss064f74km3rrptafh4fsztekz8k5c46q0lvggc
+
+Producing cborhash,
+$ cardano-address key child 1852H/1815H/0H/0/0 --without-chain-code < root.xprv | bech32
+b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8
+(but should be prefixed wth '5820' to be the same)
+
+Rule for prefixes: CBOR-encoded bytestring (which is what the 58 identifies) of a specific size (80 means 128 bytes, whereas 40 means 64 bytes, 20 means 32 bytes)
 
 ```
 </details>
