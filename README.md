@@ -194,6 +194,67 @@ addr_test1wqqggtajwkxjgf58v452jz6jl87lt32w3mhez5hd7xz6hugp80tta
 ```
 </details>
 
+<details>
+  <summary>Correspondence between keys in cardano-addresses and cardano-cli (<strong>key.xsk key.xvk key.vk key.hash</strong>)</summary>
+
+```console
+Let's assume we have mnemonic
+$ cat recovery-phrase.prv
+nothing heart matrix fly sleep slogan tomato pulse what roof rail since plastic false enlist
+
+Construct root extended private key
+$ cardano-address key from-recovery-phrase Shelley < recovery-phrase.prv > root.xprv
+root_xsk1apjwjs3ksgm5mnnk0cc5v5emgv0hmafmmy8tffay5s2ffk69830whwznr46672ruucdzwwtv9upv72e4ylrypyz5m6cyh0p00t7n3u3agt20lv32j4kxcqlkzu78nzjx0ysxxlc2ghfz9prxfmrds802xsuhh404~
+
+Construct extended private key for account ix=0H, role=0 and address ix=0
+$ cardano-address key child 1852H/1815H/0H/0/0 < root.xprv > key.xsk
+addr_xsk1kzl5vgev0u843tfnxqcwg0lmaf7zhdhczddaqhas6dp6m6z98302e3avp8mhu94kxkpj2gss064f74km3rrptafh4fsztekz8k5c469shcvx35wrdmus3xemp984lcwhs0jdtl4pfcsrfspe00h9pej6rg8drvcv
+
+Create signing key using cardano-cli
+$ cardano-cli key convert-cardano-address-key --shelley-payment-key --signing-key-file key.xsk --out-file key.skey
+{
+    "type": "PaymentExtendedSigningKeyShelley_ed25519_bip32",
+    "description": "",
+    "cborHex": "5880b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
+}
+
+Create corresponding verification key using cardano-cli
+$ cardano-cli key verification-key --signing-key-file key.skey --verification-key-file key.vkey
+{
+    "type": "PaymentExtendedVerificationKeyShelley_ed25519_bip32",
+    "description": "",
+    "cborHex": "5840fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
+}
+
+Create verification key hash using cardano-cli
+$ cardano-cli address key-hash --payment-verification-key-file key.vkey > key.hash
+0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
+
+Alternatively, we can create non-extended key
+$ cardano-address key public --without-chain-code < key.xsk > key.vk
+addr_vk1lwalvsgwy3fj7d0fy707hvy96txqtvaj4ksa7al2r9g7k6208q6qmrv9k3
+
+Also, take notice that signing key can be translated to cborhex:
+$ cat key.xsk | bech32
+b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
+(but should be prefixed wth '5880' to be the same)
+
+Moreover, basing on key.vk one can get hash
+$ cardano-cli address key-hash --payment-verification-key $(cat key.vk) > key1.hash
+0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
+
+Within cardano-addresses one can get cborhex of verification key (with chain code)
+$ cardano-address key public --with-chain-code < key.xsk | bech32
+fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
+(but should be prefixed wth '5840' to be the same)
+
+Finally, we can get compute hash (but here we need to use without chain code):
+$ cardano-address key public --without-chain-code < key.xsk | cardano-address key hash | bech32
+0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
+
+```
+</details>
+
 ## Docker Image
 
 ### Build
