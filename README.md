@@ -218,6 +218,12 @@ $ cardano-cli key convert-cardano-address-key --shelley-payment-key --signing-ke
     "cborHex": "5880b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
 }
 
+The cborhex here contains of 4 parts:
+1. prefix 5880 - bytestring of 128 bytes
+2. signing key (64 bytes) - b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8
+3. verification key (32 bytes) - fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834
+4. chain code (32 bytes) - b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
+
 Create corresponding verification key using cardano-cli
 $ cardano-cli key verification-key --signing-key-file key.skey --verification-key-file key.vkey
 {
@@ -225,6 +231,12 @@ $ cardano-cli key verification-key --signing-key-file key.skey --verification-ke
     "description": "",
     "cborHex": "5840fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
 }
+The cborhex here contains of 3 parts:
+1. prefix 5840 - bytestring of 64 bytes
+2. verification key (32 bytes) - fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834
+3. chain code (32 bytes) - b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
+
+Rule for prefixes: CBOR-encoded bytestring (which is what the 58 identifies) of a specific size (80 means 128 bytes, whereas 40 means 64 bytes, 20 means 32 bytes)
 
 Create verification key hash using cardano-cli
 $ cardano-cli address key-hash --payment-verification-key-file key.vkey > key.hash
@@ -237,7 +249,7 @@ addr_vk1lwalvsgwy3fj7d0fy707hvy96txqtvaj4ksa7al2r9g7k6208q6qmrv9k3
 Also, take notice that signing key can be translated to cborhex:
 $ cat key.xsk | bech32
 b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
-(but should be prefixed wth '5880' to be the same)
+(it is signing key and chain code appended)
 
 Moreover, basing on key.vk one can get hash
 $ cardano-cli address key-hash --payment-verification-key $(cat key.vk) > key1.hash
@@ -246,7 +258,12 @@ $ cardano-cli address key-hash --payment-verification-key $(cat key.vk) > key1.h
 Within cardano-addresses one can get cborhex of verification key (with chain code)
 $ cardano-address key public --with-chain-code < key.xsk | bech32
 fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a
-(but should be prefixed wth '5840' to be the same)
+(it is verification key and chain code appended)
+
+Within cardano-addresses one can get cborhex of verification key (without chain code)
+$ cardano-address key public --without-chain-code < key.xsk | bech32
+fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834
+(just verification key)
 
 Then, we can get compute hash (but here we need to use without chain code):
 $ cardano-address key public --without-chain-code < key.xsk | cardano-address key hash | bech32
@@ -259,9 +276,7 @@ addr_xsk1kzl5vgev0u843tfnxqcwg0lmaf7zhdhczddaqhas6dp6m6z98302e3avp8mhu94kxkpj2gs
 Producing cborhash,
 $ cardano-address key child 1852H/1815H/0H/0/0 --without-chain-code < root.xprv | bech32
 b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8
-(but should be prefixed wth '5820' to be the same)
-
-Rule for prefixes: CBOR-encoded bytestring (which is what the 58 identifies) of a specific size (80 means 128 bytes, whereas 40 means 64 bytes, 20 means 32 bytes)
+(just signing key)
 
 ```
 </details>
