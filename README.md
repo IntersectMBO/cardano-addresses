@@ -253,7 +253,7 @@ $ cardano-address key public --without-chain-code < key.xsk | cardano-address ke
 0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
 
 Now, we can deal with non-extended keys, and construct non-extended private key for account ix=0H, role=0 and address ix=0
-$ cardano-address key child 1852H/1815H/0H/0/0 -- without-chain-code < root.xprv > key.sk
+$ cardano-address key child 1852H/1815H/0H/0/0 --without-chain-code < root.xprv > key.sk
 addr_xsk1kzl5vgev0u843tfnxqcwg0lmaf7zhdhczddaqhas6dp6m6z98302e3avp8mhu94kxkpj2gss064f74km3rrptafh4fsztekz8k5c46q0lvggc
 
 Producing cborhash,
