@@ -28,10 +28,6 @@ stdenv.mkDerivation rec {
       diff -Nur "$js".bak "$js" || true
     }
 
-    sed_inplace rts.js \
-      -e '0,/function h\$ap_1_0(/s//function extra_h\$ap_1_0(/' \
-      -e '/function h\$ghcjszmprimZCGHCJSziPrimziJSVal_con_e/d' \
-
     sed_inplace out.js \
       -e '/function h\$integerzmwiredzminZCGHCziIntegerziTypezi\(Jn\|Jp\|S\)zh_con_e/,+3d'
 
