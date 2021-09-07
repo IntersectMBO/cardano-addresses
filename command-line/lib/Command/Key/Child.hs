@@ -113,6 +113,9 @@ run Child{path} = do
     -- root_xsk => acct_xsk: (hard derivation from root to address)
     --     m => m / purpose' / coin_type' / account' / role / index
     --
+    -- purpose' = 1852H for shelley wallet addresses.
+    -- purpose' = 1854H for shelley wallet addresses that expose shared account.
+    --
     -- acct_xsk => addr_xsk: (hard derivation from account to address)
     --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
     --
@@ -120,6 +123,7 @@ run Child{path} = do
     --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
     --
     --
+
     -- Shared:
     --
     --     m / purpose' / coin_type' / account' / role / index
@@ -148,12 +152,22 @@ run Child{path} = do
         | hrp == CIP5.root_xsk = pure CIP5.stake_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.stake_shared_xsk
 
-    childHrpFor [_,_,_,_,_] hrp
-        | hrp == CIP5.root_xsk = pure CIP5.addr_xsk
+    childHrpFor [p,_,_,_,_] hrp
+        | hrp == CIP5.root_xsk =
+              -- 2147485502 stands for 1854H
+              if p == 2147485502 then
+                  pure CIP5.addr_shared_xsk
+              else
+                  pure CIP5.addr_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.addr_shared_xsk
 
-    childHrpFor [_,_,_] hrp
-        | hrp == CIP5.root_xsk = pure CIP5.acct_xsk
+    childHrpFor [p,_,_] hrp
+        | hrp == CIP5.root_xsk =
+              -- 2147485502 stands for 1854H
+              if p == 2147485502 then
+                  pure CIP5.acct_shared_xsk
+              else
+                  pure CIP5.acct_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.acct_shared_xsk
 
     childHrpFor [2,_] hrp

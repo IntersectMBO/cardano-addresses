@@ -16,8 +16,11 @@ import Test.Utils
 spec :: Spec
 spec = describeCmd [ "key", "child" ] $ do
     specChildValidPath "acct_xsk" ["1852H/1815H/0H"]
+    specChildValidPath "acct_shared_xsk" ["1854H/1815H/0H"]
     specChildValidPath "addr_xsk" ["1852H/1815H/0H/0/0"]
     specChildValidPath "addr_xsk" ["1852H/1815H/0H", "0/0"]
+    specChildValidPath "addr_shared_xsk" ["1854H/1815H/0H/0/0"]
+    specChildValidPath "addr_shared_xsk" ["1854H/1815H/0H", "0/0"]
     specChildValidPath "addr_xsk" ["14H/42H"]
 
     specChildInvalidPath "from a parent root key" ["0H"]
