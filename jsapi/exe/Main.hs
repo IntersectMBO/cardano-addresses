@@ -5,6 +5,8 @@
 #endif
 module Main (main) where
 
+import Prelude
+
 import Cardano.Address.JSAPI
     ( startApi )
 import Language.Javascript.JSaddle

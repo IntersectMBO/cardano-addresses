@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d57abad013296a4fcf0ed769d4542afcaea883d8ca0ddd457778a4394f2cf136
+-- hash: 3712985859f942f21fd3809cd40779749c19ef8786b4543e3b44c99c495cae48
 
 name:           cardano-addresses-jsbits
-version:        3.4.0
+version:        3.6.0
 synopsis:       Javascript code for ghcjs build of cardano-addresses.
 description:    This package supports ghcjs compilation of cardano-addresses with
                 Javascript wrappers and Emscripten builds of the cryptonite C
