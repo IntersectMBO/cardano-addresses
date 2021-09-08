@@ -1,0 +1,83 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    3 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Command.Script.Hash
+<span class="lineno">    8 </span>    ( Cmd
+<span class="lineno">    9 </span>    , mod
+<span class="lineno">   10 </span>    , run
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>    ) where
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>import Prelude hiding
+<span class="lineno">   15 </span>    ( mod )
+<span class="lineno">   16 </span>
+<span class="lineno">   17 </span>import Cardano.Address.Script
+<span class="lineno">   18 </span>    ( KeyHash, Script (..), ScriptHash (..), toScriptHash )
+<span class="lineno">   19 </span>import Codec.Binary.Encoding
+<span class="lineno">   20 </span>    ( AbstractEncoding (..) )
+<span class="lineno">   21 </span>import Options.Applicative
+<span class="lineno">   22 </span>    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+<span class="lineno">   23 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   24 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   25 </span>import Options.Applicative.Script
+<span class="lineno">   26 </span>    ( scriptArg )
+<span class="lineno">   27 </span>import System.IO
+<span class="lineno">   28 </span>    ( stdout )
+<span class="lineno">   29 </span>import System.IO.Extra
+<span class="lineno">   30 </span>    ( hPutBytes, progName )
+<span class="lineno">   31 </span>
+<span class="lineno">   32 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   33 </span>
+<span class="lineno">   34 </span>newtype Cmd = Cmd
+<span class="lineno">   35 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">script</span></span></span> :: Script KeyHash
+<span class="lineno">   36 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   37 </span>
+<span class="lineno">   38 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   39 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;hash&quot; $</span>
+<span class="lineno">   40 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   41 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a script hash&quot;</span>
+<span class="lineno">   42 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Create a script hash that can be used in stake or payment address.&quot;</span>
+<span class="lineno">   43 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   44 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The script is taken as argument.&quot;</span>
+<span class="lineno">   45 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   46 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   47 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script hash 'all &quot;</span>
+<span class="lineno">   48 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   49 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;, addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44&quot;</span>
+<span class="lineno">   50 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;]'&quot;</span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   53 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   54 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   55 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; scriptArg</span></span>
+<span class="lineno">   56 </span>
+<span class="lineno">   57 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   58 </span><span class="decl"><span class="istickedoff">run Cmd{script} = do</span>
+<span class="lineno">   59 </span><span class="spaces">    </span><span class="istickedoff">let (ScriptHash bytes) = toScriptHash script</span>
+<span class="lineno">   60 </span><span class="spaces">    </span><span class="istickedoff">hPutBytes stdout bytes (EBech32 CIP5.script)</span></span>
+
+</pre>
+</body>
+</html>

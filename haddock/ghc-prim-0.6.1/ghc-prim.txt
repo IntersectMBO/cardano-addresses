@@ -6111,8 +6111,8 @@ oneShot :: forall (q :: RuntimeRep) (r :: RuntimeRep) (a :: TYPE q) (b :: TYPE r
 runRW# :: forall (r :: RuntimeRep) (o :: TYPE r). (State# RealWorld -> o) -> o
 
 
--- | Primitive operations on Int64 on platforms where WORD_SIZE_IN_BITS
---   &lt; 64.
+-- | Primitive operations on Int64# and Word64# on platforms where
+--   WORD_SIZE_IN_BITS &lt; 64.
 module GHC.IntWord64
 
 

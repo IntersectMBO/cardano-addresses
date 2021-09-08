@@ -1760,12 +1760,22 @@ breakOnEnd :: Text -> Text -> (Text, Text)
 
 -- | <i>O(n)</i> <a>break</a> is like <a>span</a>, but the prefix returned
 --   is over elements that fail the predicate <tt>p</tt>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; T.break (=='c') "180cm"
+--   ("180","cm")
+--   </pre>
 break :: (Char -> Bool) -> Text -> (Text, Text)
 
 -- | <i>O(n)</i> <a>span</a>, applied to a predicate <tt>p</tt> and text
 --   <tt>t</tt>, returns a pair whose first element is the longest prefix
 --   (possibly empty) of <tt>t</tt> of elements that satisfy <tt>p</tt>,
 --   and whose second is the remainder of the list.
+--   
+--   <pre>
+--   &gt;&gt;&gt; T.span (=='0') "000AB"
+--   ("000","AB")
+--   </pre>
 span :: (Char -> Bool) -> Text -> (Text, Text)
 
 -- | <i>O(n)</i> Group characters in a string by equality.
@@ -2872,6 +2882,11 @@ splitAt :: Int64 -> Text -> (Text, Text)
 --   <tt>t</tt>, returns a pair whose first element is the longest prefix
 --   (possibly empty) of <tt>t</tt> of elements that satisfy <tt>p</tt>,
 --   and whose second is the remainder of the list.
+--   
+--   <pre>
+--   &gt;&gt;&gt; T.span (=='0') "000AB"
+--   ("000","AB")
+--   </pre>
 span :: (Char -> Bool) -> Text -> (Text, Text)
 
 -- | <i>O(n+m)</i> Find the first instance of <tt>needle</tt> (which must
@@ -2919,6 +2934,11 @@ breakOnEnd :: Text -> Text -> (Text, Text)
 
 -- | <i>O(n)</i> <a>break</a> is like <a>span</a>, but the prefix returned
 --   is over elements that fail the predicate <tt>p</tt>.
+--   
+--   <pre>
+--   &gt;&gt;&gt; T.break (=='c') "180cm"
+--   ("180","cm")
+--   </pre>
 break :: (Char -> Bool) -> Text -> (Text, Text)
 
 -- | The <a>group</a> function takes a <a>Text</a> and returns a list of
