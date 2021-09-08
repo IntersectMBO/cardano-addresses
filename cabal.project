@@ -1,6 +1,5 @@
-index-state: 2021-05-27T00:00:00Z
-
-with-compiler: ghc-8.10.4
+index-state: 2021-09-01T00:00:00Z
+with-compiler: ghc-8.10.5
 
 constraints: ghcjs-base >=0.2.0.3
 
