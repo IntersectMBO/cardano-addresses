@@ -1,3 +1,12 @@
+## [3.6.0] - 2021-09-08
+
+### Changed
+
+- Bech32 prefixes for shared account addresses were fixed to match the
+  latest draft of [CIP-1854][].
+
+[CIP-1854]: https://github.com/cardano-foundation/CIPs/blob/master/CIP-1854/CIP-1854.md
+
 ## [3.5.0] - 2021-06-28
 
 ### Added

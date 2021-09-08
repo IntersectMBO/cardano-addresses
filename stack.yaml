@@ -1,4 +1,5 @@
-resolver: lts-17.12
+resolver: lts-18.9
+compiler: ghc-8.10.5
 
 packages:
 - core
@@ -7,10 +8,10 @@ packages:
 
 extra-deps:
 - base58-bytestring-0.1.0
-- bech32-1.0.2
-- bech32-th-1.0.2
+- bech32-1.1.1
+- bech32-th-1.1.1
 - git: https://github.com/input-output-hk/cardano-crypto
-  commit: 2547ad1e80aeabca2899951601079408becbc92c
+  commit: 07397f0e50da97eaa0575d93bee7ac4b2b2576ec
 
 # dependencies for testing.
 - hjsonpointer-1.5.0

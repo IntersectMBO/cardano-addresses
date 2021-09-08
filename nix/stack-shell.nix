@@ -1,5 +1,5 @@
 { pkgs ? import ./default.nix {}
-, compiler ? "ghc865"
+, compiler ? "ghc8103"
 }:
 
 with pkgs;
