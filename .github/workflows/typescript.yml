@@ -51,6 +51,9 @@ jobs:
       if: ${{ startsWith(github.ref, 'refs/tags/') }}
       run: |
         tag="${GITHUB_REF/refs\/tags\//}"
-        package_version="$(jq .version package.json)"
-        echo "tag=$tag package_version=$package_version"
-        nix-shell --run "npm publish . --dry-run"
+        package_version="$(jq -r .version package.json)"
+        echo "tag=$tag\npackage_version=$package_version"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        nix-shell --run "npm publish"
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
