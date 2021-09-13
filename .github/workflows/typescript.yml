@@ -38,7 +38,7 @@ jobs:
         mv _docs ../_build/typescript
         cp -R --no-preserve=all ./result-demo/share/doc/cardano-addresses-demo-js ../_build/demo
     - name: '📤 Publish Documentation'
-      if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master' || github.ref == 'refs/pull/138/merge' }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master' }}
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,9 +48,12 @@ jobs:
         user_name: 'William King Noel Bot'
         user_email: 'adrestia@iohk.io'
     - name: 'npm publish'
-      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/pull/149/merge' }}
       run: |
         tag="${GITHUB_REF/refs\/tags\//}"
-        package_version="$(jq .version package.json)"
-        echo "tag=$tag package_version=$package_version"
-        nix-shell --run "npm publish . --dry-run"
+        package_version="$(jq -r .version package.json)"
+        echo "tag=$tag\npackage_version=$package_version"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        nix-shell --run "npm publish"
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
