@@ -9,81 +9,53 @@
 
 # The project sources
 { cardano-addresses ? { outPath = ./.; rev = "abcdef"; }
-
-# Function arguments to pass to the project
-, projectArgs ? {
-    inherit sourcesOverride;
-    config = { allowUnfree = false; inHydra = true; };
-    gitrev = cardano-addresses.rev;
-  }
-
-# The systems that the jobset will be built for.
+  # The systems that the jobset will be built for.
 , supportedSystems ? [ "x86_64-linux" "x86_64-darwin" ]
-
-# The systems used for cross-compiling (default: linux)
-, supportedCrossSystems ? [ (builtins.head supportedSystems) ]
-
-# A Hydra option
-, scrubJobs ? true
-
-, withProblematicWindowsTests ? false
-
-# Dependencies overrides
-, sourcesOverride ? {}
-
-# Import pkgs, including IOHK common nix lib
-, pkgs ? import ./nix { inherit sourcesOverride; }
-
 }:
-
-with (import pkgs.iohkNix.release-lib) {
-  inherit pkgs;
-  inherit supportedSystems supportedCrossSystems scrubJobs projectArgs;
-  packageSet = import cardano-addresses;
-  gitrev = cardano-addresses.rev;
-};
-
-with pkgs.lib;
-
 let
-  # restrict supported systems to a subset where tests (if exist) are required to pass:
-  testsSupportedSystems = intersectLists supportedSystems [ "x86_64-linux" "x86_64-darwin" ];
-  # Recurse through an attrset, returning all derivations in a list matching test supported systems.
-  collectJobs' = ds: filter (d: elem d.system testsSupportedSystems) (collect isDerivation ds);
-  # Adds the package name to the derivations for windows-testing-bundle.nix
-  # (passthru.identifier.name does not survive mapTestOn)
-  collectJobs = ds: concatLists (
-    mapAttrsToList (packageName: package:
-      map (drv: drv // { inherit packageName; }) (collectJobs' package)
-    ) ds);
+  defaultNix = import cardano-addresses;
+  linuxBuild = builtins.elem "x86_64-linux" supportedSystems;
+  defaultSystem =
+    if linuxBuild then "x86_64-linux"
+    else builtins.head supportedSystems;
+  inherit (defaultNix.legacyPackages.${builtins.currentSystem}) pkgs;
+  inherit (pkgs) lib;
+  inherit (defaultNix) packages checks devShell;
+in
+let
 
-  disabledMingwW64Tests = lib.optionalAttrs withProblematicWindowsTests {
-    haskellPackages.Win32-network.checks.test-Win32-network = null;
-    checks.tests.Win32-network.test-Win32-network = null;
-    haskellPackages.network-mux.checks.test-network-mux = null;
-    checks.tests.network-mux.test-network-mux = null;
+  collectJobs = a: lib.filterAttrs (s: _: builtins.elem s supportedSystems) a;
+
+  # This file seems pointless, but it forces Hydra to re-evaluate
+  # every commit. The side-effect of that is that Hydra reports build
+  # status to GitHub for every commit, which we want, and it wouldn't
+  # normally do.
+  build-version = pkgs.writeText "revision.json" (builtins.toJSON
+    { inherit (cardano-addresses) rev; });
+
+  jobs = lib.genAttrs [ "packages" "checks" "devShell" ] (n: collectJobs defaultNix.${n})
+    // {
+    required = pkgs.releaseTools.aggregate {
+      name = "github-required";
+      meta.description = "All jobs required to pass CI";
+      constituents = [ build-version ]
+        ++ (
+        let ps = jobs.packages.${defaultSystem}; in
+        [
+          ps."cardano-addresses-cli:exe:cardano-address"
+          ps."js-unknown-ghcjs:cardano-addresses:lib:cardano-addresses"
+        ]
+      )
+        ++ (lib.optionals linuxBuild (
+        let ps = jobs.packages."x86_64-linux"; in
+        [
+          ps."x86_64-w64-mingw32:cardano-addresses-cli:exe:cardano-address"
+          ps."x86_64-unknown-linux-musl:cardano-addresses-cli:exe:cardano-address"
+        ]
+      ))
+        ++ (lib.attrValues jobs.checks.${defaultSystem})
+        ++ (lib.attrValues jobs.devShell);
+    };
   };
-
-  # Remove build jobs for which cross compiling does not make sense.
-  filterJobsCross = filterAttrs (n: _: n != "dockerImage" && n != "shell" && n != "checkCabalProject");
-
-  inherit (systems.examples) mingwW64 musl64 ghcjs;
-
-  jobs = {
-    native = mapTestOn (packagePlatforms project);
-    "${mingwW64.config}" = recursiveUpdate (mapTestOnCross mingwW64 (packagePlatformsCross (filterJobsCross project))) disabledMingwW64Tests;
-    musl64 = mapTestOnCross musl64 (packagePlatformsCross (filterJobsCross project));
-    ghcjs = mapTestOnCross ghcjs (packagePlatformsCross (filterJobsCross project));
-  } // (mkRequiredJob (concatLists [
-    (collectJobs jobs.musl64.checks)
-    (collectJobs jobs."${mingwW64.config}".checks)
-    (collectJobs jobs.ghcjs.checks)
-    [ jobs.native.shell.x86_64-linux
-      jobs.native.shell.x86_64-darwin
-      jobs.musl64.cardano-address.x86_64-linux
-      jobs."${mingwW64.config}".cardano-address.x86_64-linux
-      jobs.ghcjs.library.x86_64-linux
-    ]
-  ]));
-
-in jobs
+in
+jobs

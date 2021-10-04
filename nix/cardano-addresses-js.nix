@@ -7,7 +7,7 @@ stdenv.mkDerivation rec {
     cardano-addresses-jsapi.components.exes.cardano-addresses-jsapi
     (lib.cleanSourceWith {
       name = "cardano-addresses-jsapi-glue";
-      src = lib.sourceFilesBySuffices ../jsapi/glue [".js"];
+      src = lib.sourceFilesBySuffices ../jsapi/glue [ ".js" ];
     })
   ];
   setSourceRoot = ''
@@ -70,7 +70,7 @@ stdenv.mkDerivation rec {
   '';
   installPhase = "true";
   meta = {
-    hydraPlatforms = [];
+    hydraPlatforms = [ ];
     platforms = lib.platforms.unix;
   };
   preferLocalBuild = true;
