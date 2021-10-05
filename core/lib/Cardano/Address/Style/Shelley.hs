@@ -46,6 +46,7 @@ module Cardano.Address.Style.Shelley
       -- $addresses
     , InspectAddress (..)
     , AddressInfo (..)
+    , ReferenceInfo (..)
     , eitherInspectAddress
     , inspectAddress
     , inspectShelleyAddress
@@ -651,7 +652,7 @@ data AddressInfo = AddressInfo
 
 -- | Info from 'Address' about how delegation keys are located.
 --
--- @since 3.3.0
+-- @since 3.6.1
 data ReferenceInfo
     = ByValue
     | ByPointer ChainPointer
