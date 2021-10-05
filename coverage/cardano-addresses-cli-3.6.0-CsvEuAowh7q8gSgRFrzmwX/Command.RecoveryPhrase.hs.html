@@ -1,0 +1,59 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>module Command.RecoveryPhrase
+<span class="lineno">    7 </span>    ( Cmd (..)
+<span class="lineno">    8 </span>    , mod
+<span class="lineno">    9 </span>    , run
+<span class="lineno">   10 </span>    ) where
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>import Prelude hiding
+<span class="lineno">   13 </span>    ( mod )
+<span class="lineno">   14 </span>
+<span class="lineno">   15 </span>import Options.Applicative
+<span class="lineno">   16 </span>    ( CommandFields, Mod, command, helper, info, progDesc, subparser )
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>import qualified Command.RecoveryPhrase.Generate as Generate
+<span class="lineno">   19 </span>
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>newtype Cmd
+<span class="lineno">   22 </span>    = Generate Generate.Cmd
+<span class="lineno">   23 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   24 </span>
+<span class="lineno">   25 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   26 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;recovery-phrase&quot; $</span>
+<span class="lineno">   27 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   28 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;About recovery phrases&quot;</span>
+<span class="lineno">   29 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   30 </span><span class="spaces">    </span><span class="istickedoff">parser = subparser $ mconcat</span>
+<span class="lineno">   31 </span><span class="spaces">        </span><span class="istickedoff">[ Generate.mod Generate</span>
+<span class="lineno">   32 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">   33 </span>
+<span class="lineno">   34 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   35 </span><span class="decl"><span class="istickedoff">run = \case</span>
+<span class="lineno">   36 </span><span class="spaces">    </span><span class="istickedoff">Generate sub -&gt; Generate.run sub</span></span>
+
+</pre>
+</body>
+</html>

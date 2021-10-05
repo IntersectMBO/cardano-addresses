@@ -1,0 +1,436 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    3 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    4 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    5 </span>{-# LANGUAGE RankNTypes #-}
+<span class="lineno">    6 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">    7 </span>{-# LANGUAGE TypeFamilies #-}
+<span class="lineno">    8 </span>
+<span class="lineno">    9 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">   10 </span>
+<span class="lineno">   11 </span>-- |
+<span class="lineno">   12 </span>-- Copyright: © 2018-2020 IOHK
+<span class="lineno">   13 </span>-- License: Apache-2.0
+<span class="lineno">   14 </span>--
+<span class="lineno">   15 </span>-- These are (partial) CBOR decoders for Byron binary types. Note that we
+<span class="lineno">   16 </span>-- ignore most of the block's and header's content and only retrieve the pieces
+<span class="lineno">   17 </span>-- of information relevant to us, wallet (we do assume a trusted node and
+<span class="lineno">   18 </span>-- therefore, we needn't to care about verifying signatures and blocks
+<span class="lineno">   19 </span>-- themselves).
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>module Cardano.Codec.Cbor
+<span class="lineno">   22 </span>    ( -- * Encoders
+<span class="lineno">   23 </span>      encodeAddress
+<span class="lineno">   24 </span>    , encodeAttributes
+<span class="lineno">   25 </span>    , encodeDerivationPathAttr
+<span class="lineno">   26 </span>    , encodeProtocolMagicAttr
+<span class="lineno">   27 </span>
+<span class="lineno">   28 </span>     -- * Decoders
+<span class="lineno">   29 </span>    , decodeAddress
+<span class="lineno">   30 </span>    , decodeAddressDerivationPath
+<span class="lineno">   31 </span>    , decodeAddressPayload
+<span class="lineno">   32 </span>    , decodeAllAttributes
+<span class="lineno">   33 </span>    , decodeDerivationPathAttr
+<span class="lineno">   34 </span>    , decodeProtocolMagicAttr
+<span class="lineno">   35 </span>    , deserialiseCbor
+<span class="lineno">   36 </span>    , unsafeDeserialiseCbor
+<span class="lineno">   37 </span>
+<span class="lineno">   38 </span>     -- * Reexports from CBOR
+<span class="lineno">   39 </span>    , CBOR.encodeBytes
+<span class="lineno">   40 </span>    , CBOR.toStrictByteString
+<span class="lineno">   41 </span>    , CBOR.toLazyByteString
+<span class="lineno">   42 </span>    ) where
+<span class="lineno">   43 </span>
+<span class="lineno">   44 </span>import Prelude
+<span class="lineno">   45 </span>
+<span class="lineno">   46 </span>import Cardano.Crypto.Wallet
+<span class="lineno">   47 </span>    ( ChainCode (..), XPub (..) )
+<span class="lineno">   48 </span>import Control.Monad
+<span class="lineno">   49 </span>    ( replicateM, when )
+<span class="lineno">   50 </span>import Crypto.Error
+<span class="lineno">   51 </span>    ( CryptoError (..), CryptoFailable (..) )
+<span class="lineno">   52 </span>import Crypto.Hash
+<span class="lineno">   53 </span>    ( hash )
+<span class="lineno">   54 </span>import Crypto.Hash.Algorithms
+<span class="lineno">   55 </span>    ( Blake2b_224, SHA3_256 )
+<span class="lineno">   56 </span>import Data.ByteArray
+<span class="lineno">   57 </span>    ( ScrubbedBytes )
+<span class="lineno">   58 </span>import Data.ByteString
+<span class="lineno">   59 </span>    ( ByteString )
+<span class="lineno">   60 </span>import Data.Digest.CRC32
+<span class="lineno">   61 </span>    ( crc32 )
+<span class="lineno">   62 </span>import Data.List
+<span class="lineno">   63 </span>    ( find )
+<span class="lineno">   64 </span>import Data.Word
+<span class="lineno">   65 </span>    ( Word32, Word8 )
+<span class="lineno">   66 </span>import GHC.Stack
+<span class="lineno">   67 </span>    ( HasCallStack )
+<span class="lineno">   68 </span>
+<span class="lineno">   69 </span>import qualified Codec.CBOR.Decoding as CBOR
+<span class="lineno">   70 </span>import qualified Codec.CBOR.Encoding as CBOR
+<span class="lineno">   71 </span>import qualified Codec.CBOR.Read as CBOR
+<span class="lineno">   72 </span>import qualified Codec.CBOR.Write as CBOR
+<span class="lineno">   73 </span>import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
+<span class="lineno">   74 </span>import qualified Data.ByteArray as BA
+<span class="lineno">   75 </span>import qualified Data.ByteString as BS
+<span class="lineno">   76 </span>import qualified Data.ByteString.Lazy as BL
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>{-------------------------------------------------------------------------------
+<span class="lineno">   79 </span>                       Byron Address Binary Format
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>In the composition of a Cardano address, the following functions concern the
+<span class="lineno">   82 </span>&quot;Derivation Path&quot; box.
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>+-------------------------------------------------------------------------------+
+<span class="lineno">   85 </span>|                                                                               |
+<span class="lineno">   86 </span>|                        CBOR-Serialized Object with CRC¹                       |
+<span class="lineno">   87 </span>|                                                                               |
+<span class="lineno">   88 </span>+-------------------------------------------------------------------------------+
+<span class="lineno">   89 </span>                                        |
+<span class="lineno">   90 </span>                                        |
+<span class="lineno">   91 </span>                                        v
+<span class="lineno">   92 </span>+-------------------------------------------------------------------------------+
+<span class="lineno">   93 </span>|     Address Root    |     Address Attributes    |           AddrType          |
+<span class="lineno">   94 </span>|                     |                           |                             |
+<span class="lineno">   95 </span>|   Hash (224 bits)   |  Der. Path² + Stake + NM  |  PubKey | (Script) | Redeem |
+<span class="lineno">   96 </span>|                     |    (open for extension)   |     (open for extension)    |
+<span class="lineno">   97 </span>+-------------------------------------------------------------------------------+
+<span class="lineno">   98 </span>             |                 |
+<span class="lineno">   99 </span>             |                 |     +----------------------------------+
+<span class="lineno">  100 </span>             v                 |     |        Derivation Path           |
+<span class="lineno">  101 </span>+---------------------------+  |----&gt;|                                  |
+<span class="lineno">  102 </span>| SHA3-256                  |  |     | ChaChaPoly⁴ AccountIx/AddressIx  |
+<span class="lineno">  103 </span>|   |&gt; Blake2b 224          |  |     +----------------------------------+
+<span class="lineno">  104 </span>|   |&gt; CBOR                 |  |
+<span class="lineno">  105 </span>|                           |  |
+<span class="lineno">  106 </span>|  -AddrType                |  |     +----------------------------------+
+<span class="lineno">  107 </span>|  -ASD³ (~AddrType+PubKey) |  |     |       Stake Distribution         |
+<span class="lineno">  108 </span>|  -Address Attributes      |  |     |                                  |
+<span class="lineno">  109 </span>+---------------------------+  |----&gt;|  BootstrapEra | (Single | Multi) |
+<span class="lineno">  110 </span>                               |     +----------------------------------+
+<span class="lineno">  111 </span>                               |
+<span class="lineno">  112 </span>                               |
+<span class="lineno">  113 </span>                               |     +----------------------------------+
+<span class="lineno">  114 </span>                               |     |          Network Magic           |
+<span class="lineno">  115 </span>                               |----&gt;|                                  |
+<span class="lineno">  116 </span>                                     | Addr Discr: MainNet vs TestNet   |
+<span class="lineno">  117 </span>                                     +----------------------------------+
+<span class="lineno">  118 </span>
+<span class="lineno">  119 </span>-------------------------------------------------------------------------------}
+<span class="lineno">  120 </span>
+<span class="lineno">  121 </span>-- * Encoding
+<span class="lineno">  122 </span>
+<span class="lineno">  123 </span>-- | Encode a public key to a corresponding Cardano Address. The encoding of the
+<span class="lineno">  124 </span>-- attributes part of an address is left out to the caller; This allows for
+<span class="lineno">  125 </span>-- distinguishing between Sequential and Random addresses (the former doesn't
+<span class="lineno">  126 </span>-- have any attributes to encode).
+<span class="lineno">  127 </span>--
+<span class="lineno">  128 </span>-- @
+<span class="lineno">  129 </span>-- -- Old / Random Addresses
+<span class="lineno">  130 </span>-- let encodeAddrAttributes = mempty
+<span class="lineno">  131 </span>--      &lt;&gt; CBOR.encodeMapLen 1
+<span class="lineno">  132 </span>--      &lt;&gt; CBOR.encodeWord8 1
+<span class="lineno">  133 </span>--      &lt;&gt; encodeDerivationPath (hdPassphrase rootXPub) accIx addrIx
+<span class="lineno">  134 </span>-- let addr = encodeAddress xpub encodeAddrAttributes
+<span class="lineno">  135 </span>--
+<span class="lineno">  136 </span>-- -- New / Sequential Addresses
+<span class="lineno">  137 </span>-- let encodeAddrAttributes = mempty &lt;&gt; CBOR.encodeMapLen 0
+<span class="lineno">  138 </span>-- let addr = encodeAddress xpub encodeAddrAttributes
+<span class="lineno">  139 </span>-- @
+<span class="lineno">  140 </span>--
+<span class="lineno">  141 </span>-- Note that we are passing the behavior to encode attributes as a parameter
+<span class="lineno">  142 </span>-- here and do not handle multiple cases in 'encodeAddress' itself for multiple
+<span class="lineno">  143 </span>-- reasons:
+<span class="lineno">  144 </span>--
+<span class="lineno">  145 </span>-- - Inversion of control gives us a nicer implementation overall
+<span class="lineno">  146 </span>--
+<span class="lineno">  147 </span>-- - Encoding attributes for Random addresses requires more context than just
+<span class="lineno">  148 </span>--   the public key (like the wallet root id and some extra logic for encoding
+<span class="lineno">  149 </span>--   passphrases). This is just scheme-specific and is better left out of this
+<span class="lineno">  150 </span>--   particular function
+<span class="lineno">  151 </span>encodeAddress :: XPub -&gt; [CBOR.Encoding] -&gt; CBOR.Encoding
+<span class="lineno">  152 </span><span class="decl"><span class="istickedoff">encodeAddress (XPub pub (ChainCode cc)) attrs =</span>
+<span class="lineno">  153 </span><span class="spaces">    </span><span class="istickedoff">encodeAddressPayload payload</span>
+<span class="lineno">  154 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  155 </span><span class="spaces">    </span><span class="istickedoff">blake2b224 = hash @_ @Blake2b_224</span>
+<span class="lineno">  156 </span><span class="spaces">    </span><span class="istickedoff">sha3256 = hash @_ @SHA3_256</span>
+<span class="lineno">  157 </span><span class="spaces">    </span><span class="istickedoff">payload = CBOR.toStrictByteString $ mempty</span>
+<span class="lineno">  158 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLen 3</span>
+<span class="lineno">  159 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes root</span>
+<span class="lineno">  160 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; encodeAttributes attrs</span>
+<span class="lineno">  161 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord8 0 -- Address Type, 0 = Public Key</span>
+<span class="lineno">  162 </span><span class="spaces">    </span><span class="istickedoff">root = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty</span>
+<span class="lineno">  163 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLen 3</span>
+<span class="lineno">  164 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord8 0 -- Address Type, 0 = Public Key</span>
+<span class="lineno">  165 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; encodeSpendingData</span>
+<span class="lineno">  166 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; encodeAttributes attrs</span>
+<span class="lineno">  167 </span><span class="spaces">    </span><span class="istickedoff">encodeXPub =</span>
+<span class="lineno">  168 </span><span class="spaces">        </span><span class="istickedoff">CBOR.encodeBytes (pub &lt;&gt; cc)</span>
+<span class="lineno">  169 </span><span class="spaces">    </span><span class="istickedoff">encodeSpendingData = CBOR.encodeListLen 2</span>
+<span class="lineno">  170 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord8 0</span>
+<span class="lineno">  171 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; encodeXPub</span></span>
+<span class="lineno">  172 </span>
+<span class="lineno">  173 </span>encodeAddressPayload :: ByteString -&gt; CBOR.Encoding
+<span class="lineno">  174 </span><span class="decl"><span class="istickedoff">encodeAddressPayload payload = mempty</span>
+<span class="lineno">  175 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLen 2</span>
+<span class="lineno">  176 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeTag 24 -- Hard-Coded Tag value in cardano-sl</span>
+<span class="lineno">  177 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes payload</span>
+<span class="lineno">  178 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord32 (crc32 payload)</span></span>
+<span class="lineno">  179 </span>
+<span class="lineno">  180 </span>encodeAttributes :: [CBOR.Encoding] -&gt; CBOR.Encoding
+<span class="lineno">  181 </span><span class="decl"><span class="istickedoff">encodeAttributes attrs = CBOR.encodeMapLen l &lt;&gt; mconcat attrs</span>
+<span class="lineno">  182 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  183 </span><span class="spaces">    </span><span class="istickedoff">l = fromIntegral (length attrs)</span></span>
+<span class="lineno">  184 </span>
+<span class="lineno">  185 </span>encodeProtocolMagicAttr :: Word32 -&gt; CBOR.Encoding
+<span class="lineno">  186 </span><span class="decl"><span class="istickedoff">encodeProtocolMagicAttr pm = mempty</span>
+<span class="lineno">  187 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord 2 -- Tag for 'ProtocolMagic' attribute</span>
+<span class="lineno">  188 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes (CBOR.toStrictByteString $ CBOR.encodeWord32 pm)</span></span>
+<span class="lineno">  189 </span>
+<span class="lineno">  190 </span>-- This is the opposite of 'decodeDerivationPathAttr'.
+<span class="lineno">  191 </span>--
+<span class="lineno">  192 </span>-- NOTE: The caller must ensure that the passphrase length is 32 bytes.
+<span class="lineno">  193 </span>encodeDerivationPathAttr
+<span class="lineno">  194 </span>    :: ScrubbedBytes
+<span class="lineno">  195 </span>    -&gt; Word32
+<span class="lineno">  196 </span>    -&gt; Word32
+<span class="lineno">  197 </span>    -&gt; CBOR.Encoding
+<span class="lineno">  198 </span><span class="decl"><span class="istickedoff">encodeDerivationPathAttr pwd acctIx addrIx = mempty</span>
+<span class="lineno">  199 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord8 1 -- Tag for 'DerivationPath' attribute</span>
+<span class="lineno">  200 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes (encryptDerivationPath pwd path)</span>
+<span class="lineno">  201 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  202 </span><span class="spaces">    </span><span class="istickedoff">path = encodeDerivationPath acctIx addrIx</span></span>
+<span class="lineno">  203 </span>
+<span class="lineno">  204 </span>encodeDerivationPath
+<span class="lineno">  205 </span>    :: Word32
+<span class="lineno">  206 </span>    -&gt; Word32
+<span class="lineno">  207 </span>    -&gt; CBOR.Encoding
+<span class="lineno">  208 </span><span class="decl"><span class="istickedoff">encodeDerivationPath acctIx addrIx = mempty</span>
+<span class="lineno">  209 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLenIndef</span>
+<span class="lineno">  210 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord32 acctIx</span>
+<span class="lineno">  211 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord32 addrIx</span>
+<span class="lineno">  212 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; CBOR.encodeBreak</span></span>
+<span class="lineno">  213 </span>
+<span class="lineno">  214 </span>-- | ChaCha20/Poly1305 encrypting and signing the HD payload of addresses.
+<span class="lineno">  215 </span>--
+<span class="lineno">  216 </span>-- NOTE: The caller must ensure that the passphrase length is 32 bytes.
+<span class="lineno">  217 </span>encryptDerivationPath
+<span class="lineno">  218 </span>    :: ScrubbedBytes
+<span class="lineno">  219 </span>       -- ^ Symmetric key / passphrase, 32-byte long
+<span class="lineno">  220 </span>    -&gt; CBOR.Encoding
+<span class="lineno">  221 </span>        -- ^ Payload to be encrypted
+<span class="lineno">  222 </span>    -&gt; ByteString
+<span class="lineno">  223 </span>        -- ^ Ciphertext with a 128-bit crypto-tag appended.
+<span class="lineno">  224 </span><span class="decl"><span class="istickedoff">encryptDerivationPath pwd payload = unsafeSerialize $ do</span>
+<span class="lineno">  225 </span><span class="spaces">    </span><span class="istickedoff">nonce &lt;- Poly.nonce12 cardanoNonce</span>
+<span class="lineno">  226 </span><span class="spaces">    </span><span class="istickedoff">st1 &lt;- Poly.finalizeAAD &lt;$&gt; Poly.initialize pwd nonce</span>
+<span class="lineno">  227 </span><span class="spaces">    </span><span class="istickedoff">let (out, st2) = Poly.encrypt (CBOR.toStrictByteString payload) st1</span>
+<span class="lineno">  228 </span><span class="spaces">    </span><span class="istickedoff">return $ out &lt;&gt; BA.convert (Poly.finalize st2)</span>
+<span class="lineno">  229 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  230 </span><span class="spaces">    </span><span class="istickedoff">unsafeSerialize :: CryptoFailable ByteString -&gt; ByteString</span>
+<span class="lineno">  231 </span><span class="spaces">    </span><span class="istickedoff">unsafeSerialize =</span>
+<span class="lineno">  232 </span><span class="spaces">        </span><span class="istickedoff">CBOR.toStrictByteString . CBOR.encodeBytes . useInvariant</span>
+<span class="lineno">  233 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  234 </span><span class="spaces">    </span><span class="istickedoff">-- Encryption will fail if the key is the wrong size, but that won't happen</span>
+<span class="lineno">  235 </span><span class="spaces">    </span><span class="istickedoff">-- if the key was created with 'generateKeyFromSeed'.</span>
+<span class="lineno">  236 </span><span class="spaces">    </span><span class="istickedoff">useInvariant = \case</span>
+<span class="lineno">  237 </span><span class="spaces">        </span><span class="istickedoff">CryptoPassed res -&gt; res</span>
+<span class="lineno">  238 </span><span class="spaces">        </span><span class="istickedoff">CryptoFailed err -&gt; <span class="nottickedoff"><span class="istickedoff">error</span> $ &quot;encodeAddressKey: &quot; ++ show err</span></span></span>
+<span class="lineno">  239 </span>
+<span class="lineno">  240 </span>-- | Hard-coded nonce from the legacy code-base.
+<span class="lineno">  241 </span>cardanoNonce :: ByteString
+<span class="lineno">  242 </span><span class="decl"><span class="istickedoff">cardanoNonce = &quot;serokellfore&quot;</span></span>
+<span class="lineno">  243 </span>
+<span class="lineno">  244 </span>decodeAddress :: CBOR.Decoder s ByteString
+<span class="lineno">  245 </span><span class="decl"><span class="istickedoff">decodeAddress = do</span>
+<span class="lineno">  246 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 2</span>
+<span class="lineno">  247 </span><span class="spaces">        </span><span class="istickedoff">-- CRC Protection Wrapper</span>
+<span class="lineno">  248 </span><span class="spaces">    </span><span class="istickedoff">tag &lt;- CBOR.decodeTag</span>
+<span class="lineno">  249 </span><span class="spaces">        </span><span class="istickedoff">-- Mysterious hard-coded tag cardano-sl seems to so much like</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  251 </span><span class="spaces">        </span><span class="istickedoff">-- Addr Root + Attributes + Type</span>
+<span class="lineno">  252 </span><span class="spaces">    </span><span class="istickedoff">crc &lt;- CBOR.decodeWord32 -- CRC</span>
+<span class="lineno">  253 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  254 </span><span class="spaces">    </span><span class="istickedoff">when (crc /= crc32 bytes) $ <span class="nottickedoff">fail &quot;non-matching crc32.&quot;</span></span>
+<span class="lineno">  255 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  256 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE 1:</span>
+<span class="lineno">  257 </span><span class="spaces">    </span><span class="istickedoff">-- Treating addresses as a blob here, so we just re-encode them as such</span>
+<span class="lineno">  258 </span><span class="spaces">    </span><span class="istickedoff">-- Ultimately for us, addresses are nothing more than a bunch of bytes that</span>
+<span class="lineno">  259 </span><span class="spaces">    </span><span class="istickedoff">-- we display in a Base58 format when we have to.</span>
+<span class="lineno">  260 </span><span class="spaces">    </span><span class="istickedoff">return $ CBOR.toStrictByteString $ mempty</span>
+<span class="lineno">  261 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeListLen 2</span>
+<span class="lineno">  262 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeTag tag</span>
+<span class="lineno">  263 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeBytes bytes</span>
+<span class="lineno">  264 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; CBOR.encodeWord32 crc</span></span>
+<span class="lineno">  265 </span>
+<span class="lineno">  266 </span>decodeAddressPayload :: CBOR.Decoder s ByteString
+<span class="lineno">  267 </span><span class="decl"><span class="istickedoff">decodeAddressPayload = do</span>
+<span class="lineno">  268 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 2</span>
+<span class="lineno">  269 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeTag</span>
+<span class="lineno">  270 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  271 </span><span class="spaces">    </span><span class="istickedoff">crc &lt;- CBOR.decodeWord32</span>
+<span class="lineno">  272 </span><span class="spaces">    </span><span class="istickedoff">when (crc /= crc32 bytes) $ fail &quot;non-matching crc32.&quot;</span>
+<span class="lineno">  273 </span><span class="spaces">    </span><span class="istickedoff">return bytes</span></span>
+<span class="lineno">  274 </span>
+<span class="lineno">  275 </span>decodeAddressDerivationPath
+<span class="lineno">  276 </span>    :: ScrubbedBytes
+<span class="lineno">  277 </span>    -&gt; CBOR.Decoder s (Maybe (Word32, Word32))
+<span class="lineno">  278 </span><span class="decl"><span class="istickedoff">decodeAddressDerivationPath pwd = do</span>
+<span class="lineno">  279 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  280 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  281 </span><span class="spaces">    </span><span class="istickedoff">path &lt;- decodeAllAttributes &gt;&gt;= decodeDerivationPathAttr pwd</span>
+<span class="lineno">  282 </span><span class="spaces">    </span><span class="istickedoff">addrType &lt;- CBOR.decodeWord8 -- Type</span>
+<span class="lineno">  283 </span><span class="spaces">    </span><span class="istickedoff">when (addrType /= 0) $</span>
+<span class="lineno">  284 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">fail $ mconcat</span></span>
+<span class="lineno">  285 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ &quot;decodeAddressDerivationPath: type is not 0 (public key), it is &quot;</span></span>
+<span class="lineno">  286 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, show addrType</span></span>
+<span class="lineno">  287 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  288 </span><span class="spaces">    </span><span class="istickedoff">pure path</span></span>
+<span class="lineno">  289 </span>
+<span class="lineno">  290 </span>decodeProtocolMagicAttr
+<span class="lineno">  291 </span>    :: CBOR.Decoder s (Maybe Word32)
+<span class="lineno">  292 </span><span class="decl"><span class="istickedoff">decodeProtocolMagicAttr = do</span>
+<span class="lineno">  293 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenCanonicalOf 3</span>
+<span class="lineno">  294 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  295 </span><span class="spaces">    </span><span class="istickedoff">attrs &lt;- decodeAllAttributes</span>
+<span class="lineno">  296 </span><span class="spaces">    </span><span class="istickedoff">case find ((== 2) . fst) attrs of</span>
+<span class="lineno">  297 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; pure Nothing</span>
+<span class="lineno">  298 </span><span class="spaces">        </span><span class="istickedoff">Just (_, bytes) -&gt; case deserialiseCbor CBOR.decodeWord32 bytes of</span>
+<span class="lineno">  299 </span><span class="spaces">            </span><span class="istickedoff">Left _ -&gt; <span class="nottickedoff">fail &quot;unable to decode attribute into protocol magic&quot;</span></span>
+<span class="lineno">  300 </span><span class="spaces">            </span><span class="istickedoff">Right pm -&gt; pure (Just pm)</span></span>
+<span class="lineno">  301 </span>
+<span class="lineno">  302 </span>-- | The attributes are pairs of numeric tags and bytes, where the bytes will be
+<span class="lineno">  303 </span>-- CBOR-encoded stuff. This decoder does not enforce &quot;canonicity&quot; of entries.
+<span class="lineno">  304 </span>decodeAllAttributes
+<span class="lineno">  305 </span>    :: CBOR.Decoder s [(Word8, ByteString)]
+<span class="lineno">  306 </span><span class="decl"><span class="istickedoff">decodeAllAttributes = do</span>
+<span class="lineno">  307 </span><span class="spaces">    </span><span class="istickedoff">n &lt;- CBOR.decodeMapLenCanonical -- Address Attributes length</span>
+<span class="lineno">  308 </span><span class="spaces">    </span><span class="istickedoff">replicateM n decodeAttr</span>
+<span class="lineno">  309 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  310 </span><span class="spaces">    </span><span class="istickedoff">decodeAttr = (,) &lt;$&gt; CBOR.decodeWord8 &lt;*&gt; CBOR.decodeBytes</span></span>
+<span class="lineno">  311 </span>
+<span class="lineno">  312 </span>decodeDerivationPathAttr
+<span class="lineno">  313 </span>    :: ScrubbedBytes
+<span class="lineno">  314 </span>    -&gt; [(Word8, ByteString)]
+<span class="lineno">  315 </span>    -&gt; CBOR.Decoder s (Maybe (Word32, Word32))
+<span class="lineno">  316 </span><span class="decl"><span class="istickedoff">decodeDerivationPathAttr pwd attrs = do</span>
+<span class="lineno">  317 </span><span class="spaces">    </span><span class="istickedoff">case lookup derPathTag attrs of</span>
+<span class="lineno">  318 </span><span class="spaces">        </span><span class="istickedoff">Just payload -&gt; decodeNestedBytes decoder payload</span>
+<span class="lineno">  319 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">fail $ mconcat</span></span>
+<span class="lineno">  320 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ &quot;decodeDerivationPathAttr: Missing attribute &quot;</span></span>
+<span class="lineno">  321 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, show derPathTag</span></span>
+<span class="lineno">  322 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  323 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  324 </span><span class="spaces">    </span><span class="istickedoff">derPathTag = 1</span>
+<span class="lineno">  325 </span><span class="spaces">    </span><span class="istickedoff">decoder :: CBOR.Decoder s (Maybe (Word32, Word32))</span>
+<span class="lineno">  326 </span><span class="spaces">    </span><span class="istickedoff">decoder = do</span>
+<span class="lineno">  327 </span><span class="spaces">        </span><span class="istickedoff">bytes &lt;- CBOR.decodeBytes</span>
+<span class="lineno">  328 </span><span class="spaces">        </span><span class="istickedoff">case decryptDerivationPath pwd bytes of</span>
+<span class="lineno">  329 </span><span class="spaces">            </span><span class="istickedoff">CryptoPassed plaintext -&gt;</span>
+<span class="lineno">  330 </span><span class="spaces">                </span><span class="istickedoff">Just &lt;$&gt; decodeNestedBytes decodeDerivationPath plaintext</span>
+<span class="lineno">  331 </span><span class="spaces">            </span><span class="istickedoff">CryptoFailed _ -&gt;</span>
+<span class="lineno">  332 </span><span class="spaces">                </span><span class="istickedoff">pure Nothing</span></span>
+<span class="lineno">  333 </span>
+<span class="lineno">  334 </span>-- | ChaCha20/Poly1305 decrypting and authenticating the HD payload of
+<span class="lineno">  335 </span>-- addresses.
+<span class="lineno">  336 </span>decryptDerivationPath
+<span class="lineno">  337 </span>    :: ScrubbedBytes
+<span class="lineno">  338 </span>       -- ^ Symmetric key / passphrase, 32-byte long
+<span class="lineno">  339 </span>    -&gt; ByteString
+<span class="lineno">  340 </span>        -- ^ Payload to be decrypted
+<span class="lineno">  341 </span>    -&gt; CryptoFailable ByteString
+<span class="lineno">  342 </span><span class="decl"><span class="istickedoff">decryptDerivationPath pwd bytes = do</span>
+<span class="lineno">  343 </span><span class="spaces">    </span><span class="istickedoff">let (payload, tag) = BS.splitAt (BS.length bytes - 16) bytes</span>
+<span class="lineno">  344 </span><span class="spaces">    </span><span class="istickedoff">nonce &lt;- Poly.nonce12 cardanoNonce</span>
+<span class="lineno">  345 </span><span class="spaces">    </span><span class="istickedoff">st1 &lt;- Poly.finalizeAAD &lt;$&gt; Poly.initialize pwd nonce</span>
+<span class="lineno">  346 </span><span class="spaces">    </span><span class="istickedoff">let (out, st2) = Poly.decrypt payload st1</span>
+<span class="lineno">  347 </span><span class="spaces">    </span><span class="istickedoff">when (BA.convert (Poly.finalize st2) /= tag) $</span>
+<span class="lineno">  348 </span><span class="spaces">        </span><span class="istickedoff">CryptoFailed <span class="nottickedoff">CryptoError_MacKeyInvalid</span></span>
+<span class="lineno">  349 </span><span class="spaces">    </span><span class="istickedoff">return out</span></span>
+<span class="lineno">  350 </span>
+<span class="lineno">  351 </span>-- Opposite of 'encodeDerivationPath'.
+<span class="lineno">  352 </span>decodeDerivationPath
+<span class="lineno">  353 </span>    :: CBOR.Decoder s (Word32, Word32)
+<span class="lineno">  354 </span><span class="decl"><span class="istickedoff">decodeDerivationPath = do</span>
+<span class="lineno">  355 </span><span class="spaces">    </span><span class="istickedoff">ixs &lt;- decodeListIndef CBOR.decodeWord32</span>
+<span class="lineno">  356 </span><span class="spaces">    </span><span class="istickedoff">case ixs of</span>
+<span class="lineno">  357 </span><span class="spaces">        </span><span class="istickedoff">[acctIx, addrIx] -&gt;</span>
+<span class="lineno">  358 </span><span class="spaces">            </span><span class="istickedoff">pure (acctIx, addrIx)</span>
+<span class="lineno">  359 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt;</span>
+<span class="lineno">  360 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail $ mconcat</span></span>
+<span class="lineno">  361 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">[ &quot;decodeDerivationPath: invalid derivation path payload: &quot;</span></span>
+<span class="lineno">  362 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">, &quot;expected two indexes but got: &quot;</span></span>
+<span class="lineno">  363 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">, show ixs</span></span>
+<span class="lineno">  364 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">]</span></span></span>
+<span class="lineno">  365 </span>-- | Decode an arbitrary long list. CBOR introduce a &quot;break&quot; character to
+<span class="lineno">  366 </span>-- mark the end of the list, so we simply decode each item until we encounter
+<span class="lineno">  367 </span>-- a break character.
+<span class="lineno">  368 </span>--
+<span class="lineno">  369 </span>-- @
+<span class="lineno">  370 </span>--     myDecoder :: CBOR.Decoder s [MyType]
+<span class="lineno">  371 </span>--     myDecoder = decodeListIndef decodeOne
+<span class="lineno">  372 </span>--       where
+<span class="lineno">  373 </span>--         decodeOne :: CBOR.Decoder s MyType
+<span class="lineno">  374 </span>-- @
+<span class="lineno">  375 </span>decodeListIndef :: forall s a. CBOR.Decoder s a -&gt; CBOR.Decoder s [a]
+<span class="lineno">  376 </span><span class="decl"><span class="istickedoff">decodeListIndef decodeOne = do</span>
+<span class="lineno">  377 </span><span class="spaces">    </span><span class="istickedoff">_ &lt;- CBOR.decodeListLenIndef</span>
+<span class="lineno">  378 </span><span class="spaces">    </span><span class="istickedoff">CBOR.decodeSequenceLenIndef (flip (:)) [] reverse decodeOne</span></span>
+<span class="lineno">  379 </span>
+<span class="lineno">  380 </span>-- | Byron CBOR encodings often have CBOR nested in CBOR. This helps decoding
+<span class="lineno">  381 </span>-- a particular 'ByteString' that represents a CBOR object.
+<span class="lineno">  382 </span>decodeNestedBytes
+<span class="lineno">  383 </span>    :: MonadFail m
+<span class="lineno">  384 </span>    =&gt; (forall s. CBOR.Decoder s r)
+<span class="lineno">  385 </span>    -&gt; ByteString
+<span class="lineno">  386 </span>    -&gt; m r
+<span class="lineno">  387 </span><span class="decl"><span class="istickedoff">decodeNestedBytes dec bytes =</span>
+<span class="lineno">  388 </span><span class="spaces">    </span><span class="istickedoff">case CBOR.deserialiseFromBytes dec (BL.fromStrict bytes) of</span>
+<span class="lineno">  389 </span><span class="spaces">        </span><span class="istickedoff">Right (&quot;&quot;, res) -&gt;</span>
+<span class="lineno">  390 </span><span class="spaces">            </span><span class="istickedoff">pure res</span>
+<span class="lineno">  391 </span><span class="spaces">        </span><span class="istickedoff">Right _ -&gt;</span>
+<span class="lineno">  392 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Leftovers when decoding nested bytes&quot;</span></span>
+<span class="lineno">  393 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt;</span>
+<span class="lineno">  394 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Could not decode nested bytes&quot;</span></span></span>
+<span class="lineno">  395 </span>
+<span class="lineno">  396 </span>-- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.
+<span class="lineno">  397 </span>deserialiseCbor
+<span class="lineno">  398 </span>    :: (forall s. CBOR.Decoder s a)
+<span class="lineno">  399 </span>    -&gt; ByteString
+<span class="lineno">  400 </span>    -&gt; Either CBOR.DeserialiseFailure a
+<span class="lineno">  401 </span><span class="decl"><span class="istickedoff">deserialiseCbor dec =</span>
+<span class="lineno">  402 </span><span class="spaces">  </span><span class="istickedoff">fmap snd . CBOR.deserialiseFromBytes dec . BL.fromStrict</span></span>
+<span class="lineno">  403 </span>
+<span class="lineno">  404 </span>-- | CBOR deserialise without error handling - handy for prototypes or testing.
+<span class="lineno">  405 </span>unsafeDeserialiseCbor
+<span class="lineno">  406 </span>    :: HasCallStack
+<span class="lineno">  407 </span>    =&gt; (forall s. CBOR.Decoder s a)
+<span class="lineno">  408 </span>    -&gt; BL.ByteString
+<span class="lineno">  409 </span>    -&gt; a
+<span class="lineno">  410 </span><span class="decl"><span class="istickedoff">unsafeDeserialiseCbor decoder bytes = either</span>
+<span class="lineno">  411 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">(\e -&gt; error $ &quot;unsafeSerializeCbor: &quot; &lt;&gt; show e)</span></span>
+<span class="lineno">  412 </span><span class="spaces">    </span><span class="istickedoff">snd</span>
+<span class="lineno">  413 </span><span class="spaces">    </span><span class="istickedoff">(CBOR.deserialiseFromBytes decoder bytes)</span></span>
+
+</pre>
+</body>
+</html>
