@@ -37,3 +37,4 @@ core/test/golden/*/actual
 ### Nix ###
 result*
 .stack-to-nix.cache
+.nix-shell-cabal.project

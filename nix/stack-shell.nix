@@ -1,5 +1,8 @@
-{ pkgs ? import ./default.nix {}
-, compiler ? "ghc8103"
+let
+  defaultNix = import ../default.nix;
+in
+{ pkgs ? defaultNix.legacyPackages.${builtins.currentSystem}.pkgs
+, compiler ? "ghc8107"
 }:
 
 with pkgs;
@@ -8,7 +11,7 @@ mkShell rec {
   name = "cardano-addresses-env";
   meta.platforms = lib.platforms.unix;
 
-  ghc = haskell.compiler.${compiler};
+  ghc = haskell-nix.compiler.${compiler};
 
   tools = [
     ghc
