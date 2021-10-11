@@ -20,7 +20,7 @@
 </span><span id="line-20"></span><span>
 </span><span id="line-21"></span><span>
 </span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="PublicType"><span class="annot"><a href="Options.Applicative.Public.html#PublicType"><span class="hs-identifier hs-var">PublicType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WithChainCode"><span class="annot"><a href="Options.Applicative.Public.html#WithChainCode"><span class="hs-identifier hs-var">WithChainCode</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WithoutChainCode"><span class="annot"><a href="Options.Applicative.Public.html#WithoutChainCode"><span class="hs-identifier hs-var">WithoutChainCode</span></a></span></span><span>
-</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679106422"><span id="local-6989586621679106424"><span class="annot"><span class="annottext">PublicType -&gt; PublicType -&gt; Bool
+</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679106379"><span id="local-6989586621679106381"><span class="annot"><span class="annottext">PublicType -&gt; PublicType -&gt; Bool
 (PublicType -&gt; PublicType -&gt; Bool)
 -&gt; (PublicType -&gt; PublicType -&gt; Bool) -&gt; Eq PublicType
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -28,7 +28,7 @@ forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 $c/= :: PublicType -&gt; PublicType -&gt; Bool
 == :: PublicType -&gt; PublicType -&gt; Bool
 $c== :: PublicType -&gt; PublicType -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679106415"><span id="local-6989586621679106417"><span id="local-6989586621679106419"><span class="annot"><span class="annottext">Int -&gt; PublicType -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679106372"><span id="local-6989586621679106374"><span id="local-6989586621679106376"><span class="annot"><span class="annottext">Int -&gt; PublicType -&gt; ShowS
 [PublicType] -&gt; ShowS
 PublicType -&gt; String
 (Int -&gt; PublicType -&gt; ShowS)
@@ -53,21 +53,21 @@ $cshowsPrec :: Int -&gt; PublicType -&gt; ShowS
 </span><span id="line-30"></span><span class="annot"><a href="Options.Applicative.Public.html#publicOpt"><span class="hs-identifier hs-type">publicOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Options.Applicative.Public.html#PublicType"><span class="hs-identifier hs-type">PublicType</span></a></span><span>
 </span><span id="line-31"></span><span id="publicOpt"><span class="annot"><span class="annottext">publicOpt :: Parser PublicType
 </span><a href="Options.Applicative.Public.html#publicOpt"><span class="hs-identifier hs-var hs-var">publicOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser PublicType
-</span><a href="#local-6989586621679106413"><span class="hs-identifier hs-var">withoutCC</span></a></span><span> </span><span class="annot"><span class="annottext">Parser PublicType -&gt; Parser PublicType -&gt; Parser PublicType
+</span><a href="#local-6989586621679106370"><span class="hs-identifier hs-var">withoutCC</span></a></span><span> </span><span class="annot"><span class="annottext">Parser PublicType -&gt; Parser PublicType -&gt; Parser PublicType
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser PublicType
-</span><a href="#local-6989586621679106412"><span class="hs-identifier hs-var">withCC</span></a></span><span>
+</span><a href="#local-6989586621679106369"><span class="hs-identifier hs-var">withCC</span></a></span><span>
 </span><span id="line-32"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-33"></span><span>    </span><span id="local-6989586621679106413"><span class="annot"><span class="annottext">withoutCC :: Parser PublicType
-</span><a href="#local-6989586621679106413"><span class="hs-identifier hs-var hs-var">withoutCC</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PublicType -&gt; Mod FlagFields PublicType -&gt; Parser PublicType
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621679106370"><span class="annot"><span class="annottext">withoutCC :: Parser PublicType
+</span><a href="#local-6989586621679106370"><span class="hs-identifier hs-var hs-var">withoutCC</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PublicType -&gt; Mod FlagFields PublicType -&gt; Parser PublicType
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">PublicType
 </span><a href="Options.Applicative.Public.html#WithoutChainCode"><span class="hs-identifier hs-var">WithoutChainCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields PublicType
 forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;without-chain-code&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-34"></span><span>    </span><span id="local-6989586621679106412"><span class="annot"><span class="annottext">withCC :: Parser PublicType
-</span><a href="#local-6989586621679106412"><span class="hs-identifier hs-var hs-var">withCC</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PublicType -&gt; Mod FlagFields PublicType -&gt; Parser PublicType
+</span><span id="line-34"></span><span>    </span><span id="local-6989586621679106369"><span class="annot"><span class="annottext">withCC :: Parser PublicType
+</span><a href="#local-6989586621679106369"><span class="hs-identifier hs-var hs-var">withCC</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PublicType -&gt; Mod FlagFields PublicType -&gt; Parser PublicType
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">PublicType
 </span><a href="Options.Applicative.Public.html#WithChainCode"><span class="hs-identifier hs-var">WithChainCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields PublicType

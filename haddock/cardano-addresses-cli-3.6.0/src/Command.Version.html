@@ -34,14 +34,14 @@
 </span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
 </span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.Encoding</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
 </span><span id="line-36"></span><span>
-</span><span id="line-37"></span><span id="local-6989586621679106756"><span class="annot"><a href="Command.Version.html#opt"><span class="hs-identifier hs-type">opt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679106756"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="#local-6989586621679106756"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-37"></span><span id="local-6989586621679106713"><span class="annot"><a href="Command.Version.html#opt"><span class="hs-identifier hs-type">opt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679106713"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="#local-6989586621679106713"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-38"></span><span id="opt"><span class="annot"><span class="annottext">opt :: a -&gt; Parser a
-</span><a href="Command.Version.html#opt"><span class="hs-identifier hs-var hs-var">opt</span></a></span></span><span> </span><span id="local-6989586621679106755"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679106755"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Command.Version.html#opt"><span class="hs-identifier hs-var hs-var">opt</span></a></span></span><span> </span><span id="local-6989586621679106712"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679106712"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-39"></span><span>    </span><span class="annot"><span class="annottext">a -&gt; Mod FlagFields a -&gt; Parser a
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679106755"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Mod FlagFields a] -&gt; Mod FlagFields a
+</span><a href="#local-6989586621679106712"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Mod FlagFields a] -&gt; Mod FlagFields a
 forall a. Monoid a =&gt; [a] -&gt; a
 </span><span class="hs-identifier hs-var">mconcat</span></span><span>
 </span><span id="line-40"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields a
@@ -55,7 +55,7 @@ forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
 </span><span id="line-42"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields a
 forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679106754"><span class="hs-identifier hs-var">helpText</span></a></span><span>
+</span><a href="#local-6989586621679106711"><span class="hs-identifier hs-var">helpText</span></a></span><span>
 </span><span id="line-43"></span><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-44"></span><span>  </span><span class="annot"><span class="annottext">Parser a -&gt; Parser a -&gt; Parser a
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
@@ -79,14 +79,14 @@ forall a. Parser a -&gt; InfoMod a -&gt; ParserInfo a
 </span><span class="hs-identifier hs-var">info</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Parser a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679106755"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; InfoMod a
+</span><a href="#local-6989586621679106712"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; InfoMod a
 forall a. String -&gt; InfoMod a
 </span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679106754"><span class="hs-identifier hs-var">helpText</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679106711"><span class="hs-identifier hs-var">helpText</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-48"></span><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-49"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-50"></span><span>    </span><span id="local-6989586621679106754"><span class="annot"><span class="annottext">helpText :: String
-</span><a href="#local-6989586621679106754"><span class="hs-identifier hs-var hs-var">helpText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span id="line-50"></span><span>    </span><span id="local-6989586621679106711"><span class="annot"><span class="annottext">helpText :: String
+</span><a href="#local-6989586621679106711"><span class="hs-identifier hs-var hs-var">helpText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;Show the software current version and build revision.&quot;</span></span><span>
 </span><span id="line-51"></span><span>
 </span><span id="line-52"></span><span class="annot"><a href="Command.Version.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
