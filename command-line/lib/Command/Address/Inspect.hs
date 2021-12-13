@@ -70,7 +70,8 @@ mod liftCmd = command "inspect" $
             , indent 2 $ string "    \"stake_reference\": \"by value\","
             , indent 2 $ string "    \"stake_key_hash\": \"6b542d6da35e6c95d95a33c6f66ec482d3f4caf3ad35e2ede09cf827\","
             , indent 2 $ string "    \"spending_key_hash\": \"44bc4f524f49a78a9c8a45b882d8710cb9254b3da6a978d50dc9b870\","
-            , indent 2 $ string "    \"network_tag\": 0"
+            , indent 2 $ string "    \"network_tag\": 0,"
+            , indent 2 $ string "    \"address_type\": \"0000\""
             , indent 2 $ string "}"
             ])
   where
