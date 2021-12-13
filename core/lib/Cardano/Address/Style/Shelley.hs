@@ -145,6 +145,8 @@ import Data.ByteString
     ( ByteString )
 import Data.Maybe
     ( fromMaybe, isNothing )
+import Data.Text
+    ( Text )
 import Data.Typeable
     ( Typeable )
 import Data.Word
@@ -522,6 +524,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
+            , infoAddressType = "0000"
             }
     -- 0001: base address: scripthash28,keyhash28
     0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
@@ -529,6 +532,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
+            , infoAddressType = "0001"
             }
     -- 0010: base address: keyhash28,scripthash28
     0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
@@ -536,6 +540,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
+            , infoAddressType = "0010"
             }
     -- 0011: base address: scripthash28,scripthash28
     0b00110000 | addrRestLength == 2 * credentialHashSize ->
@@ -543,6 +548,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
+            , infoAddressType = "0011"
             }
     -- 0100: pointer address: keyhash28, 3 variable length uint
     0b01000000 | addrRestLength > credentialHashSize -> do
@@ -550,6 +556,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         pure addressInfo
             { infoStakeReference = Just $ ByPointer ptr
             , infoSpendingKeyHash = Just addrHash1
+            , infoAddressType = "0100"
             }
     -- 0101: pointer address: scripthash28, 3 variable length uint
     0b01010000 | addrRestLength > credentialHashSize -> do
@@ -557,30 +564,35 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         pure addressInfo
             { infoStakeReference = Just $ ByPointer ptr
             , infoScriptHash = Just addrHash1
+            , infoAddressType = "0101"
             }
     -- 0110: enterprise address: keyhash28
     0b01100000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
             , infoSpendingKeyHash = Just addrHash1
+            , infoAddressType = "0110"
             }
     -- 0111: enterprise address: scripthash28
     0b01110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
             , infoScriptHash = Just addrHash1
+            , infoAddressType = "0111"
             }
     -- 1110: reward account: keyhash28
     0b11100000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoStakeKeyHash = Just addrHash1
+            , infoAddressType = "1110"
             }
     -- 1111: reward account: scripthash28
     0b11110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
+            , infoAddressType = "1111"
             }
     unknown -> Left (UnknownType unknown)
 
@@ -592,6 +604,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         , infoStakeKeyHash = Nothing
         , infoScriptHash = Nothing
         , infoStakeScriptHash = Nothing
+        , infoAddressType = ""
         }
 
     getPtr :: ByteString -> Either ErrInspectAddressOnlyShelley ChainPointer
@@ -648,6 +661,7 @@ data AddressInfo = AddressInfo
     , infoScriptHash      :: !(Maybe ByteString)
     , infoStakeScriptHash :: !(Maybe ByteString)
     , infoNetworkTag      :: !NetworkTag
+    , infoAddressType     :: !Text
     } deriving (Generic, Show, Eq)
 
 -- | Info from 'Address' about how delegation keys are located.
@@ -662,6 +676,7 @@ instance ToJSON AddressInfo where
     toJSON AddressInfo{..} = Json.object $
         [ "network_tag" .= infoNetworkTag
         , "stake_reference" .= Json.String (maybe "none" refName infoStakeReference)
+        , "address_type" .= Json.String infoAddressType
         ]
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
