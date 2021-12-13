@@ -213,7 +213,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Stake Shared network tag 0', () => expect(inspectAddress("stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0011",
+      "address_type": "1111",
       "network_tag": 0,
       "spending_shared_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
       "spending_shared_hash_bech32": "addr_shared_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcuuhu9r",
