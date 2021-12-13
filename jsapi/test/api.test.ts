@@ -42,7 +42,7 @@ describe('inspectAddress', () => {
       expect(res).toEqual({
         "stake_reference": "none",
         "address_style": "Byron",
-        "address_type": "1000 byron",
+        "address_type": 8,
         "address_root": "b3e5c07c62cec629b5c56e1a3e5f7ded6d1a7fce9608d60a6f50f912",
         "derivation_path": "581c03b465be70a591156f4562c0ef4ebbad81fddd5be477234ea4fb2c3f",
         "network_tag": 1097911063
@@ -55,7 +55,7 @@ describe('inspectAddress', () => {
       expect(res).toEqual({
         "stake_reference": "none",
         "address_style": "Byron",
-        "address_type": "1000 byron",
+        "address_type": 8,
         "address_root": "c5805e1b48ffb6dc1f7ea4d5dbca56c48128fdbb98af1a571116f0e9",
         "derivation_path": {
             "account_index": "0H",
@@ -71,7 +71,7 @@ describe('inspectAddress', () => {
         "stake_reference": "none",
         "spending_key_hash_bech32": "addr_vkh109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx28nj4yj",
         "address_style": "Shelley",
-        "address_type": "0110",
+        "address_type": 6,
         "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
         "network_tag": 0
       });
@@ -161,20 +161,20 @@ describe('inspectAddress', () => {
     it('Icarus Mainnet', () => expect(inspectAddress("Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe")).resolves.toEqual({
       "address_root": "20e9d7a0aeb05aa9d0ea4c4b97a2214cd31e7f855abab30e608afe19",
       "address_style": "Icarus",
-      "address_type": "1000 icarus",
+      "address_type": 8,
       "network_tag": null,
       "stake_reference": "none",
     }));
     it('Icarus Testnet', () => expect(inspectAddress("2cWKMJemoBamEeRQGMgcFo2UcS8Ue3e7FpStsfcCu2Dv4o2xGy1GRS6Je85EUrQh9WQ2o")).resolves.toEqual({
       "address_root": "f61cc6e2a72997f6fc6800c6977b7afc1685be09f3b8cf817eb2297e",
       "address_style": "Icarus",
-      "address_type": "1000 icarus",
+      "address_type": 8,
       "network_tag": 1097911063,
       "stake_reference": "none",
     }));
     it('Shelley network tag 3', () => expect(inspectAddress("addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ewvxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0000",
+      "address_type": 0,
       "network_tag": 3,
       "spending_key_hash": "79467c69a9ac66280174d09d62575ba955748b21dec3b483a9469a65",
       "spending_key_hash_bech32": "addr_vkh109r8c6df43nzsqt56zwky46m492hfzepmmpmfqafg6dx28nj4yj",
@@ -186,13 +186,13 @@ describe('inspectAddress', () => {
       "stake_reference": "none",
       "spending_key_hash_bech32": "addr_vkh15gq483ae3m9uj70ykcwel7qs4eaej9ucpfxja26342nm2frv4mv",
       "address_style": "Shelley",
-      "address_type": "0110",
+      "address_type": 6,
       "spending_key_hash": "a20153c7b98ecbc979e4b61d9ff810ae7b9917980a4d2eab51aaa7b5",
       "network_tag": 1
     }));
     it('Shelley Pointer network tag 3', () => expect(inspectAddress("addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0100",
+      "address_type": 4,
       "network_tag": 3,
       "pointer": {
         "output_index": 42,
@@ -205,7 +205,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Stake network tag 0', () => expect(inspectAddress("stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "1110",
+      "address_type": 14,
       "network_tag": 0,
       "stake_key_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
       "stake_key_hash_bech32": "stake_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcjpqtv8",
@@ -213,7 +213,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Stake Shared network tag 0', () => expect(inspectAddress("stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "1111",
+      "address_type": 15,
       "network_tag": 0,
       "spending_shared_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
       "spending_shared_hash_bech32": "addr_shared_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcuuhu9r",
@@ -223,7 +223,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley network tag 0', () => expect(inspectAddress("addr_test1qpwr8l57ceql23ylyprl6qgct239lxph8clwxy5w8r4qdz8ct9uut5ahmxqkgwy9ecn5carsv39frsgsq09u70wmqwhqjqcjqs")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0000",
+      "address_type": 0,
       "network_tag": 0,
       "spending_key_hash": "5c33fe9ec641f5449f2047fd01185aa25f98373e3ee3128e38ea0688",
       "spending_key_hash_bech32": "addr_vkh1tsela8kxg865f8eqgl7szxz65f0esde78m339r3cagrgsms0rh6",
@@ -233,7 +233,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Stake network tag 0', () => expect(inspectAddress("stake_test1uru9j7w96wmanqty8zzuuf6vw3cxgj53cygq8j708hds8tsntl0j7")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "1110",
+      "address_type": 14,
       "network_tag": 0,
       "stake_key_hash": "f85979c5d3b7d981643885ce274c7470644a91c11003cbcf3ddb03ae",
       "stake_key_hash_bech32": "stake_vkh1lpvhn3wnklvczepcsh8zwnr5wpjy4ywpzqpuhneamvp6uwkgwm8",
@@ -241,7 +241,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Mainnet', () => expect(inspectAddress("addr1q9777p2w2hqa3cl0ah97pdwyavjnpf0ex3muvqgttavjxhku2rp98h9drzkdfva8ea775jszmd799k59aknpvqyn6wwqwll7uw")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0000",
+      "address_type": 0,
       "network_tag": 1,
       "spending_key_hash": "7def054e55c1d8e3efedcbe0b5c4eb2530a5f93477c6010b5f59235e",
       "spending_key_hash_bech32": "addr_vkh10hhs2nj4c8vw8mlde0stt38ty5c2t7f5wlrqzz6lty34up32gnt",
@@ -251,7 +251,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Stake Mainnet', () => expect(inspectAddress("stake1u8w9psjnmjk33tx5kwnu7l02fgpdklzjm2z7mfskqzfa88qsjpk8l")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "1110",
+      "address_type": 14,
       "network_tag": 1,
       "stake_key_hash": "dc50c253dcad18acd4b3a7cf7dea4a02db7c52da85eda6160093d39c",
       "stake_key_hash_bech32": "stake_vkh1m3gvy57u45v2e49n5l8hm6j2qtdhc5k6shk6v9sqj0feccj4rjm",
@@ -259,7 +259,7 @@ describe('inspectAddress', () => {
     }));
     it('Shelley Hex', () => expect(inspectAddress("0147d6fa81a0ca0b1433c0ae405ec04b29255c3ef8f6e30790483783843e250d8d60652a6123b9f705a08732399f57b1179f087429aadc85ba")).resolves.toEqual({
       "address_style": "Shelley",
-      "address_type": "0000",
+      "address_type": 0,
       "network_tag": 1,
       "spending_key_hash": "47d6fa81a0ca0b1433c0ae405ec04b29255c3ef8f6e3079048378384",
       "spending_key_hash_bech32": "addr_vkh1glt04qdqeg93gv7q4eq9aszt9yj4c0hc7m3s0yzgx7pcgjg7ttx",
@@ -270,7 +270,7 @@ describe('inspectAddress', () => {
     it('Icarus Hex', () => expect(inspectAddress("82d818582183581c20e9d7a0aeb05aa9d0ea4c4b97a2214cd31e7f855abab30e608afe19a0001a96a202b9")).resolves.toEqual({
       "address_root": "20e9d7a0aeb05aa9d0ea4c4b97a2214cd31e7f855abab30e608afe19",
       "address_style": "Icarus",
-      "address_type": "1000 icarus",
+      "address_type": 8,
       "network_tag": null,
       "stake_reference": "none",
     }));
@@ -281,7 +281,7 @@ describe('inspectAddress', () => {
       expect(res).toEqual({
         "stake_reference": "none",
         "address_style": "Byron",
-        "address_type": "1000 byron",
+        "address_type": 8,
         "address_root": "c5805e1b48ffb6dc1f7ea4d5dbca56c48128fdbb98af1a571116f0e9",
         "derivation_path": {
             "account_index": "0H",

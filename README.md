@@ -110,7 +110,7 @@ $ echo addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v | cardano
     "address_style": "Shelley",
     "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
     "network_tag": 0,
-    "address_type": "0110"
+    "address_type": 6
 }
 
 $ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n | cardano-address address inspect
@@ -122,25 +122,24 @@ $ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465
     "address_style": "Shelley",
     "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
     "network_tag": 0,
-    "address_type": "0000"
+    "address_type": 0
 }
 ```
 
 Details about possible address types are following.
-| address_type  |   Meaning                                                |
-| ------------- |:--------------------------------------------------------:|
-| 1000 byron    |   byron                                                  |
-| 1000 icarus   |   icarus                                                 |
-| 0000          |   base address: keyhash28,keyhash28                      |
-| 0001          |   base address: scripthash28,keyhash28                   |
-| 0010          |   base address: keyhash28,scripthash28                   |
-| 0011          |   base address: scripthash28,scripthash28                |
-| 0100          |   pointer address: keyhash28, 3 variable length uint     |
-| 0101          |   pointer address: scripthash28, 3 variable length uint  |
-| 0110          |   enterprise address: keyhash28                          |
-| 0111          |   enterprise address: scripthash28                       |
-| 1110          |   reward account: keyhash28                              |
-| 1111          |   reward account: scripthash28                           |
+| address_type | binary prefix  |   Meaning                                                |
+| ------------ |:--------------:|:--------------------------------------------------------:|
+|      0       |  0000          |   base address: keyhash28,keyhash28                      |
+|      1       |  0001          |   base address: scripthash28,keyhash28                   |
+|      2       |  0010          |   base address: keyhash28,scripthash28                   |
+|      3       |  0011          |   base address: scripthash28,scripthash28                |
+|      4       |  0100          |   pointer address: keyhash28, 3 variable length uint     |
+|      5       |  0101          |   pointer address: scripthash28, 3 variable length uint  |
+|      6       |  0110          |   enterprise address: keyhash28                          |
+|      7       |  0111          |   enterprise address: scripthash28                       |
+|      8       |  1000          |   byron/icarus                                           |
+|      14      |  1110          |   reward account: keyhash28                              |
+|      15      |  1111          |   reward account: scripthash28                           |
 
 </details>
 
