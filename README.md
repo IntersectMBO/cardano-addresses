@@ -125,6 +125,23 @@ $ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465
     "address_type": "0000"
 }
 ```
+
+Details about possible address types are following.
+| address_type  |   Meaning                                                |
+| ------------- |:--------------------------------------------------------:|
+| 1000 byron    |   byron                                                  |
+| 1000 icarus   |   icarus                                                 |
+| 0000          |   base address: keyhash28,keyhash28                      |
+| 0001          |   base address: scripthash28,keyhash28                   |
+| 0010          |   base address: keyhash28,scripthash28                   |
+| 0011          |   base address: scripthash28,scripthash28                |
+| 0100          |   pointer address: keyhash28, 3 variable length uint     |
+| 0101          |   pointer address: scripthash28, 3 variable length uint  |
+| 0110          |   enterprise address: keyhash28                          |
+| 0111          |   enterprise address: scripthash28                       |
+| 1110          |   reward account: keyhash28                              |
+| 1111          |   reward account: scripthash28                           |
+
 </details>
 
 <details>

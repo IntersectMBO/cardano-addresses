@@ -426,7 +426,7 @@ instance ToJSON AddressInfo where
         [ "address_root"    .= T.decodeUtf8 (encode EBase16 infoAddressRoot)
         , "derivation_path" .= infoPayload
         , "network_tag"     .= maybe Json.Null toJSON infoNetworkTag
-        , "address_type"    .= Json.String "1000"
+        , "address_type"    .= Json.String "1000 byron"
         ]
 
 instance ToJSON PayloadInfo where

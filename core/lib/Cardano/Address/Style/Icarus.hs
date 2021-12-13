@@ -424,7 +424,7 @@ instance ToJSON AddressInfo where
     toJSON AddressInfo{..} = Json.object
         [ "network_tag" .= maybe Json.Null toJSON infoNetworkTag
         , "address_root" .= T.decodeUtf8 (encode EBase16 infoAddressRoot)
-        , "address_type"    .= Json.String "1000"
+        , "address_type"    .= Json.String "1000 icarus"
         ]
 
 instance Internal.PaymentAddress Icarus where
