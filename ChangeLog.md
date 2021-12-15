@@ -4,6 +4,10 @@
 
 - Address type in address inspect command.
 
+### Changed
+
+- `cardano-addresses` is now built with GHC 8.10.7.
+
 ## [3.6.0] - 2021-09-08
 
 ### Changed
