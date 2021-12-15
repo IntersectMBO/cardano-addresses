@@ -138,7 +138,7 @@ import Data.Binary.Get
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.Bits
-    ( (.&.) )
+    ( shiftR, (.&.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -522,7 +522,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
-            , infoAddressType = 0
             }
     -- 0001: base address: scripthash28,keyhash28
     0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
@@ -530,7 +529,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
-            , infoAddressType = 1
             }
     -- 0010: base address: keyhash28,scripthash28
     0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
@@ -538,7 +536,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoSpendingKeyHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
-            , infoAddressType = 2
             }
     -- 0011: base address: scripthash28,scripthash28
     0b00110000 | addrRestLength == 2 * credentialHashSize ->
@@ -546,7 +543,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
-            , infoAddressType = 3
             }
     -- 0100: pointer address: keyhash28, 3 variable length uint
     0b01000000 | addrRestLength > credentialHashSize -> do
@@ -554,7 +550,6 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         pure addressInfo
             { infoStakeReference = Just $ ByPointer ptr
             , infoSpendingKeyHash = Just addrHash1
-            , infoAddressType = 4
             }
     -- 0101: pointer address: scripthash28, 3 variable length uint
     0b01010000 | addrRestLength > credentialHashSize -> do
@@ -562,35 +557,30 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         pure addressInfo
             { infoStakeReference = Just $ ByPointer ptr
             , infoScriptHash = Just addrHash1
-            , infoAddressType = 5
             }
     -- 0110: enterprise address: keyhash28
     0b01100000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
             , infoSpendingKeyHash = Just addrHash1
-            , infoAddressType = 6
             }
     -- 0111: enterprise address: scripthash28
     0b01110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
             , infoScriptHash = Just addrHash1
-            , infoAddressType = 7
             }
     -- 1110: reward account: keyhash28
     0b11100000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoStakeKeyHash = Just addrHash1
-            , infoAddressType = 14
             }
     -- 1111: reward account: scripthash28
     0b11110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
             , infoScriptHash = Just addrHash1
-            , infoAddressType = 15
             }
     unknown -> Left (UnknownType unknown)
 
@@ -602,7 +592,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         , infoStakeKeyHash = Nothing
         , infoScriptHash = Nothing
         , infoStakeScriptHash = Nothing
-        , infoAddressType = 0
+        , infoAddressType = shiftR (addrType .&. 0b11110000) 4
         }
 
     getPtr :: ByteString -> Either ErrInspectAddressOnlyShelley ChainPointer

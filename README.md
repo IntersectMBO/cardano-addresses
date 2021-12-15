@@ -126,7 +126,7 @@ $ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465
 }
 ```
 
-Details about possible address types are following.
+Details about possible address types are following (refer also to [cddl](https://github.com/input-output-hk/cardano-ledger/blob/master/eras/alonzo/test-suite/cddl-files/alonzo.cddl) )
 | address_type | binary prefix  |   Meaning                                                |
 | ------------ |:--------------:|:--------------------------------------------------------:|
 |      0       |  0000          |   base address: keyhash28,keyhash28                      |
