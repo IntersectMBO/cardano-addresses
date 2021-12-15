@@ -1,7 +1,9 @@
-index-state: 2021-10-05T00:00:00Z
+index-state: 2021-12-23T00:00:00Z
 with-compiler: ghc-8.10.7
 
-constraints: ghcjs-base >=0.2.0.3
+constraints:
+    ghcjs-base >=0.2.0.3
+  , cborg < 0.2.6.0
 
 packages:
   command-line/cardano-addresses-cli.cabal
