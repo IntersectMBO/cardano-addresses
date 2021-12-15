@@ -1,3 +1,9 @@
+## [3.7.0] - 2021-12-15
+
+### Added
+
+- Address type in address inspect command.
+
 ## [3.6.0] - 2021-09-08
 
 ### Changed
