@@ -1047,13 +1047,14 @@ InspectAddressByron :: AddressInfo -> InspectAddress
 
 -- | An inspected Shelley address.
 data AddressInfo
-AddressInfo :: !Maybe ReferenceInfo -> !Maybe ByteString -> !Maybe ByteString -> !Maybe ByteString -> !Maybe ByteString -> !NetworkTag -> AddressInfo
+AddressInfo :: !Maybe ReferenceInfo -> !Maybe ByteString -> !Maybe ByteString -> !Maybe ByteString -> !Maybe ByteString -> !NetworkTag -> !Word8 -> AddressInfo
 [$sel:infoStakeReference:AddressInfo] :: AddressInfo -> !Maybe ReferenceInfo
 [$sel:infoSpendingKeyHash:AddressInfo] :: AddressInfo -> !Maybe ByteString
 [$sel:infoStakeKeyHash:AddressInfo] :: AddressInfo -> !Maybe ByteString
 [$sel:infoScriptHash:AddressInfo] :: AddressInfo -> !Maybe ByteString
 [$sel:infoStakeScriptHash:AddressInfo] :: AddressInfo -> !Maybe ByteString
 [$sel:infoNetworkTag:AddressInfo] :: AddressInfo -> !NetworkTag
+[$sel:infoAddressType:AddressInfo] :: AddressInfo -> !Word8
 
 -- | Info from <a>Address</a> about how delegation keys are located.
 data ReferenceInfo

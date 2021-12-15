@@ -443,227 +443,228 @@ span.spaces    { background: white }
 <span class="lineno">  424 </span>    <span class="decl"><span class="istickedoff">toJSON AddressInfo{..} = Json.object</span>
 <span class="lineno">  425 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;network_tag&quot; .= maybe Json.Null <span class="nottickedoff">toJSON</span> infoNetworkTag</span>
 <span class="lineno">  426 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_root&quot; .= T.decodeUtf8 (encode EBase16 infoAddressRoot)</span>
-<span class="lineno">  427 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
-<span class="lineno">  428 </span>
-<span class="lineno">  429 </span>instance Internal.PaymentAddress Icarus where
-<span class="lineno">  430 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
-<span class="lineno">  431 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.toStrictByteString</span>
-<span class="lineno">  432 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.encodeAddress (getKey k) attrs</span>
-<span class="lineno">  433 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  434 </span><span class="spaces">        </span><span class="istickedoff">NetworkTag magic = networkTag @Icarus discrimination</span>
-<span class="lineno">  435 </span><span class="spaces">        </span><span class="istickedoff">attrs = case addressDiscrimination @Icarus discrimination of</span>
-<span class="lineno">  436 </span><span class="spaces">            </span><span class="istickedoff">RequiresNetworkTag -&gt;</span>
-<span class="lineno">  437 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeProtocolMagicAttr magic</span>
-<span class="lineno">  438 </span><span class="spaces">                </span><span class="istickedoff">]</span>
-<span class="lineno">  439 </span><span class="spaces">            </span><span class="istickedoff">RequiresNoTag -&gt;</span>
-<span class="lineno">  440 </span><span class="spaces">                </span><span class="istickedoff">[]</span></span>
-<span class="lineno">  441 </span>
-<span class="lineno">  442 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
-<span class="lineno">  443 </span>--
-<span class="lineno">  444 </span>-- | Convert a public key to a payment 'Address' valid for the given
-<span class="lineno">  445 </span>-- network discrimination.
-<span class="lineno">  446 </span>--
-<span class="lineno">  447 </span>-- @since 1.0.0
-<span class="lineno">  448 </span>paymentAddress
-<span class="lineno">  449 </span>    :: NetworkDiscriminant Icarus
-<span class="lineno">  450 </span>    -&gt; Icarus 'PaymentK XPub
-<span class="lineno">  451 </span>    -&gt; Address
-<span class="lineno">  452 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
-<span class="lineno">  453 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
-<span class="lineno">  454 </span>
-<span class="lineno">  455 </span>--
-<span class="lineno">  456 </span>-- Network Discrimination
-<span class="lineno">  457 </span>--
-<span class="lineno">  458 </span>
-<span class="lineno">  459 </span>instance HasNetworkDiscriminant Icarus where
-<span class="lineno">  460 </span>    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
-<span class="lineno">  461 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination = fst</span></span>
-<span class="lineno">  462 </span>    <span class="decl"><span class="istickedoff">networkTag = snd</span></span>
-<span class="lineno">  463 </span>
-<span class="lineno">  464 </span>-- | 'NetworkDiscriminant' for Cardano MainNet &amp; 'Icarus'
-<span class="lineno">  465 </span>--
-<span class="lineno">  466 </span>-- @since 2.0.0
-<span class="lineno">  467 </span>icarusMainnet :: NetworkDiscriminant Icarus
-<span class="lineno">  468 </span><span class="decl"><span class="istickedoff">icarusMainnet = byronMainnet</span></span>
-<span class="lineno">  469 </span>
-<span class="lineno">  470 </span>-- | 'NetworkDiscriminant' for Cardano Staging &amp; 'Icarus'
-<span class="lineno">  471 </span>--
-<span class="lineno">  472 </span>-- @since 2.0.0
-<span class="lineno">  473 </span>icarusStaging :: NetworkDiscriminant Icarus
-<span class="lineno">  474 </span><span class="decl"><span class="istickedoff">icarusStaging = byronStaging</span></span>
-<span class="lineno">  475 </span>
-<span class="lineno">  476 </span>-- | 'NetworkDiscriminant' for Cardano TestNet &amp; 'Icarus'
-<span class="lineno">  477 </span>--
-<span class="lineno">  478 </span>-- @since 2.0.0
-<span class="lineno">  479 </span>icarusTestnet :: NetworkDiscriminant Icarus
-<span class="lineno">  480 </span><span class="decl"><span class="istickedoff">icarusTestnet = byronTestnet</span></span>
-<span class="lineno">  481 </span>
-<span class="lineno">  482 </span>--
-<span class="lineno">  483 </span>-- Unsafe
-<span class="lineno">  484 </span>--
-<span class="lineno">  485 </span>
-<span class="lineno">  486 </span>-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
-<span class="lineno">  487 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
-<span class="lineno">  488 </span>--
-<span class="lineno">  489 </span>-- This can be useful however when serializing / deserializing such a type, or to
-<span class="lineno">  490 </span>-- speed up test code (and avoid having to do needless derivations from a master
-<span class="lineno">  491 </span>-- key down to an address key for instance).
-<span class="lineno">  492 </span>--
-<span class="lineno">  493 </span>-- @since 1.0.0
-<span class="lineno">  494 </span>liftXPrv :: XPrv -&gt; Icarus depth XPrv
-<span class="lineno">  495 </span><span class="decl"><span class="nottickedoff">liftXPrv = Icarus</span></span>
-<span class="lineno">  496 </span>
-<span class="lineno">  497 </span>-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPub'. this is
-<span class="lineno">  498 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
-<span class="lineno">  499 </span>--
-<span class="lineno">  500 </span>-- This can be useful however when serializing / deserializing such a type, or to
-<span class="lineno">  501 </span>-- speed up test code (and avoid having to do needless derivations from a master
-<span class="lineno">  502 </span>-- key down to an address key for instance).
-<span class="lineno">  503 </span>--
-<span class="lineno">  504 </span>-- @since 2.0.0
-<span class="lineno">  505 </span>liftXPub :: XPub -&gt; Icarus depth XPub
-<span class="lineno">  506 </span><span class="decl"><span class="istickedoff">liftXPub = Icarus</span></span>
-<span class="lineno">  507 </span>
-<span class="lineno">  508 </span>--
-<span class="lineno">  509 </span>-- Internal
-<span class="lineno">  510 </span>--
-<span class="lineno">  511 </span>
-<span class="lineno">  512 </span>-- Purpose is a constant set to 44' (or 0x8000002C) following the original
-<span class="lineno">  513 </span>-- BIP-44 specification.
-<span class="lineno">  514 </span>--
-<span class="lineno">  515 </span>-- It indicates that the subtree of this node is used according to this
-<span class="lineno">  516 </span>-- specification.
-<span class="lineno">  517 </span>--
-<span class="lineno">  518 </span>-- Hardened derivation is used at this level.
-<span class="lineno">  519 </span>purposeIndex :: Word32
-<span class="lineno">  520 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000002C</span></span>
-<span class="lineno">  521 </span>
-<span class="lineno">  522 </span>-- One master node (seed) can be used for unlimited number of independent
-<span class="lineno">  523 </span>-- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
-<span class="lineno">  524 </span>-- same space for various cryptocoins has some disadvantages.
-<span class="lineno">  525 </span>--
-<span class="lineno">  526 </span>-- This level creates a separate subtree for every cryptocoin, avoiding reusing
-<span class="lineno">  527 </span>-- addresses across cryptocoins and improving privacy issues.
-<span class="lineno">  528 </span>--
-<span class="lineno">  529 </span>-- Coin type is a constant, set for each cryptocoin. For Cardano this constant
-<span class="lineno">  530 </span>-- is set to 1815' (or 0x80000717). 1815 is the birthyear of our beloved Ada
-<span class="lineno">  531 </span>-- Lovelace.
-<span class="lineno">  532 </span>--
-<span class="lineno">  533 </span>-- Hardened derivation is used at this level.
-<span class="lineno">  534 </span>coinTypeIndex :: Word32
-<span class="lineno">  535 </span><span class="decl"><span class="istickedoff">coinTypeIndex = 0x80000717</span></span>
-<span class="lineno">  536 </span>
-<span class="lineno">  537 </span>-- The minimum seed length for 'generateKeyFromMnemonic' and 'unsafeGenerateKeyFromMnemonic'.
-<span class="lineno">  538 </span>minSeedLengthBytes :: Int
-<span class="lineno">  539 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
-<span class="lineno">  540 </span>
-<span class="lineno">  541 </span>-- Hardware Ledger devices generates keys from mnemonic using a different
-<span class="lineno">  542 </span>-- approach (different from the rest of Cardano).
-<span class="lineno">  543 </span>--
-<span class="lineno">  544 </span>-- It is a combination of:
-<span class="lineno">  545 </span>--
-<span class="lineno">  546 </span>-- - [SLIP 0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
-<span class="lineno">  547 </span>-- - [BIP 0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
-<span class="lineno">  548 </span>-- - [BIP 0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
-<span class="lineno">  549 </span>-- - [RFC 8032](https://tools.ietf.org/html/rfc8032#section-5.1.5)
-<span class="lineno">  550 </span>-- - What seems to be arbitrary changes from Ledger regarding the calculation of
-<span class="lineno">  551 </span>--   the initial chain code and generation of the root private key.
-<span class="lineno">  552 </span>unsafeGenerateKeyFromHardwareLedger
-<span class="lineno">  553 </span>    :: SomeMnemonic
-<span class="lineno">  554 </span>        -- ^ The root mnemonic
-<span class="lineno">  555 </span>    -&gt; Icarus 'RootK XPrv
-<span class="lineno">  556 </span><span class="decl"><span class="istickedoff">unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do</span>
-<span class="lineno">  557 </span><span class="spaces">    </span><span class="istickedoff">let seed = pbkdf2HmacSha512</span>
-<span class="lineno">  558 </span><span class="spaces">            </span><span class="istickedoff">$ T.encodeUtf8</span>
-<span class="lineno">  559 </span><span class="spaces">            </span><span class="istickedoff">$ T.intercalate &quot; &quot;</span>
-<span class="lineno">  560 </span><span class="spaces">            </span><span class="istickedoff">$ mnemonicToText mw</span>
-<span class="lineno">  561 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  562 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE</span>
-<span class="lineno">  563 </span><span class="spaces">    </span><span class="istickedoff">-- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code</span>
-<span class="lineno">  564 </span><span class="spaces">    </span><span class="istickedoff">-- is obtained as a hash of the initial seed whereas iR is used to make part</span>
-<span class="lineno">  565 </span><span class="spaces">    </span><span class="istickedoff">-- of the root private key itself.</span>
-<span class="lineno">  566 </span><span class="spaces">    </span><span class="istickedoff">let cc = hmacSha256 (BS.pack [1] &lt;&gt; seed)</span>
-<span class="lineno">  567 </span><span class="spaces">    </span><span class="istickedoff">let (iL, iR) = first pruneBuffer $ hashRepeatedly seed</span>
-<span class="lineno">  568 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  569 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe (Left &quot;invalid xprv&quot;) pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
-<span class="lineno">  570 </span><span class="spaces">    </span><span class="istickedoff">pure $ Icarus prv</span>
-<span class="lineno">  571 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">  572 </span><span class="spaces">    </span><span class="istickedoff">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span>
-<span class="lineno">  573 </span><span class="spaces">    </span><span class="istickedoff">-- programmer errors (out-of-range byte buffer access or, invalid length for</span>
-<span class="lineno">  574 </span><span class="spaces">    </span><span class="istickedoff">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span>
-<span class="lineno">  575 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight :: Either String a -&gt; a</span>
-<span class="lineno">  576 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either error id</span>
-<span class="lineno">  577 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  578 </span><span class="spaces">    </span><span class="istickedoff">-- This is the algorithm described in SLIP 0010 for master key generation</span>
-<span class="lineno">  579 </span><span class="spaces">    </span><span class="istickedoff">-- with an extra step to discard _some_ of the potential private keys. Why</span>
-<span class="lineno">  580 </span><span class="spaces">    </span><span class="istickedoff">-- this extra step remains a mystery as of today.</span>
-<span class="lineno">  581 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  582 </span><span class="spaces">    </span><span class="istickedoff">--      1. Generate a seed byte sequence S of 512 bits according to BIP-0039.</span>
-<span class="lineno">  583 </span><span class="spaces">    </span><span class="istickedoff">--         (done in a previous step, passed as argument).</span>
-<span class="lineno">  584 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  585 </span><span class="spaces">    </span><span class="istickedoff">--      2. Calculate I = HMAC-SHA512(Key = &quot;ed25519 seed&quot;, Data = S)</span>
-<span class="lineno">  586 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  587 </span><span class="spaces">    </span><span class="istickedoff">--      3. Split I into two 32-byte sequences, IL and IR.</span>
-<span class="lineno">  588 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  589 </span><span class="spaces">    </span><span class="istickedoff">-- extra *******************************************************************</span>
-<span class="lineno">  590 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
-<span class="lineno">  591 </span><span class="spaces">    </span><span class="istickedoff">-- *    3.5 If the third highest bit of the last byte of IL is not zero    *</span>
-<span class="lineno">  592 </span><span class="spaces">    </span><span class="istickedoff">-- *        S = I and go back to step 2.                                   *</span>
-<span class="lineno">  593 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
-<span class="lineno">  594 </span><span class="spaces">    </span><span class="istickedoff">-- *************************************************************************</span>
-<span class="lineno">  595 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  596 </span><span class="spaces">    </span><span class="istickedoff">--      4. Use parse256(IL) as master secret key, and IR as master chain code.</span>
-<span class="lineno">  597 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly :: ByteString -&gt; (ByteString, ByteString)</span>
-<span class="lineno">  598 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly bytes = case BS.splitAt 32 (hmacSha512 bytes) of</span>
-<span class="lineno">  599 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) | isInvalidKey iL -&gt; hashRepeatedly (iL &lt;&gt; iR)</span>
-<span class="lineno">  600 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) -&gt; (iL, iR)</span>
-<span class="lineno">  601 </span><span class="spaces">      </span><span class="istickedoff">where</span>
-<span class="lineno">  602 </span><span class="spaces">        </span><span class="istickedoff">isInvalidKey k = testBit (k `BS.index` 31) 5</span>
-<span class="lineno">  603 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  604 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the lowest 3 bits of the first byte</span>
-<span class="lineno">  605 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the highest bit of the last byte</span>
-<span class="lineno">  606 </span><span class="spaces">    </span><span class="istickedoff">-- - Set the second highest bit of the last byte</span>
-<span class="lineno">  607 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">  608 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [RFC 8032 - 5.1.5](https://tools.ietf.org/html/rfc8032#section-5.1.5)</span>
-<span class="lineno">  609 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer :: ByteString -&gt; ByteString</span>
-<span class="lineno">  610 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer bytes =</span>
-<span class="lineno">  611 </span><span class="spaces">        </span><span class="istickedoff">let</span>
-<span class="lineno">  612 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe (error &quot;pruneBuffer: no first byte&quot;) $</span>
-<span class="lineno">  613 </span><span class="spaces">                </span><span class="istickedoff">BS.uncons bytes</span>
-<span class="lineno">  614 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  615 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe (error &quot;pruneBuffer: no last byte&quot;) $</span>
-<span class="lineno">  616 </span><span class="spaces">                </span><span class="istickedoff">BS.unsnoc rest</span>
-<span class="lineno">  617 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  618 </span><span class="spaces">            </span><span class="istickedoff">firstPruned = firstByte</span>
-<span class="lineno">  619 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 0)</span>
-<span class="lineno">  620 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 1)</span>
-<span class="lineno">  621 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 2)</span>
-<span class="lineno">  622 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  623 </span><span class="spaces">            </span><span class="istickedoff">lastPruned = lastByte</span>
-<span class="lineno">  624 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`setBit` 6)</span>
-<span class="lineno">  625 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 7)</span>
-<span class="lineno">  626 </span><span class="spaces">        </span><span class="istickedoff">in</span>
-<span class="lineno">  627 </span><span class="spaces">            </span><span class="istickedoff">(firstPruned `BS.cons` BS.snoc rest' lastPruned)</span>
-<span class="lineno">  628 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  629 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)</span>
-<span class="lineno">  630 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 :: ByteString -&gt; ByteString</span>
-<span class="lineno">  631 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 bytes = PBKDF2.generate</span>
-<span class="lineno">  632 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
-<span class="lineno">  633 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.Parameters 2048 64)</span>
-<span class="lineno">  634 </span><span class="spaces">        </span><span class="istickedoff">bytes</span>
-<span class="lineno">  635 </span><span class="spaces">        </span><span class="istickedoff">(&quot;mnemonic&quot; :: ByteString)</span>
-<span class="lineno">  636 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  637 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 :: ByteString -&gt; ByteString</span>
-<span class="lineno">  638 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 =</span>
-<span class="lineno">  639 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA256) . hmac salt</span>
-<span class="lineno">  640 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  641 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [SLIP 0010 - Master Key Generation](https://github.com/satoshilabs/slips/blob/master/slip-0010.md#master-key-generation)</span>
-<span class="lineno">  642 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 :: ByteString -&gt; ByteString</span>
-<span class="lineno">  643 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 =</span>
-<span class="lineno">  644 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA512) . hmac salt</span>
-<span class="lineno">  645 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  646 </span><span class="spaces">    </span><span class="istickedoff">salt :: ByteString</span>
-<span class="lineno">  647 </span><span class="spaces">    </span><span class="istickedoff">salt = &quot;ed25519 seed&quot;</span></span>
+<span class="lineno">  427 </span><span class="spaces">        </span><span class="istickedoff">, &quot;address_type&quot; .= toJSON @Word8 8</span>
+<span class="lineno">  428 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">  429 </span>
+<span class="lineno">  430 </span>instance Internal.PaymentAddress Icarus where
+<span class="lineno">  431 </span>    <span class="decl"><span class="istickedoff">paymentAddress discrimination k = unsafeMkAddress</span>
+<span class="lineno">  432 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.toStrictByteString</span>
+<span class="lineno">  433 </span><span class="spaces">        </span><span class="istickedoff">$ CBOR.encodeAddress (getKey k) attrs</span>
+<span class="lineno">  434 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  435 </span><span class="spaces">        </span><span class="istickedoff">NetworkTag magic = networkTag @Icarus discrimination</span>
+<span class="lineno">  436 </span><span class="spaces">        </span><span class="istickedoff">attrs = case addressDiscrimination @Icarus discrimination of</span>
+<span class="lineno">  437 </span><span class="spaces">            </span><span class="istickedoff">RequiresNetworkTag -&gt;</span>
+<span class="lineno">  438 </span><span class="spaces">                </span><span class="istickedoff">[ CBOR.encodeProtocolMagicAttr magic</span>
+<span class="lineno">  439 </span><span class="spaces">                </span><span class="istickedoff">]</span>
+<span class="lineno">  440 </span><span class="spaces">            </span><span class="istickedoff">RequiresNoTag -&gt;</span>
+<span class="lineno">  441 </span><span class="spaces">                </span><span class="istickedoff">[]</span></span>
+<span class="lineno">  442 </span>
+<span class="lineno">  443 </span>-- Re-export from 'Cardano.Address' to have it documented specialized in Haddock.
+<span class="lineno">  444 </span>--
+<span class="lineno">  445 </span>-- | Convert a public key to a payment 'Address' valid for the given
+<span class="lineno">  446 </span>-- network discrimination.
+<span class="lineno">  447 </span>--
+<span class="lineno">  448 </span>-- @since 1.0.0
+<span class="lineno">  449 </span>paymentAddress
+<span class="lineno">  450 </span>    :: NetworkDiscriminant Icarus
+<span class="lineno">  451 </span>    -&gt; Icarus 'PaymentK XPub
+<span class="lineno">  452 </span>    -&gt; Address
+<span class="lineno">  453 </span><span class="decl"><span class="istickedoff">paymentAddress =</span>
+<span class="lineno">  454 </span><span class="spaces">    </span><span class="istickedoff">Internal.paymentAddress</span></span>
+<span class="lineno">  455 </span>
+<span class="lineno">  456 </span>--
+<span class="lineno">  457 </span>-- Network Discrimination
+<span class="lineno">  458 </span>--
+<span class="lineno">  459 </span>
+<span class="lineno">  460 </span>instance HasNetworkDiscriminant Icarus where
+<span class="lineno">  461 </span>    type NetworkDiscriminant Icarus = (AddressDiscrimination, NetworkTag)
+<span class="lineno">  462 </span>    <span class="decl"><span class="istickedoff">addressDiscrimination = fst</span></span>
+<span class="lineno">  463 </span>    <span class="decl"><span class="istickedoff">networkTag = snd</span></span>
+<span class="lineno">  464 </span>
+<span class="lineno">  465 </span>-- | 'NetworkDiscriminant' for Cardano MainNet &amp; 'Icarus'
+<span class="lineno">  466 </span>--
+<span class="lineno">  467 </span>-- @since 2.0.0
+<span class="lineno">  468 </span>icarusMainnet :: NetworkDiscriminant Icarus
+<span class="lineno">  469 </span><span class="decl"><span class="istickedoff">icarusMainnet = byronMainnet</span></span>
+<span class="lineno">  470 </span>
+<span class="lineno">  471 </span>-- | 'NetworkDiscriminant' for Cardano Staging &amp; 'Icarus'
+<span class="lineno">  472 </span>--
+<span class="lineno">  473 </span>-- @since 2.0.0
+<span class="lineno">  474 </span>icarusStaging :: NetworkDiscriminant Icarus
+<span class="lineno">  475 </span><span class="decl"><span class="istickedoff">icarusStaging = byronStaging</span></span>
+<span class="lineno">  476 </span>
+<span class="lineno">  477 </span>-- | 'NetworkDiscriminant' for Cardano TestNet &amp; 'Icarus'
+<span class="lineno">  478 </span>--
+<span class="lineno">  479 </span>-- @since 2.0.0
+<span class="lineno">  480 </span>icarusTestnet :: NetworkDiscriminant Icarus
+<span class="lineno">  481 </span><span class="decl"><span class="istickedoff">icarusTestnet = byronTestnet</span></span>
+<span class="lineno">  482 </span>
+<span class="lineno">  483 </span>--
+<span class="lineno">  484 </span>-- Unsafe
+<span class="lineno">  485 </span>--
+<span class="lineno">  486 </span>
+<span class="lineno">  487 </span>-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPrv'. this is
+<span class="lineno">  488 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
+<span class="lineno">  489 </span>--
+<span class="lineno">  490 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  491 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  492 </span>-- key down to an address key for instance).
+<span class="lineno">  493 </span>--
+<span class="lineno">  494 </span>-- @since 1.0.0
+<span class="lineno">  495 </span>liftXPrv :: XPrv -&gt; Icarus depth XPrv
+<span class="lineno">  496 </span><span class="decl"><span class="nottickedoff">liftXPrv = Icarus</span></span>
+<span class="lineno">  497 </span>
+<span class="lineno">  498 </span>-- | Unsafe backdoor for constructing an 'Icarus' key from a raw 'XPub'. this is
+<span class="lineno">  499 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
+<span class="lineno">  500 </span>--
+<span class="lineno">  501 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  502 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  503 </span>-- key down to an address key for instance).
+<span class="lineno">  504 </span>--
+<span class="lineno">  505 </span>-- @since 2.0.0
+<span class="lineno">  506 </span>liftXPub :: XPub -&gt; Icarus depth XPub
+<span class="lineno">  507 </span><span class="decl"><span class="istickedoff">liftXPub = Icarus</span></span>
+<span class="lineno">  508 </span>
+<span class="lineno">  509 </span>--
+<span class="lineno">  510 </span>-- Internal
+<span class="lineno">  511 </span>--
+<span class="lineno">  512 </span>
+<span class="lineno">  513 </span>-- Purpose is a constant set to 44' (or 0x8000002C) following the original
+<span class="lineno">  514 </span>-- BIP-44 specification.
+<span class="lineno">  515 </span>--
+<span class="lineno">  516 </span>-- It indicates that the subtree of this node is used according to this
+<span class="lineno">  517 </span>-- specification.
+<span class="lineno">  518 </span>--
+<span class="lineno">  519 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  520 </span>purposeIndex :: Word32
+<span class="lineno">  521 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000002C</span></span>
+<span class="lineno">  522 </span>
+<span class="lineno">  523 </span>-- One master node (seed) can be used for unlimited number of independent
+<span class="lineno">  524 </span>-- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the
+<span class="lineno">  525 </span>-- same space for various cryptocoins has some disadvantages.
+<span class="lineno">  526 </span>--
+<span class="lineno">  527 </span>-- This level creates a separate subtree for every cryptocoin, avoiding reusing
+<span class="lineno">  528 </span>-- addresses across cryptocoins and improving privacy issues.
+<span class="lineno">  529 </span>--
+<span class="lineno">  530 </span>-- Coin type is a constant, set for each cryptocoin. For Cardano this constant
+<span class="lineno">  531 </span>-- is set to 1815' (or 0x80000717). 1815 is the birthyear of our beloved Ada
+<span class="lineno">  532 </span>-- Lovelace.
+<span class="lineno">  533 </span>--
+<span class="lineno">  534 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  535 </span>coinTypeIndex :: Word32
+<span class="lineno">  536 </span><span class="decl"><span class="istickedoff">coinTypeIndex = 0x80000717</span></span>
+<span class="lineno">  537 </span>
+<span class="lineno">  538 </span>-- The minimum seed length for 'generateKeyFromMnemonic' and 'unsafeGenerateKeyFromMnemonic'.
+<span class="lineno">  539 </span>minSeedLengthBytes :: Int
+<span class="lineno">  540 </span><span class="decl"><span class="nottickedoff">minSeedLengthBytes = 16</span></span>
+<span class="lineno">  541 </span>
+<span class="lineno">  542 </span>-- Hardware Ledger devices generates keys from mnemonic using a different
+<span class="lineno">  543 </span>-- approach (different from the rest of Cardano).
+<span class="lineno">  544 </span>--
+<span class="lineno">  545 </span>-- It is a combination of:
+<span class="lineno">  546 </span>--
+<span class="lineno">  547 </span>-- - [SLIP 0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
+<span class="lineno">  548 </span>-- - [BIP 0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+<span class="lineno">  549 </span>-- - [BIP 0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
+<span class="lineno">  550 </span>-- - [RFC 8032](https://tools.ietf.org/html/rfc8032#section-5.1.5)
+<span class="lineno">  551 </span>-- - What seems to be arbitrary changes from Ledger regarding the calculation of
+<span class="lineno">  552 </span>--   the initial chain code and generation of the root private key.
+<span class="lineno">  553 </span>unsafeGenerateKeyFromHardwareLedger
+<span class="lineno">  554 </span>    :: SomeMnemonic
+<span class="lineno">  555 </span>        -- ^ The root mnemonic
+<span class="lineno">  556 </span>    -&gt; Icarus 'RootK XPrv
+<span class="lineno">  557 </span><span class="decl"><span class="istickedoff">unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do</span>
+<span class="lineno">  558 </span><span class="spaces">    </span><span class="istickedoff">let seed = pbkdf2HmacSha512</span>
+<span class="lineno">  559 </span><span class="spaces">            </span><span class="istickedoff">$ T.encodeUtf8</span>
+<span class="lineno">  560 </span><span class="spaces">            </span><span class="istickedoff">$ T.intercalate &quot; &quot;</span>
+<span class="lineno">  561 </span><span class="spaces">            </span><span class="istickedoff">$ mnemonicToText mw</span>
+<span class="lineno">  562 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  563 </span><span class="spaces">    </span><span class="istickedoff">-- NOTE</span>
+<span class="lineno">  564 </span><span class="spaces">    </span><span class="istickedoff">-- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code</span>
+<span class="lineno">  565 </span><span class="spaces">    </span><span class="istickedoff">-- is obtained as a hash of the initial seed whereas iR is used to make part</span>
+<span class="lineno">  566 </span><span class="spaces">    </span><span class="istickedoff">-- of the root private key itself.</span>
+<span class="lineno">  567 </span><span class="spaces">    </span><span class="istickedoff">let cc = hmacSha256 (BS.pack [1] &lt;&gt; seed)</span>
+<span class="lineno">  568 </span><span class="spaces">    </span><span class="istickedoff">let (iL, iR) = first pruneBuffer $ hashRepeatedly seed</span>
+<span class="lineno">  569 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  570 </span><span class="spaces">    </span><span class="istickedoff">prv &lt;- maybe (Left &quot;invalid xprv&quot;) pure $ xprvFromBytes $ iL &lt;&gt; iR &lt;&gt; cc</span>
+<span class="lineno">  571 </span><span class="spaces">    </span><span class="istickedoff">pure $ Icarus prv</span>
+<span class="lineno">  572 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  573 </span><span class="spaces">    </span><span class="istickedoff">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span>
+<span class="lineno">  574 </span><span class="spaces">    </span><span class="istickedoff">-- programmer errors (out-of-range byte buffer access or, invalid length for</span>
+<span class="lineno">  575 </span><span class="spaces">    </span><span class="istickedoff">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span>
+<span class="lineno">  576 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight :: Either String a -&gt; a</span>
+<span class="lineno">  577 </span><span class="spaces">    </span><span class="istickedoff">unsafeFromRight = either error id</span>
+<span class="lineno">  578 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  579 </span><span class="spaces">    </span><span class="istickedoff">-- This is the algorithm described in SLIP 0010 for master key generation</span>
+<span class="lineno">  580 </span><span class="spaces">    </span><span class="istickedoff">-- with an extra step to discard _some_ of the potential private keys. Why</span>
+<span class="lineno">  581 </span><span class="spaces">    </span><span class="istickedoff">-- this extra step remains a mystery as of today.</span>
+<span class="lineno">  582 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  583 </span><span class="spaces">    </span><span class="istickedoff">--      1. Generate a seed byte sequence S of 512 bits according to BIP-0039.</span>
+<span class="lineno">  584 </span><span class="spaces">    </span><span class="istickedoff">--         (done in a previous step, passed as argument).</span>
+<span class="lineno">  585 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  586 </span><span class="spaces">    </span><span class="istickedoff">--      2. Calculate I = HMAC-SHA512(Key = &quot;ed25519 seed&quot;, Data = S)</span>
+<span class="lineno">  587 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  588 </span><span class="spaces">    </span><span class="istickedoff">--      3. Split I into two 32-byte sequences, IL and IR.</span>
+<span class="lineno">  589 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  590 </span><span class="spaces">    </span><span class="istickedoff">-- extra *******************************************************************</span>
+<span class="lineno">  591 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
+<span class="lineno">  592 </span><span class="spaces">    </span><span class="istickedoff">-- *    3.5 If the third highest bit of the last byte of IL is not zero    *</span>
+<span class="lineno">  593 </span><span class="spaces">    </span><span class="istickedoff">-- *        S = I and go back to step 2.                                   *</span>
+<span class="lineno">  594 </span><span class="spaces">    </span><span class="istickedoff">-- *                                                                       *</span>
+<span class="lineno">  595 </span><span class="spaces">    </span><span class="istickedoff">-- *************************************************************************</span>
+<span class="lineno">  596 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  597 </span><span class="spaces">    </span><span class="istickedoff">--      4. Use parse256(IL) as master secret key, and IR as master chain code.</span>
+<span class="lineno">  598 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly :: ByteString -&gt; (ByteString, ByteString)</span>
+<span class="lineno">  599 </span><span class="spaces">    </span><span class="istickedoff">hashRepeatedly bytes = case BS.splitAt 32 (hmacSha512 bytes) of</span>
+<span class="lineno">  600 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) | isInvalidKey iL -&gt; hashRepeatedly (iL &lt;&gt; iR)</span>
+<span class="lineno">  601 </span><span class="spaces">        </span><span class="istickedoff">(iL, iR) -&gt; (iL, iR)</span>
+<span class="lineno">  602 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  603 </span><span class="spaces">        </span><span class="istickedoff">isInvalidKey k = testBit (k `BS.index` 31) 5</span>
+<span class="lineno">  604 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  605 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the lowest 3 bits of the first byte</span>
+<span class="lineno">  606 </span><span class="spaces">    </span><span class="istickedoff">-- - Clear the highest bit of the last byte</span>
+<span class="lineno">  607 </span><span class="spaces">    </span><span class="istickedoff">-- - Set the second highest bit of the last byte</span>
+<span class="lineno">  608 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">  609 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [RFC 8032 - 5.1.5](https://tools.ietf.org/html/rfc8032#section-5.1.5)</span>
+<span class="lineno">  610 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer :: ByteString -&gt; ByteString</span>
+<span class="lineno">  611 </span><span class="spaces">    </span><span class="istickedoff">pruneBuffer bytes =</span>
+<span class="lineno">  612 </span><span class="spaces">        </span><span class="istickedoff">let</span>
+<span class="lineno">  613 </span><span class="spaces">            </span><span class="istickedoff">(firstByte, rest) = fromMaybe (error &quot;pruneBuffer: no first byte&quot;) $</span>
+<span class="lineno">  614 </span><span class="spaces">                </span><span class="istickedoff">BS.uncons bytes</span>
+<span class="lineno">  615 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  616 </span><span class="spaces">            </span><span class="istickedoff">(rest', lastByte) = fromMaybe (error &quot;pruneBuffer: no last byte&quot;) $</span>
+<span class="lineno">  617 </span><span class="spaces">                </span><span class="istickedoff">BS.unsnoc rest</span>
+<span class="lineno">  618 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  619 </span><span class="spaces">            </span><span class="istickedoff">firstPruned = firstByte</span>
+<span class="lineno">  620 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 0)</span>
+<span class="lineno">  621 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 1)</span>
+<span class="lineno">  622 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 2)</span>
+<span class="lineno">  623 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  624 </span><span class="spaces">            </span><span class="istickedoff">lastPruned = lastByte</span>
+<span class="lineno">  625 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`setBit` 6)</span>
+<span class="lineno">  626 </span><span class="spaces">                </span><span class="istickedoff">&amp; (`clearBit` 7)</span>
+<span class="lineno">  627 </span><span class="spaces">        </span><span class="istickedoff">in</span>
+<span class="lineno">  628 </span><span class="spaces">            </span><span class="istickedoff">(firstPruned `BS.cons` BS.snoc rest' lastPruned)</span>
+<span class="lineno">  629 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  630 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)</span>
+<span class="lineno">  631 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  632 </span><span class="spaces">    </span><span class="istickedoff">pbkdf2HmacSha512 bytes = PBKDF2.generate</span>
+<span class="lineno">  633 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.prfHMAC SHA512)</span>
+<span class="lineno">  634 </span><span class="spaces">        </span><span class="istickedoff">(PBKDF2.Parameters 2048 64)</span>
+<span class="lineno">  635 </span><span class="spaces">        </span><span class="istickedoff">bytes</span>
+<span class="lineno">  636 </span><span class="spaces">        </span><span class="istickedoff">(&quot;mnemonic&quot; :: ByteString)</span>
+<span class="lineno">  637 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  638 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  639 </span><span class="spaces">    </span><span class="istickedoff">hmacSha256 =</span>
+<span class="lineno">  640 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA256) . hmac salt</span>
+<span class="lineno">  641 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  642 </span><span class="spaces">    </span><span class="istickedoff">-- As described in [SLIP 0010 - Master Key Generation](https://github.com/satoshilabs/slips/blob/master/slip-0010.md#master-key-generation)</span>
+<span class="lineno">  643 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 :: ByteString -&gt; ByteString</span>
+<span class="lineno">  644 </span><span class="spaces">    </span><span class="istickedoff">hmacSha512 =</span>
+<span class="lineno">  645 </span><span class="spaces">        </span><span class="istickedoff">BA.convert @(HMAC SHA512) . hmac salt</span>
+<span class="lineno">  646 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  647 </span><span class="spaces">    </span><span class="istickedoff">salt :: ByteString</span>
+<span class="lineno">  648 </span><span class="spaces">    </span><span class="istickedoff">salt = &quot;ed25519 seed&quot;</span></span>
 
 </pre>
 </body>

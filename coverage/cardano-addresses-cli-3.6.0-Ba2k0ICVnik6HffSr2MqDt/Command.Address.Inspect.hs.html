@@ -89,33 +89,34 @@ span.spaces    { background: white }
 <span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;stake_reference\&quot;: \&quot;by value\&quot;,&quot;</span>
 <span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;stake_key_hash\&quot;: \&quot;6b542d6da35e6c95d95a33c6f66ec482d3f4caf3ad35e2ede09cf827\&quot;,&quot;</span>
 <span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;spending_key_hash\&quot;: \&quot;44bc4f524f49a78a9c8a45b882d8710cb9254b3da6a978d50dc9b870\&quot;,&quot;</span>
-<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;network_tag\&quot;: 0&quot;</span>
-<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;}&quot;</span>
-<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">])</span>
-<span class="lineno">   76 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   77 </span><span class="spaces">    </span><span class="istickedoff">parser = Inspect</span>
-<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; optional (xpubOpt [CIP5.root_xvk] &quot;root&quot; helpDoc)</span>
-<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">helpDoc =</span>
-<span class="lineno">   80 </span><span class="spaces">        </span><span class="istickedoff">&quot;A root public key. If specified, tries to decrypt the derivation path \</span>
-<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">\of Byron addresses.&quot;</span></span>
-<span class="lineno">   82 </span>
-<span class="lineno">   83 </span>-- used for 'inspect'
-<span class="lineno">   84 </span>instance Error SomeException
-<span class="lineno">   85 </span>
-<span class="lineno">   86 </span>run :: Cmd -&gt; IO ()
-<span class="lineno">   87 </span><span class="decl"><span class="istickedoff">run Inspect{rootPublicKey} = do</span>
-<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes stdin</span>
-<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">case inspect (unsafeMkAddress bytes) of</span>
-<span class="lineno">   90 </span><span class="spaces">      </span><span class="istickedoff">Right json -&gt; BL8.hPutStrLn stdout (Json.encodePretty json)</span>
-<span class="lineno">   91 </span><span class="spaces">      </span><span class="istickedoff">Left  e    -&gt; die $ format &quot;Error: {}&quot; (displayException e)</span>
-<span class="lineno">   92 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">-- We can't use IO here, because (&lt;|&gt;) in IO only catches IOException type,</span>
-<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">-- but MonadThrow in IO doesn't specialize to IOException.</span>
-<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">--</span>
-<span class="lineno">   96 </span><span class="spaces">    </span><span class="istickedoff">-- Luckily, there's an existing instance for:</span>
-<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">--   instance (Error e) =&gt; Alternative (Either e)</span>
-<span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">inspect :: (e ~ SomeException) =&gt; Address -&gt; Either e Json.Value</span>
-<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">inspect = Shelley.inspectAddress rootPublicKey</span></span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;network_tag\&quot;: 0,&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;    \&quot;address_type\&quot;: 0&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;}&quot;</span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   77 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">parser = Inspect</span>
+<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; optional (xpubOpt [CIP5.root_xvk] &quot;root&quot; helpDoc)</span>
+<span class="lineno">   80 </span><span class="spaces">    </span><span class="istickedoff">helpDoc =</span>
+<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">&quot;A root public key. If specified, tries to decrypt the derivation path \</span>
+<span class="lineno">   82 </span><span class="spaces">        </span><span class="istickedoff">\of Byron addresses.&quot;</span></span>
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>-- used for 'inspect'
+<span class="lineno">   85 </span>instance Error SomeException
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   88 </span><span class="decl"><span class="istickedoff">run Inspect{rootPublicKey} = do</span>
+<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">bytes &lt;- hGetBytes stdin</span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">case inspect (unsafeMkAddress bytes) of</span>
+<span class="lineno">   91 </span><span class="spaces">      </span><span class="istickedoff">Right json -&gt; BL8.hPutStrLn stdout (Json.encodePretty json)</span>
+<span class="lineno">   92 </span><span class="spaces">      </span><span class="istickedoff">Left  e    -&gt; die $ format &quot;Error: {}&quot; (displayException e)</span>
+<span class="lineno">   93 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">-- We can't use IO here, because (&lt;|&gt;) in IO only catches IOException type,</span>
+<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">-- but MonadThrow in IO doesn't specialize to IOException.</span>
+<span class="lineno">   96 </span><span class="spaces">    </span><span class="istickedoff">--</span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">-- Luckily, there's an existing instance for:</span>
+<span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">--   instance (Error e) =&gt; Alternative (Either e)</span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">inspect :: (e ~ SomeException) =&gt; Address -&gt; Either e Json.Value</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">inspect = Shelley.inspectAddress rootPublicKey</span></span>
 
 </pre>
 </body>
