@@ -100,6 +100,50 @@ stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat%
 </details>
 
 <details>
+  <summary>How to inspect address</summary>
+
+```console
+$ echo addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v | cardano-address address inspect
+{
+    "stake_reference": "none",
+    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
+    "address_style": "Shelley",
+    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "network_tag": 0,
+    "address_type": 6
+}
+
+$ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n | cardano-address address inspect
+{
+    "stake_reference": "by value",
+    "stake_key_hash_bech32": "stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6",
+    "stake_key_hash": "f6d2f2ef387333e15aea9333e9d908e57a2b513ec6d762884f70ae2a",
+    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
+    "address_style": "Shelley",
+    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "network_tag": 0,
+    "address_type": 0
+}
+```
+
+Details about possible address types are following (refer also to [cddl](https://github.com/input-output-hk/cardano-ledger/blob/master/eras/alonzo/test-suite/cddl-files/alonzo.cddl) )
+| address_type | binary prefix  |   Meaning                                                |
+| ------------ |:--------------:|:--------------------------------------------------------:|
+|      0       |  0000          |   base address: keyhash28,keyhash28                      |
+|      1       |  0001          |   base address: scripthash28,keyhash28                   |
+|      2       |  0010          |   base address: keyhash28,scripthash28                   |
+|      3       |  0011          |   base address: scripthash28,scripthash28                |
+|      4       |  0100          |   pointer address: keyhash28, 3 variable length uint     |
+|      5       |  0101          |   pointer address: scripthash28, 3 variable length uint  |
+|      6       |  0110          |   enterprise address: keyhash28                          |
+|      7       |  0111          |   enterprise address: scripthash28                       |
+|      8       |  1000          |   byron/icarus                                           |
+|      14      |  1110          |   reward account: keyhash28                              |
+|      15      |  1111          |   reward account: scripthash28                           |
+
+</details>
+
+<details>
   <summary>How to generate a payment verification key for shared wallet (<strong>addr_shared.vk</strong>, <strong>stake_shared.vk</strong>)</summary>
 
 Let's generate extended root private key for shared style:

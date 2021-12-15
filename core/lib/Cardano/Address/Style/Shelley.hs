@@ -138,7 +138,7 @@ import Data.Binary.Get
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.Bits
-    ( (.&.) )
+    ( shiftR, (.&.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -592,6 +592,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         , infoStakeKeyHash = Nothing
         , infoScriptHash = Nothing
         , infoStakeScriptHash = Nothing
+        , infoAddressType = shiftR (addrType .&. 0b11110000) 4
         }
 
     getPtr :: ByteString -> Either ErrInspectAddressOnlyShelley ChainPointer
@@ -648,6 +649,7 @@ data AddressInfo = AddressInfo
     , infoScriptHash      :: !(Maybe ByteString)
     , infoStakeScriptHash :: !(Maybe ByteString)
     , infoNetworkTag      :: !NetworkTag
+    , infoAddressType     :: !Word8
     } deriving (Generic, Show, Eq)
 
 -- | Info from 'Address' about how delegation keys are located.
@@ -662,6 +664,7 @@ instance ToJSON AddressInfo where
     toJSON AddressInfo{..} = Json.object $
         [ "network_tag" .= infoNetworkTag
         , "stake_reference" .= Json.String (maybe "none" refName infoStakeReference)
+        , "address_type" .= toJSON @Word8 infoAddressType
         ]
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
