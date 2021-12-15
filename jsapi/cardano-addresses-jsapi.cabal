@@ -7,7 +7,7 @@ cabal-version: 3.0
 -- hash: 80c299032534b3b108a856c47ce3217e9ff997a28b796ef725eda9ea6f137cc7
 
 name:           cardano-addresses-jsapi
-version:        3.6.0
+version:        3.7.0
 synopsis:       Javascript FFI for cardano-addresses.
 description:    This package provides functions callable from Javascript on top of
                 which a TypeScript API can be built. It uses the cardano-addresses-ghcjs
