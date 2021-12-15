@@ -333,7 +333,7 @@ cardanoAddresses.inspectAddress(addr)
 Pull requests are welcome.
 
 When creating a pull request, please make sure that your code adheres to our
-[coding standards](https://github.com/input-output-hk/adrestia/wiki/Coding-Standards).
+[coding standards](https://input-output-hk.github.io/adrestia/code/Coding-Standards).
 
 <hr />
 

@@ -23,7 +23,7 @@ jobs:
         VERSION: v0.11.0.0
       run: |
         curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s .
-        curl -sSL https://raw.github.com/input-output-hk/adrestia/master/.haskell/stylish-haskell.sh | sh -s $(git ls-files '*.hs' | grep -v 'jsapi/.*/Main.hs') -i
+        curl -sSL https://raw.github.com/input-output-hk/adrestia/master/templates/haskell/stylish-haskell.sh | sh -s $(git ls-files '*.hs' | grep -v 'jsapi/.*/Main.hs') -i
         if [ -z "$(git status --porcelain)" ]; then
             echo "No style errors detected."
         else
