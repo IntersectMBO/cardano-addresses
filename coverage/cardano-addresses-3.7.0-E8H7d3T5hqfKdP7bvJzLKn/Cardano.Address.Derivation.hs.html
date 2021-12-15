@@ -1,0 +1,488 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE DeriveGeneric #-}
+<span class="lineno">    3 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    4 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    5 </span>{-# LANGUAGE FlexibleInstances #-}
+<span class="lineno">    6 </span>{-# LANGUAGE ScopedTypeVariables #-}
+<span class="lineno">    7 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">    8 </span>{-# LANGUAGE TypeFamilies #-}
+<span class="lineno">    9 </span>
+<span class="lineno">   10 </span>{-# OPTIONS_HADDOCK prune #-}
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>module Cardano.Address.Derivation
+<span class="lineno">   13 </span>    (
+<span class="lineno">   14 </span>    -- * Overview
+<span class="lineno">   15 </span>    -- $overview
+<span class="lineno">   16 </span>
+<span class="lineno">   17 </span>    -- * Key Derivation
+<span class="lineno">   18 </span>    -- ** Types
+<span class="lineno">   19 </span>      Index
+<span class="lineno">   20 </span>    , indexToWord32
+<span class="lineno">   21 </span>    , indexFromWord32
+<span class="lineno">   22 </span>    , wholeDomainIndex
+<span class="lineno">   23 </span>    , coerceWholeDomainIndex
+<span class="lineno">   24 </span>    , nextIndex
+<span class="lineno">   25 </span>    , Depth (..)
+<span class="lineno">   26 </span>    , DerivationType (..)
+<span class="lineno">   27 </span>
+<span class="lineno">   28 </span>    -- * Abstractions
+<span class="lineno">   29 </span>    , GenMasterKey (..)
+<span class="lineno">   30 </span>    , HardDerivation (..)
+<span class="lineno">   31 </span>    , SoftDerivation (..)
+<span class="lineno">   32 </span>
+<span class="lineno">   33 </span>    -- * Low-Level Cryptography Primitives
+<span class="lineno">   34 </span>    -- ** XPrv
+<span class="lineno">   35 </span>    , XPrv
+<span class="lineno">   36 </span>    , xprvFromBytes
+<span class="lineno">   37 </span>    , xprvToBytes
+<span class="lineno">   38 </span>    , xprvPrivateKey
+<span class="lineno">   39 </span>    , xprvChainCode
+<span class="lineno">   40 </span>    , toXPub
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>    -- ** XPub
+<span class="lineno">   43 </span>    , XPub
+<span class="lineno">   44 </span>    , xpubFromBytes
+<span class="lineno">   45 </span>    , xpubToBytes
+<span class="lineno">   46 </span>    , xpubPublicKey
+<span class="lineno">   47 </span>    , xpubChainCode
+<span class="lineno">   48 </span>
+<span class="lineno">   49 </span>    -- ** XSignature
+<span class="lineno">   50 </span>    , XSignature
+<span class="lineno">   51 </span>    , sign
+<span class="lineno">   52 </span>    , verify
+<span class="lineno">   53 </span>
+<span class="lineno">   54 </span>    -- Internal / Not exposed by Haddock
+<span class="lineno">   55 </span>    , DerivationScheme (..)
+<span class="lineno">   56 </span>    , deriveXPrv
+<span class="lineno">   57 </span>    , deriveXPub
+<span class="lineno">   58 </span>    , generate
+<span class="lineno">   59 </span>    , generateNew
+<span class="lineno">   60 </span>    , hashCredential
+<span class="lineno">   61 </span>    , credentialHashSize
+<span class="lineno">   62 </span>    , unsafeMkIndex
+<span class="lineno">   63 </span>    ------------------
+<span class="lineno">   64 </span>    ) where
+<span class="lineno">   65 </span>
+<span class="lineno">   66 </span>import Prelude
+<span class="lineno">   67 </span>
+<span class="lineno">   68 </span>import Cardano.Crypto.Wallet
+<span class="lineno">   69 </span>    ( DerivationScheme (..) )
+<span class="lineno">   70 </span>import Cardano.Mnemonic
+<span class="lineno">   71 </span>    ( SomeMnemonic )
+<span class="lineno">   72 </span>import Control.DeepSeq
+<span class="lineno">   73 </span>    ( NFData )
+<span class="lineno">   74 </span>import Crypto.Error
+<span class="lineno">   75 </span>    ( eitherCryptoError )
+<span class="lineno">   76 </span>import Crypto.Hash
+<span class="lineno">   77 </span>    ( hash )
+<span class="lineno">   78 </span>import Crypto.Hash.Algorithms
+<span class="lineno">   79 </span>    ( Blake2b_224 (..) )
+<span class="lineno">   80 </span>import Crypto.Hash.IO
+<span class="lineno">   81 </span>    ( HashAlgorithm (hashDigestSize) )
+<span class="lineno">   82 </span>import Data.ByteArray
+<span class="lineno">   83 </span>    ( ByteArrayAccess, ScrubbedBytes )
+<span class="lineno">   84 </span>import Data.ByteString
+<span class="lineno">   85 </span>    ( ByteString )
+<span class="lineno">   86 </span>import Data.Coerce
+<span class="lineno">   87 </span>    ( coerce )
+<span class="lineno">   88 </span>import Data.Either.Extra
+<span class="lineno">   89 </span>    ( eitherToMaybe )
+<span class="lineno">   90 </span>import Data.Kind
+<span class="lineno">   91 </span>    ( Type )
+<span class="lineno">   92 </span>import Data.String
+<span class="lineno">   93 </span>    ( fromString )
+<span class="lineno">   94 </span>import Data.Word
+<span class="lineno">   95 </span>    ( Word32 )
+<span class="lineno">   96 </span>import Fmt
+<span class="lineno">   97 </span>    ( Buildable (..) )
+<span class="lineno">   98 </span>import GHC.Generics
+<span class="lineno">   99 </span>    ( Generic )
+<span class="lineno">  100 </span>import GHC.Stack
+<span class="lineno">  101 </span>    ( HasCallStack )
+<span class="lineno">  102 </span>
+<span class="lineno">  103 </span>import qualified Cardano.Crypto.Wallet as CC
+<span class="lineno">  104 </span>import qualified Crypto.ECC.Edwards25519 as Ed25519
+<span class="lineno">  105 </span>import qualified Data.ByteArray as BA
+<span class="lineno">  106 </span>import qualified Data.ByteString as BS
+<span class="lineno">  107 </span>
+<span class="lineno">  108 </span>-- $overview
+<span class="lineno">  109 </span>--
+<span class="lineno">  110 </span>-- These abstractions allow generating root private key, also called /Master Key/
+<span class="lineno">  111 </span>-- and then basing on it enable address derivation
+<span class="lineno">  112 </span>
+<span class="lineno">  113 </span>--
+<span class="lineno">  114 </span>-- Low-Level Cryptography Primitives
+<span class="lineno">  115 </span>--
+<span class="lineno">  116 </span>
+<span class="lineno">  117 </span>-- | An opaque type representing an extended private key.
+<span class="lineno">  118 </span>--
+<span class="lineno">  119 </span>-- __Properties:__
+<span class="lineno">  120 </span>--
+<span class="lineno">  121 </span>-- ===== Roundtripping
+<span class="lineno">  122 </span>--
+<span class="lineno">  123 </span>-- @forall xprv. 'xprvFromBytes' ('xprvToBytes' xprv) == 'Just' xprv@
+<span class="lineno">  124 </span>--
+<span class="lineno">  125 </span>-- ===== Chain Code Invariance
+<span class="lineno">  126 </span>--
+<span class="lineno">  127 </span>-- @forall xprv. 'xprvChainCode' xprv == 'xpubChainCode' ('toXPub' xprv)@
+<span class="lineno">  128 </span>--
+<span class="lineno">  129 </span>-- ===== Public Key Signature
+<span class="lineno">  130 </span>--
+<span class="lineno">  131 </span>-- @forall xprv msg. 'verify' ('toXPub' xprv) msg ('sign' xprv msg) == 'True'@
+<span class="lineno">  132 </span>--
+<span class="lineno">  133 </span>-- @since 1.0.0
+<span class="lineno">  134 </span>type XPrv = CC.XPrv
+<span class="lineno">  135 </span>
+<span class="lineno">  136 </span>-- | An opaque type representing an extended public key.
+<span class="lineno">  137 </span>--
+<span class="lineno">  138 </span>-- __Properties:__
+<span class="lineno">  139 </span>--
+<span class="lineno">  140 </span>-- ===== Roundtripping
+<span class="lineno">  141 </span>--
+<span class="lineno">  142 </span>-- @forall xpub. 'xpubFromBytes' ('xpubToBytes' xpub) == 'Just' xpub@
+<span class="lineno">  143 </span>--
+<span class="lineno">  144 </span>-- @since 1.0.0
+<span class="lineno">  145 </span>type XPub = CC.XPub
+<span class="lineno">  146 </span>
+<span class="lineno">  147 </span>-- | An opaque type representing a signature made from an 'XPrv'.
+<span class="lineno">  148 </span>--
+<span class="lineno">  149 </span>-- @since 1.0.0
+<span class="lineno">  150 </span>type XSignature = CC.XSignature
+<span class="lineno">  151 </span>
+<span class="lineno">  152 </span>-- | Construct an 'XPub' from raw 'ByteString' (64 bytes).
+<span class="lineno">  153 </span>--
+<span class="lineno">  154 </span>-- @since 1.0.0
+<span class="lineno">  155 </span>xpubFromBytes :: ByteString -&gt; Maybe XPub
+<span class="lineno">  156 </span><span class="decl"><span class="istickedoff">xpubFromBytes = eitherToMaybe . CC.xpub</span></span>
+<span class="lineno">  157 </span>
+<span class="lineno">  158 </span>-- | Convert an 'XPub' to a raw 'ByteString' (64 bytes).
+<span class="lineno">  159 </span>--
+<span class="lineno">  160 </span>-- @since 1.0.0
+<span class="lineno">  161 </span>xpubToBytes :: XPub -&gt; ByteString
+<span class="lineno">  162 </span><span class="decl"><span class="istickedoff">xpubToBytes xpub = xpubPublicKey xpub &lt;&gt; xpubChainCode xpub</span></span>
+<span class="lineno">  163 </span>
+<span class="lineno">  164 </span>-- | Extract the public key from an 'XPub' as a raw 'ByteString' (32 bytes).
+<span class="lineno">  165 </span>--
+<span class="lineno">  166 </span>-- @since 2.0.0
+<span class="lineno">  167 </span>xpubPublicKey :: XPub -&gt; ByteString
+<span class="lineno">  168 </span><span class="decl"><span class="istickedoff">xpubPublicKey (CC.XPub pub _cc) = pub</span></span>
+<span class="lineno">  169 </span>
+<span class="lineno">  170 </span>-- | Extract the chain code from an 'XPub' as a raw 'ByteString' (32 bytes).
+<span class="lineno">  171 </span>--
+<span class="lineno">  172 </span>-- @since 2.0.0
+<span class="lineno">  173 </span>xpubChainCode :: XPub -&gt; ByteString
+<span class="lineno">  174 </span><span class="decl"><span class="istickedoff">xpubChainCode (CC.XPub _pub (CC.ChainCode cc)) = cc</span></span>
+<span class="lineno">  175 </span>
+<span class="lineno">  176 </span>-- | Construct an 'XPrv' from raw 'ByteString' (96 bytes).
+<span class="lineno">  177 </span>--
+<span class="lineno">  178 </span>-- @since 1.0.0
+<span class="lineno">  179 </span>xprvFromBytes :: ByteString -&gt; Maybe XPrv
+<span class="lineno">  180 </span><span class="decl"><span class="istickedoff">xprvFromBytes bytes</span>
+<span class="lineno">  181 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlyfalse">BS.length bytes /= 96</span> = <span class="nottickedoff">Nothing</span></span>
+<span class="lineno">  182 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
+<span class="lineno">  183 </span><span class="spaces">        </span><span class="istickedoff">let (prv, cc) = BS.splitAt 64 bytes</span>
+<span class="lineno">  184 </span><span class="spaces">        </span><span class="istickedoff">pub &lt;- ed25519ScalarMult (BS.take 32 prv)</span>
+<span class="lineno">  185 </span><span class="spaces">        </span><span class="istickedoff">eitherToMaybe $ CC.xprv $ prv &lt;&gt; pub &lt;&gt; cc</span>
+<span class="lineno">  186 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  187 </span><span class="spaces">    </span><span class="istickedoff">ed25519ScalarMult :: ByteString -&gt; Maybe ByteString</span>
+<span class="lineno">  188 </span><span class="spaces">    </span><span class="istickedoff">ed25519ScalarMult bs = do</span>
+<span class="lineno">  189 </span><span class="spaces">        </span><span class="istickedoff">scalar &lt;- eitherToMaybe $ eitherCryptoError $ Ed25519.scalarDecodeLong bs</span>
+<span class="lineno">  190 </span><span class="spaces">        </span><span class="istickedoff">pure $ Ed25519.pointEncode $ Ed25519.toPoint scalar</span></span>
+<span class="lineno">  191 </span>
+<span class="lineno">  192 </span>-- From  &lt; xprv | pub | cc &gt;
+<span class="lineno">  193 </span>-- ↳ To  &lt; xprv |     | cc &gt;
+<span class="lineno">  194 </span>--
+<span class="lineno">  195 </span>-- | Convert an 'XPrv' to a raw 'ByteString' (96 bytes).
+<span class="lineno">  196 </span>--
+<span class="lineno">  197 </span>-- @since 1.0.0
+<span class="lineno">  198 </span>xprvToBytes :: XPrv -&gt; ByteString
+<span class="lineno">  199 </span><span class="decl"><span class="istickedoff">xprvToBytes xprv =</span>
+<span class="lineno">  200 </span><span class="spaces">    </span><span class="istickedoff">xprvPrivateKey xprv &lt;&gt; xprvChainCode xprv</span></span>
+<span class="lineno">  201 </span>
+<span class="lineno">  202 </span>-- | Extract the private key from an 'XPrv' as a raw 'ByteString' (64 bytes).
+<span class="lineno">  203 </span>--
+<span class="lineno">  204 </span>-- @since 2.0.0
+<span class="lineno">  205 </span>xprvPrivateKey :: XPrv -&gt; ByteString
+<span class="lineno">  206 </span><span class="decl"><span class="istickedoff">xprvPrivateKey = BS.take 64 . CC.unXPrv</span></span>
+<span class="lineno">  207 </span>
+<span class="lineno">  208 </span>-- | Extract the chain code from an 'XPrv' as a raw 'ByteString' (32 bytes).
+<span class="lineno">  209 </span>--
+<span class="lineno">  210 </span>-- @since 2.0.0
+<span class="lineno">  211 </span>xprvChainCode :: XPrv -&gt; ByteString
+<span class="lineno">  212 </span><span class="decl"><span class="istickedoff">xprvChainCode = BS.drop 96 . CC.unXPrv</span></span>
+<span class="lineno">  213 </span>
+<span class="lineno">  214 </span>-- | Derive the 'XPub' associated with an 'XPrv'.
+<span class="lineno">  215 </span>--
+<span class="lineno">  216 </span>-- @since 1.0.0
+<span class="lineno">  217 </span>toXPub :: HasCallStack =&gt; XPrv -&gt; XPub
+<span class="lineno">  218 </span><span class="decl"><span class="istickedoff">toXPub = CC.toXPub</span></span>
+<span class="lineno">  219 </span>
+<span class="lineno">  220 </span>-- | Produce a signature of the given 'msg' from an 'XPrv'.
+<span class="lineno">  221 </span>--
+<span class="lineno">  222 </span>-- @since 1.0.0
+<span class="lineno">  223 </span>sign
+<span class="lineno">  224 </span>    :: ByteArrayAccess msg
+<span class="lineno">  225 </span>    =&gt; XPrv
+<span class="lineno">  226 </span>    -&gt; msg
+<span class="lineno">  227 </span>    -&gt; XSignature
+<span class="lineno">  228 </span><span class="decl"><span class="istickedoff">sign =</span>
+<span class="lineno">  229 </span><span class="spaces">    </span><span class="istickedoff">CC.sign (mempty :: ScrubbedBytes)</span></span>
+<span class="lineno">  230 </span>
+<span class="lineno">  231 </span>-- | Verify the 'XSignature' of a 'msg' with the 'XPub' associated with the
+<span class="lineno">  232 </span>-- 'XPrv' used for signing.
+<span class="lineno">  233 </span>--
+<span class="lineno">  234 </span>-- @since 1.0.0
+<span class="lineno">  235 </span>verify
+<span class="lineno">  236 </span>    :: ByteArrayAccess msg
+<span class="lineno">  237 </span>    =&gt; XPub
+<span class="lineno">  238 </span>    -&gt; msg
+<span class="lineno">  239 </span>    -&gt; XSignature
+<span class="lineno">  240 </span>    -&gt; Bool
+<span class="lineno">  241 </span><span class="decl"><span class="istickedoff">verify =</span>
+<span class="lineno">  242 </span><span class="spaces">    </span><span class="istickedoff">CC.verify</span></span> -- re-exported for the sake of documentation.
+<span class="lineno">  243 </span>
+<span class="lineno">  244 </span>-- Derive a child extended private key from an extended private key
+<span class="lineno">  245 </span>--
+<span class="lineno">  246 </span>-- __internal__
+<span class="lineno">  247 </span>deriveXPrv
+<span class="lineno">  248 </span>    :: DerivationScheme
+<span class="lineno">  249 </span>    -&gt; XPrv
+<span class="lineno">  250 </span>    -&gt; Index derivationType depth
+<span class="lineno">  251 </span>    -&gt; XPrv
+<span class="lineno">  252 </span><span class="decl"><span class="istickedoff">deriveXPrv ds prv (Index ix) =</span>
+<span class="lineno">  253 </span><span class="spaces">    </span><span class="istickedoff">CC.deriveXPrv ds (mempty :: ScrubbedBytes) prv ix</span></span>
+<span class="lineno">  254 </span>
+<span class="lineno">  255 </span>-- Derive a child extended public key from an extended public key
+<span class="lineno">  256 </span>--
+<span class="lineno">  257 </span>-- __internal__
+<span class="lineno">  258 </span>deriveXPub
+<span class="lineno">  259 </span>    :: DerivationScheme
+<span class="lineno">  260 </span>    -&gt; XPub
+<span class="lineno">  261 </span>    -&gt; Index derivationType depth
+<span class="lineno">  262 </span>    -&gt; Maybe XPub
+<span class="lineno">  263 </span><span class="decl"><span class="istickedoff">deriveXPub ds pub (Index ix) =</span>
+<span class="lineno">  264 </span><span class="spaces">    </span><span class="istickedoff">CC.deriveXPub ds pub ix</span></span>
+<span class="lineno">  265 </span>
+<span class="lineno">  266 </span>-- Generate an XPrv using the legacy method (Byron).
+<span class="lineno">  267 </span>--
+<span class="lineno">  268 </span>-- The seed needs to be at least 32 bytes, otherwise an asynchronous error is thrown.
+<span class="lineno">  269 </span>--
+<span class="lineno">  270 </span>-- __internal__
+<span class="lineno">  271 </span>generate
+<span class="lineno">  272 </span>    :: ByteArrayAccess seed
+<span class="lineno">  273 </span>    =&gt; seed
+<span class="lineno">  274 </span>    -&gt; XPrv
+<span class="lineno">  275 </span><span class="decl"><span class="istickedoff">generate seed =</span>
+<span class="lineno">  276 </span><span class="spaces">    </span><span class="istickedoff">CC.generate seed (mempty :: ScrubbedBytes)</span></span>
+<span class="lineno">  277 </span>
+<span class="lineno">  278 </span>-- Generate an XPrv using the new method (Icarus).
+<span class="lineno">  279 </span>--
+<span class="lineno">  280 </span>-- The seed needs to be at least 16 bytes.
+<span class="lineno">  281 </span>--
+<span class="lineno">  282 </span>-- __internal__
+<span class="lineno">  283 </span>generateNew
+<span class="lineno">  284 </span>    :: (ByteArrayAccess seed, ByteArrayAccess sndFactor)
+<span class="lineno">  285 </span>    =&gt; seed
+<span class="lineno">  286 </span>    -&gt; sndFactor
+<span class="lineno">  287 </span>    -&gt; XPrv
+<span class="lineno">  288 </span><span class="decl"><span class="istickedoff">generateNew seed sndFactor =</span>
+<span class="lineno">  289 </span><span class="spaces">    </span><span class="istickedoff">CC.generateNew seed sndFactor (mempty :: ScrubbedBytes)</span></span>
+<span class="lineno">  290 </span>
+<span class="lineno">  291 </span>-- Hash a credential (pub key or script).
+<span class="lineno">  292 </span>--
+<span class="lineno">  293 </span>-- __internal__
+<span class="lineno">  294 </span>hashCredential :: ByteString -&gt; ByteString
+<span class="lineno">  295 </span><span class="decl"><span class="istickedoff">hashCredential =</span>
+<span class="lineno">  296 </span><span class="spaces">    </span><span class="istickedoff">BA.convert . hash @_ @Blake2b_224</span></span>
+<span class="lineno">  297 </span>
+<span class="lineno">  298 </span>-- Size, in bytes, of a hash of credential (pub key or script).
+<span class="lineno">  299 </span>--
+<span class="lineno">  300 </span>-- __internal__
+<span class="lineno">  301 </span>credentialHashSize :: Int
+<span class="lineno">  302 </span><span class="decl"><span class="istickedoff">credentialHashSize = hashDigestSize <span class="nottickedoff">Blake2b_224</span></span></span>
+<span class="lineno">  303 </span>
+<span class="lineno">  304 </span>--
+<span class="lineno">  305 </span>-- Key Derivation
+<span class="lineno">  306 </span>--
+<span class="lineno">  307 </span>
+<span class="lineno">  308 </span>-- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
+<span class="lineno">  309 </span>--
+<span class="lineno">  310 </span>-- @
+<span class="lineno">  311 </span>-- root | purpose' | cointype' | account' | role | address@
+<span class="lineno">  312 </span>-- 0th      1st         2nd        3rd       4th     5th
+<span class="lineno">  313 </span>-- @
+<span class="lineno">  314 </span>--
+<span class="lineno">  315 </span>-- We do not manipulate purpose, cointype and change paths directly, so there
+<span class="lineno">  316 </span>-- are no constructors for these.
+<span class="lineno">  317 </span>--
+<span class="lineno">  318 </span>-- @since 1.0.0
+<span class="lineno">  319 </span>data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK
+<span class="lineno">  320 </span>
+<span class="lineno">  321 </span>-- | A derivation index, with phantom-types to disambiguate derivation type.
+<span class="lineno">  322 </span>--
+<span class="lineno">  323 </span>-- @
+<span class="lineno">  324 </span>-- let accountIx = Index 'Hardened 'AccountK
+<span class="lineno">  325 </span>-- let addressIx = Index 'Soft 'PaymentK
+<span class="lineno">  326 </span>-- @
+<span class="lineno">  327 </span>--
+<span class="lineno">  328 </span>-- @since 1.0.0
+<span class="lineno">  329 </span>newtype Index (derivationType :: DerivationType) (depth :: Depth) = Index
+<span class="lineno">  330 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">indexToWord32</span></span></span> :: Word32
+<span class="lineno">  331 </span>    -- ^ Get the index as a 'Word32'
+<span class="lineno">  332 </span>    -- @since 3.3.0
+<span class="lineno">  333 </span>    }
+<span class="lineno">  334 </span>    deriving stock (Generic, <span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  335 </span>
+<span class="lineno">  336 </span>instance NFData (Index derivationType depth)
+<span class="lineno">  337 </span>
+<span class="lineno">  338 </span>instance Bounded (Index 'Hardened depth) where
+<span class="lineno">  339 </span>    <span class="decl"><span class="istickedoff">minBound = Index 0x80000000</span></span>
+<span class="lineno">  340 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
+<span class="lineno">  341 </span>
+<span class="lineno">  342 </span>instance Bounded (Index 'Soft depth) where
+<span class="lineno">  343 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
+<span class="lineno">  344 </span>    <span class="decl"><span class="istickedoff">maxBound = let (Index ix) = minBound @(Index 'Hardened _) in Index (ix - 1)</span></span>
+<span class="lineno">  345 </span>
+<span class="lineno">  346 </span>instance Bounded (Index 'WholeDomain depth) where
+<span class="lineno">  347 </span>    <span class="decl"><span class="istickedoff">minBound = Index minBound</span></span>
+<span class="lineno">  348 </span>    <span class="decl"><span class="istickedoff">maxBound = Index maxBound</span></span>
+<span class="lineno">  349 </span>
+<span class="lineno">  350 </span>-- Construct an 'Index' from any Word32 value, without any validation, for
+<span class="lineno">  351 </span>-- internal use only.
+<span class="lineno">  352 </span>--
+<span class="lineno">  353 </span>-- Always use 'indexFromWord32' or 'wholeDomainIndex' instead of this function.
+<span class="lineno">  354 </span>unsafeMkIndex :: Word32 -&gt; Index ty depth
+<span class="lineno">  355 </span><span class="decl"><span class="istickedoff">unsafeMkIndex = Index</span></span>
+<span class="lineno">  356 </span>
+<span class="lineno">  357 </span>-- | Construct derivation path indices from raw 'Word32' values.
+<span class="lineno">  358 </span>indexFromWord32
+<span class="lineno">  359 </span>    :: forall ix derivationType depth.
+<span class="lineno">  360 </span>       (ix ~ Index derivationType depth, Bounded ix)
+<span class="lineno">  361 </span>    =&gt; Word32 -&gt; Maybe ix
+<span class="lineno">  362 </span><span class="decl"><span class="istickedoff">indexFromWord32 ix</span>
+<span class="lineno">  363 </span><span class="spaces">    </span><span class="istickedoff">| ix &gt;= indexToWord32 (minBound @ix) &amp;&amp; ix &lt;= indexToWord32 (maxBound @ix) =</span>
+<span class="lineno">  364 </span><span class="spaces">        </span><span class="istickedoff">Just (Index ix)</span>
+<span class="lineno">  365 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  366 </span><span class="spaces">        </span><span class="istickedoff">Nothing</span></span>
+<span class="lineno">  367 </span>
+<span class="lineno">  368 </span>-- | Increment an index, if possible.
+<span class="lineno">  369 </span>--
+<span class="lineno">  370 </span>-- @since 3.3.0
+<span class="lineno">  371 </span>nextIndex
+<span class="lineno">  372 </span>    :: forall ix derivationType depth.
+<span class="lineno">  373 </span>       (ix ~ Index derivationType depth, Bounded ix)
+<span class="lineno">  374 </span>    =&gt; ix -&gt; Maybe ix
+<span class="lineno">  375 </span><span class="decl"><span class="istickedoff">nextIndex (Index ix) = indexFromWord32 (ix + 1)</span></span>
+<span class="lineno">  376 </span>
+<span class="lineno">  377 </span>-- | Constructs a full domain 'Index'. This can't fail, unlike 'fromWord32'.
+<span class="lineno">  378 </span>--
+<span class="lineno">  379 </span>-- @since 3.3.0
+<span class="lineno">  380 </span>wholeDomainIndex :: Word32 -&gt; Index 'WholeDomain depth
+<span class="lineno">  381 </span><span class="decl"><span class="istickedoff">wholeDomainIndex = Index</span></span>
+<span class="lineno">  382 </span>
+<span class="lineno">  383 </span>-- | Upcasts an 'Index' to one with the full 'Word32' domain.
+<span class="lineno">  384 </span>--
+<span class="lineno">  385 </span>-- @since 3.3.0
+<span class="lineno">  386 </span>coerceWholeDomainIndex :: Index ty depth0 -&gt; Index 'WholeDomain depth1
+<span class="lineno">  387 </span><span class="decl"><span class="istickedoff">coerceWholeDomainIndex = coerce</span></span>
+<span class="lineno">  388 </span>
+<span class="lineno">  389 </span>instance Buildable (Index derivationType depth) where
+<span class="lineno">  390 </span>    <span class="decl"><span class="nottickedoff">build (Index ix) = fromString (show ix)</span></span>
+<span class="lineno">  391 </span>
+<span class="lineno">  392 </span>
+<span class="lineno">  393 </span>-- | Type of derivation that should be used with the given indexes.
+<span class="lineno">  394 </span>--
+<span class="lineno">  395 </span>-- In theory, we should only consider two derivation types: soft and hard.
+<span class="lineno">  396 </span>--
+<span class="lineno">  397 </span>-- However, historically, addresses in Cardano used to be generated across both
+<span class="lineno">  398 </span>-- the soft and the hard domain. We therefore introduce a 'WholeDomain' derivation
+<span class="lineno">  399 </span>-- type that is the exact union of `Hardened` and `Soft`.
+<span class="lineno">  400 </span>--
+<span class="lineno">  401 </span>-- @since 1.0.0
+<span class="lineno">  402 </span>data DerivationType = Hardened | Soft | WholeDomain
+<span class="lineno">  403 </span>
+<span class="lineno">  404 </span>-- | An interface for doing hard derivations from the root private key, /Master Key/
+<span class="lineno">  405 </span>--
+<span class="lineno">  406 </span>-- @since 1.0.0
+<span class="lineno">  407 </span>class HardDerivation (key :: Depth -&gt; Type -&gt; Type) where
+<span class="lineno">  408 </span>    type AccountIndexDerivationType key :: DerivationType
+<span class="lineno">  409 </span>    type AddressIndexDerivationType key :: DerivationType
+<span class="lineno">  410 </span>    type WithRole key :: Type
+<span class="lineno">  411 </span>
+<span class="lineno">  412 </span>    -- | Derives account private key from the given root private key, using
+<span class="lineno">  413 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  414 </span>    -- package for more details).
+<span class="lineno">  415 </span>    --
+<span class="lineno">  416 </span>    -- @since 1.0.0
+<span class="lineno">  417 </span>    deriveAccountPrivateKey
+<span class="lineno">  418 </span>        :: key 'RootK XPrv
+<span class="lineno">  419 </span>        -&gt; Index (AccountIndexDerivationType key) 'AccountK
+<span class="lineno">  420 </span>        -&gt; key 'AccountK XPrv
+<span class="lineno">  421 </span>
+<span class="lineno">  422 </span>    -- | Derives address private key from the given account private key, using
+<span class="lineno">  423 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  424 </span>    -- package for more details).
+<span class="lineno">  425 </span>    --
+<span class="lineno">  426 </span>    -- @since 1.0.0
+<span class="lineno">  427 </span>    deriveAddressPrivateKey
+<span class="lineno">  428 </span>        :: key 'AccountK XPrv
+<span class="lineno">  429 </span>        -&gt; WithRole key
+<span class="lineno">  430 </span>        -&gt; Index (AddressIndexDerivationType key) 'PaymentK
+<span class="lineno">  431 </span>        -&gt; key 'PaymentK XPrv
+<span class="lineno">  432 </span>
+<span class="lineno">  433 </span>-- | An interface for doing soft derivations from an account public key
+<span class="lineno">  434 </span>class HardDerivation key =&gt; SoftDerivation (key :: Depth -&gt; Type -&gt; Type) where
+<span class="lineno">  435 </span>    -- | Derives address public key from the given account public key, using
+<span class="lineno">  436 </span>    -- derivation scheme 2 (see &lt;https://github.com/input-output-hk/cardano-crypto/ cardano-crypto&gt;
+<span class="lineno">  437 </span>    -- package for more details).
+<span class="lineno">  438 </span>    --
+<span class="lineno">  439 </span>    -- This is the preferred way of deriving new sequential address public keys.
+<span class="lineno">  440 </span>    --
+<span class="lineno">  441 </span>    -- @since 1.0.0
+<span class="lineno">  442 </span>    deriveAddressPublicKey
+<span class="lineno">  443 </span>        :: key 'AccountK XPub
+<span class="lineno">  444 </span>        -&gt; WithRole key
+<span class="lineno">  445 </span>        -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  446 </span>        -&gt; key 'PaymentK XPub
+<span class="lineno">  447 </span>
+<span class="lineno">  448 </span>
+<span class="lineno">  449 </span>-- | Abstract interface for constructing a /Master Key/.
+<span class="lineno">  450 </span>--
+<span class="lineno">  451 </span>-- @since 1.0.0
+<span class="lineno">  452 </span>class GenMasterKey (key :: Depth -&gt; Type -&gt; Type) where
+<span class="lineno">  453 </span>    type SecondFactor key :: Type
+<span class="lineno">  454 </span>
+<span class="lineno">  455 </span>    -- | Generate a root key from a corresponding mnemonic.
+<span class="lineno">  456 </span>    --
+<span class="lineno">  457 </span>    -- @since 1.0.0
+<span class="lineno">  458 </span>    genMasterKeyFromMnemonic
+<span class="lineno">  459 </span>        :: SomeMnemonic -&gt; SecondFactor key -&gt; key 'RootK XPrv
+<span class="lineno">  460 </span>
+<span class="lineno">  461 </span>    -- | Generate a root key from a corresponding root 'XPrv'
+<span class="lineno">  462 </span>    --
+<span class="lineno">  463 </span>    -- @since 1.0.0
+<span class="lineno">  464 </span>    genMasterKeyFromXPrv
+<span class="lineno">  465 </span>        :: XPrv -&gt; key 'RootK XPrv
+
+</pre>
+</body>
+</html>

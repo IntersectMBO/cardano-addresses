@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Command.Address</span><span>
+</span><span id="line-7"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier">Cmd</span></a></span><span>
+</span><span id="line-8"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.Address.html#mod"><span class="hs-identifier">mod</span></a></span><span>
+</span><span id="line-9"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.Address.html#run"><span class="hs-identifier">run</span></a></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">CommandFields</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Mod</span></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">command</span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">footerDoc</span></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">helper</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">info</span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">progDesc</span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">subparser</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative.Help.Pretty</span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">bold</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">hsep</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">string</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">vsep</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">mod</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Bootstrap.html"><span class="hs-identifier">Command.Address.Bootstrap</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Bootstrap</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Delegation.html"><span class="hs-identifier">Command.Address.Delegation</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Delegation</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Inspect.html"><span class="hs-identifier">Command.Address.Inspect</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Inspect</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Payment.html"><span class="hs-identifier">Command.Address.Payment</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Payment</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Pointer.html"><span class="hs-identifier">Command.Address.Pointer</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Pointer</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Command.Address.Reward.html"><span class="hs-identifier">Command.Address.Reward</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Reward</span></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="Bootstrap"><span class="annot"><a href="Command.Address.html#Bootstrap"><span class="hs-identifier hs-var">Bootstrap</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Bootstrap.html#Cmd"><span class="hs-identifier hs-type">Bootstrap.Cmd</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Payment"><span class="annot"><a href="Command.Address.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Payment.html#Cmd"><span class="hs-identifier hs-type">Payment.Cmd</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Reward"><span class="annot"><a href="Command.Address.html#Reward"><span class="hs-identifier hs-var">Reward</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Reward.html#Cmd"><span class="hs-identifier hs-type">Reward.Cmd</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Delegation"><span class="annot"><a href="Command.Address.html#Delegation"><span class="hs-identifier hs-var">Delegation</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Delegation.Cmd</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Pointer"><span class="annot"><a href="Command.Address.html#Pointer"><span class="hs-identifier hs-var">Pointer</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Pointer.html#Cmd"><span class="hs-identifier hs-type">Pointer.Cmd</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Inspect"><span class="annot"><a href="Command.Address.html#Inspect"><span class="hs-identifier hs-var">Inspect</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Inspect.html#Cmd"><span class="hs-identifier hs-type">Inspect.Cmd</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679108956"><span id="local-6989586621679108958"><span id="local-6989586621679108960"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+[Cmd] -&gt; ShowS
+Cmd -&gt; String
+(Int -&gt; Cmd -&gt; ShowS)
+-&gt; (Cmd -&gt; String) -&gt; ([Cmd] -&gt; ShowS) -&gt; Show Cmd
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Cmd] -&gt; ShowS
+$cshowList :: [Cmd] -&gt; ShowS
+show :: Cmd -&gt; String
+$cshow :: Cmd -&gt; String
+showsPrec :: Int -&gt; Cmd -&gt; ShowS
+$cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span id="local-6989586621679108954"><span class="annot"><a href="Command.Address.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679108954"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679108954"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-45"></span><span id="mod"><span class="annot"><span class="annottext">mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679108953"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679108953"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
+</span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;address&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
+-&gt; ParserInfo parent -&gt; Mod CommandFields parent
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="annottext">Parser parent -&gt; InfoMod parent -&gt; ParserInfo parent
+forall a. Parser a -&gt; InfoMod a -&gt; ParserInfo a
+</span><span class="hs-identifier hs-var">info</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (parent -&gt; parent)
+forall a. Parser (a -&gt; a)
+</span><span class="hs-identifier hs-var">helper</span></span><span> </span><span class="annot"><span class="annottext">Parser (parent -&gt; parent) -&gt; Parser parent -&gt; Parser parent
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679108953"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679108952"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+-&gt; InfoMod parent -&gt; ParserInfo parent
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><span id="line-47"></span><span>        </span><span class="annot"><span class="annottext">InfoMod parent -&gt; InfoMod parent -&gt; InfoMod parent
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; InfoMod parent
+forall a. String -&gt; InfoMod a
+</span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;About addresses&quot;</span></span><span>
+</span><span id="line-48"></span><span>        </span><span class="annot"><span class="annottext">InfoMod parent -&gt; InfoMod parent -&gt; InfoMod parent
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Maybe Doc -&gt; InfoMod parent
+forall a. Maybe Doc -&gt; InfoMod a
+</span><span class="hs-identifier hs-var">footerDoc</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Doc -&gt; Maybe Doc
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Maybe Doc) -&gt; Doc -&gt; Maybe Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">vsep</span></span><span>
+</span><span id="line-49"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Integrating with Byron?&quot;</span></span><span>
+</span><span id="line-50"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">hsep</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;  &#8627; Look at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'bootstrap'&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-51"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-52"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Integrating with Shelley?&quot;</span></span><span>
+</span><span id="line-53"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-identifier hs-var">hsep</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;  &#8627; Look at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'payment'&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;&amp;&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc
+</span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;'delegation'&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Doc
+</span><span class="hs-identifier hs-var">string</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-54"></span><span>            </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-56"></span><span>    </span><span id="local-6989586621679108952"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679108952"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mod CommandFields Cmd -&gt; Parser Cmd
+forall a. Mod CommandFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">subparser</span></span><span> </span><span class="annot"><span class="annottext">(Mod CommandFields Cmd -&gt; Parser Cmd)
+-&gt; Mod CommandFields Cmd -&gt; Parser Cmd
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Mod CommandFields Cmd] -&gt; Mod CommandFields Cmd
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><span class="hs-identifier hs-var">mconcat</span></span><span>
+</span><span id="line-57"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Bootstrap.html#mod"><span class="hs-identifier hs-var">Bootstrap.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Bootstrap"><span class="hs-identifier hs-var">Bootstrap</span></a></span><span>
+</span><span id="line-58"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Payment.html#mod"><span class="hs-identifier hs-var">Payment.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span><span>
+</span><span id="line-59"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Reward.html#mod"><span class="hs-identifier hs-var">Reward.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Reward"><span class="hs-identifier hs-var">Reward</span></a></span><span>
+</span><span id="line-60"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-var">Delegation.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Delegation"><span class="hs-identifier hs-var">Delegation</span></a></span><span>
+</span><span id="line-61"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Pointer.html#mod"><span class="hs-identifier hs-var">Pointer.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Pointer"><span class="hs-identifier hs-var">Pointer</span></a></span><span>
+</span><span id="line-62"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; Cmd) -&gt; Mod CommandFields Cmd
+forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Inspect.html#mod"><span class="hs-identifier hs-var">Inspect.mod</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; Cmd
+</span><a href="Command.Address.html#Inspect"><span class="hs-identifier hs-var">Inspect</span></a></span><span>
+</span><span id="line-63"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Command.Address.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
+</span><a href="Command.Address.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-67"></span><span>    </span><span class="annot"><a href="Command.Address.html#Bootstrap"><span class="hs-identifier hs-type">Bootstrap</span></a></span><span> </span><span id="local-6989586621679108945"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108945"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Bootstrap.html#run"><span class="hs-identifier hs-var">Bootstrap.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108945"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-68"></span><span>    </span><span class="annot"><a href="Command.Address.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span><span> </span><span id="local-6989586621679108943"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108943"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Payment.html#run"><span class="hs-identifier hs-var">Payment.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108943"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><a href="Command.Address.html#Reward"><span class="hs-identifier hs-type">Reward</span></a></span><span> </span><span id="local-6989586621679108941"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108941"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Reward.html#run"><span class="hs-identifier hs-var">Reward.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108941"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="Command.Address.html#Delegation"><span class="hs-identifier hs-type">Delegation</span></a></span><span> </span><span id="local-6989586621679108939"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108939"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-var">Delegation.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108939"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="Command.Address.html#Pointer"><span class="hs-identifier hs-type">Pointer</span></a></span><span> </span><span id="local-6989586621679108937"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108937"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Pointer.html#run"><span class="hs-identifier hs-var">Pointer.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108937"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="Command.Address.html#Inspect"><span class="hs-identifier hs-type">Inspect</span></a></span><span> </span><span id="local-6989586621679108935"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108935"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="Command.Address.Inspect.html#run"><span class="hs-identifier hs-var">Inspect.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679108935"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-73"></span></pre></body></html>
