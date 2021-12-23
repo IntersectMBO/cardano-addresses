@@ -73,6 +73,8 @@ export interface InspectAddressShelley {
   stake_key_hash_bech32?: string;
   script_hash?: ScriptHash;
   script_hash_bech32?: string;
+  /** Numeric address type field. */
+  address_type: number;
 };
 
 /**
@@ -80,6 +82,8 @@ export interface InspectAddressShelley {
  */
 export interface InspectAddressIcarus {
   address_style: "Icarus";
+  /** Numeric address type field. */
+  address_type: number;
   /** Which network the address belongs to. Unset for mainnet. */
   network_tag: number;
   /** Hex-encoded address payload */
@@ -93,6 +97,8 @@ export interface InspectAddressByron {
   address_style: "Byron";
   /** Which network the address belongs to. Unset for mainnet. */
   network_tag?: number;
+  /** Numeric address type field. */
+  address_type: number;
   /** Hex-encoded address payload */
   address_root: Bytes;
   /** Heirarchical derivation payload. If a root XPub is provided,
