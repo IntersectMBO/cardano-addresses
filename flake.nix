@@ -18,80 +18,82 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, ... }:
-    let
-      inherit (nixpkgs) lib;
-      inherit (flake-utils.lib) eachSystem mkApp;
-      supportedSystems = import ./nix/supported-systems.nix;
-      defaultSystem = lib.head supportedSystems;
-      overlay = final: prev:
-        {
-          cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
-          inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
-          inherit (final.cardanoAddressesHaskellProject.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
-          inherit (self.packages.${final.system}) cardano-addresses-js cardano-addresses-demo-js;
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, ... }: let
+    inherit (nixpkgs) lib;
+    supportedSystems = import ./nix/supported-systems.nix;
+    defaultSystem = lib.head supportedSystems;
+
+    overlays.haskell = final: prev: {
+      cardanoAddressesHaskellProject = import ./nix/haskell.nix final.haskell-nix;
+      inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
+      inherit (final.cardanoAddressesHaskellProject.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
+    };
+    overlays.js = final: prev: {
+      cardano-addresses-js = final.callPackage ./nix/cardano-addresses-js.nix { };
+      cardano-addresses-demo-js = final.callPackage ./nix/cardano-addresses-demo-js.nix { };
+      cardano-addresses-js-shell = final.callPackage ./nix/cardano-addresses-js-shell.nix { };
+    };
+    overlays.deps = lib.composeManyExtensions [
+      haskellNix.overlay
+      iohkNix.overlays.utils
+      iohkNix.overlays.crypto
+      (final: prev: {
+        cabal = final.haskell-nix.tool final.cardanoAddressesHaskellProject.pkg-set.config.compiler.nix-name "cabal" {
+          version = "latest";
         };
-    in
-    {
-      inherit overlay;
-    } // eachSystem supportedSystems
-      (system:
-        let
-          pkgs = import nixpkgs {
-            inherit system;
-            inherit (haskellNix) config;
-            overlays = [
-              haskellNix.overlay
-              iohkNix.overlays.utils
-              iohkNix.overlays.crypto
-              (final: prev: {
-                cabal = final.haskell-nix.tool haskellProject.pkg-set.config.compiler.nix-name "cabal" {
-                  version = "latest";
-                };
-              })
-              overlay
-            ];
-          };
+      })
+    ];
+  in {
+    inherit overlays;
+    overlay = lib.composeExtensions overlays.haskell overlays.js;
+  } // flake-utils.lib.eachSystem supportedSystems (system: let
+    pkgs = import nixpkgs {
+      inherit system;
+      inherit (haskellNix) config;
+      overlays = [
+        overlays.deps
+        overlays.haskell
+        overlays.js
+      ];
+    };
 
-          haskellProject = (import ./nix/haskell.nix pkgs.haskell-nix);
+    flake' = pkgs.cardanoAddressesHaskellProject.flake {
+      crossPlatforms = p: with p; [ ghcjs ]
+        ++ lib.optionals (system == "x86_64-linux") [
+          mingwW64
+          musl64
+        ];
+    };
 
-          cardano-addresses-js = pkgs.callPackage ./nix/cardano-addresses-js.nix { };
-          cardano-addresses-demo-js = pkgs.callPackage ./nix/cardano-addresses-demo-js.nix { };
-          cardano-addresses-js-shell = pkgs.callPackage ./nix/cardano-addresses-js-shell.nix { };
+    flake = lib.recursiveUpdate flake' {
+      legacyPackages = pkgs;
 
-          flake = haskellProject.flake {
-            crossPlatforms = p: with p; [ ghcjs ]
-            ++ (lib.optionals (system == "x86_64-linux") [
-              mingwW64
-              musl64
-            ]);
-          };
+      # Built by `nix build .`
+      defaultPackage = flake.packages."cardano-addresses-cli:exe:cardano-address";
 
-        in
-        lib.recursiveUpdate flake {
+      # Run by `nix run .`
+      defaultApp = flake.apps."cardano-addresses-cli:exe:cardano-address";
 
-          legacyPackages = haskellProject;
+      packages = {
+        inherit (pkgs)
+          cardano-addresses-js
+          cardano-addresses-demo-js
+          cardano-addresses-js-shell;
+      };
 
-          # Built by `nix build .`
-          defaultPackage = flake.packages."cardano-addresses-cli:exe:cardano-address";
+      devShells.js = pkgs.cardano-addresses-js-shell;
 
-          # Run by `nix run .`
-          defaultApp = flake.apps."cardano-addresses-cli:exe:cardano-address";
-
-          packages = {
-            inherit cardano-addresses-js cardano-addresses-demo-js cardano-addresses-js-shell;
-          };
-
-          apps = {
-            repl = mkApp {
-              drv = pkgs.writeShellScriptBin "repl" ''
-                confnix=$(mktemp)
-                echo "builtins.getFlake (toString $(git rev-parse --show-toplevel))" >$confnix
-                trap "rm $confnix" EXIT
-                nix repl $confnix
-              '';
-            };
-          };
-        }
-      );
+      apps = {
+        repl = flake-utils.lib.mkApp {
+          drv = pkgs.writeShellScriptBin "repl" ''
+            confnix=$(mktemp)
+            trap "rm -f $confnix" EXIT
+            echo "builtins.getFlake (toString $(git rev-parse --show-toplevel))" >$confnix
+            nix repl $confnix
+          '';
+        };
+      };
+    };
+  in
+    flake);
 }
