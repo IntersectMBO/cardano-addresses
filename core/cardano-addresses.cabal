@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 353c6e8826db54054d40e456c6ba169c795c66f18c13b27370dafb4f2ad2132d
+-- hash: e23c4cda55a011821f3a6a26083bc6acd3d0d34829f0a839f3bc5d9f8f265db6
 
 name:           cardano-addresses
 version:        3.7.0
