@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
 {-# OPTIONS_HADDOCK hide #-}
