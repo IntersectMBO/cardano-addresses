@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
@@ -22,6 +23,8 @@ import Data.Maybe
     ( fromJust )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+import Options.Applicative.Format
+    ( FormatType (..), formatOpt )
 import Options.Applicative.Help.Pretty
     ( string )
 import System.IO
@@ -33,7 +36,8 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
 data Cmd = Hash
-    deriving (Show)
+    { outputFormat :: FormatType
+    } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "hash" $
@@ -41,15 +45,21 @@ mod liftCmd = command "hash" $
         <> progDesc "Get the hash of a public key"
         <> footerDoc (Just $ string $ mconcat
             [ "The public key is read from stdin."
+            , "To get hex-encoded output pass '--hex'."
+            , "Otherwise bech32-encoded hash is returned."
             ])
   where
-    parser = pure Hash
+    parser = Hash
+        <$> formatOpt
 
 run :: Cmd -> IO ()
-run Hash = do
+run Hash{outputFormat} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    hPutBytes stdout (hashCredential $ BS.take 32 bytes) (EBech32 $ prefixFor hrp)
+    let encoding = case outputFormat of
+            Hex -> EBase16
+            Bech32 -> EBech32 $ prefixFor hrp
+    hPutBytes stdout (hashCredential $ BS.take 32 bytes) encoding
   where
     -- Mapping of input HRP to output HRP
     prefixes =
