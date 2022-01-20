@@ -51,6 +51,29 @@ root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sw
 </details>
 
 <details>
+  <summary>How to generate a wallet id based on extended root or account keys (<strong>phrase.prv</strong>)</summary>
+
+```console
+$ cat root.xsk
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+$ cardano-address key walletid < root.xsk
+d5255b85024bf01b7719ac90cdfa79c8baf210f358e4f03c7880c300
+
+$ cardano-address key public --with-chain-code < root.xsk | cardano-address key walletid
+d5255b85024bf01b7719ac90cdfa79c8baf210f358e4f03c7880c300
+
+$ cardano-address key child 1852H/1815H/0H < root.xsk > acct.xsk
+$ cat acct.xsk
+acct_xsk15ztha8ws7qjze5vmdkwqh0ddzvtlgstkg79swazhc5lxns2849plr3msjx082mcmd9hc24ujczk2cjnjwrcz4tjaucw9jqf8h5yc7d84rac0zdckkuhazpam0kleg4sq52ph3e0wn98a64hr8g5cpmh9zqpwtrhy
+$ cardano-address key walletid < acct.xsk
+f6ff1f0d0ccfbef5445c88fd637e6be8e55d372389aa2d53bc6b16a7
+$ cardano-address key public --with-chain-code < acct.xsk | cardano-address key walletid
+f6ff1f0d0ccfbef5445c88fd637e6be8e55d372389aa2d53bc6b16a7
+```
+</details>
+
+
+<details>
   <summary>How to generate a payment verification key (<strong>addr.xvk</strong>)</summary>
 
 ```console
