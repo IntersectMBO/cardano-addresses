@@ -38,6 +38,10 @@ spec = describeCmd [ "key", "walletid" ] $ do
     specAcctKeyNotExtended "icarus" "1852H/1815H/0H"
     specAcctKeyNotExtended "shared" "1854H/1815H/0H"
 
+    specRootKeyNotExtended "shelley"
+    specRootKeyNotExtended "icarus"
+    specRootKeyNotExtended "shared"
+
 specKeyNeitherRootNorAcct :: String -> String -> String -> SpecWith ()
 specKeyNeitherRootNorAcct style path cc = it "fails if key is nether root nor account" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
@@ -53,6 +57,15 @@ specAcctKeyNotExtended style path = it "fails if account key is not extended" $ 
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
               >>= cli [ "key", "from-recovery-phrase", style ]
               >>= cli [ "key", "child", path ]
+              >>= cli [ "key", "public", "--without-chain-code" ]
+              >>= cli [ "key", "walletid"]
+    out `shouldBe` ""
+    err `shouldContain` "Invalid human-readable prefix."
+
+specRootKeyNotExtended :: String -> SpecWith ()
+specRootKeyNotExtended style = it "fails if root key is not extended" $ do
+    (out, err) <- cli [ "recovery-phrase", "generate" ] ""
+              >>= cli [ "key", "from-recovery-phrase", style ]
               >>= cli [ "key", "public", "--without-chain-code" ]
               >>= cli [ "key", "walletid"]
     out `shouldBe` ""
