@@ -46,6 +46,7 @@ library
       Command.Key.Hash
       Command.Key.Inspect
       Command.Key.Public
+      Command.Key.WalletId
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
       Command.Script
