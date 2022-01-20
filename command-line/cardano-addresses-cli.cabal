@@ -125,6 +125,7 @@ test-suite unit
       Command.Key.HashSpec
       Command.Key.InspectSpec
       Command.Key.PublicSpec
+      Command.Key.WalletIdSpec
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
