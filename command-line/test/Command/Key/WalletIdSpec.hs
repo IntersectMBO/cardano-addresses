@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Command.Key.WalletIdSpec
     ( spec
@@ -42,6 +43,10 @@ spec = describeCmd [ "key", "walletid" ] $ do
     specRootKeyNotExtended "icarus"
     specRootKeyNotExtended "shared"
 
+    specRootKeyPubPrvHasEqualWalletId "shelley"
+    specRootKeyPubPrvHasEqualWalletId "icarus"
+    specRootKeyPubPrvHasEqualWalletId "shared"
+
 specKeyNeitherRootNorAcct :: String -> String -> String -> SpecWith ()
 specKeyNeitherRootNorAcct style path cc = it "fails if key is nether root nor account" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
@@ -70,3 +75,14 @@ specRootKeyNotExtended style = it "fails if root key is not extended" $ do
               >>= cli [ "key", "walletid"]
     out `shouldBe` ""
     err `shouldContain` "Invalid human-readable prefix."
+
+specRootKeyPubPrvHasEqualWalletId :: String -> SpecWith ()
+specRootKeyPubPrvHasEqualWalletId style = it "root private key and its public key give the same wallet id" $ do
+    xprv <- cli [ "recovery-phrase", "generate" ] ""
+        >>= cli [ "key", "from-recovery-phrase", style ]
+
+    walletidFromXPrv <- cli @String [ "key", "walletid"] xprv
+    walletidFromXPub <- cli [ "key", "public", "--with-chain-code" ] xprv
+                    >>= cli [ "key", "walletid"]
+
+    walletidFromXPrv `shouldBe` walletidFromXPub
