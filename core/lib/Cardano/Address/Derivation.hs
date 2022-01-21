@@ -58,6 +58,7 @@ module Cardano.Address.Derivation
     , generate
     , generateNew
     , hashCredential
+    , hashWalletId
     , credentialHashSize
     , unsafeMkIndex
     ------------------
@@ -76,7 +77,7 @@ import Crypto.Error
 import Crypto.Hash
     ( hash )
 import Crypto.Hash.Algorithms
-    ( Blake2b_224 (..) )
+    ( Blake2b_160 (..), Blake2b_224 (..) )
 import Crypto.Hash.IO
     ( HashAlgorithm (hashDigestSize) )
 import Data.ByteArray
@@ -294,6 +295,13 @@ generateNew seed sndFactor =
 hashCredential :: ByteString -> ByteString
 hashCredential =
     BA.convert . hash @_ @Blake2b_224
+
+-- Hash a extended root or account key to calculate walletid.
+--
+-- __internal__
+hashWalletId :: ByteString -> ByteString
+hashWalletId =
+    BA.convert . hash @_ @Blake2b_160
 
 -- Size, in bytes, of a hash of credential (pub key or script).
 --

@@ -14,7 +14,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Derivation
-    ( hashCredential, toXPub, xprvFromBytes, xpubToBytes )
+    ( hashWalletId, toXPub, xprvFromBytes, xpubToBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
@@ -43,7 +43,7 @@ mod liftCmd = command "walletid" $
             , "is assumed to be either extended root or extended account key."
             , "Both extended private and extended public keys are accepted and"
             , "the corresponding duals give rise to the same wallet id."
-            , "Wallet id is 28-byte hex-encoded Blake2b hash applied on an extended public key."
+            , "Wallet id is hex-encoded Blake2b-160 hash applied on an extended public key."
             ])
   where
     parser = pure WalletId
@@ -52,7 +52,7 @@ run :: Cmd -> IO ()
 run WalletId = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    hPutBytes stdout (hashCredential $ payloadToHash hrp bytes) EBase16
+    hPutBytes stdout (hashWalletId $ payloadToHash hrp bytes) EBase16
   where
     allowedPrefixes =
         [ CIP5.root_xsk
