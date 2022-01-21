@@ -39,7 +39,11 @@ mod liftCmd = command "walletid" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the wallet id from a given key"
         <> footerDoc (Just $ string $ mconcat
-            [ "The key is read from stdin."
+            [ "The key is read from stdin and"
+            , "is assumed to be either extended root or extended account key."
+            , "Both extended private and extended public keys are accepted and"
+            , "the corresponding duals give rise to the same wallet id."
+            , "Wallet id is 28-byte hex-encoded Blake2b hash applied on an extended public key."
             ])
   where
     parser = pure WalletId
