@@ -32,6 +32,7 @@ import qualified Command.Key.FromRecoveryPhrase as FromRecoveryPhrase
 import qualified Command.Key.Hash as Hash
 import qualified Command.Key.Inspect as Inspect
 import qualified Command.Key.Public as Public
+import qualified Command.Key.WalletId as WalletId
 
 data Cmd
     = FromRecoveryPhrase FromRecoveryPhrase.Cmd
@@ -39,6 +40,7 @@ data Cmd
     | Public Public.Cmd
     | Inspect Inspect.Cmd
     | Hash Hash.Cmd
+    | WalletId WalletId.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -76,6 +78,7 @@ mod liftCmd = command "key" $
         , Public.mod Public
         , Inspect.mod Inspect
         , Hash.mod Hash
+        , WalletId.mod WalletId
         ]
 
 run :: Cmd -> IO ()
@@ -85,3 +88,4 @@ run = \case
     Public sub -> Public.run sub
     Inspect sub -> Inspect.run sub
     Hash sub -> Hash.run sub
+    WalletId sub -> WalletId.run sub

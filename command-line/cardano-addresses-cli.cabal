@@ -46,6 +46,7 @@ library
       Command.Key.Hash
       Command.Key.Inspect
       Command.Key.Public
+      Command.Key.WalletId
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
       Command.Script
@@ -56,6 +57,7 @@ library
       Options.Applicative.Credential
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
+      Options.Applicative.Format
       Options.Applicative.MnemonicSize
       Options.Applicative.Public
       Options.Applicative.Script
@@ -124,6 +126,7 @@ test-suite unit
       Command.Key.HashSpec
       Command.Key.InspectSpec
       Command.Key.PublicSpec
+      Command.Key.WalletIdSpec
       Command.KeySpec
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec

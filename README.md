@@ -51,6 +51,29 @@ root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sw
 </details>
 
 <details>
+  <summary>How to generate a wallet id based on extended root or account keys (<strong>phrase.prv</strong>)</summary>
+
+```console
+$ cat root.xsk
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+$ cardano-address key walletid < root.xsk
+d5255b85024bf01b7719ac90cdfa79c8baf210f358e4f03c7880c300
+
+$ cardano-address key public --with-chain-code < root.xsk | cardano-address key walletid
+d5255b85024bf01b7719ac90cdfa79c8baf210f358e4f03c7880c300
+
+$ cardano-address key child 1852H/1815H/0H < root.xsk > acct.xsk
+$ cat acct.xsk
+acct_xsk15ztha8ws7qjze5vmdkwqh0ddzvtlgstkg79swazhc5lxns2849plr3msjx082mcmd9hc24ujczk2cjnjwrcz4tjaucw9jqf8h5yc7d84rac0zdckkuhazpam0kleg4sq52ph3e0wn98a64hr8g5cpmh9zqpwtrhy
+$ cardano-address key walletid < acct.xsk
+f6ff1f0d0ccfbef5445c88fd637e6be8e55d372389aa2d53bc6b16a7
+$ cardano-address key public --with-chain-code < acct.xsk | cardano-address key walletid
+f6ff1f0d0ccfbef5445c88fd637e6be8e55d372389aa2d53bc6b16a7
+```
+</details>
+
+
+<details>
   <summary>How to generate a payment verification key (<strong>addr.xvk</strong>)</summary>
 
 ```console
@@ -71,6 +94,22 @@ stake_xvk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7h9z4smmeqsvs67qhyqm
 
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
 </details>
+
+<details>
+  <summary>How to generate a hash for payment verification key (<strong>addr.xvk</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/0/0 < root.xsk | cardano-address key public --with-chain-code > addr.xvk
+addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3y5xndyd57fu70hrt84c6zkvlwx6fdl7ct9j7yc
+$ cardano-address key hash < addr.xvk
+addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v
+$ cardano-address key hash --hex < addr.xvk
+54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9
+```
+
+> :information_source: The hashing is available for both stake and payment verification keys. Additional flag '--hex' can be used.
+</details>
+
 
 <details>
   <summary>How to generate a payment address from a payment key (<strong>payment.addr</strong>)</summary>
