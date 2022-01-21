@@ -14,7 +14,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Derivation
-    ( hashCredential, toXPub, xprvFromBytes, xpubToBytes )
+    ( hashWalletId, toXPub, xprvFromBytes, xpubToBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
@@ -52,7 +52,7 @@ run :: Cmd -> IO ()
 run WalletId = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    hPutBytes stdout (hashCredential $ payloadToHash hrp bytes) EBase16
+    hPutBytes stdout (hashWalletId $ payloadToHash hrp bytes) EBase16
   where
     allowedPrefixes =
         [ CIP5.root_xsk
