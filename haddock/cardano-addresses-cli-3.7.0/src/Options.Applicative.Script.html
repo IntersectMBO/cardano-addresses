@@ -94,8 +94,8 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span id="line-52"></span><span>
 </span><span id="line-53"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-type">scriptHashArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScriptHash</span></span><span>
 </span><span id="line-54"></span><span id="scriptHashArg"><span class="annot"><span class="annottext">scriptHashArg :: String -&gt; Parser ScriptHash
-</span><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-var hs-var">scriptHashArg</span></a></span></span><span> </span><span id="local-6989586621679107654"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107654"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-var hs-var">scriptHashArg</span></a></span></span><span> </span><span id="local-6989586621679107655"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107655"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-55"></span><span>    </span><span class="annot"><span class="annottext">ReadM ScriptHash
 -&gt; Mod ArgumentFields ScriptHash -&gt; Parser ScriptHash
 forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
@@ -121,35 +121,35 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields ScriptHash
 forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107654"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
+</span><a href="#local-6989586621679107655"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
 </span><span id="line-58"></span><span>
 </span><span id="line-59"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-type">scriptHashReader</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScriptHash</span></span><span>
 </span><span id="line-60"></span><span id="scriptHashReader"><span class="annot"><span class="annottext">scriptHashReader :: String -&gt; Either String ScriptHash
-</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var hs-var">scriptHashReader</span></a></span></span><span> </span><span id="local-6989586621679107653"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107653"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679107652"><span class="annot"><span class="annottext">HumanReadablePart
-</span><a href="#local-6989586621679107652"><span class="hs-identifier hs-var">_hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107651"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679107651"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var hs-var">scriptHashReader</span></a></span></span><span> </span><span id="local-6989586621679107654"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107654"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679107653"><span class="annot"><span class="annottext">HumanReadablePart
+</span><a href="#local-6989586621679107653"><span class="hs-identifier hs-var">_hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107652"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679107652"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
 -&gt; String -&gt; Either String (HumanReadablePart, ByteString)
 </span><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier hs-var">bech32Reader</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679107650"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679107653"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><a href="#local-6989586621679107651"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107654"><span class="hs-identifier hs-var">str</span></a></span><span>
 </span><span id="line-62"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Maybe ScriptHash
 </span><span class="hs-identifier hs-var">scriptHashFromBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679107651"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-63"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679107649"><span class="annot"><span class="annottext">ScriptHash
-</span><a href="#local-6989586621679107649"><span class="hs-identifier hs-var">scriptHash</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ScriptHash -&gt; Either String ScriptHash
+</span><a href="#local-6989586621679107652"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-63"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679107650"><span class="annot"><span class="annottext">ScriptHash
+</span><a href="#local-6989586621679107650"><span class="hs-identifier hs-var">scriptHash</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ScriptHash -&gt; Either String ScriptHash
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ScriptHash
-</span><a href="#local-6989586621679107649"><span class="hs-identifier hs-var">scriptHash</span></a></span><span>
+</span><a href="#local-6989586621679107650"><span class="hs-identifier hs-var">scriptHash</span></a></span><span>
 </span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">Maybe ScriptHash
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String ScriptHash
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;Failed to convert bytes into a valid script hash.&quot;</span></span><span>
 </span><span id="line-65"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-66"></span><span>    </span><span id="local-6989586621679107650"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
-</span><a href="#local-6989586621679107650"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-66"></span><span>    </span><span id="local-6989586621679107651"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
+</span><a href="#local-6989586621679107651"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-67"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart
 </span><span class="hs-identifier hs-var">CIP5.script</span></span><span>
 </span><span id="line-68"></span><span>        </span><span class="hs-special">]</span><span>
@@ -157,14 +157,14 @@ forall a b. a -&gt; Either a b
 </span><span id="line-70"></span><span class="annot"><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-type">levelOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ValidationLevel</span></span><span>
 </span><span id="line-71"></span><span id="levelOpt"><span class="annot"><span class="annottext">levelOpt :: Parser ValidationLevel
 </span><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-var hs-var">levelOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
-</span><a href="#local-6989586621679107647"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
+</span><a href="#local-6989586621679107648"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
 -&gt; Parser ValidationLevel -&gt; Parser ValidationLevel
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
-</span><a href="#local-6989586621679107646"><span class="hs-identifier hs-var">recommended</span></a></span><span>
+</span><a href="#local-6989586621679107647"><span class="hs-identifier hs-var">recommended</span></a></span><span>
 </span><span id="line-72"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-73"></span><span>    </span><span id="local-6989586621679107647"><span class="annot"><span class="annottext">required :: Parser ValidationLevel
-</span><a href="#local-6989586621679107647"><span class="hs-identifier hs-var hs-var">required</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span id="line-73"></span><span>    </span><span id="local-6989586621679107648"><span class="annot"><span class="annottext">required :: Parser ValidationLevel
+</span><a href="#local-6989586621679107648"><span class="hs-identifier hs-var hs-var">required</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
 -&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
@@ -172,8 +172,8 @@ forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;required&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679107646"><span class="annot"><span class="annottext">recommended :: Parser ValidationLevel
-</span><a href="#local-6989586621679107646"><span class="hs-identifier hs-var hs-var">recommended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679107647"><span class="annot"><span class="annottext">recommended :: Parser ValidationLevel
+</span><a href="#local-6989586621679107647"><span class="hs-identifier hs-var hs-var">recommended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
 -&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
