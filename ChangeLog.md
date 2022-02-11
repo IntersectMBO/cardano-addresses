@@ -6,11 +6,17 @@
   [`cardano-wallet` wallet ID](https://input-output-hk.github.io/cardano-wallet/design/WalletId)
   from a wallet key.
 
+### Changed
+
+- Several nodejs package dependencies updated according to `npm audit` and dependabot alerts.
+
+
 ## [3.7.0] - 2021-12-15
 
 ### Added
 
 - Address type in address inspect command.
+
 
 ## [3.6.0] - 2021-09-08
 
@@ -20,6 +26,7 @@
   latest draft of [CIP-1854][].
 
 [CIP-1854]: https://github.com/cardano-foundation/CIPs/blob/master/CIP-1854/CIP-1854.md
+
 
 ## [3.5.0] - 2021-06-28
 
