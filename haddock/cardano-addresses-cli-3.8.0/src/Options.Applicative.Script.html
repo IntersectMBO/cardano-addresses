@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Options.Applicative.Script</span><span>
+</span><span id="line-6"></span><span>    </span><span class="hs-special">(</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Applicative Parser</span></span><span>
+</span><span id="line-8"></span><span>      </span><span class="annot"><a href="Options.Applicative.Script.html#scriptArg"><span class="hs-identifier">scriptArg</span></a></span><span>
+</span><span id="line-9"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.Script.html#scriptReader"><span class="hs-identifier">scriptReader</span></a></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier">scriptHashArg</span></a></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier">scriptHashReader</span></a></span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier">levelOpt</span></a></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Cardano.Address.Script</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">KeyHash</span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Script</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ScriptHash</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ValidationLevel</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">prettyErrValidateScript</span></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">scriptHashFromBytes</span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Cardano.Address.Script.Parser</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">scriptFromString</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Arrow</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">left</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Parser</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">argument</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">eitherReader</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">flag'</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">help</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">long</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">metavar</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html"><span class="hs-identifier">Options.Applicative.Derivation</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier">bech32Reader</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Cardano.Codec.Bech32.Prefixes</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CIP5</span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">--</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- Applicative Parsers</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptArg"><span class="hs-identifier hs-type">scriptArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Script</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KeyHash</span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span id="scriptArg"><span class="annot"><span class="annottext">scriptArg :: Parser (Script KeyHash)
+</span><a href="Options.Applicative.Script.html#scriptArg"><span class="hs-identifier hs-var hs-var">scriptArg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM (Script KeyHash)
+-&gt; Mod ArgumentFields (Script KeyHash) -&gt; Parser (Script KeyHash)
+forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">argument</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Either String (Script KeyHash))
+-&gt; ReadM (Script KeyHash)
+forall a. (String -&gt; Either String a) -&gt; ReadM a
+</span><span class="hs-identifier hs-var">eitherReader</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String (Script KeyHash)
+</span><a href="Options.Applicative.Script.html#scriptReader"><span class="hs-identifier hs-var">scriptReader</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields (Script KeyHash) -&gt; Parser (Script KeyHash))
+-&gt; Mod ArgumentFields (Script KeyHash) -&gt; Parser (Script KeyHash)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Mod ArgumentFields (Script KeyHash)
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">Mod ArgumentFields (Script KeyHash)
+-&gt; Mod ArgumentFields (Script KeyHash)
+-&gt; Mod ArgumentFields (Script KeyHash)
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields (Script KeyHash)
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">metavar</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;SCRIPT&quot;</span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-comment">-- TODO: Provides a bigger help text explaining how to construct a script</span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-comment">-- address.</span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><span class="annottext">Mod ArgumentFields (Script KeyHash)
+-&gt; Mod ArgumentFields (Script KeyHash)
+-&gt; Mod ArgumentFields (Script KeyHash)
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields (Script KeyHash)
+forall (f :: * -&gt; *) a. String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Script string.&quot;</span></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptReader"><span class="hs-identifier hs-type">scriptReader</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Script</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">KeyHash</span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span id="scriptReader"><span class="annot"><span class="annottext">scriptReader :: String -&gt; Either String (Script KeyHash)
+</span><a href="Options.Applicative.Script.html#scriptReader"><span class="hs-identifier hs-var hs-var">scriptReader</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ErrValidateScript -&gt; String)
+-&gt; Either ErrValidateScript (Script KeyHash)
+-&gt; Either String (Script KeyHash)
+forall (a :: * -&gt; * -&gt; *) b c d.
+ArrowChoice a =&gt;
+a b c -&gt; a (Either b d) (Either c d)
+</span><span class="hs-identifier hs-var">left</span></span><span> </span><span class="annot"><span class="annottext">ErrValidateScript -&gt; String
+</span><span class="hs-identifier hs-var">prettyErrValidateScript</span></span><span> </span><span class="annot"><span class="annottext">(Either ErrValidateScript (Script KeyHash)
+ -&gt; Either String (Script KeyHash))
+-&gt; (String -&gt; Either ErrValidateScript (Script KeyHash))
+-&gt; String
+-&gt; Either String (Script KeyHash)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either ErrValidateScript (Script KeyHash)
+</span><span class="hs-identifier hs-var">scriptFromString</span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-type">scriptHashArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScriptHash</span></span><span>
+</span><span id="line-54"></span><span id="scriptHashArg"><span class="annot"><span class="annottext">scriptHashArg :: String -&gt; Parser ScriptHash
+</span><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-var hs-var">scriptHashArg</span></a></span></span><span> </span><span id="local-6989586621679107671"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107671"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-55"></span><span>    </span><span class="annot"><span class="annottext">ReadM ScriptHash
+-&gt; Mod ArgumentFields ScriptHash -&gt; Parser ScriptHash
+forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">argument</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Either String ScriptHash) -&gt; ReadM ScriptHash
+forall a. (String -&gt; Either String a) -&gt; ReadM a
+</span><span class="hs-identifier hs-var">eitherReader</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String ScriptHash
+</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var">scriptHashReader</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields ScriptHash -&gt; Parser ScriptHash)
+-&gt; Mod ArgumentFields ScriptHash -&gt; Parser ScriptHash
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Mod ArgumentFields ScriptHash
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><span class="annottext">Mod ArgumentFields ScriptHash
+-&gt; Mod ArgumentFields ScriptHash -&gt; Mod ArgumentFields ScriptHash
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields ScriptHash
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">metavar</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;SCRIPT HASH&quot;</span></span><span>
+</span><span id="line-57"></span><span>        </span><span class="annot"><span class="annottext">Mod ArgumentFields ScriptHash
+-&gt; Mod ArgumentFields ScriptHash -&gt; Mod ArgumentFields ScriptHash
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields ScriptHash
+forall (f :: * -&gt; *) a. String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107671"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-type">scriptHashReader</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScriptHash</span></span><span>
+</span><span id="line-60"></span><span id="scriptHashReader"><span class="annot"><span class="annottext">scriptHashReader :: String -&gt; Either String ScriptHash
+</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var hs-var">scriptHashReader</span></a></span></span><span> </span><span id="local-6989586621679107670"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107670"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679107669"><span class="annot"><span class="annottext">HumanReadablePart
+</span><a href="#local-6989586621679107669"><span class="hs-identifier hs-var">_hrp</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107668"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679107668"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
+-&gt; String -&gt; Either String (HumanReadablePart, ByteString)
+</span><a href="Options.Applicative.Derivation.html#bech32Reader"><span class="hs-identifier hs-var">bech32Reader</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
+</span><a href="#local-6989586621679107667"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679107670"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Maybe ScriptHash
+</span><span class="hs-identifier hs-var">scriptHashFromBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679107668"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-63"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679107666"><span class="annot"><span class="annottext">ScriptHash
+</span><a href="#local-6989586621679107666"><span class="hs-identifier hs-var">scriptHash</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ScriptHash -&gt; Either String ScriptHash
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">ScriptHash
+</span><a href="#local-6989586621679107666"><span class="hs-identifier hs-var">scriptHash</span></a></span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">Maybe ScriptHash
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String ScriptHash
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Failed to convert bytes into a valid script hash.&quot;</span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-66"></span><span>    </span><span id="local-6989586621679107667"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
+</span><a href="#local-6989586621679107667"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-67"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart
+</span><span class="hs-identifier hs-var">CIP5.script</span></span><span>
+</span><span id="line-68"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-type">levelOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ValidationLevel</span></span><span>
+</span><span id="line-71"></span><span id="levelOpt"><span class="annot"><span class="annottext">levelOpt :: Parser ValidationLevel
+</span><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-var hs-var">levelOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
+</span><a href="#local-6989586621679107664"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
+-&gt; Parser ValidationLevel -&gt; Parser ValidationLevel
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
+</span><a href="#local-6989586621679107663"><span class="hs-identifier hs-var">recommended</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-73"></span><span>    </span><span id="local-6989586621679107664"><span class="annot"><span class="annottext">required :: Parser ValidationLevel
+</span><a href="#local-6989586621679107664"><span class="hs-identifier hs-var hs-var">required</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+-&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span class="hs-identifier hs-var">RequiredValidation</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields ValidationLevel
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;required&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679107663"><span class="annot"><span class="annottext">recommended :: Parser ValidationLevel
+</span><a href="#local-6989586621679107663"><span class="hs-identifier hs-var hs-var">recommended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+-&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span class="hs-identifier hs-var">RecommendedValidation</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields ValidationLevel
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;recommended&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span></pre></body></html>
