@@ -37,13 +37,17 @@ data Cmd = WalletId
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "walletid" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "Get the wallet id from a given key"
+        <> progDesc "Shows the cardano-wallet wallet ID for a given key"
         <> footerDoc (Just $ string $ mconcat
-            [ "The key is read from stdin and"
-            , "is assumed to be either extended root or extended account key."
-            , "Both extended private and extended public keys are accepted and"
-            , "the corresponding duals give rise to the same wallet id."
-            , "Wallet id is hex-encoded Blake2b-160 hash applied on an extended public key."
+            [ "A wallet ID is a 40-digit hexadecimal string derived "
+            , "from the wallet’s mnemonic. It is used by the cardano-wallet "
+            , "server to refer to specific wallets.\n\n"
+            , "This key can be either an extended root key "
+            , "(full multi-account wallets), or an extended account key "
+            , "(single-account wallets).\n\n"
+            , "Private or public extended keys are accepted -- they will have "
+            , "the same wallet ID.\n\n"
+            , "The bech32-encoded key is read from standard input.\n"
             ])
   where
     parser = pure WalletId

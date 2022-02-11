@@ -1,10 +1,10 @@
 name:                cardano-addresses-jsbits
-version:             3.7.0
+version:             3.8.0
 github:              input-output-hk/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
-copyright:           2021 IOHK
+copyright:           2021-2022 IOHK
 synopsis:            Javascript code for ghcjs build of cardano-addresses.
 category:            Cardano
 

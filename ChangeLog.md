@@ -1,3 +1,11 @@
+## [3.8.0] - 2022-02-11
+
+### Added
+
+- Adds the `cardano-address key walletid` command, which derives a
+  [`cardano-wallet` wallet ID](https://input-output-hk.github.io/cardano-wallet/design/WalletId)
+  from a wallet key.
+
 ## [3.7.0] - 2021-12-15
 
 ### Added
