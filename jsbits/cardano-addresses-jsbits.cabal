@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.5.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a1320f8b01cbdd364a4cd8ecaf7271a9fccc8e6313e7eff4b30f7e66f86b376
+-- hash: ac01f98f4de50a522b7da05f3913a4c6c5c486125f2d3c7bc05754027dec0c31
 
 name:           cardano-addresses-jsbits
-version:        3.7.0
+version:        3.8.0
 synopsis:       Javascript code for ghcjs build of cardano-addresses.
 description:    This package supports ghcjs compilation of cardano-addresses with
                 Javascript wrappers and Emscripten builds of the cryptonite C
@@ -17,7 +17,7 @@ homepage:       https://github.com/input-output-hk/cardano-addresses#readme
 bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
-copyright:      2021 IOHK
+copyright:      2021-2022 IOHK
 license:        Apache-2.0
 build-type:     Simple
 
