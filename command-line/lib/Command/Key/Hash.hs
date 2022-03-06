@@ -71,12 +71,14 @@ run Hash{outputFormat} = do
         , ( CIP5.addr_shared_xvk , CIP5.addr_shared_vkh )
         , ( CIP5.stake_shared_vk , CIP5.stake_shared_vkh )
         , ( CIP5.stake_shared_xvk, CIP5.stake_shared_vkh )
+        , ( CIP5.policy_vk       , CIP5.policy_vkh  )
+        , ( CIP5.policy_xvk      , CIP5.policy_vkh  )
         ]
     allowedPrefixes = map fst prefixes
     prefixFor = fromJust . flip lookup prefixes
 
     guardBytes hrp bytes
-        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.addr_shared_xvk, CIP5.stake_shared_xvk] = do
+        | hrp `elem` [CIP5.addr_xvk, CIP5.stake_xvk, CIP5.addr_shared_xvk, CIP5.stake_shared_xvk, CIP5.policy_xvk] = do
             when (BS.length bytes /= 64) $
                 fail "data should be a 32-byte public key with a 32-byte chain-code appended"
 

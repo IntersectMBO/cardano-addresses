@@ -79,11 +79,18 @@ $ cardano-address key public --with-chain-code < acct.xsk | cardano-address key 
 $ cardano-address key child 1855H/1815H/0H < root.xsk > policy.xsk
 policy_xsk1hr47zvxgzeeutgq50r965ygwxys86cwp8wdjqftlhan8mw6849pus6vc50dznjs5vkyjcz9usl6964u6nha88slrh8hyex74xnlfehcrkp80cp8wgzkqh22dzy7c48ekhhvvf2zz8hqakjwgfzgrjq5lx538et75
 
-$ cardano-address key child 1855H/1815H/0H < root.xsk | cardano-address key public --with-chain-code
+$ cardano-address key child 1855H/1815H/0H < root.xsk | cardano-address key public --with-chain-code > policy.xvk
 policy_xvk1e9ngmlhcwhszwyuxwc7anwk6tvzwndldz7j262rvfpd049tq74mq8vzwlszwus9vpw556yfa320nd0wccj5yy0wpmdyusjys8ypf7dgaauf0m
 
-$ cardano-address key child 1855H/1815H/0H < root.xsk | cardano-address key public --without-chain-code
+$ cardano-address key child 1855H/1815H/0H < root.xsk | cardano-address key public --without-chain-code > policy.vk
 policy_vk1e9ngmlhcwhszwyuxwc7anwk6tvzwndldz7j262rvfpd049tq74mq0ylkrs
+
+$ cardano-address key hash < policy.xvk
+policy_vkh1qpc9xly4lc7yt98gcf59kdcqcss6dda4u9g72e775yxpxeypamc
+$ cardano-address key hash < policy.vk
+policy_vkh1qpc9xly4lc7yt98gcf59kdcqcss6dda4u9g72e775yxpxeypamc
+$ cardano-address key hash --hex < policy.vk
+0070537c95fe3c4594e8c2685b3700c421a6b7b5e151e567dea10c13
 ```
 
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
