@@ -260,6 +260,7 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 -- - `addr_shared_xvk`
 -- - `stake_shared_xvk`
 -- - `policy_vk`
+-- - `policy_xvk`
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 --
@@ -282,6 +283,7 @@ keyHashFromText txt = do
         | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
         | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.policy_vk        = Just (Policy, hashCredential bytes)
+        | hrp == CIP5.policy_xvk       = Just (Policy, hashCredential $ BS.take 32 bytes)
         | otherwise                    = Nothing
 
 -- Validation level. Required level does basic check that will make sure the script
@@ -313,7 +315,7 @@ prettyErrKeyHashFromText = \case
     ErrKeyHashFromTextWrongPayload ->
         "Verification key hash must contain exactly 28 bytes."
     ErrKeyHashFromTextWrongHrp ->
-        "Invalid human-readable prefix: must be 'script_vkh'."
+        "Invalid human-readable prefix: must be 'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy'."
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
 
@@ -540,7 +542,8 @@ prettyErrValidateScript = \case
         "All keys of a script must have the same role: either payment or delegation."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
-        \lists, the verification keys should be bech32-encoded with prefix 'script_vhk', \
+        \lists, the verification keys should be bech32-encoded with prefix \
+        \'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy' and\
         \timelocks must use non-negative numbers as slots."
     NotRecommended EmptyList ->
         "The list inside a script is empty or only contains timelocks \
@@ -568,7 +571,7 @@ prettyErrValidateScriptTemplate = \case
     DuplicateXPubs ->
         "The cosigners in a script template must stand behind an unique extended public key."
     MissingCosignerXPub ->
-        "Each cosigner in a script template must have extended public key."
+        "Each cosigner in a script template must have an extended public key."
     NoCosignerInScript ->
         "The script of a template must have at least one cosigner defined."
     NoCosignerXPub ->
@@ -656,7 +659,7 @@ instance FromJSON (Script KeyHash) where
                     (Nothing, Just{}, Nothing)  -> parseAllOf v
                     (Nothing, Nothing, Just{})  -> parseAtLeast v
                     (Nothing, Nothing, Nothing) -> fail
-                        "Found object with no known key 'any', 'all' or 'some'"
+                        "Found object with unknown key. Expecting 'any', 'all' or 'some'"
                     (      _,       _,      _)  -> fail
                         "Found multiple keys 'any', 'all' and/or 'some' at the same level"
             String{} ->
@@ -728,7 +731,7 @@ instance FromJSON Cosigner where
                         fail "Cosigner number should be between '0' and '255'"
                 pure $ Cosigner num
             _ -> fail "Cosigner should be enumerated with number"
-        _ -> fail "Cosigner should be of form: cosigner#num"
+        _ -> fail "Cosigner should be of the form: cosigner#num"
 
 encodeXPub :: XPub -> Value
 encodeXPub = String . T.decodeUtf8 . encode EBase16 . xpubToBytes
@@ -768,7 +771,7 @@ instance FromJSON (Script Cosigner) where
                     (Nothing, Nothing, Just{}, Nothing)  -> parseAtLeast v
                     (Nothing, Nothing, Nothing, Just{})  -> parserCosigner v
                     (Nothing, Nothing, Nothing, Nothing) -> fail
-                        "Found object with no known key 'any', 'all', 'some' or 'cosigner'"
+                        "Found object with unknown key. Expecting 'any', 'all', 'some' or 'cosigner'"
                     (      _,       _,      _,       _)  -> fail
                         "Found multiple keys 'any', 'all', 'cosigner' and/or 'some' at the same level"
             _ ->
