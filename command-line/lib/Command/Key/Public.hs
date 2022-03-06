@@ -67,6 +67,7 @@ run Public{chainCode} = do
         , (CIP5.acct_shared_xsk, (CIP5.acct_shared_xvk, CIP5.acct_shared_vk) )
         , (CIP5.addr_shared_xsk, (CIP5.addr_shared_xvk, CIP5.addr_shared_vk) )
         , (CIP5.stake_shared_xsk, (CIP5.stake_shared_xvk, CIP5.stake_shared_vk) )
+        , (CIP5.policy_xsk, (CIP5.policy_xvk, CIP5.policy_vk) )
         ]
     allowedPrefixes = map fst prefixes
     getCC WithChainCode = fst

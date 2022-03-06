@@ -59,6 +59,7 @@ module Cardano.Codec.Bech32.Prefixes
 
       -- * Keys for 1855H
     , policy_vk
+    , policy_xvk
     , policy_vkh
     , policy_xsk
     ) where
@@ -202,6 +203,9 @@ stake_shared_vkh = [humanReadablePart|stake_shared_vkh|]
 -- Policy
 policy_vk :: HumanReadablePart
 policy_vk = [humanReadablePart|policy_vk|]
+
+policy_xvk :: HumanReadablePart
+policy_xvk = [humanReadablePart|policy_xvk|]
 
 policy_vkh :: HumanReadablePart
 policy_vkh = [humanReadablePart|policy_vkh|]
