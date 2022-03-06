@@ -60,6 +60,7 @@ module Cardano.Codec.Bech32.Prefixes
       -- * Keys for 1855H
     , policy_vk
     , policy_vkh
+    , policy_xsk
     ) where
 
 import Codec.Binary.Bech32
@@ -204,3 +205,6 @@ policy_vk = [humanReadablePart|policy_vk|]
 
 policy_vkh :: HumanReadablePart
 policy_vkh = [humanReadablePart|policy_vkh|]
+
+policy_xsk :: HumanReadablePart
+policy_xsk = [humanReadablePart|policy_xsk|]

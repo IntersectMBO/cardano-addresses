@@ -72,6 +72,17 @@ $ cardano-address key public --with-chain-code < acct.xsk | cardano-address key 
 ```
 </details>
 
+<details>
+  <summary>How to generate a private policy key (<strong>policy.xsk</strong>), a public policy key (<strong>policy.vk</strong>) and its hash (<strong>policy.vkh</strong>)</summary>
+
+```console
+$ cardano-address key child 1855H/1815H/0H < root.xsk > policy.xsk
+policy_xsk1hr47zvxgzeeutgq50r965ygwxys86cwp8wdjqftlhan8mw6849pus6vc50dznjs5vkyjcz9usl6964u6nha88slrh8hyex74xnlfehcrkp80cp8wgzkqh22dzy7c48ekhhvvf2zz8hqakjwgfzgrjq5lx538et75
+```
+
+> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
+</details>
+
 
 <details>
   <summary>How to generate a payment verification key (<strong>addr.xvk</strong>)</summary>
