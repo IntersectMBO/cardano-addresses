@@ -216,7 +216,7 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
-data KeyRole = Payment | Delegation
+data KeyRole = Payment | Delegation | Policy
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyRole
 
@@ -247,15 +247,19 @@ keyHashToText (KeyHash cred keyHash) = case cred of
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
     Delegation ->
         T.decodeUtf8 $ encode (EBech32 CIP5.stake_shared_vkh) keyHash
+    Policy ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
 -- - `addr_shared_vkh`
 -- - `stake_shared_vkh`
+-- - `policy_vkh`
 -- - `addr_shared_vk`
 -- - `stake_shared_vk`
 -- - `addr_shared_xvk`
 -- - `stake_shared_xvk`
+-- - `policy_vk`
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 --
@@ -272,10 +276,12 @@ keyHashFromText txt = do
     convertBytes hrp bytes
         | hrp == CIP5.addr_shared_vkh  = Just (Payment, bytes)
         | hrp == CIP5.stake_shared_vkh = Just (Delegation, bytes)
+        | hrp == CIP5.policy_vkh       = Just (Policy, bytes)
         | hrp == CIP5.addr_shared_vk   = Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_shared_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
         | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.policy_vk        = Just (Policy, hashCredential bytes)
         | otherwise                    = Nothing
 
 -- Validation level. Required level does basic check that will make sure the script
