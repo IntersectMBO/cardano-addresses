@@ -67,6 +67,8 @@ run Inspect = do
         , CIP5.addr_xsk
         , CIP5.stake_xvk
         , CIP5.stake_xsk
+        , CIP5.policy_xvk
+        , CIP5.policy_xsk
         , CIP5.root_shared_xvk
         , CIP5.root_shared_xsk
         , CIP5.acct_shared_xvk
