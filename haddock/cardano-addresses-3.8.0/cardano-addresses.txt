@@ -78,6 +78,10 @@ stake_shared_vk :: HumanReadablePart
 stake_shared_sk :: HumanReadablePart
 stake_shared_xvk :: HumanReadablePart
 stake_shared_xsk :: HumanReadablePart
+policy_vk :: HumanReadablePart
+policy_xvk :: HumanReadablePart
+policy_vkh :: HumanReadablePart
+policy_xsk :: HumanReadablePart
 
 module Cardano.Mnemonic
 
@@ -266,6 +270,7 @@ AccountK :: Depth
 PaymentK :: Depth
 DelegationK :: Depth
 ScriptK :: Depth
+PolicyK :: Depth
 
 -- | Type of derivation that should be used with the given indexes.
 --   
@@ -504,10 +509,11 @@ keyHashFromBytes :: (KeyRole, ByteString) -> Maybe KeyHash
 
 -- | Construct a <a>KeyHash</a> from <a>Text</a>. It should be Bech32
 --   encoded text with one of following hrp: - <tt>addr_shared_vkh</tt> -
---   <tt>stake_shared_vkh</tt> - <tt>addr_shared_vk</tt> -
---   <tt>stake_shared_vk</tt> - <tt>addr_shared_xvk</tt> -
---   <tt>stake_shared_xvk</tt> Raw keys will be hashed on the fly, whereas
---   hash that are directly provided will remain as such.
+--   <tt>stake_shared_vkh</tt> - <tt>policy_vkh</tt> -
+--   <tt>addr_shared_vk</tt> - <tt>stake_shared_vk</tt> -
+--   <tt>addr_shared_xvk</tt> - <tt>stake_shared_xvk</tt> -
+--   <tt>policy_vk</tt> - <tt>policy_xvk</tt> Raw keys will be hashed on
+--   the fly, whereas hash that are directly provided will remain as such.
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 
 -- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
@@ -1038,6 +1044,9 @@ deriveDelegationPrivateKey :: Shelley 'AccountK XPrv -> Shelley 'DelegationK XPr
 
 -- | Derives an address public key from the given account public key.
 deriveAddressPublicKey :: Shelley 'AccountK XPub -> Role -> Index 'Soft 'PaymentK -> Shelley 'PaymentK XPub
+
+-- | Derives a policy private key from the given root private key.
+derivePolicyPrivateKey :: Shelley 'RootK XPrv -> Index 'Hardened 'PolicyK -> Shelley 'PolicyK XPrv
 
 -- | The result of <a>eitherInspectAddress</a>.
 data InspectAddress
