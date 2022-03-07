@@ -44,11 +44,13 @@ spec = describeCmd [ "key", "inspect" ] $ do
     specInspectPrivate CIP5.acct_shared_xsk
     specInspectPrivate CIP5.addr_shared_xsk
     specInspectPrivate CIP5.stake_shared_xsk
+    specInspectPrivate CIP5.policy_xsk
 
     specInspectPublic CIP5.root_xvk
     specInspectPublic CIP5.acct_xvk
     specInspectPublic CIP5.addr_xvk
     specInspectPublic CIP5.stake_xvk
+    specInspectPublic CIP5.policy_xvk
     specInspectPublic CIP5.root_shared_xvk
     specInspectPublic CIP5.acct_shared_xvk
     specInspectPublic CIP5.addr_shared_xvk

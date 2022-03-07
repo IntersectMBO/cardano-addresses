@@ -26,6 +26,9 @@ spec = describeCmd [ "key", "hash" ] $ do
     specKeyPublic "shared" "addr_shared_vkh"   "1854H/1815H/0H/0/0" "--with-chain-code"
     specKeyPublic "shared" "stake_shared_vkh"  "1854H/1815H/0H/2/0" "--with-chain-code"
 
+    specKeyPublic "shelley" "policy_vkh"   "1855H/1815H/0H" "--with-chain-code"
+    specKeyPublic "shelley" "policy_vkh"   "1855H/1815H/0H" "--without-chain-code"
+
 specKeyNotPublic :: SpecWith ()
 specKeyNotPublic = it "fail if key isn't public" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""

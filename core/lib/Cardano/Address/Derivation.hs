@@ -324,7 +324,7 @@ credentialHashSize = hashDigestSize Blake2b_224
 -- are no constructors for these.
 --
 -- @since 1.0.0
-data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK
+data Depth = RootK | AccountK | PaymentK | DelegationK | ScriptK | PolicyK
 
 -- | A derivation index, with phantom-types to disambiguate derivation type.
 --

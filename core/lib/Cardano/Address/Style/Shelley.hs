@@ -41,6 +41,7 @@ module Cardano.Address.Style.Shelley
     , deriveAddressPrivateKey
     , deriveDelegationPrivateKey
     , deriveAddressPublicKey
+    , derivePolicyPrivateKey
 
       -- * Addresses
       -- $addresses
@@ -309,6 +310,18 @@ deriveAccountPrivateKey
     -> Shelley 'AccountK XPrv
 deriveAccountPrivateKey =
     Internal.deriveAccountPrivateKey
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+--
+-- | Derives a policy private key from the given root private key.
+--
+-- @since 3.9.0
+derivePolicyPrivateKey
+    :: Shelley 'RootK XPrv
+    -> Index 'Hardened 'PolicyK
+    -> Shelley 'PolicyK XPrv
+derivePolicyPrivateKey (Shelley rootXPrv) policyIx =
+    Shelley $ deriveAccountPrivateKeyShelley rootXPrv policyIx policyPurposeIndex
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 --
@@ -978,6 +991,17 @@ unsafeFromRight =
 -- Hardened derivation is used at this level.
 purposeIndex :: Word32
 purposeIndex = 0x8000073c
+
+-- Policy purpose is a constant set to 1855' (or 0x8000073c) following the CIP-1855
+-- https://github.com/cardano-foundation/CIPs/tree/master/CIP-1855
+--
+-- It indicates that the subtree of this node is used according to this
+-- specification.
+--
+-- Hardened derivation is used at this level.
+policyPurposeIndex :: Word32
+policyPurposeIndex = 0x8000073f
+
 
 -- One master node (seed) can be used for unlimited number of independent
 -- cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the

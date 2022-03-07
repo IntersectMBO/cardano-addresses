@@ -166,6 +166,9 @@ run Child{path} = do
               -- 2147485502 stands for 1854H
               if p == 2147485502 then
                   pure CIP5.acct_shared_xsk
+              -- 2147485503 stands for 1855H
+              else if p == 2147485503 then
+                  pure CIP5.policy_xsk
               else
                   pure CIP5.acct_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.acct_shared_xsk

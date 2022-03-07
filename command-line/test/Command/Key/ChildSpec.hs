@@ -22,6 +22,7 @@ spec = describeCmd [ "key", "child" ] $ do
     specChildValidPath "addr_shared_xsk" ["1854H/1815H/0H/0/0"]
     specChildValidPath "addr_shared_xsk" ["1854H/1815H/0H", "0/0"]
     specChildValidPath "addr_xsk" ["14H/42H"]
+    specChildValidPath "policy_xsk" ["1855H/1815H/0H"]
 
     specChildInvalidPath "from a parent root key" ["0H"]
     specChildInvalidPath "from a parent account key" ["1852H/1815H/0H", "0H"]

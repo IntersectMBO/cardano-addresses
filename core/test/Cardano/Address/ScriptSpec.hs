@@ -674,7 +674,7 @@ spec = do
                 `shouldBe` Left err
 
         it "Unknown keys" $ do
-            let err = "Error in $: Found object with no known key 'any', 'all' or 'some'"
+            let err = "Error in $: Found object with unknown key. Expecting 'any', 'all' or 'some'"
             Json.eitherDecode @(Script KeyHash) "{ \"patate\": {} }"
                 `shouldBe` Left err
 
