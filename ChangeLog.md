@@ -1,3 +1,9 @@
+## [3.9.0] - 2022-03-08
+
+### Added
+
+- Support for policy key derivation and hashing according to [CIP-1855](https://cips.cardano.org/cips/cip1855/).
+
 ## [3.8.0] - 2022-02-11
 
 ### Added
