@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Copyright: &#169; 2018-2020 IOHK</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Word7</span><span>
+</span><span id="line-8"></span><span>    </span><span class="hs-special">(</span><span>
+</span><span id="line-9"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-10"></span><span>      </span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier">Word7</span></a></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Conversions</span></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#toWord7"><span class="hs-identifier">toWord7</span></a></span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#toWord8"><span class="hs-identifier">toWord8</span></a></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#toWord7s"><span class="hs-identifier">toWord7s</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#toNatural"><span class="hs-identifier">toNatural</span></a></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Encode / Decode</span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#putVariableLengthNat"><span class="hs-identifier">putVariableLengthNat</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Word7.html#getVariableLengthNat"><span class="hs-identifier">getVariableLengthNat</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary.Get</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Get</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getWord8</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary.Put</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Put</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">putWord8</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bits</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">shiftL</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">shiftR</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(.&amp;.)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(.|.)</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">foldl'</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Word8</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.Natural</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Natural</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- | A 'Word7' algebraic data-type.</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- @since 2.0.0</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">newtype</span><span> </span><span id="Word7"><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-var">Word7</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Word7"><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-var">Word7</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word8</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133758"><span id="local-6989586621679133760"><span class="annot"><span class="annottext">Word7 -&gt; Word7 -&gt; Bool
+(Word7 -&gt; Word7 -&gt; Bool) -&gt; (Word7 -&gt; Word7 -&gt; Bool) -&gt; Eq Word7
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: Word7 -&gt; Word7 -&gt; Bool
+$c/= :: Word7 -&gt; Word7 -&gt; Bool
+== :: Word7 -&gt; Word7 -&gt; Bool
+$c== :: Word7 -&gt; Word7 -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133751"><span id="local-6989586621679133753"><span id="local-6989586621679133755"><span class="annot"><span class="annottext">Int -&gt; Word7 -&gt; ShowS
+[Word7] -&gt; ShowS
+Word7 -&gt; String
+(Int -&gt; Word7 -&gt; ShowS)
+-&gt; (Word7 -&gt; String) -&gt; ([Word7] -&gt; ShowS) -&gt; Show Word7
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Word7] -&gt; ShowS
+$cshowList :: [Word7] -&gt; ShowS
+show :: Word7 -&gt; String
+$cshow :: Word7 -&gt; String
+showsPrec :: Int -&gt; Word7 -&gt; ShowS
+$cshowsPrec :: Int -&gt; Word7 -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-comment">--</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- Conversions</span><span>
+</span><span id="line-47"></span><span class="hs-comment">--</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- &gt; toWord7 1</span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- &gt; Word7 1</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- &gt; toWord7 127</span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- &gt; Word7 127</span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- &gt; toWord7 128</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- &gt; Word7 0</span><span>
+</span><span id="line-54"></span><span class="annot"><a href="Data.Word7.html#toWord7"><span class="hs-identifier hs-type">toWord7</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word8</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span>
+</span><span id="line-55"></span><span id="toWord7"><span class="annot"><span class="annottext">toWord7 :: Word8 -&gt; Word7
+</span><a href="Data.Word7.html#toWord7"><span class="hs-identifier hs-var hs-var">toWord7</span></a></span></span><span> </span><span id="local-6989586621679133749"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133749"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word7
+</span><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-var">Word7</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133749"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Bits a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">.&amp;.</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0x7F</span></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Data.Word7.html#toWord8"><span class="hs-identifier hs-type">toWord8</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word8</span></span><span>
+</span><span id="line-58"></span><span id="toWord8"><span class="annot"><span class="annottext">toWord8 :: Word7 -&gt; Word8
+</span><a href="Data.Word7.html#toWord8"><span class="hs-identifier hs-var hs-var">toWord8</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span id="local-6989586621679133748"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133748"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133748"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- &gt; toWord7s 1</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- &gt; [Word7 1]</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- &gt; toWord7s 128</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- &gt; [Word7 1,Word7 0]</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- &gt; toWord7s 19099</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- &gt; [Word7 1,Word7 21,Word7 27]</span><span>
+</span><span id="line-66"></span><span class="annot"><a href="Data.Word7.html#toWord7s"><span class="hs-identifier hs-type">toWord7s</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-67"></span><span id="toWord7s"><span class="annot"><span class="annottext">toWord7s :: Natural -&gt; [Word7]
+</span><a href="Data.Word7.html#toWord7s"><span class="hs-identifier hs-var hs-var">toWord7s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Word7] -&gt; [Word7]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">([Word7] -&gt; [Word7]) -&gt; (Natural -&gt; [Word7]) -&gt; Natural -&gt; [Word7]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; [Word7]
+forall t. (Integral t, Bits t) =&gt; t -&gt; [Word7]
+</span><a href="#local-6989586621679133745"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-69"></span><span>    </span><span id="local-6989586621679133745"><span class="annot"><span class="annottext">go :: t -&gt; [Word7]
+</span><a href="#local-6989586621679133745"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span id="local-6989586621679133744"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679133744"><span class="hs-identifier hs-var">n</span></a></span></span><span>
+</span><span id="line-70"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679133744"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">t -&gt; t -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-number">0x7F</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Word8 -&gt; Word7
+</span><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-var">Word7</span></a></span><span> </span><span class="annot"><span class="annottext">(Word8 -&gt; Word7) -&gt; (t -&gt; Word8) -&gt; t -&gt; Word7
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Word8
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(t -&gt; Word7) -&gt; t -&gt; Word7
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679133744"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-71"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Word7
+</span><a href="Data.Word7.html#toWord7"><span class="hs-identifier hs-var">toWord7</span></a></span><span> </span><span class="annot"><span class="annottext">(Word8 -&gt; Word7) -&gt; (t -&gt; Word8) -&gt; t -&gt; Word7
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; Word8
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679133744"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Word7 -&gt; [Word7] -&gt; [Word7]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">t -&gt; [Word7]
+</span><a href="#local-6989586621679133745"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; Int -&gt; t
+forall a. Bits a =&gt; a -&gt; Int -&gt; a
+</span><span class="hs-identifier hs-var">shiftR</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679133744"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">7</span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><a href="Data.Word7.html#word7sToNat"><span class="hs-identifier hs-type">word7sToNat</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span>
+</span><span id="line-74"></span><span id="word7sToNat"><span class="annot"><span class="annottext">word7sToNat :: [Word7] -&gt; Natural
+</span><a href="Data.Word7.html#word7sToNat"><span class="hs-identifier hs-var hs-var">word7sToNat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Natural -&gt; Word7 -&gt; Natural) -&gt; Natural -&gt; [Word7] -&gt; Natural
+forall (t :: * -&gt; *) b a.
+Foldable t =&gt;
+(b -&gt; a -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldl'</span></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; Word7 -&gt; Natural
+forall a. (Bits a, Num a) =&gt; a -&gt; Word7 -&gt; a
+</span><a href="#local-6989586621679133741"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Natural
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-76"></span><span>    </span><span id="local-6989586621679133741"><span class="annot"><span class="annottext">f :: a -&gt; Word7 -&gt; a
+</span><a href="#local-6989586621679133741"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679133740"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679133740"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span id="local-6989586621679133739"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133739"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Int -&gt; a
+forall a. Bits a =&gt; a -&gt; Int -&gt; a
+</span><span class="hs-identifier hs-var">shiftL</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679133740"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">7</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Bits a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">.|.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; a
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133739"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><a href="Data.Word7.html#toNatural"><span class="hs-identifier hs-type">toNatural</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span>
+</span><span id="line-79"></span><span id="toNatural"><span class="annot"><span class="annottext">toNatural :: [Word7] -&gt; Natural
+</span><a href="Data.Word7.html#toNatural"><span class="hs-identifier hs-var hs-var">toNatural</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">(Natural, Int) -&gt; Natural
+forall a b. (a, b) -&gt; a
+</span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">((Natural, Int) -&gt; Natural)
+-&gt; ([Word7] -&gt; (Natural, Int)) -&gt; [Word7] -&gt; Natural
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><span class="annottext">(Word7 -&gt; (Natural, Int) -&gt; (Natural, Int))
+-&gt; (Natural, Int) -&gt; [Word7] -&gt; (Natural, Int)
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span id="local-6989586621679133737"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133737"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679133736"><span class="annot"><span class="annottext">Natural
+</span><a href="#local-6989586621679133736"><span class="hs-identifier hs-var">res</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679133735"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679133735"><span class="hs-identifier hs-var">pow</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-82"></span><span>               </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Natural
+</span><a href="#local-6989586621679133736"><span class="hs-identifier hs-var">res</span></a></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; Natural -&gt; Natural
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Natural
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133737"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span class="annot"><span class="annottext">Natural -&gt; Natural -&gt; Natural
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Natural
+</span><a href="#local-6989586621679133732"><span class="hs-identifier hs-var">limit</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679133735"><span class="hs-identifier hs-var">pow</span></a></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; Natural -&gt; Natural
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Natural
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679133735"><span class="hs-identifier hs-var">pow</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">7</span></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>          </span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Natural
+</span><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><a href="#local-6989586621679133732"><span class="hs-identifier hs-type">limit</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span>
+</span><span id="line-87"></span><span>    </span><span id="local-6989586621679133732"><span class="annot"><span class="annottext">limit :: Int -&gt; Natural
+</span><a href="#local-6989586621679133732"><span class="hs-identifier hs-var hs-var">limit</span></a></span></span><span> </span><span id="local-6989586621679133731"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679133731"><span class="hs-identifier hs-var">pow</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Natural
+</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; Int -&gt; Natural
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679133731"><span class="hs-identifier hs-var">pow</span></a></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; Natural -&gt; Natural
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Natural
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-comment">--</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- Decoding</span><span>
+</span><span id="line-91"></span><span class="hs-comment">--</span><span>
+</span><span id="line-92"></span><span class="annot"><a href="Data.Word7.html#putVariableLengthNat"><span class="hs-identifier hs-type">putVariableLengthNat</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-93"></span><span id="putVariableLengthNat"><span class="annot"><span class="annottext">putVariableLengthNat :: Natural -&gt; Put
+</span><a href="Data.Word7.html#putVariableLengthNat"><span class="hs-identifier hs-var hs-var">putVariableLengthNat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Word7] -&gt; Put
+</span><a href="#local-6989586621679133729"><span class="hs-identifier hs-var">putWord7s</span></a></span><span> </span><span class="annot"><span class="annottext">([Word7] -&gt; Put) -&gt; (Natural -&gt; [Word7]) -&gt; Natural -&gt; Put
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Natural -&gt; [Word7]
+</span><a href="Data.Word7.html#toWord7s"><span class="hs-identifier hs-var">toWord7s</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-95"></span><span>    </span><span class="annot"><a href="#local-6989586621679133729"><span class="hs-identifier hs-type">putWord7s</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Put</span></span><span>
+</span><span id="line-96"></span><span>    </span><span id="local-6989586621679133729"><span class="annot"><span class="annottext">putWord7s :: [Word7] -&gt; Put
+</span><a href="#local-6989586621679133729"><span class="hs-identifier hs-var hs-var">putWord7s</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; Put
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>    </span><span class="annot"><a href="#local-6989586621679133729"><span class="hs-identifier hs-var">putWord7s</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span id="local-6989586621679133728"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133728"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133728"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><a href="#local-6989586621679133729"><span class="hs-identifier hs-var">putWord7s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span> </span><span id="local-6989586621679133727"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133727"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679133726"><span class="annot"><span class="annottext">[Word7]
+</span><a href="#local-6989586621679133726"><span class="hs-identifier hs-var">xs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Put
+</span><span class="hs-identifier hs-var">putWord8</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133727"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Bits a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">.|.</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0x80</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Put -&gt; Put -&gt; Put
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; m b -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Word7] -&gt; Put
+</span><a href="#local-6989586621679133729"><span class="hs-identifier hs-var">putWord7s</span></a></span><span> </span><span class="annot"><span class="annottext">[Word7]
+</span><a href="#local-6989586621679133726"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span class="annot"><a href="Data.Word7.html#getVariableLengthNat"><span class="hs-identifier hs-type">getVariableLengthNat</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Get</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Natural</span></span><span>
+</span><span id="line-101"></span><span id="getVariableLengthNat"><span class="annot"><span class="annottext">getVariableLengthNat :: Get Natural
+</span><a href="Data.Word7.html#getVariableLengthNat"><span class="hs-identifier hs-var hs-var">getVariableLengthNat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Word7] -&gt; Natural
+</span><a href="Data.Word7.html#word7sToNat"><span class="hs-identifier hs-var">word7sToNat</span></a></span><span> </span><span class="annot"><span class="annottext">([Word7] -&gt; Natural) -&gt; Get [Word7] -&gt; Get Natural
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Get [Word7]
+</span><a href="#local-6989586621679133724"><span class="hs-identifier hs-var">getWord7s</span></a></span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><a href="#local-6989586621679133724"><span class="hs-identifier hs-type">getWord7s</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Get</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-type">Word7</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-104"></span><span>    </span><span id="local-6989586621679133724"><span class="annot"><span class="annottext">getWord7s :: Get [Word7]
+</span><a href="#local-6989586621679133724"><span class="hs-identifier hs-var hs-var">getWord7s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-105"></span><span>      </span><span id="local-6989586621679133723"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133723"><span class="hs-identifier hs-var">next</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Get Word8
+</span><span class="hs-identifier hs-var">getWord8</span></span><span>
+</span><span id="line-106"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133723"><span class="hs-identifier hs-var">next</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Word8
+forall a. Bits a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">.&amp;.</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0x80</span></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-107"></span><span>        </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0x80</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">:</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Word7
+</span><a href="Data.Word7.html#toWord7"><span class="hs-identifier hs-var">toWord7</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133723"><span class="hs-identifier hs-var">next</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([Word7] -&gt; [Word7]) -&gt; Get [Word7] -&gt; Get [Word7]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Get [Word7]
+</span><a href="#local-6989586621679133724"><span class="hs-identifier hs-var">getWord7s</span></a></span><span>
+</span><span id="line-108"></span><span>        </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Word7] -&gt; Get [Word7]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Word8 -&gt; Word7
+</span><a href="Data.Word7.html#Word7"><span class="hs-identifier hs-var">Word7</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133723"><span class="hs-identifier hs-var">next</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-109"></span></pre></body></html>

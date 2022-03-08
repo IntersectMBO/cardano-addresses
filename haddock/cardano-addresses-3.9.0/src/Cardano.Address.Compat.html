@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Copyright: &#169; 2018-2021 IOHK</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-6"></span><span class="hs-comment">--</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- A compatibility function for the GHCJS build.</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Compat</span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Compat.html#ghcjsBuildSupport"><span class="hs-identifier">ghcjsBuildSupport</span></a></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span class="hs-cpp">
+
+#ifdef ghcjs_HOST_OS
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Cardano.Address.Jsbits</span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-identifier">addJsbitsDependency</span><span> </span><span class="hs-special">)</span><span class="hs-cpp">
+#endif
+</span><span>
+</span><span id="line-20"></span><span class="hs-comment">-- | This function must be used somewhere, so that external Javascript files are</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- correctly linked in the GHCJS build.</span><span>
+</span><span id="line-22"></span><span class="hs-comment">--</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- For non-GHCJS, it has no effect.</span><span>
+</span><span id="line-24"></span><span class="annot"><a href="Cardano.Address.Compat.html#ghcjsBuildSupport"><span class="hs-identifier hs-type">ghcjsBuildSupport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-cpp">
+#ifdef ghcjs_HOST_OS
+</span><span class="hs-identifier">ghcjsBuildSupport</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">addJsbitsDependency</span><span class="hs-cpp">
+#else
+</span><span id="ghcjsBuildSupport"><span class="annot"><span class="annottext">ghcjsBuildSupport :: IO ()
+</span><a href="Cardano.Address.Compat.html#ghcjsBuildSupport"><span class="hs-identifier hs-var hs-var">ghcjsBuildSupport</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-cpp">
+#endif
+</span></pre></body></html>

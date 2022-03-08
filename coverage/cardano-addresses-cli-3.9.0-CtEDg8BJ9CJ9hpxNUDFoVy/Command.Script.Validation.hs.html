@@ -1,0 +1,130 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    3 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Command.Script.Validation
+<span class="lineno">    8 </span>    ( Cmd
+<span class="lineno">    9 </span>    , mod
+<span class="lineno">   10 </span>    , run
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>    ) where
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>import Prelude hiding
+<span class="lineno">   15 </span>    ( mod )
+<span class="lineno">   16 </span>
+<span class="lineno">   17 </span>import Cardano.Address.Script
+<span class="lineno">   18 </span>    ( KeyHash
+<span class="lineno">   19 </span>    , Script (..)
+<span class="lineno">   20 </span>    , ValidationLevel (..)
+<span class="lineno">   21 </span>    , prettyErrValidateScript
+<span class="lineno">   22 </span>    , validateScript
+<span class="lineno">   23 </span>    )
+<span class="lineno">   24 </span>import Data.Maybe
+<span class="lineno">   25 </span>    ( fromMaybe )
+<span class="lineno">   26 </span>import Options.Applicative
+<span class="lineno">   27 </span>    ( CommandFields
+<span class="lineno">   28 </span>    , Mod
+<span class="lineno">   29 </span>    , command
+<span class="lineno">   30 </span>    , footerDoc
+<span class="lineno">   31 </span>    , header
+<span class="lineno">   32 </span>    , helper
+<span class="lineno">   33 </span>    , info
+<span class="lineno">   34 </span>    , optional
+<span class="lineno">   35 </span>    , progDesc
+<span class="lineno">   36 </span>    )
+<span class="lineno">   37 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   38 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   39 </span>import Options.Applicative.Script
+<span class="lineno">   40 </span>    ( levelOpt, scriptArg )
+<span class="lineno">   41 </span>import System.IO
+<span class="lineno">   42 </span>    ( stderr, stdout )
+<span class="lineno">   43 </span>import System.IO.Extra
+<span class="lineno">   44 </span>    ( hPutString, progName )
+<span class="lineno">   45 </span>
+<span class="lineno">   46 </span>data Cmd = Cmd
+<span class="lineno">   47 </span>    { <span class="nottickedoff"><span class="decl"><span class="nottickedoff">script</span></span></span> :: Script KeyHash
+<span class="lineno">   48 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">validationLevel</span></span></span> :: Maybe ValidationLevel
+<span class="lineno">   49 </span>    } deriving (<span class="decl"><span class="nottickedoff">Show</span></span>)
+<span class="lineno">   50 </span>
+<span class="lineno">   51 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   52 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;validate&quot; $</span>
+<span class="lineno">   53 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   54 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Validate a script&quot;</span>
+<span class="lineno">   55 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Choose a required (default) or recommended validation of a script.&quot;</span>
+<span class="lineno">   56 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   57 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The script is taken as argument. To have required validation pass '--required' or nothing.&quot;</span>
+<span class="lineno">   58 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;To have recommended validation pass '--recommended'. Recommended validation adds more validations&quot;</span>
+<span class="lineno">   59 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;on top of the required one, in particular:&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">            </span><span class="istickedoff">, string &quot; - check if 'all' is non-empty&quot;</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">, string &quot; - check if there are redundant timelocks in a given level&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">, string &quot; - check if there are no duplicated verification keys in a given level&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">, string &quot; - check if 'at_least' coeffcient is positive&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, string &quot; - check if 'all', 'any' are non-empty and `'at_least' has no less elements in the list than the coeffcient after timelocks are filtered out. &quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;The validation of the script does not take into account transaction validity. We assume that the user will take care of this.&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate 'all&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;, addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;]'&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Validated.&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate --required 'all&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;, addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44&quot;</span>
+<span class="lineno">   77 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;]'&quot;</span>
+<span class="lineno">   78 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Validated.&quot;</span>
+<span class="lineno">   79 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   80 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate --recommended 'all []'&quot;</span>
+<span class="lineno">   81 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Not validated: The list inside a script is empty or only contains timelocks (which is not recommended).&quot;</span>
+<span class="lineno">   82 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   83 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate 'at_least 1 [active_from 11, active_until 16]'&quot;</span>
+<span class="lineno">   84 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Validated.&quot;</span>
+<span class="lineno">   85 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   86 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate 'all&quot;</span>
+<span class="lineno">   87 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;, addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   89 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;]'&quot;</span>
+<span class="lineno">   90 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Validated.&quot;</span>
+<span class="lineno">   91 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   92 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ progName&lt;&gt;&quot; script validate --recommended 'all&quot;</span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;[ addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   94 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;, addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3&quot;</span>
+<span class="lineno">   95 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string &quot;]'&quot;</span>
+<span class="lineno">   96 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;Not validated: The list inside a script has duplicate keys (which is not recommended).&quot;</span>
+<span class="lineno">   97 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   98 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; scriptArg</span>
+<span class="lineno">  101 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; optional levelOpt</span></span>
+<span class="lineno">  102 </span>
+<span class="lineno">  103 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">  104 </span><span class="decl"><span class="istickedoff">run Cmd{script,validationLevel} =</span>
+<span class="lineno">  105 </span><span class="spaces">    </span><span class="istickedoff">case validateScript (fromMaybe <span class="nottickedoff">RequiredValidation</span> validationLevel) script of</span>
+<span class="lineno">  106 </span><span class="spaces">        </span><span class="istickedoff">Left err -&gt; hPutString stderr $ &quot;Not validated: &quot; &lt;&gt; prettyErrValidateScript err</span>
+<span class="lineno">  107 </span><span class="spaces">        </span><span class="istickedoff">Right _ -&gt; hPutString stdout &quot;Validated.&quot;</span></span>
+
+</pre>
+</body>
+</html>
