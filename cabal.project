@@ -32,7 +32,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/ghcjs/jsaddle
-    tag: 9cb3534b6b2dc948c6fa88fce281e59e904b43e4
+    tag: c4b7c6cebf09447a25105d7c839914d7378bf5a7
     --sha256: 1drgrgjnxamq8vh6mrqg62xcj7vb9makpy89bls485d6ckigv3ha
     subdir: jsaddle
 
@@ -60,3 +60,6 @@ allow-newer:
   , stm:base
 
 test-show-details: direct
+
+allow-newer:
+  *:aeson

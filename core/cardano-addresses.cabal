@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 2.4
 
 -- This file has been generated from package.yaml by hpack version 0.34.6.
 --
@@ -53,8 +53,8 @@ library
       NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
-      aeson
-    , base >=4.7 && <5
+      base >=4.7 && <5
+    , aeson ^>= 1.5.6.0 || ^>= 2.0.3.0
     , base58-bytestring
     , basement
     , bech32
@@ -72,6 +72,7 @@ library
     , extra
     , fmt
     , hashable
+    , hw-aeson >= 0.1.5
     , memory
     , text
     , unordered-containers
