@@ -45,3 +45,6 @@ jobs:
 
       - name: Build
         run: cabal build all --enable-tests
+
+      - name: Test
+        run: cabal test cardano-addresses:unit cardano-addresses-cli:unit --enable-tests
