@@ -455,11 +455,6 @@ if(typeof __dirname == 'undefined') {
 }
 
 // TODO: stub, add real implementation
-function h$sysconf() {
-  return 0;
-}
-
-// TODO: stub, add real implementation
 function h$getpwuid_r(uid, pwd_d, pwd_o, buf_d, buf_o, buflen, result_d, result_o) {
   var i, name = h$encodeUtf8("user"), max = Math.min(72, pwd_d.len);
   if(!result_d.arr) result_d.arr = [];
