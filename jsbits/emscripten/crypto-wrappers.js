@@ -454,12 +454,6 @@ if(typeof __dirname == 'undefined') {
   var __dirname = '/';
 }
 
-// TODO: remove
-// TODO: stub, add real implementation
-function h$geteuid() {
-  return 1;
-}
-
 // TODO: stub, add real implementation
 function h$sysconf() {
   return 0;
