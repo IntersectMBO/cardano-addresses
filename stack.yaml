@@ -13,10 +13,17 @@ extra-deps:
 - hw-aeson-0.1.5.0
 - git: https://github.com/input-output-hk/cardano-crypto
   commit: 07397f0e50da97eaa0575d93bee7ac4b2b2576ec
+- git: https://github.com/ghcjs/jsaddle
+  commit: c4b7c6cebf09447a25105d7c839914d7378bf5a7
+  subdirs:
+  - jsaddle
 
-# dependencies for testing.
-- hjsonpointer-1.5.0
-- hjsonschema-1.10.0
+- git: https://github.com/input-output-hk/hjsonpointer
+  commit: bb99294424e0c5b3c2942c743b545e4b01c12ce8
+
+- git: https://github.com/input-output-hk/hjsonschema
+  commit: 1546af7fc267d5eea805ef223dd2b59ac120b784
+
 - string-interpolate-0.3.0.2
 - hspec-golden-0.1.0.3
 - pretty-simple-4.0.0.0
