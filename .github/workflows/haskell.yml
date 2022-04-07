@@ -1,0 +1,53 @@
+name: Binaries
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ghc: ["8.10.7"]
+        os: [ubuntu-latest]
+        aeson: ["1.5.6.0", "2.0.3.0"]
+        exclude:
+          - ghc: "9.2.2"
+            aeson: "1.5.6.0"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: haskell/actions/setup@v1
+        id: setup-haskell
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 3.6.2.0
+
+      - name: Configure project
+        run: |
+          # We can't update the index state yet because nix flake is locked to an earlier one.
+          sed -i 's|^index-state:.*$|index-state: 2022-04-04T00:00:00Z|g' cabal.project
+          cabal configure --enable-tests --write-ghc-environment-files=ghc8.4.4+ --constraint="aeson == ${{ matrix.aeson }}"
+
+      - uses: actions/cache@v2
+        name: Cache cabal store
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: cache-${{ runner.os }}-${{ matrix.ghc }}
+          restore-keys: cache-${{ runner.os }}-${{ matrix.ghc }}
+
+      - name: Build
+        run: cabal build all --enable-tests
+
+      - name: Test
+        run: cabal test cardano-addresses:unit cardano-addresses-cli:unit --enable-tests
