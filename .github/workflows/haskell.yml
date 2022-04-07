@@ -17,12 +17,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["9.2.2", "9.0.2", "8.10.7"]
+        ghc: ["8.10.7"]
         os: [ubuntu-latest]
         aeson: ["1.5.6.0", "2.0.3.0"]
-        exclude:
-          - ghc: "9.2.2"
-            aeson: "1.5.6.0"
 
     steps:
       - uses: actions/checkout@v2
