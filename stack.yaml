@@ -10,6 +10,7 @@ extra-deps:
 - base58-bytestring-0.1.0
 - bech32-1.1.1
 - bech32-th-1.1.1
+- hw-aeson-0.1.5.0
 - git: https://github.com/input-output-hk/cardano-crypto
   commit: 07397f0e50da97eaa0575d93bee7ac4b2b2576ec
 
