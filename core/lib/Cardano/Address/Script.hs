@@ -99,6 +99,8 @@ import Data.Word
     ( Word8 )
 import GHC.Generics
     ( Generic )
+import qualified HaskellWorks.Data.Aeson.Compat as J
+import qualified HaskellWorks.Data.Aeson.Compat.Map as JM
 import Numeric.Natural
     ( Natural )
 
@@ -108,7 +110,6 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
-import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as Set
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map
@@ -750,7 +751,7 @@ parseXPub = withText "XPub" $ \txt ->
 
 instance ToJSON ScriptTemplate where
     toJSON (ScriptTemplate cosigners' template') =
-        object [ "cosigners" .= object (fmap toPair (Map.toList cosigners'))
+        object [ "cosigners" .= object (fmap (first J.textToKey . toPair) (Map.toList cosigners'))
                , "template" .= toJSON template']
       where
         toPair (cosigner', xpub) =
@@ -788,9 +789,9 @@ instance FromJSON ScriptTemplate where
         ScriptTemplate <$> (Map.fromList <$> cosigners') <*> template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
-            case HM.toList o of
+            case JM.toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for (reverse cs) $ \(numTxt, str) -> do
-                    cosigner' <- parseJSON @Cosigner (String numTxt)
+                    cosigner' <- parseJSON @Cosigner (String (J.keyToText numTxt))
                     xpub <- parseXPub str
                     pure (cosigner', xpub)

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f30f9f522077c62c5cb3d84870f93f7e17356724b5df8edb6f1a8c14c74bf72
+-- hash: 71777847181ac1ed3a185c266d10fd57f8a0262f63c0976da3b9d6526f923038
 
 name:           cardano-addresses
 version:        3.10.0
@@ -72,6 +72,7 @@ library
     , extra
     , fmt
     , hashable
+    , hw-aeson
     , memory
     , text
     , unordered-containers
