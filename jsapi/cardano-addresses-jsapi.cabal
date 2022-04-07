@@ -41,7 +41,7 @@ library
     , cardano-addresses
     , cardano-addresses-cli
     , exceptions
-    , jsaddle
+    , jsaddle >= 0.9.8.2
     , lens
     , mtl
     , text
@@ -63,7 +63,7 @@ executable cardano-addresses-jsapi
   build-depends:
       base >=4.7 && <5
     , cardano-addresses-jsapi
-    , jsaddle
+    , jsaddle >= 0.9.8.2
     , jsaddle-warp
     , lens
     , text
@@ -84,7 +84,7 @@ test-suite jsapi-test
   build-depends:
       base >=4.7 && <5
     , cardano-addresses-jsapi
-    , jsaddle
+    , jsaddle >= 0.9.8.2
     , jsaddle-warp
     , lens
     , text
