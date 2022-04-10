@@ -19,6 +19,9 @@ jobs:
       matrix:
         ghc: ["8.10.7"]
         os: [ubuntu-latest]
+        # TODO This is used to test the project compiles with aeson 1 & 2.  This can be moved when the
+        # library is modified to work strictly with aeson-2 only, which can only be done once all
+        # downstream projects have upgraded to aeson 2.
         aeson: ["1.5.6.0", "2.0.3.0"]
         exclude:
           - ghc: "9.2.2"
