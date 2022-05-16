@@ -44,45 +44,12 @@ spec = do
     requireAllOfParserTests @Cosigner requireCosignerOfParser
         [(cosigner0,cosigner0Txt), (cosigner1,cosigner1Txt), (cosigner2,cosigner2Txt)]
 
+    requireAnyOfParserTests @KeyHash requireSignatureOfParser
+        [(kh1,verKeyH1), (kh2,verKeyH2), (kh3,verKeyH3)]
+    requireAnyOfParserTests @Cosigner requireCosignerOfParser
+        [(cosigner0,cosigner0Txt), (cosigner1,cosigner1Txt), (cosigner2,cosigner2Txt)]
+
 {--
-    describe "requireAnyOfParser : unit tests" $ do
-        let expected1 = RequireAnyOf
-                [ RequireSignatureOf kh1 ]
-        valuesParserUnitTest requireAnyOfParser script5 expected1
-        valuesParserUnitTest scriptParser script5 expected1
-
-        valuesParserUnitTest requireAnyOfParser script6 expected1
-        valuesParserUnitTest scriptParser script6 expected1
-
-        let expected2 = RequireAnyOf
-                [ RequireSignatureOf kh1
-                , RequireSignatureOf kh2 ]
-        valuesParserUnitTest requireAnyOfParser script7 expected2
-        valuesParserUnitTest scriptParser script7 expected2
-
-        let expected3 = RequireAnyOf
-                [ RequireSignatureOf kh1
-                , RequireSignatureOf kh2
-                , RequireSignatureOf kh3 ]
-        valuesParserUnitTest requireAnyOfParser script8 expected3
-        valuesParserUnitTest scriptParser script8 expected3
-
-        let expected4 = RequireAnyOf
-                [ RequireSignatureOf kh1
-                , RequireAllOf
-                  [ RequireSignatureOf kh2
-                  , RequireSignatureOf kh3 ]
-                ]
-        valuesParserUnitTest requireAnyOfParser script9 expected4
-        valuesParserUnitTest scriptParser script9 expected4
-
-        let expected5 = RequireAnyOf
-                [ RequireSignatureOf kh1
-                , RequireAllOf []
-                ]
-        valuesParserUnitTest requireAnyOfParser script13 expected5
-        valuesParserUnitTest scriptParser script13 expected5
-
     describe "requireAtLeastOfParser : unit tests" $ do
         let expected1 = RequireSomeOf 1
                 [ RequireSignatureOf kh1
@@ -200,6 +167,51 @@ spec = do
             let expected4 = RequireAllOf []
             valuesParserUnitTest (requireAllOfParser parser) script12 expected4
             valuesParserUnitTest (scriptParser parser) script12 expected4
+
+    requireAnyOfParserTests
+        :: (Eq a, Show a)
+        => ReadP (Script a)
+        -> [(a, Text)]
+        -> SpecWith ()
+    requireAnyOfParserTests parser objTxts = do
+        let [(obj1, txt1),(obj2, txt2),(obj3, txt3)] = objTxts
+        describe "requireAnyOfParser : unit tests" $ do
+            let expected1 = RequireAnyOf
+                    [ RequireSignatureOf obj1 ]
+            valuesParserUnitTest (requireAnyOfParser parser) (script5 txt1) expected1
+            valuesParserUnitTest (scriptParser parser) (script5 txt1) expected1
+
+            valuesParserUnitTest (requireAnyOfParser parser) (script6 txt1) expected1
+            valuesParserUnitTest (scriptParser parser) (script6 txt1) expected1
+
+            let expected2 = RequireAnyOf
+                    [ RequireSignatureOf obj1
+                    , RequireSignatureOf obj2 ]
+            valuesParserUnitTest (requireAnyOfParser parser) (script7 txt1 txt2) expected2
+            valuesParserUnitTest (scriptParser parser) (script7 txt1 txt2) expected2
+
+            let expected3 = RequireAnyOf
+                    [ RequireSignatureOf obj1
+                    , RequireSignatureOf obj2
+                    , RequireSignatureOf obj3 ]
+            valuesParserUnitTest (requireAnyOfParser parser) (script8 txt1 txt2 txt3) expected3
+            valuesParserUnitTest (scriptParser parser) (script8 txt1 txt2 txt3) expected3
+
+            let expected4 = RequireAnyOf
+                    [ RequireSignatureOf obj1
+                    , RequireAllOf
+                      [ RequireSignatureOf obj2
+                      , RequireSignatureOf obj3 ]
+                    ]
+            valuesParserUnitTest (requireAnyOfParser parser) (script9 txt1 txt2 txt3) expected4
+            valuesParserUnitTest (scriptParser parser) (script9 txt1 txt2 txt3) expected4
+
+            let expected5 = RequireAnyOf
+                    [ RequireSignatureOf obj1
+                    , RequireAllOf []
+                    ]
+            valuesParserUnitTest (requireAnyOfParser parser) (script13 txt1) expected5
+            valuesParserUnitTest (scriptParser parser) (script13 txt1) expected5
 
 
 valuesParserUnitTest
