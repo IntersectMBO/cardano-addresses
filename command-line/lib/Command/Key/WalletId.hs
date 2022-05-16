@@ -35,6 +35,8 @@ import System.IO.Extra
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 data Cmd = WalletId
     { spending :: Script Cosigner
@@ -69,21 +71,30 @@ run :: Cmd -> IO ()
 run WalletId{spending,staking} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    hPutBytes stdout (hashWalletId $ payloadToHash hrp bytes) EBase16
+    let bs = payloadToHash hrp bytes
+    let walletid =
+            if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
+                hashWalletId $
+                bs <>
+                (scriptTemplateToBs spending) <>
+                (scriptTemplateToBs staking)
+            else
+                hashWalletId bs
+    hPutBytes stdout walletid EBase16
   where
     allowedPrefixes =
         [ CIP5.root_xsk
         , CIP5.root_xvk
-        , CIP5.root_shared_xsk
-        , CIP5.root_shared_xvk
         , CIP5.acct_xvk
         , CIP5.acct_xsk
         , CIP5.acct_shared_xvk
         , CIP5.acct_shared_xsk
         ]
 
+    scriptTemplateToBs = T.encodeUtf8 . T.pack . show
+
     payloadToHash hrp bs
-        | hrp `elem` [CIP5.root_xsk, CIP5.root_shared_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
+        | hrp `elem` [CIP5.root_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
               case xprvFromBytes bs of
                   Just xprv ->  xpubToBytes . toXPub $ xprv
                   Nothing -> "96-byte extended private key is invalid due to 'scalarDecodeLong' failure from cryptonite"
