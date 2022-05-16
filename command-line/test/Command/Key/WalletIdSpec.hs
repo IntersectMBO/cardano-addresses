@@ -45,7 +45,6 @@ spec = describeCmd [ "key", "walletid" ] $ do
 
     specRootKeyPubPrvHasEqualWalletId "shelley"
     specRootKeyPubPrvHasEqualWalletId "icarus"
-    specRootKeyPubPrvHasEqualWalletId "shared"
 
     specAcctKeyPubPrvHasEqualWalletId "shelley" "1852H/1815H/0H"
     specAcctKeyPubPrvHasEqualWalletId "icarus" "1852H/1815H/0H"
