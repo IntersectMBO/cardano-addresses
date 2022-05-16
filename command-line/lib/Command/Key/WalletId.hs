@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -15,6 +16,8 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( hashWalletId, toXPub, xprvFromBytes, xpubToBytes )
+import Cardano.Address.Script
+    ( Cosigner, Script )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
@@ -23,6 +26,8 @@ import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
     ( string )
+import Options.Applicative.Script
+    ( scriptTemplateSpendingArg, scriptTemplateStakingArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -32,7 +37,9 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
 data Cmd = WalletId
-    deriving (Show)
+    { spending :: Script Cosigner
+    , staking :: Script Cosigner
+    } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "walletid" $
@@ -54,10 +61,12 @@ mod liftCmd = command "walletid" $
             , "by cosigner#number.\n"
             ])
   where
-    parser = pure WalletId
+    parser = WalletId
+        <$> scriptTemplateSpendingArg
+        <*> scriptTemplateStakingArg
 
 run :: Cmd -> IO ()
-run WalletId = do
+run WalletId{spending,staking} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
     hPutBytes stdout (hashWalletId $ payloadToHash hrp bytes) EBase16
