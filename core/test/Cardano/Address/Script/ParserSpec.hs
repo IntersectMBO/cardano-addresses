@@ -8,11 +8,13 @@ module Cardano.Address.Script.ParserSpec
 import Prelude
 
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole (..), Script (..) )
+    ( Cosigner (..), KeyHash (..), KeyRole (..), Script (..) )
 import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
+    , requireCosignerOfParser
+    , requireCosignerOfParser
     , requireSignatureOfParser
     , scriptParser
     )
@@ -54,6 +56,19 @@ spec = do
     let script14 = "all ["<>verKeyH1<>", active_from 120]"
     let script15 = "all ["<>verKeyH1<>", active_until 150]"
     let script16 = "all ["<>verKeyH1<>", active_from 120, active_until 125]"
+
+    let cosigner0Txt = "cosigner#0" :: Text
+    let cosigner0 = Cosigner 0
+
+    describe "requireCosignerOfParser : unit tests" $ do
+        valuesParserUnitTest requireCosignerOfParser cosigner0Txt
+            (RequireSignatureOf cosigner0)
+        valuesParserUnitTest requireCosignerOfParser (cosigner0Txt <> " ")
+            (RequireSignatureOf cosigner0)
+        valuesParserUnitTest requireCosignerOfParser (cosigner0Txt <>", ")
+            (RequireSignatureOf cosigner0)
+        valuesParserUnitTest requireCosignerOfParser ("        " <> cosigner0Txt <>", ")
+            (RequireSignatureOf cosigner0)
 
     describe "requireSignatureOfParser : unit tests" $ do
         valuesParserUnitTest requireSignatureOfParser verKeyH1

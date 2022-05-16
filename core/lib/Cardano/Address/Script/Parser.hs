@@ -16,12 +16,14 @@ module Cardano.Address.Script.Parser
     , requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
+    , requireCosignerOfParser
     ) where
 
 import Prelude
 
 import Cardano.Address.Script
-    ( ErrValidateScript (..)
+    ( Cosigner (..)
+    , ErrValidateScript (..)
     , KeyHash
     , Script (..)
     , keyHashFromText
@@ -92,6 +94,13 @@ requireSignatureOfParser = do
     case keyHashFromText (T.pack verKeyStr) of
         Left e  -> fail (prettyErrKeyHashFromText e)
         Right h -> pure (RequireSignatureOf h)
+
+requireCosignerOfParser :: ReadP (Script Cosigner)
+requireCosignerOfParser = do
+    P.skipSpaces
+    _identifier <- P.string "cosigner#"
+    cosignerid <- fromInteger . read <$> P.munch1 isDigit
+    pure $ RequireSignatureOf $ Cosigner cosignerid
 
 requireAllOfParser :: ReadP (Script KeyHash)
 requireAllOfParser = do
