@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Cardano.Address.Script.ParserSpec
     ( spec
@@ -33,33 +34,6 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
-    let verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
-    let kh1 = KeyHash Payment (unBech32 verKeyH1)
-    let verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp" :: Text
-    let kh2 = KeyHash Payment (unBech32 verKeyH2)
-    let verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9" :: Text
-    let kh3 = KeyHash Payment (unBech32 verKeyH3)
-
-    let script1 = "all ["<>verKeyH1<>"]"
-    let script2 = " all   [ "<>verKeyH1<>"  ] "
-    let script3 = "all ["<>verKeyH1<>", "<>verKeyH2<>"]"
-    let script4 = "all ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
-    let script5 = "any ["<>verKeyH1<>"]"
-    let script6 = " any   [ "<>verKeyH1<>"  ] "
-    let script7 = "any ["<>verKeyH1<>", "<>verKeyH2<>"]"
-    let script8 = "any ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
-    let script9 = "any ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
-    let script10 = "at_least 1 ["<>verKeyH1<>", "<>verKeyH2<>","<>verKeyH3<>"]"
-    let script11 = "at_least 1 ["<>verKeyH1<>", all ["<>verKeyH2<>","<>verKeyH3<>"]]"
-    let script12 = "all []"
-    let script13 = "any ["<>verKeyH1<>", all [   ]]"
-    let script14 = "all ["<>verKeyH1<>", active_from 120]"
-    let script15 = "all ["<>verKeyH1<>", active_until 150]"
-    let script16 = "all ["<>verKeyH1<>", active_from 120, active_until 125]"
-
-    let cosigner0Txt = "cosigner#0" :: Text
-    let cosigner0 = Cosigner 0
-
     describe "requireCosignerOfParser : unit tests" $ do
         valuesParserUnitTest requireCosignerOfParser cosigner0Txt
             (RequireSignatureOf cosigner0)
@@ -80,32 +54,13 @@ spec = do
         valuesParserUnitTest requireSignatureOfParser ("        " <> verKeyH1 <>", ")
             (RequireSignatureOf kh1)
 
-    describe "requireAllOfParser : unit tests" $ do
-        let expected1 = RequireAllOf
-                [ RequireSignatureOf kh1 ]
-        valuesParserUnitTest requireAllOfParser script1 expected1
-        valuesParserUnitTest scriptParser script1 expected1
+    requireAllOfParserTests @KeyHash requireSignatureOfParser
+        [(kh1,verKeyH1), (kh2,verKeyH2), (kh3,verKeyH3)]
 
-        valuesParserUnitTest requireAllOfParser script2 expected1
-        valuesParserUnitTest scriptParser script2 expected1
+    requireAllOfParserTests @Cosigner requireCosignerOfParser
+        [(cosigner0,cosigner0Txt), (cosigner1,cosigner1Txt), (cosigner2,cosigner2Txt)]
 
-        let expected2 = RequireAllOf
-                [ RequireSignatureOf kh1
-                , RequireSignatureOf kh2 ]
-        valuesParserUnitTest requireAllOfParser script3 expected2
-        valuesParserUnitTest scriptParser script3 expected2
-
-        let expected3 = RequireAllOf
-                [ RequireSignatureOf kh1
-                , RequireSignatureOf kh2
-                , RequireSignatureOf kh3 ]
-        valuesParserUnitTest requireAllOfParser script4 expected3
-        valuesParserUnitTest scriptParser script4 expected3
-
-        let expected4 = RequireAllOf []
-        valuesParserUnitTest requireAllOfParser script12 expected4
-        valuesParserUnitTest scriptParser script12 expected4
-
+{--
     describe "requireAnyOfParser : unit tests" $ do
         let expected1 = RequireAnyOf
                 [ RequireSignatureOf kh1 ]
@@ -179,6 +134,71 @@ spec = do
                 , ActiveFromSlot 120
                 , ActiveUntilSlot 125 ]
         valuesParserUnitTest scriptParser script16 expected
+--}
+  where
+    verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
+    kh1 = KeyHash Payment (unBech32 verKeyH1)
+    verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp" :: Text
+    kh2 = KeyHash Payment (unBech32 verKeyH2)
+    verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9" :: Text
+    kh3 = KeyHash Payment (unBech32 verKeyH3)
+
+    script1 txt = "all ["<>txt<>"]"
+    script2 txt = " all   [ "<>txt<>"  ] "
+    script3 txt1 txt2 = "all ["<>txt1<>", "<>txt2<>"]"
+    script4 txt1 txt2 txt3 = "all ["<>txt1<>", "<>txt2<>","<>txt3<>"]"
+    script5 txt = "any ["<>txt<>"]"
+    script6 txt = " any   [ "<>txt<>"  ] "
+    script7 txt1 txt2 = "any ["<>txt1<>", "<>txt2<>"]"
+    script8 txt1 txt2 txt3 = "any ["<>txt1<>", "<>txt2<>","<>txt3<>"]"
+    script9 txt1 txt2 txt3 = "any ["<>txt1<>", all ["<>txt2<>","<>txt3<>"]]"
+    script10 txt1 txt2 txt3 = "at_least 1 ["<>txt1<>", "<>txt2<>","<>txt3<>"]"
+    script11 txt1 txt2 txt3 = "at_least 1 ["<>txt1<>", all ["<>txt2<>","<>txt3<>"]]"
+    script12 = "all []"
+    script13 txt = "any ["<>txt<>", all [   ]]"
+    script14 txt = "all ["<>txt<>", active_from 120]"
+    script15 txt = "all ["<>txt<>", active_until 150]"
+    script16 txt = "all ["<>txt<>", active_from 120, active_until 125]"
+
+    cosigner0Txt = "cosigner#0" :: Text
+    cosigner0 = Cosigner 0
+    cosigner1Txt = "cosigner#1" :: Text
+    cosigner1 = Cosigner 1
+    cosigner2Txt = "cosigner#2" :: Text
+    cosigner2 = Cosigner 2
+
+    requireAllOfParserTests
+        :: (Eq a, Show a)
+        => ReadP (Script a)
+        -> [(a, Text)]
+        -> SpecWith ()
+    requireAllOfParserTests parser [(obj1, txt1),(obj2, txt2),(obj3, txt3)] =
+        describe "requireAllOfParser : unit tests" $ do
+            let expected1 = RequireAllOf
+                    [ RequireSignatureOf obj1 ]
+            valuesParserUnitTest (requireAllOfParser parser) (script1 txt1) expected1
+            valuesParserUnitTest (scriptParser parser) (script1 txt1) expected1
+
+            valuesParserUnitTest (requireAllOfParser parser) (script2 txt1) expected1
+            valuesParserUnitTest (scriptParser parser) (script2 txt1) expected1
+
+            let expected2 = RequireAllOf
+                    [ RequireSignatureOf obj1
+                    , RequireSignatureOf obj2 ]
+            valuesParserUnitTest (requireAllOfParser parser) (script3 txt1 txt2) expected2
+            valuesParserUnitTest (scriptParser parser) (script3 txt1 txt2) expected2
+
+            let expected3 = RequireAllOf
+                    [ RequireSignatureOf obj1
+                    , RequireSignatureOf obj2
+                    , RequireSignatureOf obj3 ]
+            valuesParserUnitTest (requireAllOfParser parser) (script4 txt1 txt2 txt3) expected3
+            valuesParserUnitTest (scriptParser parser) (script4 txt1 txt2 txt3) expected3
+
+            let expected4 = RequireAllOf []
+            valuesParserUnitTest (requireAllOfParser parser) script12 expected4
+            valuesParserUnitTest (scriptParser parser) script12 expected4
+
 
 valuesParserUnitTest
     :: (Eq s, Show s)

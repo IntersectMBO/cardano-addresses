@@ -44,9 +44,12 @@ import qualified Text.ParserCombinators.ReadP as P
 -- | Run 'scriptParser' on string input.
 --
 -- @since 3.0.0
-scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
-scriptFromString str =
-    case readP_to_S scriptParser str of
+scriptFromString
+    :: ReadP (Script a)
+    -> String
+    -> Either ErrValidateScript (Script a)
+scriptFromString parser str =
+    case readP_to_S (scriptParser parser) str of
          [(script, "")] -> pure script
          _ -> Left Malformed
 
@@ -78,12 +81,12 @@ scriptFromString str =
 -- Parser is insensitive to whitespaces.
 --
 -- @since 3.0.0
-scriptParser :: ReadP (Script KeyHash)
-scriptParser =
-    requireAllOfParser <++
-    requireAnyOfParser <++
-    requireAtLeastOfParser <++
-    requireSignatureOfParser <++
+scriptParser :: ReadP (Script a) -> ReadP (Script a)
+scriptParser parser =
+    requireAllOfParser parser <++
+    requireAnyOfParser parser <++
+    requireAtLeastOfParser parser <++
+    parser <++
     activeFromSlotParser <++
     activeUntilSlotParser
 
@@ -102,31 +105,31 @@ requireCosignerOfParser = do
     cosignerid <- fromInteger . read <$> P.munch1 isDigit
     pure $ RequireSignatureOf $ Cosigner cosignerid
 
-requireAllOfParser :: ReadP (Script KeyHash)
-requireAllOfParser = do
+requireAllOfParser :: ReadP (Script a) -> ReadP (Script a)
+requireAllOfParser parser = do
     P.skipSpaces
     _identifier <- P.string "all"
-    RequireAllOf <$> commonPart
+    RequireAllOf <$> commonPart parser
 
-requireAnyOfParser :: ReadP (Script KeyHash)
-requireAnyOfParser = do
+requireAnyOfParser :: ReadP (Script a) -> ReadP (Script a)
+requireAnyOfParser parser = do
     P.skipSpaces
     _identifier <- P.string "any"
-    RequireAnyOf <$> commonPart
+    RequireAnyOf <$> commonPart parser
 
-requireAtLeastOfParser :: ReadP (Script KeyHash)
-requireAtLeastOfParser = do
+requireAtLeastOfParser :: ReadP (Script a) -> ReadP (Script a)
+requireAtLeastOfParser parser = do
     P.skipSpaces
     _identifier <- P.string "at_least"
-    RequireSomeOf <$> naturalParser <*> commonPart
+    RequireSomeOf <$> naturalParser <*> commonPart parser
 
-activeFromSlotParser :: ReadP (Script KeyHash)
+activeFromSlotParser :: ReadP (Script a)
 activeFromSlotParser = do
     P.skipSpaces
     _identifier <- P.string "active_from"
     ActiveFromSlot <$> slotParser
 
-activeUntilSlotParser :: ReadP (Script KeyHash)
+activeUntilSlotParser :: ReadP (Script a)
 activeUntilSlotParser = do
     P.skipSpaces
     _identifier <- P.string "active_until"
@@ -142,12 +145,12 @@ slotParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit
 
-commonPart :: ReadP [(Script KeyHash)]
-commonPart = do
+commonPart :: ReadP (Script a) -> ReadP [Script a]
+commonPart parser = do
     P.skipSpaces
     _open <- P.string "["
     P.skipSpaces
-    content <- P.sepBy scriptParser (P.string ",")
+    content <- P.sepBy (scriptParser parser) (P.string ",")
     P.skipSpaces
     _close <- P.string "]"
     P.skipSpaces

@@ -23,7 +23,7 @@ import Cardano.Address.Script
     , scriptHashFromBytes
     )
 import Cardano.Address.Script.Parser
-    ( scriptFromString )
+    ( requireSignatureOfParser, scriptFromString )
 import Control.Applicative
     ( (<|>) )
 import Control.Arrow
@@ -48,7 +48,8 @@ scriptArg = argument (eitherReader scriptReader) $ mempty
     <> help "Script string."
 
 scriptReader :: String -> Either String (Script KeyHash)
-scriptReader = left prettyErrValidateScript . scriptFromString
+scriptReader =
+    left prettyErrValidateScript . (scriptFromString requireSignatureOfParser)
 
 scriptHashArg :: String -> Parser ScriptHash
 scriptHashArg helpDoc =
