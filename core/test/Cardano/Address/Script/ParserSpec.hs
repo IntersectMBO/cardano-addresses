@@ -54,27 +54,10 @@ spec = do
     requireAtLeastOfParserTests @Cosigner requireCosignerOfParser
         [(cosigner0,cosigner0Txt), (cosigner1,cosigner1Txt), (cosigner2,cosigner2Txt)]
 
-{--
-
-    describe "validFromSlot unit test" $ do
-        let expected = RequireAllOf
-                [ RequireSignatureOf kh1
-                , ActiveFromSlot 120 ]
-        valuesParserUnitTest scriptParser script14 expected
-
-    describe "validUntilSlot unit test" $ do
-        let expected = RequireAllOf
-                [ RequireSignatureOf kh1
-                , ActiveUntilSlot 150 ]
-        valuesParserUnitTest scriptParser script15 expected
-
-    describe "validUntilSlot and validFromSlot unit test" $ do
-        let expected = RequireAllOf
-                [ RequireSignatureOf kh1
-                , ActiveFromSlot 120
-                , ActiveUntilSlot 125 ]
-        valuesParserUnitTest scriptParser script16 expected
---}
+    timelockParserTests @KeyHash requireSignatureOfParser
+        (kh1,verKeyH1)
+    timelockParserTests @Cosigner requireCosignerOfParser
+        (cosigner0,cosigner0Txt)
   where
     verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
     kh1 = KeyHash Payment (unBech32 verKeyH1)
@@ -226,6 +209,30 @@ spec = do
             valuesParserUnitTest (requireAtLeastOfParser parser) (script11 txt1 txt2 txt3) expected2
             valuesParserUnitTest (scriptParser parser) (script11 txt1 txt2 txt3) expected2
 
+    timelockParserTests
+        :: (Eq a, Show a)
+        => ReadP (Script a)
+        -> (a, Text)
+        -> SpecWith ()
+    timelockParserTests parser (obj,txt) = do
+       describe "validFromSlot unit test" $ do
+           let expected = RequireAllOf
+                   [ RequireSignatureOf obj
+                   , ActiveFromSlot 120 ]
+           valuesParserUnitTest (scriptParser parser) (script14 txt) expected
+
+       describe "validUntilSlot unit test" $ do
+           let expected = RequireAllOf
+                   [ RequireSignatureOf obj
+                   , ActiveUntilSlot 150 ]
+           valuesParserUnitTest (scriptParser parser) (script15 txt) expected
+
+       describe "validUntilSlot and validFromSlot unit test" $ do
+           let expected = RequireAllOf
+                   [ RequireSignatureOf obj
+                   , ActiveFromSlot 120
+                   , ActiveUntilSlot 125 ]
+           valuesParserUnitTest (scriptParser parser) (script16 txt) expected
 
 valuesParserUnitTest
     :: (Eq s, Show s)
