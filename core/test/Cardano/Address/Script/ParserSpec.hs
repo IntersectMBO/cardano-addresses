@@ -34,29 +34,13 @@ import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = do
-    describe "requireCosignerOfParser : unit tests" $ do
-        valuesParserUnitTest requireCosignerOfParser cosigner0Txt
-            (RequireSignatureOf cosigner0)
-        valuesParserUnitTest requireCosignerOfParser (cosigner0Txt <> " ")
-            (RequireSignatureOf cosigner0)
-        valuesParserUnitTest requireCosignerOfParser (cosigner0Txt <>", ")
-            (RequireSignatureOf cosigner0)
-        valuesParserUnitTest requireCosignerOfParser ("        " <> cosigner0Txt <>", ")
-            (RequireSignatureOf cosigner0)
-
-    describe "requireSignatureOfParser : unit tests" $ do
-        valuesParserUnitTest requireSignatureOfParser verKeyH1
-            (RequireSignatureOf kh1)
-        valuesParserUnitTest requireSignatureOfParser (verKeyH1 <> " ")
-            (RequireSignatureOf kh1)
-        valuesParserUnitTest requireSignatureOfParser (verKeyH1 <>", ")
-            (RequireSignatureOf kh1)
-        valuesParserUnitTest requireSignatureOfParser ("        " <> verKeyH1 <>", ")
-            (RequireSignatureOf kh1)
+    requireOfParserTests @KeyHash requireSignatureOfParser
+        (kh1,verKeyH1) "requireSignatureOfParser"
+    requireOfParserTests @Cosigner requireCosignerOfParser
+        (cosigner0,cosigner0Txt) "requireCosignerOfParser"
 
     requireAllOfParserTests @KeyHash requireSignatureOfParser
         [(kh1,verKeyH1), (kh2,verKeyH2), (kh3,verKeyH3)]
-
     requireAllOfParserTests @Cosigner requireCosignerOfParser
         [(cosigner0,cosigner0Txt), (cosigner1,cosigner1Txt), (cosigner2,cosigner2Txt)]
 
@@ -167,12 +151,30 @@ spec = do
     cosigner2Txt = "cosigner#2" :: Text
     cosigner2 = Cosigner 2
 
+    requireOfParserTests
+        :: (Eq a, Show a)
+        => ReadP (Script a)
+        -> (a, Text)
+        -> String
+        -> SpecWith ()
+    requireOfParserTests parser (obj, txt) descr =
+        describe (descr <> " : unit tests") $ do
+            valuesParserUnitTest parser txt
+                (RequireSignatureOf obj)
+            valuesParserUnitTest parser (txt <> " ")
+                (RequireSignatureOf obj)
+            valuesParserUnitTest parser (txt <>", ")
+                (RequireSignatureOf obj)
+            valuesParserUnitTest parser ("        " <> txt <>", ")
+                (RequireSignatureOf obj)
+
     requireAllOfParserTests
         :: (Eq a, Show a)
         => ReadP (Script a)
         -> [(a, Text)]
         -> SpecWith ()
-    requireAllOfParserTests parser [(obj1, txt1),(obj2, txt2),(obj3, txt3)] =
+    requireAllOfParserTests parser objTxts = do
+        let [(obj1, txt1),(obj2, txt2),(obj3, txt3)] = objTxts
         describe "requireAllOfParser : unit tests" $ do
             let expected1 = RequireAllOf
                     [ RequireSignatureOf obj1 ]
