@@ -10,12 +10,16 @@ module Options.Applicative.Script
     , scriptHashArg
     , scriptHashReader
     , levelOpt
+    , scriptTemplateReader
+    , scriptTemplateSpendingArg
+    , scriptTemplateStakingArg
     ) where
 
 import Prelude
 
 import Cardano.Address.Script
-    ( KeyHash
+    ( Cosigner
+    , KeyHash
     , Script (..)
     , ScriptHash
     , ValidationLevel (..)
@@ -23,13 +27,13 @@ import Cardano.Address.Script
     , scriptHashFromBytes
     )
 import Cardano.Address.Script.Parser
-    ( requireSignatureOfParser, scriptFromString )
+    ( requireCosignerOfParser, requireSignatureOfParser, scriptFromString )
 import Control.Applicative
     ( (<|>) )
 import Control.Arrow
     ( left )
 import Options.Applicative
-    ( Parser, argument, eitherReader, flag', help, long, metavar )
+    ( Parser, argument, eitherReader, flag', help, long, metavar, option )
 import Options.Applicative.Derivation
     ( bech32Reader )
 
@@ -73,3 +77,19 @@ levelOpt = required <|> recommended
   where
     required = flag' RequiredValidation (long "required")
     recommended = flag' RecommendedValidation (long "recommended")
+
+scriptTemplateReader :: String -> Either String (Script Cosigner)
+scriptTemplateReader =
+    left prettyErrValidateScript . (scriptFromString requireCosignerOfParser)
+
+scriptTemplateSpendingArg :: Parser (Script Cosigner)
+scriptTemplateSpendingArg = option (eitherReader scriptTemplateReader) $ mempty
+    <> long "spending"
+    <> metavar "SPENDING SCRIPT TEMPLATE"
+    <> help "Spending script template string."
+
+scriptTemplateStakingArg :: Parser (Script Cosigner)
+scriptTemplateStakingArg = option (eitherReader scriptTemplateReader) $ mempty
+    <> long "staking"
+    <> metavar "STAKING SCRIPT TEMPLATE"
+    <> help "Staking script template string."
