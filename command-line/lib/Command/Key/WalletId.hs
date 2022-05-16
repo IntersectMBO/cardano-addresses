@@ -40,14 +40,18 @@ mod liftCmd = command "walletid" $
         <> progDesc "Shows the cardano-wallet wallet ID for a given key"
         <> footerDoc (Just $ string $ mconcat
             [ "A wallet ID is a 40-digit hexadecimal string derived "
-            , "from the wallet’s mnemonic. It is used by the cardano-wallet "
+            , "from the wallet’s key. It is used by the cardano-wallet "
             , "server to refer to specific wallets.\n\n"
-            , "This key can be either an extended root key "
+            , "For shelley wallets the key can be either an extended root key "
             , "(full multi-account wallets), or an extended account key "
             , "(single-account wallets).\n\n"
-            , "Private or public extended keys are accepted -- they will have "
-            , "the same wallet ID.\n\n"
-            , "The bech32-encoded key is read from standard input.\n"
+            , "In the latter case either private or public extended key is accepted"
+            , "-- they will have the same wallet ID.\n\n"
+            , "The bech32-encoded key is read from standard input.\n\n"
+            , "In case of a shared-wallet the wallet id is calculated based on"
+            , "both private (public) extended account key, payment template script and"
+            , "staking template script. Each signature in any template script is denoted"
+            , "by cosigner#number.\n"
             ])
   where
     parser = pure WalletId
