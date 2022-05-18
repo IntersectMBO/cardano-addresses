@@ -9,6 +9,7 @@ module Cardano.Address.Script.Parser
     (
     -- ** Script Parser
       scriptFromString
+    , scriptToText
     , scriptParser
 
     -- Internal
@@ -31,6 +32,8 @@ import Cardano.Address.Script
     )
 import Data.Char
     ( isDigit, isLetter )
+import Data.Text
+    ( Text )
 import Data.Word
     ( Word8 )
 import Numeric.Natural
@@ -52,6 +55,28 @@ scriptFromString parser str =
     case readP_to_S (scriptParser parser) str of
          [(script, "")] -> pure script
          _ -> Left Malformed
+
+-- | Defines canonical string output for script that is
+-- consistent with 'scriptFromString'.
+--
+-- @since 3.10.0
+scriptToText
+    :: Show a
+    => Script a
+    -> Text
+scriptToText (RequireSignatureOf object) = T.pack $ show object
+scriptToText (RequireAllOf contents) =
+    "all [" <>  T.intercalate "," (map scriptToText contents) <> "]"
+scriptToText (RequireAnyOf contents) =
+    "any [" <>  T.intercalate "," (map scriptToText contents) <> "]"
+scriptToText (RequireSomeOf m contents) =
+    "at_least "<> (T.pack $ show m) <>
+    " [" <>  T.intercalate "," (map scriptToText contents) <> "]"
+scriptToText (ActiveFromSlot s) =
+    "active_from " <> (T.pack $ show s)
+scriptToText (ActiveUntilSlot s) =
+    "active_until " <> (T.pack $ show s)
+
 
 -- | The script embodies combination of signing keys that need to be met to make
 -- it valid. We assume here that the script could
