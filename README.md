@@ -85,14 +85,17 @@ acct_shared_xsk14zh0kh0geaz9qpxv6q0n5upq8ux4n97u2gyl69mnhan74w6849pa3hj2p40xg0nu
 $ cardano-address key walletid < acct.shared_xsk
 user error (shared wallet needs to have at least spending script specified)
 
+$ cardano-address key walletid --spending "cosigner#0" < acct.shared_xsk
+185d3582fc4892c4528614210b13e9a775dd7d02
+
 $ cardano-address key public --with-chain-code < acct.shared_xsk | cardano-address key walletid --spending "cosigner#0"
-b77c3f3e6745ceb020ef76aba0441bb1943e214a
+185d3582fc4892c4528614210b13e9a775dd7d02
 
 $ cardano-address key walletid --spending "all [cosigner#0, active_until 1000]" < acct.shared_xsk
-fe26a3141ad6692d035e76e507c77e237a779d65
+42ecb214586dcbcb593688fb081784fa0aebb2c0
 
 $ cardano-address key walletid --spending "all [cosigner#0, active_until 1000]" --staking "cosigner#1" < acct.shared_xsk
-9d7ac42eeb9182058c3cdf35174312999adc6204
+12dc98557a4c5aa00575c5d1f0dbfa3837261e32
 ```
 </details>
 
