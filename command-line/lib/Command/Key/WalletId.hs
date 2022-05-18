@@ -18,6 +18,8 @@ import Cardano.Address.Derivation
     ( hashWalletId, toXPub, xprvFromBytes, xpubToBytes )
 import Cardano.Address.Script
     ( Cosigner, Script )
+import Cardano.Address.Style.Shared
+    ( sharedWalletId )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
@@ -45,8 +47,6 @@ import System.IO.Extra
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 
 data Cmd = WalletId
     { spending :: Maybe (Script Cosigner)
@@ -87,10 +87,7 @@ run WalletId{spending,staking} = do
         fail "shared wallet needs to have at least spending script specified"
     let walletid =
             if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
-                hashWalletId $
-                bs <>
-                scriptTemplateToBs (fromJust spending) <>
-                maybe mempty scriptTemplateToBs staking
+                sharedWalletId bs (fromJust spending) staking
             else
                 hashWalletId bs
     hPutBytes stdout walletid EBase16
@@ -103,8 +100,6 @@ run WalletId{spending,staking} = do
         , CIP5.acct_shared_xvk
         , CIP5.acct_shared_xsk
         ]
-
-    scriptTemplateToBs = T.encodeUtf8 . T.pack . show
 
     payloadToHash hrp bs
         | hrp `elem` [CIP5.root_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
