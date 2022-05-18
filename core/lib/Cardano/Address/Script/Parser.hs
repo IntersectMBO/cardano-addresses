@@ -70,12 +70,12 @@ scriptToText (RequireAllOf contents) =
 scriptToText (RequireAnyOf contents) =
     "any [" <>  T.intercalate "," (map scriptToText contents) <> "]"
 scriptToText (RequireSomeOf m contents) =
-    "at_least "<> (T.pack $ show m) <>
+    "at_least "<> T.pack (show m) <>
     " [" <>  T.intercalate "," (map scriptToText contents) <> "]"
 scriptToText (ActiveFromSlot s) =
-    "active_from " <> (T.pack $ show s)
+    "active_from " <> T.pack (show s)
 scriptToText (ActiveUntilSlot s) =
-    "active_until " <> (T.pack $ show s)
+    "active_until " <> T.pack (show s)
 
 
 -- | The script embodies combination of signing keys that need to be met to make
