@@ -46,9 +46,16 @@ spec = describeCmd [ "key", "walletid" ] $ do
     specRootKeyPubPrvHasEqualWalletId "shelley"
     specRootKeyPubPrvHasEqualWalletId "icarus"
 
-    specAcctKeyPubPrvHasEqualWalletId "shelley" "1852H/1815H/0H"
-    specAcctKeyPubPrvHasEqualWalletId "icarus" "1852H/1815H/0H"
-    --specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H"
+    specAcctKeyPubPrvHasEqualWalletId "shelley" "1852H/1815H/0H" Nothing Nothing
+    specAcctKeyPubPrvHasEqualWalletId "icarus" "1852H/1815H/0H" Nothing Nothing
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H" (Just "cosigner#0") Nothing
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/1H" (Just "cosigner#0") Nothing
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/10H" (Just "cosigner#0") Nothing
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H" (Just "cosigner#0") (Just "cosigner#0")
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H" (Just "cosigner#0") (Just "cosigner#0")
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H" (Just "all [cosigner#0,cosigner#1]") (Just "cosigner#0")
+    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H" (Just "cosigner#0") (Just "any [cosigner#1, active_until 1000]")
+
 
 specKeyNeitherRootNorAcct :: String -> String -> String -> SpecWith ()
 specKeyNeitherRootNorAcct style path cc = it "fails if key is nether root nor account" $ do
@@ -90,14 +97,29 @@ specRootKeyPubPrvHasEqualWalletId style = it "root private key and its public ke
 
     walletidFromXPrv `shouldBe` walletidFromXPub
 
-specAcctKeyPubPrvHasEqualWalletId :: String -> String -> SpecWith ()
-specAcctKeyPubPrvHasEqualWalletId style path = it "root private key and its public key give the same wallet id" $ do
+specAcctKeyPubPrvHasEqualWalletId
+    :: String
+    -> String
+    -> Maybe String
+    -> Maybe String
+    -> SpecWith ()
+specAcctKeyPubPrvHasEqualWalletId style path spendingScriptM stakingScriptM =
+    it "root private key and its public key give the same wallet id" $ do
     xprv <- cli [ "recovery-phrase", "generate" ] ""
         >>= cli [ "key", "from-recovery-phrase", style ]
         >>= cli [ "key", "child", path ]
 
-    walletidFromXPrv <- cli @String [ "key", "walletid"] xprv
+    let spendingArg =
+            case spendingScriptM of
+                Nothing -> []
+                Just spendingScript -> ["--spending", spendingScript]
+    let stakingArg =
+            case stakingScriptM of
+                Nothing -> []
+                Just stakingScript -> ["--staking", stakingScript]
+
+    walletidFromXPrv <- cli @String ([ "key", "walletid"] ++ spendingArg ++ stakingArg) xprv
     walletidFromXPub <- cli [ "key", "public", "--with-chain-code" ] xprv
-                    >>= cli [ "key", "walletid"]
+                    >>= cli ([ "key", "walletid"] ++ spendingArg ++ stakingArg)
 
     walletidFromXPrv `shouldBe` walletidFromXPub
