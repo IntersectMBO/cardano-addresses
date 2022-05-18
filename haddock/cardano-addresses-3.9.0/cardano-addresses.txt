@@ -524,7 +524,6 @@ instance GHC.Show.Show elem => GHC.Show.Show (Cardano.Address.Script.Script elem
 instance GHC.Generics.Generic (Cardano.Address.Script.Script elem)
 instance GHC.Classes.Eq Cardano.Address.Script.Cosigner
 instance GHC.Classes.Ord Cardano.Address.Script.Cosigner
-instance GHC.Show.Show Cardano.Address.Script.Cosigner
 instance GHC.Generics.Generic Cardano.Address.Script.Cosigner
 instance GHC.Classes.Eq Cardano.Address.Script.ScriptTemplate
 instance GHC.Show.Show Cardano.Address.Script.ScriptTemplate
@@ -563,6 +562,7 @@ instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.ScriptTemplate
 instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.ScriptTemplate
 instance Data.Hashable.Class.Hashable Cardano.Address.Script.Cosigner
 instance Control.DeepSeq.NFData Cardano.Address.Script.Cosigner
+instance GHC.Show.Show Cardano.Address.Script.Cosigner
 instance Data.Aeson.Types.ToJSON.ToJSON Cardano.Address.Script.Cosigner
 instance Data.Aeson.Types.FromJSON.FromJSON Cardano.Address.Script.Cosigner
 instance Data.Aeson.Types.FromJSON.FromJSON (Cardano.Address.Script.Script Cardano.Address.Script.Cosigner)
@@ -572,7 +572,11 @@ instance Data.Aeson.Types.ToJSON.ToJSON elem => Data.Aeson.Types.ToJSON.ToJSON (
 module Cardano.Address.Script.Parser
 
 -- | Run <a>scriptParser</a> on string input.
-scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
+scriptFromString :: ReadP (Script a) -> String -> Either ErrValidateScript (Script a)
+
+-- | Defines canonical string output for script that is consistent with
+--   <a>scriptFromString</a>.
+scriptToText :: Show a => Script a -> Text
 
 -- | The script embodies combination of signing keys that need to be met to
 --   make it valid. We assume here that the script could delivered from
@@ -606,7 +610,7 @@ scriptFromString :: String -> Either ErrValidateScript (Script KeyHash)
 --   </ol>
 --   
 --   Parser is insensitive to whitespaces.
-scriptParser :: ReadP (Script KeyHash)
+scriptParser :: ReadP (Script a) -> ReadP (Script a)
 
 module Cardano.Address
 
@@ -1265,6 +1269,11 @@ liftXPrv :: XPrv -> Shared depth XPrv
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPub :: XPub -> Shared depth XPub
+
+-- | Calculates wallet id of shared wallet It takes raw bytes of account
+--   public kye (64-bytes), spending script template, and optionally
+--   staking script template.
+sharedWalletId :: ByteString -> Script Cosigner -> Maybe (Script Cosigner) -> ByteString
 
 -- | Generate a root key from a corresponding root <a>XPrv</a>
 genMasterKeyFromXPrv :: XPrv -> Shared 'RootK XPrv
