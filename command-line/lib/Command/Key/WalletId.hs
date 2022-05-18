@@ -22,8 +22,18 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
     ( when )
+import Data.Maybe
+    ( fromJust, isNothing )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Help.Pretty
     ( string )
 import Options.Applicative.Script
@@ -39,8 +49,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 data Cmd = WalletId
-    { spending :: Script Cosigner
-    , staking :: Script Cosigner
+    { spending :: Maybe (Script Cosigner)
+    , staking :: Maybe (Script Cosigner)
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -64,20 +74,23 @@ mod liftCmd = command "walletid" $
             ])
   where
     parser = WalletId
-        <$> scriptTemplateSpendingArg
-        <*> scriptTemplateStakingArg
+        <$> optional scriptTemplateSpendingArg
+        <*> optional scriptTemplateStakingArg
 
 run :: Cmd -> IO ()
 run WalletId{spending,staking} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
     let bs = payloadToHash hrp bytes
+    when ( hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] &&
+           isNothing spending ) $
+        fail "shared wallet needs to have at least spending script specified"
     let walletid =
             if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
                 hashWalletId $
                 bs <>
-                (scriptTemplateToBs spending) <>
-                (scriptTemplateToBs staking)
+                (scriptTemplateToBs $ fromJust spending) <>
+                maybe mempty scriptTemplateToBs staking
             else
                 hashWalletId bs
     hPutBytes stdout walletid EBase16

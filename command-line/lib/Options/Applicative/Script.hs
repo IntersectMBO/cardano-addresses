@@ -33,16 +33,7 @@ import Control.Applicative
 import Control.Arrow
     ( left )
 import Options.Applicative
-    ( Parser
-    , argument
-    , eitherReader
-    , flag'
-    , help
-    , long
-    , metavar
-    , option
-    , value
-    )
+    ( Parser, argument, eitherReader, flag', help, long, metavar, option )
 import Options.Applicative.Derivation
     ( bech32Reader )
 
@@ -87,9 +78,6 @@ levelOpt = required <|> recommended
     required = flag' RequiredValidation (long "required")
     recommended = flag' RecommendedValidation (long "recommended")
 
-defaultScriptTemplate :: Script Cosigner
-defaultScriptTemplate = RequireSignatureOf $ Cosigner 0
-
 scriptTemplateReader :: String -> Either String (Script Cosigner)
 scriptTemplateReader =
     left prettyErrValidateScript . (scriptFromString requireCosignerOfParser)
@@ -98,12 +86,10 @@ scriptTemplateSpendingArg :: Parser (Script Cosigner)
 scriptTemplateSpendingArg = option (eitherReader scriptTemplateReader) $ mempty
     <> long "spending"
     <> metavar "SPENDING SCRIPT TEMPLATE"
-    <> value defaultScriptTemplate
     <> help "Spending script template string."
 
 scriptTemplateStakingArg :: Parser (Script Cosigner)
 scriptTemplateStakingArg = option (eitherReader scriptTemplateReader) $ mempty
     <> long "staking"
     <> metavar "STAKING SCRIPT TEMPLATE"
-    <> value defaultScriptTemplate
     <> help "Staking script template string."

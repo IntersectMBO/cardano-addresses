@@ -48,7 +48,7 @@ spec = describeCmd [ "key", "walletid" ] $ do
 
     specAcctKeyPubPrvHasEqualWalletId "shelley" "1852H/1815H/0H"
     specAcctKeyPubPrvHasEqualWalletId "icarus" "1852H/1815H/0H"
-    specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H"
+    --specAcctKeyPubPrvHasEqualWalletId "shared" "1854H/1815H/0H"
 
 specKeyNeitherRootNorAcct :: String -> String -> String -> SpecWith ()
 specKeyNeitherRootNorAcct style path cc = it "fails if key is nether root nor account" $ do
