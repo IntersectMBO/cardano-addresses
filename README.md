@@ -73,6 +73,34 @@ $ cardano-address key public --with-chain-code < acct.xsk | cardano-address key 
 </details>
 
 <details>
+  <summary>How to generate a wallet id based on account keys of shared wallet (<strong>phrase.prv</strong>)</summary>
+
+```console
+$ cardano-address key from-recovery-phrase Shared < phrase.prv > root.shared_xsk
+root_shared_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvzteqlc
+
+$ cardano-address key child 1854H/1815H/0H < root.shared_xsk > acct.shared_xsk
+acct_shared_xsk14zh0kh0geaz9qpxv6q0n5upq8ux4n97u2gyl69mnhan74w6849pa3hj2p40xg0nugw8tzqu5eynzjunay6tffru9wdjank0phsfuc7vngjsmtktel05g6mx555tw8nxr8rpn2gac6km5plu9mwqsz54rfyhwd7pd
+
+$ cardano-address key walletid < acct.shared_xsk
+user error (shared wallet needs to have at least spending script specified)
+
+$ cardano-address key walletid --spending "cosigner#0" < acct.shared_xsk
+185d3582fc4892c4528614210b13e9a775dd7d02
+
+$ cardano-address key public --with-chain-code < acct.shared_xsk | cardano-address key walletid --spending "cosigner#0"
+185d3582fc4892c4528614210b13e9a775dd7d02
+
+$ cardano-address key walletid --spending "all [cosigner#0, active_until 1000]" < acct.shared_xsk
+42ecb214586dcbcb593688fb081784fa0aebb2c0
+
+$ cardano-address key walletid --spending "all [cosigner#0, active_until 1000]" --staking "cosigner#1" < acct.shared_xsk
+12dc98557a4c5aa00575c5d1f0dbfa3837261e32
+```
+</details>
+
+
+<details>
   <summary>How to generate a private policy key (<strong>policy.xsk</strong>), a public policy key (<strong>policy.vk</strong>) and its hash (<strong>policy.vkh</strong>)</summary>
 
 ```console

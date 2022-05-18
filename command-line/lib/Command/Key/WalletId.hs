@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -15,14 +16,30 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( hashWalletId, toXPub, xprvFromBytes, xpubToBytes )
+import Cardano.Address.Script
+    ( Cosigner, Script )
+import Cardano.Address.Style.Shared
+    ( sharedWalletId )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
     ( when )
+import Data.Maybe
+    ( fromJust, isNothing )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Help.Pretty
     ( string )
+import Options.Applicative.Script
+    ( scriptTemplateSpendingArg, scriptTemplateStakingArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -32,7 +49,9 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
 data Cmd = WalletId
-    deriving (Show)
+    { spending :: Maybe (Script Cosigner)
+    , staking :: Maybe (Script Cosigner)
+    } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "walletid" $
@@ -40,29 +59,42 @@ mod liftCmd = command "walletid" $
         <> progDesc "Shows the cardano-wallet wallet ID for a given key"
         <> footerDoc (Just $ string $ mconcat
             [ "A wallet ID is a 40-digit hexadecimal string derived "
-            , "from the wallet’s mnemonic. It is used by the cardano-wallet "
+            , "from the wallet’s key. It is used by the cardano-wallet "
             , "server to refer to specific wallets.\n\n"
-            , "This key can be either an extended root key "
+            , "For shelley wallets the key can be either an extended root key "
             , "(full multi-account wallets), or an extended account key "
             , "(single-account wallets).\n\n"
-            , "Private or public extended keys are accepted -- they will have "
-            , "the same wallet ID.\n\n"
-            , "The bech32-encoded key is read from standard input.\n"
+            , "In the latter case either private or public extended key is accepted"
+            , "-- they will have the same wallet ID.\n\n"
+            , "The bech32-encoded key is read from standard input.\n\n"
+            , "In case of a shared-wallet the wallet id is calculated based on"
+            , "both private (public) extended account key, payment template script and"
+            , "staking template script. Each signature in any template script is denoted"
+            , "by cosigner#number.\n"
             ])
   where
-    parser = pure WalletId
+    parser = WalletId
+        <$> optional scriptTemplateSpendingArg
+        <*> optional scriptTemplateStakingArg
 
 run :: Cmd -> IO ()
-run WalletId = do
+run WalletId{spending,staking} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    hPutBytes stdout (hashWalletId $ payloadToHash hrp bytes) EBase16
+    let bs = payloadToHash hrp bytes
+    when ( hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] &&
+           isNothing spending ) $
+        fail "shared wallet needs to have at least spending script specified"
+    let walletid =
+            if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
+                sharedWalletId bs (fromJust spending) staking
+            else
+                hashWalletId bs
+    hPutBytes stdout walletid EBase16
   where
     allowedPrefixes =
         [ CIP5.root_xsk
         , CIP5.root_xvk
-        , CIP5.root_shared_xsk
-        , CIP5.root_shared_xvk
         , CIP5.acct_xvk
         , CIP5.acct_xsk
         , CIP5.acct_shared_xvk
@@ -70,7 +102,7 @@ run WalletId = do
         ]
 
     payloadToHash hrp bs
-        | hrp `elem` [CIP5.root_xsk, CIP5.root_shared_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
+        | hrp `elem` [CIP5.root_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
               case xprvFromBytes bs of
                   Just xprv ->  xpubToBytes . toXPub $ xprv
                   Nothing -> "96-byte extended private key is invalid due to 'scalarDecodeLong' failure from cryptonite"

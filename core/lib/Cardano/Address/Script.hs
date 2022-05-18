@@ -23,6 +23,7 @@ module Cardano.Address.Script
     -- * Script template
     , ScriptTemplate (..)
     , Cosigner (..)
+    , cosignerToText
 
     -- * Validation
     , ValidationLevel (..)
@@ -180,9 +181,12 @@ serializeScript script =
 --
 -- @since 3.2.0
 newtype Cosigner = Cosigner Word8
-    deriving (Generic, Show, Ord, Eq)
+    deriving (Generic, Ord, Eq)
 instance Hashable Cosigner
 instance NFData Cosigner
+
+instance Show Cosigner where
+    show = T.unpack . cosignerToText
 
 -- | Represents the script template that show the structure of the script and determines
 -- the expected place of verification keys corresponding to given cosigners.

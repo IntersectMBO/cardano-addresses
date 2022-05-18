@@ -42,6 +42,8 @@ import Cardano.Address.Script
     , validateScriptOfTemplate
     , validateScriptTemplate
     )
+import Cardano.Address.Script.Parser
+    ( requireCosignerOfParser, scriptFromString, scriptToText )
 import Cardano.Address.Style.Shared
     ( Shared (..), hashKey )
 import Cardano.Mnemonic
@@ -82,6 +84,7 @@ import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 spec :: Spec
@@ -657,6 +660,10 @@ spec = do
         it "fromJSON . toJSON === pure" $
         property (prop_jsonRoundtripWithValidation (validateScriptTemplate RequiredValidation))
 
+    describe "can perform text roundtrip - Script Cosigner" $
+        it "scriptFromString . T.unpack . scriptToText === pure" $ property prop_scriptTextRoundtrip
+
+
     describe "some JSON parsing error" $ do
         it "Invalid type" $ do
             let err = "Error in $.all[0].any[0]: expected Object or String, but encountered Number"
@@ -700,6 +707,13 @@ prop_jsonRoundtripWithValidation validate script =
 prop_jsonRoundtrip :: (Eq a, Show a, FromJSON a, ToJSON a) => a -> Property
 prop_jsonRoundtrip val =
     Json.decode (Json.encode val) === Just val
+
+prop_scriptTextRoundtrip
+    :: Script Cosigner
+    -> Property
+prop_scriptTextRoundtrip script =
+    scriptFromString requireCosignerOfParser (T.unpack $ scriptToText script)
+    === Right script
 
 instance Arbitrary (Script KeyHash) where
     arbitrary = genScript (RequireSignatureOf <$> arbitrary)

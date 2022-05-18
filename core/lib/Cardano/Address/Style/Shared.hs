@@ -23,6 +23,7 @@ module Cardano.Address.Style.Shared
     , getKey
     , liftXPrv
     , liftXPub
+    , sharedWalletId
 
       -- * Key Derivation
       -- $keyDerivation
@@ -46,10 +47,13 @@ import Cardano.Address.Derivation
     , XPrv
     , XPub
     , hashCredential
+    , hashWalletId
     , xpubPublicKey
     )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole )
+    ( Cosigner, KeyHash (..), KeyRole, Script )
+import Cardano.Address.Script.Parser
+    ( scriptToText )
 import Cardano.Address.Style.Shelley
     ( Role (..)
     , deriveAccountPrivateKeyShelley
@@ -63,6 +67,8 @@ import Control.DeepSeq
     ( NFData )
 import Data.ByteArray
     ( ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Coerce
     ( coerce )
 import Data.Word
@@ -71,6 +77,9 @@ import GHC.Generics
     ( Generic )
 
 import qualified Cardano.Address.Derivation as Internal
+import qualified Data.ByteString as BS
+import qualified Data.Text.Encoding as T
+
 
 -- $overview
 --
@@ -257,6 +266,29 @@ liftXPrv = Shared
 -- @since 3.4.0
 liftXPub :: XPub -> Shared depth XPub
 liftXPub = Shared
+
+
+-- | Calculates wallet id of shared wallet
+-- It takes raw bytes of account public kye (64-bytes),
+-- spending script template, and
+-- optionally staking script template.
+--
+-- @since 3.10.0
+sharedWalletId
+    :: ByteString
+    -> Script Cosigner
+    -> Maybe (Script Cosigner)
+    -> ByteString
+sharedWalletId bytes spending stakingM =
+    if BS.length bytes == 64 then
+        hashWalletId $
+        bytes <>
+        serializeScriptTemplate spending <>
+        maybe mempty serializeScriptTemplate stakingM
+    else
+        error "Extended account public key is expected to have 64 bytes."
+  where
+    serializeScriptTemplate = T.encodeUtf8 . scriptToText
 
 --
 -- Internal
