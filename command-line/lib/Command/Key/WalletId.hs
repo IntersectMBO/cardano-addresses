@@ -89,7 +89,7 @@ run WalletId{spending,staking} = do
             if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
                 hashWalletId $
                 bs <>
-                (scriptTemplateToBs $ fromJust spending) <>
+                scriptTemplateToBs (fromJust spending) <>
                 maybe mempty scriptTemplateToBs staking
             else
                 hashWalletId bs
