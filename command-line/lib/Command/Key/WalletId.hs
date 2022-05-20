@@ -64,13 +64,13 @@ mod liftCmd = command "walletid" $
             , "For shelley wallets the key can be either an extended root key "
             , "(full multi-account wallets), or an extended account key "
             , "(single-account wallets).\n\n"
-            , "In the latter case either private or public extended key is accepted"
+            , "In the latter case either private or public extended key is accepted "
             , "-- they will have the same wallet ID.\n\n"
             , "The bech32-encoded key is read from standard input.\n\n"
-            , "In case of a shared-wallet the wallet id is calculated based on"
-            , "both private (public) extended account key, payment template script and"
-            , "staking template script. Each signature in any template script is denoted"
-            , "by cosigner#number.\n"
+            , "In case of a shared wallet, the wallet id is calculated based on "
+            , "private extended account key, payment template script and "
+            , "staking template script - if specified. Each signature in "
+            , "any template script is denoted by cosigner#number.\n"
             ])
   where
     parser = WalletId
