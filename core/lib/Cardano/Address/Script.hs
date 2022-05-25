@@ -52,6 +52,7 @@ module Cardano.Address.Script
 
 import Prelude
 
+import Data.String (IsString (..))
 import Cardano.Address.Derivation
     ( XPub, credentialHashSize, hashCredential, xpubFromBytes, xpubToBytes )
 import Codec.Binary.Encoding
@@ -108,6 +109,7 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as Set
 import qualified Data.List as L
@@ -115,6 +117,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Read as T
+import qualified Data.Aeson.Key
 
 -- | A 'Script' type represents multi signature script. The script embodies conditions
 -- that need to be satisfied to make it valid.
@@ -754,7 +757,7 @@ instance ToJSON ScriptTemplate where
                , "template" .= toJSON template']
       where
         toPair (cosigner', xpub) =
-            ( cosignerToText cosigner'
+            ( fromString $ T.unpack $ cosignerToText cosigner'
             , encodeXPub xpub )
 
 instance FromJSON (Script Cosigner) where
@@ -788,9 +791,9 @@ instance FromJSON ScriptTemplate where
         ScriptTemplate <$> (Map.fromList <$> cosigners') <*> template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
-            case HM.toList o of
+            case KeyMap.toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for (reverse cs) $ \(numTxt, str) -> do
-                    cosigner' <- parseJSON @Cosigner (String numTxt)
+                    cosigner' <- parseJSON @Cosigner (String $ T.pack $ Data.Aeson.Key.toString numTxt)
                     xpub <- parseXPub str
                     pure (cosigner', xpub)
