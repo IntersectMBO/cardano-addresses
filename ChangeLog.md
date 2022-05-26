@@ -1,3 +1,9 @@
+## [3.10.0] - 2022-05-26
+
+### Added
+
+- `cardano-address key walletid` support for Shared wallets.
+
 ## [3.9.0] - 2022-03-08
 
 ### Added

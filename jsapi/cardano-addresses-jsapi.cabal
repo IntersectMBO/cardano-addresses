@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:           cardano-addresses-jsapi
-version:        3.9.0
+version:        3.10.0
 synopsis:       Javascript FFI for cardano-addresses.
 description:    This package provides functions callable from Javascript on top of
                 which a TypeScript API can be built. It uses the cardano-addresses-ghcjs
