@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# OPTIONS_GHC -fno-warn-orphans #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Copyright: &#169; 2018-2021 IOHK</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Utility functions for internal use of the library.</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Internal</span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Internal.html#orElse"><span class="hs-identifier">orElse</span></a></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Internal.html#WithErrorMessage"><span class="hs-identifier">WithErrorMessage</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">DeserialiseFailure</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Codec.CBOR.Read</span></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">DeserialiseFailure</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Exception</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">GToJSON</span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Options</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">SumEncoding</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Value</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Zero</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">defaultOptions</span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericToJSON</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">object</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">toJSON</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(.=)</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Rep</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span id="local-6989586621679130648"><span id="local-6989586621679130649"><span class="annot"><a href="Cardano.Address.Internal.html#orElse"><span class="hs-identifier hs-type">orElse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679130649"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679130648"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679130649"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679130648"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679130649"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679130648"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-42"></span><span id="orElse"><span class="annot"><span class="annottext">orElse :: Either e a -&gt; Either e a -&gt; Either e a
+</span><a href="Cardano.Address.Internal.html#orElse"><span class="hs-identifier hs-var hs-var">orElse</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679130647"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679130647"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Either e a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Either e a
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679130647"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Cardano.Address.Internal.html#orElse"><span class="hs-identifier hs-var">orElse</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">e
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679130646"><span class="annot"><span class="annottext">Either e a
+</span><a href="#local-6989586621679130646"><span class="hs-identifier hs-var">ea</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either e a
+</span><a href="#local-6989586621679130646"><span class="hs-identifier hs-var">ea</span></a></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span id="local-6989586621679130662"><span class="annot"><a href="Cardano.Address.Internal.html#errToJSON"><span class="hs-identifier hs-type">errToJSON</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="#local-6989586621679130662"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Generic</span></span><span> </span><span class="annot"><a href="#local-6989586621679130662"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">GToJSON</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Zero</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Rep</span></span><span> </span><span class="annot"><a href="#local-6989586621679130662"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679130662"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Value</span></span></span><span>
+</span><span id="line-46"></span><span id="errToJSON"><span class="annot"><span class="annottext">errToJSON :: e -&gt; Value
+</span><a href="Cardano.Address.Internal.html#errToJSON"><span class="hs-identifier hs-var hs-var">errToJSON</span></a></span></span><span> </span><span id="local-6989586621679130644"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679130644"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Pair] -&gt; Value
+</span><span class="hs-identifier hs-var">object</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;error&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">Options -&gt; e -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="#local-6989586621679130643"><span class="hs-identifier hs-var">opts</span></a></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679130644"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;message&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">toJSON</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">e -&gt; String
+forall e. Exception e =&gt; e -&gt; String
+</span><span class="hs-identifier hs-var">displayException</span></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621679130644"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621679130643"><span class="annot"><span class="annottext">opts :: Options
+</span><a href="#local-6989586621679130643"><span class="hs-identifier hs-var hs-var">opts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">sumEncoding :: SumEncoding
+</span><a href="#local-6989586621679130641"><span class="hs-identifier hs-var">sumEncoding</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SumEncoding
+</span><a href="#local-6989586621679130640"><span class="hs-identifier hs-var">errorCodes</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-52"></span><span>    </span><span id="local-6989586621679130640"><span class="annot"><span class="annottext">errorCodes :: SumEncoding
+</span><a href="#local-6989586621679130640"><span class="hs-identifier hs-var hs-var">errorCodes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; SumEncoding
+</span><span class="hs-identifier hs-var">TaggedObject</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;code&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;details&quot;</span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-keyword">newtype</span><span> </span><span id="WithErrorMessage"><span class="annot"><a href="Cardano.Address.Internal.html#WithErrorMessage"><span class="hs-identifier hs-var">WithErrorMessage</span></a></span></span><span> </span><span id="local-6989586621679130658"><span class="annot"><a href="#local-6989586621679130658"><span class="hs-identifier hs-type">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WithErrorMessage"><span class="annot"><a href="Cardano.Address.Internal.html#WithErrorMessage"><span class="hs-identifier hs-var">WithErrorMessage</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="withErrorMessage"><span class="annot"><span class="annottext">WithErrorMessage e -&gt; e
+</span><a href="Cardano.Address.Internal.html#withErrorMessage"><span class="hs-identifier hs-var hs-var">withErrorMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679130658"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span id="local-6989586621679130636"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679130629"><span id="local-6989586621679130631"><span id="local-6989586621679130633"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="#local-6989586621679130636"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Generic</span></span><span> </span><span class="annot"><a href="#local-6989586621679130636"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">GToJSON</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Zero</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Rep</span></span><span> </span><span class="annot"><a href="#local-6989586621679130636"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Internal.html#WithErrorMessage"><span class="hs-identifier hs-type">WithErrorMessage</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679130636"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>    </span><span id="local-6989586621679130627"><span class="annot"><span class="annottext">toJSON :: WithErrorMessage e -&gt; Value
+</span><a href="#local-6989586621679130627"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">e -&gt; Value
+forall e.
+(Exception e, Generic e, GToJSON Zero (Rep e)) =&gt;
+e -&gt; Value
+</span><a href="Cardano.Address.Internal.html#errToJSON"><span class="hs-identifier hs-var">errToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">(e -&gt; Value)
+-&gt; (WithErrorMessage e -&gt; e) -&gt; WithErrorMessage e -&gt; Value
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">WithErrorMessage e -&gt; e
+forall e. WithErrorMessage e -&gt; e
+</span><a href="Cardano.Address.Internal.html#withErrorMessage"><span class="hs-identifier hs-var hs-var">withErrorMessage</span></a></span></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679130619"><span id="local-6989586621679130621"><span id="local-6989586621679130623"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">DeserialiseFailure</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-60"></span><span>    </span><span id="local-6989586621679130618"><span class="annot"><span class="annottext">toJSON :: DeserialiseFailure -&gt; Value
+</span><a href="#local-6989586621679130618"><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">DeserialiseFailure</span></span><span> </span><span id="local-6989586621679130616"><span class="annot"><span class="annottext">ByteOffset
+</span><a href="#local-6989586621679130616"><span class="hs-identifier hs-var">off</span></a></span></span><span> </span><span id="local-6989586621679130615"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679130615"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Pair] -&gt; Value
+</span><span class="hs-identifier hs-var">object</span></span><span>
+</span><span id="line-61"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;code&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+</span><span class="hs-identifier hs-var">String</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Codec.CBOR.DeserialiseFailure&quot;</span></span><span>
+</span><span id="line-62"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;details&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">[Pair] -&gt; Value
+</span><span class="hs-identifier hs-var">object</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;byteOffset&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteOffset -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">ByteOffset
+</span><a href="#local-6989586621679130616"><span class="hs-identifier hs-var">off</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;message&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String -&gt; Pair
+forall kv v. (KeyValue kv, ToJSON v) =&gt; Text -&gt; v -&gt; kv
+</span><span class="hs-operator hs-var">.=</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679130615"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-63"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span></pre></body></html>
