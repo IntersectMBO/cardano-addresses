@@ -110,7 +110,6 @@ import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.Aeson.Types as Json
 import qualified Data.ByteString as BS
 import qualified Data.Aeson.KeyMap as KeyMap
-import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as Set
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map
