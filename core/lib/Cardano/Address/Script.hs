@@ -793,6 +793,7 @@ instance FromJSON ScriptTemplate where
             case KeyMap.toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for (reverse cs) $ \(numTxt, str) -> do
-                    cosigner' <- parseJSON @Cosigner (String $ T.pack $ Data.Aeson.Key.toString numTxt)
+                    cosigner' <- parseJSON @Cosigner
+                        (String $ T.pack $ Data.Aeson.Key.toString numTxt)
                     xpub <- parseXPub str
                     pure (cosigner', xpub)
