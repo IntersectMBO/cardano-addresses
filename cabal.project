@@ -1,7 +1,10 @@
-index-state: 2021-10-05T00:00:00Z
+-- semialign-1.2.0.1 (required by aeson2) was uploaded on 2021-10-31
+index-state: 2021-11-01T00:00:00Z
 with-compiler: ghc-8.10.7
 
 constraints: ghcjs-base >=0.2.0.3
+             -- See https://github.com/well-typed/qualification/issues/293
+           , cborg <= 0.2.5.0
 
 packages:
   command-line/cardano-addresses-cli.cabal
