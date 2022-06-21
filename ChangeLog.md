@@ -1,3 +1,9 @@
+## [3.11.0] - 2022-06-21
+
+### Added
+
+- Compatibility with Aeson 2 library.
+
 ## [3.10.0] - 2022-05-26
 
 ### Added
