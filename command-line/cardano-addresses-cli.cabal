@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.7.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cef07e7a8f26edc0bd537bd1c628f023e8e5c6c251b2f3da50caa85026ada448
+-- hash: 07407dda09a83c5847a8fe316831183837efd430420245d2fca610efa1a94430
 
 name:           cardano-addresses-cli
-version:        3.10.0
+version:        3.11.0
 synopsis:       Utils for constructing a command-line on top of cardano-addresses.
 description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
 category:       Cardano
