@@ -1,0 +1,205 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    3 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    4 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>{-# OPTIONS_HADDOCK prune #-}
+<span class="lineno">    7 </span>
+<span class="lineno">    8 </span>module Cardano.Address.Script.Parser
+<span class="lineno">    9 </span>    (
+<span class="lineno">   10 </span>    -- ** Script Parser
+<span class="lineno">   11 </span>      scriptFromString
+<span class="lineno">   12 </span>    , scriptToText
+<span class="lineno">   13 </span>    , scriptParser
+<span class="lineno">   14 </span>
+<span class="lineno">   15 </span>    -- Internal
+<span class="lineno">   16 </span>    , requireSignatureOfParser
+<span class="lineno">   17 </span>    , requireAllOfParser
+<span class="lineno">   18 </span>    , requireAnyOfParser
+<span class="lineno">   19 </span>    , requireAtLeastOfParser
+<span class="lineno">   20 </span>    , requireCosignerOfParser
+<span class="lineno">   21 </span>    ) where
+<span class="lineno">   22 </span>
+<span class="lineno">   23 </span>import Prelude
+<span class="lineno">   24 </span>
+<span class="lineno">   25 </span>import Cardano.Address.Script
+<span class="lineno">   26 </span>    ( Cosigner (..)
+<span class="lineno">   27 </span>    , ErrValidateScript (..)
+<span class="lineno">   28 </span>    , KeyHash
+<span class="lineno">   29 </span>    , Script (..)
+<span class="lineno">   30 </span>    , keyHashFromText
+<span class="lineno">   31 </span>    , prettyErrKeyHashFromText
+<span class="lineno">   32 </span>    )
+<span class="lineno">   33 </span>import Data.Char
+<span class="lineno">   34 </span>    ( isDigit, isLetter )
+<span class="lineno">   35 </span>import Data.Text
+<span class="lineno">   36 </span>    ( Text )
+<span class="lineno">   37 </span>import Data.Word
+<span class="lineno">   38 </span>    ( Word8 )
+<span class="lineno">   39 </span>import Numeric.Natural
+<span class="lineno">   40 </span>    ( Natural )
+<span class="lineno">   41 </span>import Text.ParserCombinators.ReadP
+<span class="lineno">   42 </span>    ( ReadP, readP_to_S, (&lt;++) )
+<span class="lineno">   43 </span>
+<span class="lineno">   44 </span>import qualified Data.Text as T
+<span class="lineno">   45 </span>import qualified Text.ParserCombinators.ReadP as P
+<span class="lineno">   46 </span>
+<span class="lineno">   47 </span>-- | Run 'scriptParser' on string input.
+<span class="lineno">   48 </span>--
+<span class="lineno">   49 </span>-- @since 3.0.0
+<span class="lineno">   50 </span>scriptFromString
+<span class="lineno">   51 </span>    :: ReadP (Script a)
+<span class="lineno">   52 </span>    -&gt; String
+<span class="lineno">   53 </span>    -&gt; Either ErrValidateScript (Script a)
+<span class="lineno">   54 </span><span class="decl"><span class="istickedoff">scriptFromString parser str =</span>
+<span class="lineno">   55 </span><span class="spaces">    </span><span class="istickedoff">case readP_to_S (scriptParser parser) str of</span>
+<span class="lineno">   56 </span><span class="spaces">         </span><span class="istickedoff">[(script, &quot;&quot;)] -&gt; pure script</span>
+<span class="lineno">   57 </span><span class="spaces">         </span><span class="istickedoff">_ -&gt; Left Malformed</span></span>
+<span class="lineno">   58 </span>
+<span class="lineno">   59 </span>-- | Defines canonical string output for script that is
+<span class="lineno">   60 </span>-- consistent with 'scriptFromString'.
+<span class="lineno">   61 </span>--
+<span class="lineno">   62 </span>-- @since 3.10.0
+<span class="lineno">   63 </span>scriptToText
+<span class="lineno">   64 </span>    :: Show a
+<span class="lineno">   65 </span>    =&gt; Script a
+<span class="lineno">   66 </span>    -&gt; Text
+<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">scriptToText (RequireSignatureOf object) = T.pack $ show object</span>
+<span class="lineno">   68 </span><span class="spaces"></span><span class="istickedoff">scriptToText (RequireAllOf contents) =</span>
+<span class="lineno">   69 </span><span class="spaces">    </span><span class="istickedoff">&quot;all [&quot; &lt;&gt;  T.intercalate &quot;,&quot; (map scriptToText contents) &lt;&gt; &quot;]&quot;</span>
+<span class="lineno">   70 </span><span class="spaces"></span><span class="istickedoff">scriptToText (RequireAnyOf contents) =</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">&quot;any [&quot; &lt;&gt;  T.intercalate &quot;,&quot; (map scriptToText contents) &lt;&gt; &quot;]&quot;</span>
+<span class="lineno">   72 </span><span class="spaces"></span><span class="istickedoff">scriptToText (RequireSomeOf m contents) =</span>
+<span class="lineno">   73 </span><span class="spaces">    </span><span class="istickedoff">&quot;at_least &quot;&lt;&gt; T.pack (show m) &lt;&gt;</span>
+<span class="lineno">   74 </span><span class="spaces">    </span><span class="istickedoff">&quot; [&quot; &lt;&gt;  T.intercalate &quot;,&quot; (map scriptToText contents) &lt;&gt; &quot;]&quot;</span>
+<span class="lineno">   75 </span><span class="spaces"></span><span class="istickedoff">scriptToText (ActiveFromSlot s) =</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">&quot;active_from &quot; &lt;&gt; T.pack (show s)</span>
+<span class="lineno">   77 </span><span class="spaces"></span><span class="istickedoff">scriptToText (ActiveUntilSlot s) =</span>
+<span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">&quot;active_until &quot; &lt;&gt; T.pack (show s)</span></span>
+<span class="lineno">   79 </span>
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>-- | The script embodies combination of signing keys that need to be met to make
+<span class="lineno">   82 </span>-- it valid. We assume here that the script could
+<span class="lineno">   83 </span>-- delivered from standard input. The examples below are self-explanatory:
+<span class="lineno">   84 </span>--
+<span class="lineno">   85 </span>-- 1. requiring signature
+<span class="lineno">   86 </span>-- 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
+<span class="lineno">   87 </span>--
+<span class="lineno">   88 </span>-- 2. 'any' for signature required
+<span class="lineno">   89 </span>-- any [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+<span class="lineno">   90 </span>--
+<span class="lineno">   91 </span>-- 3. 'all' signatures required
+<span class="lineno">   92 </span>-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+<span class="lineno">   93 </span>--
+<span class="lineno">   94 </span>-- 4. 'at_least' 1 signature required
+<span class="lineno">   95 </span>-- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+<span class="lineno">   96 </span>--
+<span class="lineno">   97 </span>-- 5. Nested script are supported
+<span class="lineno">   98 </span>-- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
+<span class="lineno">   99 </span>-- 6. 1 signature required after slot number 120
+<span class="lineno">  100 </span>-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 120]
+<span class="lineno">  101 </span>-- 7. 1 signature required until slot number 150
+<span class="lineno">  102 </span>-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_until 150]
+<span class="lineno">  103 </span>-- 8. 1 signature required in slot interval &lt;145, 150)
+<span class="lineno">  104 </span>-- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 145, active_until 150]
+<span class="lineno">  105 </span>--
+<span class="lineno">  106 </span>-- Parser is insensitive to whitespaces.
+<span class="lineno">  107 </span>--
+<span class="lineno">  108 </span>-- @since 3.0.0
+<span class="lineno">  109 </span>scriptParser :: ReadP (Script a) -&gt; ReadP (Script a)
+<span class="lineno">  110 </span><span class="decl"><span class="istickedoff">scriptParser parser =</span>
+<span class="lineno">  111 </span><span class="spaces">    </span><span class="istickedoff">requireAllOfParser parser &lt;++</span>
+<span class="lineno">  112 </span><span class="spaces">    </span><span class="istickedoff">requireAnyOfParser parser &lt;++</span>
+<span class="lineno">  113 </span><span class="spaces">    </span><span class="istickedoff">requireAtLeastOfParser parser &lt;++</span>
+<span class="lineno">  114 </span><span class="spaces">    </span><span class="istickedoff">parser &lt;++</span>
+<span class="lineno">  115 </span><span class="spaces">    </span><span class="istickedoff">activeFromSlotParser &lt;++</span>
+<span class="lineno">  116 </span><span class="spaces">    </span><span class="istickedoff">activeUntilSlotParser</span></span>
+<span class="lineno">  117 </span>
+<span class="lineno">  118 </span>requireSignatureOfParser :: ReadP (Script KeyHash)
+<span class="lineno">  119 </span><span class="decl"><span class="istickedoff">requireSignatureOfParser = do</span>
+<span class="lineno">  120 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  121 </span><span class="spaces">    </span><span class="istickedoff">verKeyStr &lt;- P.munch1 (\c -&gt; isDigit c || isLetter c || c == '_')</span>
+<span class="lineno">  122 </span><span class="spaces">    </span><span class="istickedoff">case keyHashFromText (T.pack verKeyStr) of</span>
+<span class="lineno">  123 </span><span class="spaces">        </span><span class="istickedoff">Left e  -&gt; fail <span class="nottickedoff">(prettyErrKeyHashFromText e)</span></span>
+<span class="lineno">  124 </span><span class="spaces">        </span><span class="istickedoff">Right h -&gt; pure (RequireSignatureOf h)</span></span>
+<span class="lineno">  125 </span>
+<span class="lineno">  126 </span>requireCosignerOfParser :: ReadP (Script Cosigner)
+<span class="lineno">  127 </span><span class="decl"><span class="istickedoff">requireCosignerOfParser = do</span>
+<span class="lineno">  128 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  129 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;cosigner#&quot;</span>
+<span class="lineno">  130 </span><span class="spaces">    </span><span class="istickedoff">cosignerid &lt;- fromInteger . read &lt;$&gt; P.munch1 isDigit</span>
+<span class="lineno">  131 </span><span class="spaces">    </span><span class="istickedoff">pure $ RequireSignatureOf $ Cosigner cosignerid</span></span>
+<span class="lineno">  132 </span>
+<span class="lineno">  133 </span>requireAllOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
+<span class="lineno">  134 </span><span class="decl"><span class="istickedoff">requireAllOfParser parser = do</span>
+<span class="lineno">  135 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;all&quot;</span>
+<span class="lineno">  137 </span><span class="spaces">    </span><span class="istickedoff">RequireAllOf &lt;$&gt; commonPart parser</span></span>
+<span class="lineno">  138 </span>
+<span class="lineno">  139 </span>requireAnyOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
+<span class="lineno">  140 </span><span class="decl"><span class="istickedoff">requireAnyOfParser parser = do</span>
+<span class="lineno">  141 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  142 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;any&quot;</span>
+<span class="lineno">  143 </span><span class="spaces">    </span><span class="istickedoff">RequireAnyOf &lt;$&gt; commonPart parser</span></span>
+<span class="lineno">  144 </span>
+<span class="lineno">  145 </span>requireAtLeastOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
+<span class="lineno">  146 </span><span class="decl"><span class="istickedoff">requireAtLeastOfParser parser = do</span>
+<span class="lineno">  147 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  148 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;at_least&quot;</span>
+<span class="lineno">  149 </span><span class="spaces">    </span><span class="istickedoff">RequireSomeOf &lt;$&gt; naturalParser &lt;*&gt; commonPart parser</span></span>
+<span class="lineno">  150 </span>
+<span class="lineno">  151 </span>activeFromSlotParser :: ReadP (Script a)
+<span class="lineno">  152 </span><span class="decl"><span class="istickedoff">activeFromSlotParser = do</span>
+<span class="lineno">  153 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  154 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;active_from&quot;</span>
+<span class="lineno">  155 </span><span class="spaces">    </span><span class="istickedoff">ActiveFromSlot &lt;$&gt; slotParser</span></span>
+<span class="lineno">  156 </span>
+<span class="lineno">  157 </span>activeUntilSlotParser :: ReadP (Script a)
+<span class="lineno">  158 </span><span class="decl"><span class="istickedoff">activeUntilSlotParser = do</span>
+<span class="lineno">  159 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  160 </span><span class="spaces">    </span><span class="istickedoff">_identifier &lt;- P.string &quot;active_until&quot;</span>
+<span class="lineno">  161 </span><span class="spaces">    </span><span class="istickedoff">ActiveUntilSlot &lt;$&gt; slotParser</span></span>
+<span class="lineno">  162 </span>
+<span class="lineno">  163 </span>naturalParser :: ReadP Word8
+<span class="lineno">  164 </span><span class="decl"><span class="istickedoff">naturalParser = do</span>
+<span class="lineno">  165 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  166 </span><span class="spaces">    </span><span class="istickedoff">fromInteger . read &lt;$&gt; P.munch1 isDigit</span></span>
+<span class="lineno">  167 </span>
+<span class="lineno">  168 </span>slotParser :: ReadP Natural
+<span class="lineno">  169 </span><span class="decl"><span class="istickedoff">slotParser = do</span>
+<span class="lineno">  170 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  171 </span><span class="spaces">    </span><span class="istickedoff">fromInteger . read &lt;$&gt; P.munch1 isDigit</span></span>
+<span class="lineno">  172 </span>
+<span class="lineno">  173 </span>commonPart :: ReadP (Script a) -&gt; ReadP [Script a]
+<span class="lineno">  174 </span><span class="decl"><span class="istickedoff">commonPart parser = do</span>
+<span class="lineno">  175 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  176 </span><span class="spaces">    </span><span class="istickedoff">_open &lt;- P.string &quot;[&quot;</span>
+<span class="lineno">  177 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  178 </span><span class="spaces">    </span><span class="istickedoff">content &lt;- P.sepBy (scriptParser parser) (P.string &quot;,&quot;)</span>
+<span class="lineno">  179 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  180 </span><span class="spaces">    </span><span class="istickedoff">_close &lt;- P.string &quot;]&quot;</span>
+<span class="lineno">  181 </span><span class="spaces">    </span><span class="istickedoff">P.skipSpaces</span>
+<span class="lineno">  182 </span><span class="spaces">    </span><span class="istickedoff">return content</span></span>
+
+</pre>
+</body>
+</html>

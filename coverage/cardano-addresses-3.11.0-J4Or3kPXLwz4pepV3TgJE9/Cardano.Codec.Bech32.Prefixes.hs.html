@@ -1,0 +1,237 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    2 </span>{-# LANGUAGE QuasiQuotes #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+<span class="lineno">    5 </span>{- HLINT ignore &quot;Use camelCase&quot; -}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>-- | List common bech32 prefixes used for objects in the Cardano eco-systems.
+<span class="lineno">    8 </span>--
+<span class="lineno">    9 </span>-- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)
+<span class="lineno">   10 </span>module Cardano.Codec.Bech32.Prefixes
+<span class="lineno">   11 </span>    ( -- * Addresses
+<span class="lineno">   12 </span>      addr
+<span class="lineno">   13 </span>    , addr_test
+<span class="lineno">   14 </span>    , script
+<span class="lineno">   15 </span>    , stake
+<span class="lineno">   16 </span>    , stake_test
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>      -- * Hashes
+<span class="lineno">   19 </span>    , addr_vkh
+<span class="lineno">   20 </span>    , stake_vkh
+<span class="lineno">   21 </span>    , addr_shared_vkh
+<span class="lineno">   22 </span>    , stake_shared_vkh
+<span class="lineno">   23 </span>
+<span class="lineno">   24 </span>      -- * Keys for 1852H
+<span class="lineno">   25 </span>    , addr_vk
+<span class="lineno">   26 </span>    , addr_sk
+<span class="lineno">   27 </span>    , addr_xvk
+<span class="lineno">   28 </span>    , addr_xsk
+<span class="lineno">   29 </span>    , acct_vk
+<span class="lineno">   30 </span>    , acct_sk
+<span class="lineno">   31 </span>    , acct_xvk
+<span class="lineno">   32 </span>    , acct_xsk
+<span class="lineno">   33 </span>    , root_vk
+<span class="lineno">   34 </span>    , root_sk
+<span class="lineno">   35 </span>    , root_xvk
+<span class="lineno">   36 </span>    , root_xsk
+<span class="lineno">   37 </span>    , stake_vk
+<span class="lineno">   38 </span>    , stake_sk
+<span class="lineno">   39 </span>    , stake_xvk
+<span class="lineno">   40 </span>    , stake_xsk
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>      -- * Keys for 1854H
+<span class="lineno">   43 </span>    , addr_shared_vk
+<span class="lineno">   44 </span>    , addr_shared_sk
+<span class="lineno">   45 </span>    , addr_shared_xvk
+<span class="lineno">   46 </span>    , addr_shared_xsk
+<span class="lineno">   47 </span>    , acct_shared_vk
+<span class="lineno">   48 </span>    , acct_shared_sk
+<span class="lineno">   49 </span>    , acct_shared_xvk
+<span class="lineno">   50 </span>    , acct_shared_xsk
+<span class="lineno">   51 </span>    , root_shared_vk
+<span class="lineno">   52 </span>    , root_shared_sk
+<span class="lineno">   53 </span>    , root_shared_xvk
+<span class="lineno">   54 </span>    , root_shared_xsk
+<span class="lineno">   55 </span>    , stake_shared_vk
+<span class="lineno">   56 </span>    , stake_shared_sk
+<span class="lineno">   57 </span>    , stake_shared_xvk
+<span class="lineno">   58 </span>    , stake_shared_xsk
+<span class="lineno">   59 </span>
+<span class="lineno">   60 </span>      -- * Keys for 1855H
+<span class="lineno">   61 </span>    , policy_vk
+<span class="lineno">   62 </span>    , policy_xvk
+<span class="lineno">   63 </span>    , policy_vkh
+<span class="lineno">   64 </span>    , policy_xsk
+<span class="lineno">   65 </span>    ) where
+<span class="lineno">   66 </span>
+<span class="lineno">   67 </span>import Codec.Binary.Bech32
+<span class="lineno">   68 </span>    ( HumanReadablePart )
+<span class="lineno">   69 </span>import Codec.Binary.Bech32.TH
+<span class="lineno">   70 </span>    ( humanReadablePart )
+<span class="lineno">   71 </span>
+<span class="lineno">   72 </span>
+<span class="lineno">   73 </span>-- Addresses
+<span class="lineno">   74 </span>
+<span class="lineno">   75 </span>addr :: HumanReadablePart
+<span class="lineno">   76 </span><span class="decl"><span class="istickedoff">addr = [humanReadablePart|addr|]</span></span>
+<span class="lineno">   77 </span>
+<span class="lineno">   78 </span>addr_test :: HumanReadablePart
+<span class="lineno">   79 </span><span class="decl"><span class="istickedoff">addr_test = [humanReadablePart|addr_test|]</span></span>
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>script :: HumanReadablePart
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">script = [humanReadablePart|script|]</span></span>
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>stake :: HumanReadablePart
+<span class="lineno">   85 </span><span class="decl"><span class="istickedoff">stake = [humanReadablePart|stake|]</span></span>
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>stake_test :: HumanReadablePart
+<span class="lineno">   88 </span><span class="decl"><span class="istickedoff">stake_test = [humanReadablePart|stake_test|]</span></span>
+<span class="lineno">   89 </span>
+<span class="lineno">   90 </span>
+<span class="lineno">   91 </span>-- Keys
+<span class="lineno">   92 </span>
+<span class="lineno">   93 </span>addr_vk :: HumanReadablePart
+<span class="lineno">   94 </span><span class="decl"><span class="istickedoff">addr_vk = [humanReadablePart|addr_vk|]</span></span>
+<span class="lineno">   95 </span>
+<span class="lineno">   96 </span>addr_sk :: HumanReadablePart
+<span class="lineno">   97 </span><span class="decl"><span class="nottickedoff">addr_sk = [humanReadablePart|addr_sk|]</span></span>
+<span class="lineno">   98 </span>
+<span class="lineno">   99 </span>addr_xvk :: HumanReadablePart
+<span class="lineno">  100 </span><span class="decl"><span class="istickedoff">addr_xvk = [humanReadablePart|addr_xvk|]</span></span>
+<span class="lineno">  101 </span>
+<span class="lineno">  102 </span>addr_xsk :: HumanReadablePart
+<span class="lineno">  103 </span><span class="decl"><span class="istickedoff">addr_xsk = [humanReadablePart|addr_xsk|]</span></span>
+<span class="lineno">  104 </span>
+<span class="lineno">  105 </span>acct_vk :: HumanReadablePart
+<span class="lineno">  106 </span><span class="decl"><span class="istickedoff">acct_vk = [humanReadablePart|acct_vk|]</span></span>
+<span class="lineno">  107 </span>
+<span class="lineno">  108 </span>acct_sk :: HumanReadablePart
+<span class="lineno">  109 </span><span class="decl"><span class="nottickedoff">acct_sk = [humanReadablePart|acct_sk|]</span></span>
+<span class="lineno">  110 </span>
+<span class="lineno">  111 </span>acct_xvk :: HumanReadablePart
+<span class="lineno">  112 </span><span class="decl"><span class="istickedoff">acct_xvk = [humanReadablePart|acct_xvk|]</span></span>
+<span class="lineno">  113 </span>
+<span class="lineno">  114 </span>acct_xsk :: HumanReadablePart
+<span class="lineno">  115 </span><span class="decl"><span class="istickedoff">acct_xsk = [humanReadablePart|acct_xsk|]</span></span>
+<span class="lineno">  116 </span>
+<span class="lineno">  117 </span>root_vk :: HumanReadablePart
+<span class="lineno">  118 </span><span class="decl"><span class="istickedoff">root_vk = [humanReadablePart|root_vk|]</span></span>
+<span class="lineno">  119 </span>
+<span class="lineno">  120 </span>root_sk :: HumanReadablePart
+<span class="lineno">  121 </span><span class="decl"><span class="nottickedoff">root_sk = [humanReadablePart|root_sk|]</span></span>
+<span class="lineno">  122 </span>
+<span class="lineno">  123 </span>root_xvk :: HumanReadablePart
+<span class="lineno">  124 </span><span class="decl"><span class="istickedoff">root_xvk = [humanReadablePart|root_xvk|]</span></span>
+<span class="lineno">  125 </span>
+<span class="lineno">  126 </span>root_xsk :: HumanReadablePart
+<span class="lineno">  127 </span><span class="decl"><span class="istickedoff">root_xsk = [humanReadablePart|root_xsk|]</span></span>
+<span class="lineno">  128 </span>
+<span class="lineno">  129 </span>stake_vk :: HumanReadablePart
+<span class="lineno">  130 </span><span class="decl"><span class="istickedoff">stake_vk = [humanReadablePart|stake_vk|]</span></span>
+<span class="lineno">  131 </span>
+<span class="lineno">  132 </span>stake_sk :: HumanReadablePart
+<span class="lineno">  133 </span><span class="decl"><span class="nottickedoff">stake_sk = [humanReadablePart|stake_sk|]</span></span>
+<span class="lineno">  134 </span>
+<span class="lineno">  135 </span>stake_xvk :: HumanReadablePart
+<span class="lineno">  136 </span><span class="decl"><span class="istickedoff">stake_xvk = [humanReadablePart|stake_xvk|]</span></span>
+<span class="lineno">  137 </span>
+<span class="lineno">  138 </span>stake_xsk :: HumanReadablePart
+<span class="lineno">  139 </span><span class="decl"><span class="istickedoff">stake_xsk = [humanReadablePart|stake_xsk|]</span></span>
+<span class="lineno">  140 </span>
+<span class="lineno">  141 </span>addr_shared_vk :: HumanReadablePart
+<span class="lineno">  142 </span><span class="decl"><span class="istickedoff">addr_shared_vk = [humanReadablePart|addr_shared_vk|]</span></span>
+<span class="lineno">  143 </span>
+<span class="lineno">  144 </span>addr_shared_sk :: HumanReadablePart
+<span class="lineno">  145 </span><span class="decl"><span class="nottickedoff">addr_shared_sk = [humanReadablePart|addr_shared_sk|]</span></span>
+<span class="lineno">  146 </span>
+<span class="lineno">  147 </span>addr_shared_xvk :: HumanReadablePart
+<span class="lineno">  148 </span><span class="decl"><span class="istickedoff">addr_shared_xvk = [humanReadablePart|addr_shared_xvk|]</span></span>
+<span class="lineno">  149 </span>
+<span class="lineno">  150 </span>addr_shared_xsk :: HumanReadablePart
+<span class="lineno">  151 </span><span class="decl"><span class="istickedoff">addr_shared_xsk = [humanReadablePart|addr_shared_xsk|]</span></span>
+<span class="lineno">  152 </span>
+<span class="lineno">  153 </span>acct_shared_vk :: HumanReadablePart
+<span class="lineno">  154 </span><span class="decl"><span class="istickedoff">acct_shared_vk = [humanReadablePart|acct_shared_vk|]</span></span>
+<span class="lineno">  155 </span>
+<span class="lineno">  156 </span>acct_shared_sk :: HumanReadablePart
+<span class="lineno">  157 </span><span class="decl"><span class="nottickedoff">acct_shared_sk = [humanReadablePart|acct_shared_sk|]</span></span>
+<span class="lineno">  158 </span>
+<span class="lineno">  159 </span>acct_shared_xvk :: HumanReadablePart
+<span class="lineno">  160 </span><span class="decl"><span class="istickedoff">acct_shared_xvk = [humanReadablePart|acct_shared_xvk|]</span></span>
+<span class="lineno">  161 </span>
+<span class="lineno">  162 </span>acct_shared_xsk :: HumanReadablePart
+<span class="lineno">  163 </span><span class="decl"><span class="istickedoff">acct_shared_xsk = [humanReadablePart|acct_shared_xsk|]</span></span>
+<span class="lineno">  164 </span>
+<span class="lineno">  165 </span>root_shared_vk :: HumanReadablePart
+<span class="lineno">  166 </span><span class="decl"><span class="istickedoff">root_shared_vk = [humanReadablePart|root_shared_vk|]</span></span>
+<span class="lineno">  167 </span>
+<span class="lineno">  168 </span>root_shared_sk :: HumanReadablePart
+<span class="lineno">  169 </span><span class="decl"><span class="nottickedoff">root_shared_sk = [humanReadablePart|root_shared_sk|]</span></span>
+<span class="lineno">  170 </span>
+<span class="lineno">  171 </span>root_shared_xvk :: HumanReadablePart
+<span class="lineno">  172 </span><span class="decl"><span class="istickedoff">root_shared_xvk = [humanReadablePart|root_shared_xvk|]</span></span>
+<span class="lineno">  173 </span>
+<span class="lineno">  174 </span>root_shared_xsk :: HumanReadablePart
+<span class="lineno">  175 </span><span class="decl"><span class="istickedoff">root_shared_xsk = [humanReadablePart|root_shared_xsk|]</span></span>
+<span class="lineno">  176 </span>
+<span class="lineno">  177 </span>stake_shared_vk :: HumanReadablePart
+<span class="lineno">  178 </span><span class="decl"><span class="istickedoff">stake_shared_vk = [humanReadablePart|stake_shared_vk|]</span></span>
+<span class="lineno">  179 </span>
+<span class="lineno">  180 </span>stake_shared_sk :: HumanReadablePart
+<span class="lineno">  181 </span><span class="decl"><span class="nottickedoff">stake_shared_sk = [humanReadablePart|stake_shared_sk|]</span></span>
+<span class="lineno">  182 </span>
+<span class="lineno">  183 </span>stake_shared_xvk :: HumanReadablePart
+<span class="lineno">  184 </span><span class="decl"><span class="istickedoff">stake_shared_xvk = [humanReadablePart|stake_shared_xvk|]</span></span>
+<span class="lineno">  185 </span>
+<span class="lineno">  186 </span>stake_shared_xsk :: HumanReadablePart
+<span class="lineno">  187 </span><span class="decl"><span class="istickedoff">stake_shared_xsk = [humanReadablePart|stake_shared_xsk|]</span></span>
+<span class="lineno">  188 </span>
+<span class="lineno">  189 </span>-- Hashes
+<span class="lineno">  190 </span>
+<span class="lineno">  191 </span>addr_vkh :: HumanReadablePart
+<span class="lineno">  192 </span><span class="decl"><span class="istickedoff">addr_vkh = [humanReadablePart|addr_vkh|]</span></span>
+<span class="lineno">  193 </span>
+<span class="lineno">  194 </span>stake_vkh :: HumanReadablePart
+<span class="lineno">  195 </span><span class="decl"><span class="istickedoff">stake_vkh = [humanReadablePart|stake_vkh|]</span></span>
+<span class="lineno">  196 </span>
+<span class="lineno">  197 </span>addr_shared_vkh :: HumanReadablePart
+<span class="lineno">  198 </span><span class="decl"><span class="istickedoff">addr_shared_vkh = [humanReadablePart|addr_shared_vkh|]</span></span>
+<span class="lineno">  199 </span>
+<span class="lineno">  200 </span>stake_shared_vkh :: HumanReadablePart
+<span class="lineno">  201 </span><span class="decl"><span class="istickedoff">stake_shared_vkh = [humanReadablePart|stake_shared_vkh|]</span></span>
+<span class="lineno">  202 </span>
+<span class="lineno">  203 </span>-- Policy
+<span class="lineno">  204 </span>policy_vk :: HumanReadablePart
+<span class="lineno">  205 </span><span class="decl"><span class="istickedoff">policy_vk = [humanReadablePart|policy_vk|]</span></span>
+<span class="lineno">  206 </span>
+<span class="lineno">  207 </span>policy_xvk :: HumanReadablePart
+<span class="lineno">  208 </span><span class="decl"><span class="istickedoff">policy_xvk = [humanReadablePart|policy_xvk|]</span></span>
+<span class="lineno">  209 </span>
+<span class="lineno">  210 </span>policy_vkh :: HumanReadablePart
+<span class="lineno">  211 </span><span class="decl"><span class="istickedoff">policy_vkh = [humanReadablePart|policy_vkh|]</span></span>
+<span class="lineno">  212 </span>
+<span class="lineno">  213 </span>policy_xsk :: HumanReadablePart
+<span class="lineno">  214 </span><span class="decl"><span class="istickedoff">policy_xsk = [humanReadablePart|policy_xsk|]</span></span>
+
+</pre>
+</body>
+</html>

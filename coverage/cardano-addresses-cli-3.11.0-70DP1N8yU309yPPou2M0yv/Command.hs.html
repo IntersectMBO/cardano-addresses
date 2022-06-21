@@ -1,0 +1,152 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>module Command
+<span class="lineno">    7 </span>    ( CLI
+<span class="lineno">    8 </span>
+<span class="lineno">    9 </span>    -- * I/O interface
+<span class="lineno">   10 </span>    , setup
+<span class="lineno">   11 </span>    , parse
+<span class="lineno">   12 </span>    , run
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>    -- * I/O Fix
+<span class="lineno">   15 </span>    , withUtf8Encoding
+<span class="lineno">   16 </span>    ) where
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>import Prelude
+<span class="lineno">   19 </span>
+<span class="lineno">   20 </span>import Control.Exception
+<span class="lineno">   21 </span>    ( handle )
+<span class="lineno">   22 </span>import Control.Monad
+<span class="lineno">   23 </span>    ( void )
+<span class="lineno">   24 </span>import Options.Applicative
+<span class="lineno">   25 </span>    ( ParserInfo
+<span class="lineno">   26 </span>    , customExecParser
+<span class="lineno">   27 </span>    , footerDoc
+<span class="lineno">   28 </span>    , helper
+<span class="lineno">   29 </span>    , info
+<span class="lineno">   30 </span>    , prefs
+<span class="lineno">   31 </span>    , progDesc
+<span class="lineno">   32 </span>    , showHelpOnEmpty
+<span class="lineno">   33 </span>    , subparser
+<span class="lineno">   34 </span>    , (&lt;|&gt;)
+<span class="lineno">   35 </span>    )
+<span class="lineno">   36 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   37 </span>    ( bold, hsep, string, vsep )
+<span class="lineno">   38 </span>import System.Console.ANSI
+<span class="lineno">   39 </span>    ( hSupportsANSIWithoutEmulation )
+<span class="lineno">   40 </span>import System.IO
+<span class="lineno">   41 </span>    ( BufferMode (..)
+<span class="lineno">   42 </span>    , Handle
+<span class="lineno">   43 </span>    , hSetBuffering
+<span class="lineno">   44 </span>    , hSetEncoding
+<span class="lineno">   45 </span>    , mkTextEncoding
+<span class="lineno">   46 </span>    , stderr
+<span class="lineno">   47 </span>    , stdin
+<span class="lineno">   48 </span>    , stdout
+<span class="lineno">   49 </span>    )
+<span class="lineno">   50 </span>import System.IO.CodePage
+<span class="lineno">   51 </span>    ( withCP65001 )
+<span class="lineno">   52 </span>import System.IO.Extra
+<span class="lineno">   53 </span>    ( prettyIOException, progName )
+<span class="lineno">   54 </span>
+<span class="lineno">   55 </span>import qualified Command.Address as Address
+<span class="lineno">   56 </span>import qualified Command.Key as Key
+<span class="lineno">   57 </span>import qualified Command.RecoveryPhrase as RecoveryPhrase
+<span class="lineno">   58 </span>import qualified Command.Script as Script
+<span class="lineno">   59 </span>import qualified Command.Version as Version
+<span class="lineno">   60 </span>
+<span class="lineno">   61 </span>data CLI
+<span class="lineno">   62 </span>    = RecoveryPhrase RecoveryPhrase.Cmd
+<span class="lineno">   63 </span>    | Key Key.Cmd
+<span class="lineno">   64 </span>    | Address Address.Cmd
+<span class="lineno">   65 </span>    | Script Script.Cmd
+<span class="lineno">   66 </span>    | Version
+<span class="lineno">   67 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   68 </span>
+<span class="lineno">   69 </span>cli :: ParserInfo CLI
+<span class="lineno">   70 </span><span class="decl"><span class="istickedoff">cli = info (helper &lt;*&gt; parser) $ mempty</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; progDesc &quot;Command-line for address and key manipulation in Cardano.&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   73 </span><span class="spaces">        </span><span class="istickedoff">[ string &quot;💡 Need auto-completion?&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">        </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff">, hsep</span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;  ↳&quot;</span>
+<span class="lineno">   77 </span><span class="spaces">            </span><span class="istickedoff">, bold $ string &quot;source &lt;(&quot;</span>
+<span class="lineno">   78 </span><span class="spaces">            </span><span class="istickedoff">, bold $ string progName</span>
+<span class="lineno">   79 </span><span class="spaces">            </span><span class="istickedoff">, bold $ string $ &quot;--bash-completion-script `which &quot;&lt;&gt;progName&lt;&gt;&quot;`)&quot;</span>
+<span class="lineno">   80 </span><span class="spaces">            </span><span class="istickedoff">]</span>
+<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   82 </span><span class="spaces">        </span><span class="istickedoff">, string &quot;Or alternatively --fish-completion-script / --zsh-completion-script.&quot;</span>
+<span class="lineno">   83 </span><span class="spaces">        </span><span class="istickedoff">, string &quot;For a long-term solution, you may want to put this script in the relevant place. e.g.:&quot;</span>
+<span class="lineno">   84 </span><span class="spaces">        </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff">, hsep [string &quot;  ↳&quot;, bold $ string &quot;/etc/bash_completion.d&quot;]</span>
+<span class="lineno">   86 </span><span class="spaces">        </span><span class="istickedoff">])</span>
+<span class="lineno">   87 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">parser = Version.opt Version &lt;|&gt; subparser (mconcat</span>
+<span class="lineno">   89 </span><span class="spaces">        </span><span class="istickedoff">[ RecoveryPhrase.mod RecoveryPhrase</span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">, Key.mod Key</span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">, Address.mod Address</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">, Script.mod Script</span>
+<span class="lineno">   93 </span><span class="spaces">        </span><span class="istickedoff">])</span></span>
+<span class="lineno">   94 </span>
+<span class="lineno">   95 </span>-- | Run a given command
+<span class="lineno">   96 </span>run :: CLI -&gt; IO ()
+<span class="lineno">   97 </span><span class="decl"><span class="istickedoff">run = handle prettyIOException . \case</span>
+<span class="lineno">   98 </span><span class="spaces">    </span><span class="istickedoff">RecoveryPhrase sub -&gt; RecoveryPhrase.run sub</span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">Key sub -&gt; Key.run sub</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">Address sub -&gt; Address.run sub</span>
+<span class="lineno">  101 </span><span class="spaces">    </span><span class="istickedoff">Script sub -&gt; Script.run sub</span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">Version -&gt; Version.run</span></span>
+<span class="lineno">  103 </span>
+<span class="lineno">  104 </span>-- | Parse command line options and arguments
+<span class="lineno">  105 </span>parse :: IO CLI
+<span class="lineno">  106 </span><span class="decl"><span class="istickedoff">parse = customExecParser (prefs showHelpOnEmpty) cli</span></span>
+<span class="lineno">  107 </span>
+<span class="lineno">  108 </span>-- | Enable ANSI colors on Windows and correct output buffering
+<span class="lineno">  109 </span>setup :: IO ()
+<span class="lineno">  110 </span><span class="decl"><span class="istickedoff">setup =</span>
+<span class="lineno">  111 </span><span class="spaces">    </span><span class="istickedoff">mapM_ hSetup [stderr, stdout, stdin]</span>
+<span class="lineno">  112 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  113 </span><span class="spaces">    </span><span class="istickedoff">hSetup :: Handle -&gt; IO ()</span>
+<span class="lineno">  114 </span><span class="spaces">    </span><span class="istickedoff">hSetup h = do</span>
+<span class="lineno">  115 </span><span class="spaces">      </span><span class="istickedoff">void $ hSupportsANSIWithoutEmulation h</span>
+<span class="lineno">  116 </span><span class="spaces">      </span><span class="istickedoff">hSetBuffering h NoBuffering</span></span>
+<span class="lineno">  117 </span>
+<span class="lineno">  118 </span>-- | Force the locale text encoding to UTF-8. This is needed because the CLI
+<span class="lineno">  119 </span>-- prints UTF-8 characters regardless of the @LANG@ environment variable or any
+<span class="lineno">  120 </span>-- other settings.
+<span class="lineno">  121 </span>--
+<span class="lineno">  122 </span>-- On Windows the current console code page is changed to UTF-8.
+<span class="lineno">  123 </span>withUtf8Encoding :: IO a -&gt; IO a
+<span class="lineno">  124 </span><span class="decl"><span class="istickedoff">withUtf8Encoding action = withCP65001 (setUtf8EncodingHandles &gt;&gt; action)</span>
+<span class="lineno">  125 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  126 </span><span class="spaces">    </span><span class="istickedoff">setUtf8EncodingHandles :: IO ()</span>
+<span class="lineno">  127 </span><span class="spaces">    </span><span class="istickedoff">setUtf8EncodingHandles = do</span>
+<span class="lineno">  128 </span><span class="spaces">        </span><span class="istickedoff">utf8' &lt;- mkTextEncoding &quot;UTF-8//TRANSLIT&quot;</span>
+<span class="lineno">  129 </span><span class="spaces">        </span><span class="istickedoff">mapM_ (`hSetEncoding` utf8') [stdin, stdout, stderr]</span></span>
+
+</pre>
+</body>
+</html>
