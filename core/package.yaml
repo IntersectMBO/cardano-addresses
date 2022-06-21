@@ -54,6 +54,7 @@ library:
   - exceptions
   - extra
   - fmt
+  - hw-aeson
   - hashable
   - memory
   - text
