@@ -1,0 +1,118 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>
+<span class="lineno">    3 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>module Options.Applicative.Script
+<span class="lineno">    6 </span>    (
+<span class="lineno">    7 </span>    -- ** Applicative Parser
+<span class="lineno">    8 </span>      scriptArg
+<span class="lineno">    9 </span>    , scriptReader
+<span class="lineno">   10 </span>    , scriptHashArg
+<span class="lineno">   11 </span>    , scriptHashReader
+<span class="lineno">   12 </span>    , levelOpt
+<span class="lineno">   13 </span>    , scriptTemplateReader
+<span class="lineno">   14 </span>    , scriptTemplateSpendingArg
+<span class="lineno">   15 </span>    , scriptTemplateStakingArg
+<span class="lineno">   16 </span>    ) where
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>import Prelude
+<span class="lineno">   19 </span>
+<span class="lineno">   20 </span>import Cardano.Address.Script
+<span class="lineno">   21 </span>    ( Cosigner (..)
+<span class="lineno">   22 </span>    , KeyHash
+<span class="lineno">   23 </span>    , Script (..)
+<span class="lineno">   24 </span>    , ScriptHash
+<span class="lineno">   25 </span>    , ValidationLevel (..)
+<span class="lineno">   26 </span>    , prettyErrValidateScript
+<span class="lineno">   27 </span>    , scriptHashFromBytes
+<span class="lineno">   28 </span>    )
+<span class="lineno">   29 </span>import Cardano.Address.Script.Parser
+<span class="lineno">   30 </span>    ( requireCosignerOfParser, requireSignatureOfParser, scriptFromString )
+<span class="lineno">   31 </span>import Control.Applicative
+<span class="lineno">   32 </span>    ( (&lt;|&gt;) )
+<span class="lineno">   33 </span>import Control.Arrow
+<span class="lineno">   34 </span>    ( left )
+<span class="lineno">   35 </span>import Options.Applicative
+<span class="lineno">   36 </span>    ( Parser, argument, eitherReader, flag', help, long, metavar, option )
+<span class="lineno">   37 </span>import Options.Applicative.Derivation
+<span class="lineno">   38 </span>    ( bech32Reader )
+<span class="lineno">   39 </span>
+<span class="lineno">   40 </span>
+<span class="lineno">   41 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   42 </span>
+<span class="lineno">   43 </span>--
+<span class="lineno">   44 </span>-- Applicative Parsers
+<span class="lineno">   45 </span>--
+<span class="lineno">   46 </span>
+<span class="lineno">   47 </span>scriptArg :: Parser (Script KeyHash)
+<span class="lineno">   48 </span><span class="decl"><span class="istickedoff">scriptArg = argument (eitherReader scriptReader) $ mempty</span>
+<span class="lineno">   49 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;SCRIPT&quot;</span>
+<span class="lineno">   50 </span><span class="spaces">    </span><span class="istickedoff">-- TODO: Provides a bigger help text explaining how to construct a script</span>
+<span class="lineno">   51 </span><span class="spaces">    </span><span class="istickedoff">-- address.</span>
+<span class="lineno">   52 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help &quot;Script string.&quot;</span></span>
+<span class="lineno">   53 </span>
+<span class="lineno">   54 </span>scriptReader :: String -&gt; Either String (Script KeyHash)
+<span class="lineno">   55 </span><span class="decl"><span class="istickedoff">scriptReader =</span>
+<span class="lineno">   56 </span><span class="spaces">    </span><span class="istickedoff">left prettyErrValidateScript . (scriptFromString requireSignatureOfParser)</span></span>
+<span class="lineno">   57 </span>
+<span class="lineno">   58 </span>scriptHashArg :: String -&gt; Parser ScriptHash
+<span class="lineno">   59 </span><span class="decl"><span class="nottickedoff">scriptHashArg helpDoc =</span>
+<span class="lineno">   60 </span><span class="spaces">    </span><span class="nottickedoff">argument (eitherReader scriptHashReader) $ mempty</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; metavar &quot;SCRIPT HASH&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; help helpDoc</span></span>
+<span class="lineno">   63 </span>
+<span class="lineno">   64 </span>scriptHashReader :: String -&gt; Either String ScriptHash
+<span class="lineno">   65 </span><span class="decl"><span class="istickedoff">scriptHashReader str = do</span>
+<span class="lineno">   66 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, bytes) &lt;- bech32Reader allowedPrefixes str</span>
+<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">case scriptHashFromBytes bytes of</span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">Just scriptHash -&gt; pure scriptHash</span>
+<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">Left &quot;Failed to convert bytes into a valid script hash.&quot;</span></span>
+<span class="lineno">   70 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   71 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
+<span class="lineno">   72 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.script</span>
+<span class="lineno">   73 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">   74 </span>
+<span class="lineno">   75 </span>levelOpt :: Parser ValidationLevel
+<span class="lineno">   76 </span><span class="decl"><span class="istickedoff">levelOpt = required &lt;|&gt; recommended</span>
+<span class="lineno">   77 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">required = flag' RequiredValidation (long &quot;required&quot;)</span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">recommended = flag' RecommendedValidation (long &quot;recommended&quot;)</span></span>
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>scriptTemplateReader :: String -&gt; Either String (Script Cosigner)
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">scriptTemplateReader =</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">left <span class="nottickedoff">prettyErrValidateScript</span> . (scriptFromString requireCosignerOfParser)</span></span>
+<span class="lineno">   84 </span>
+<span class="lineno">   85 </span>scriptTemplateSpendingArg :: Parser (Script Cosigner)
+<span class="lineno">   86 </span><span class="decl"><span class="istickedoff">scriptTemplateSpendingArg = option (eitherReader scriptTemplateReader) $ mempty</span>
+<span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; long &quot;spending&quot;</span>
+<span class="lineno">   88 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;SPENDING SCRIPT TEMPLATE&quot;</span>
+<span class="lineno">   89 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help &quot;Spending script template string.&quot;</span></span>
+<span class="lineno">   90 </span>
+<span class="lineno">   91 </span>scriptTemplateStakingArg :: Parser (Script Cosigner)
+<span class="lineno">   92 </span><span class="decl"><span class="istickedoff">scriptTemplateStakingArg = option (eitherReader scriptTemplateReader) $ mempty</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; long &quot;staking&quot;</span>
+<span class="lineno">   94 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;STAKING SCRIPT TEMPLATE&quot;</span>
+<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help &quot;Staking script template string.&quot;</span></span>
+
+</pre>
+</body>
+</html>
