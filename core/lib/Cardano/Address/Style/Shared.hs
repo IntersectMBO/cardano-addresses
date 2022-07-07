@@ -200,10 +200,10 @@ deriveAccountPrivateKey = Internal.deriveAccountPrivateKey
 -- @since 3.4.0
 deriveAddressPrivateKey
     :: Shared 'AccountK XPrv
+    -> Role
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPrv
-deriveAddressPrivateKey accPrv = coerce .
-    Internal.deriveAddressPrivateKey accPrv UTxOExternal
+deriveAddressPrivateKey = coerce . Internal.deriveAddressPrivateKey
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 --
@@ -224,10 +224,10 @@ deriveDelegationPrivateKey accPrv = coerce .
 -- @since 3.4.0
 deriveAddressPublicKey
     :: Shared 'AccountK XPub
+    -> Role
     -> Index 'Soft 'PaymentK
     -> Shared 'ScriptK XPub
-deriveAddressPublicKey accPub = coerce .
-    Internal.deriveAddressPublicKey accPub UTxOExternal
+deriveAddressPublicKey = coerce . Internal.deriveAddressPublicKey
 
 -- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 --
