@@ -46,6 +46,8 @@ import Cardano.Address.Script.Parser
     ( requireCosignerOfParser, scriptFromString, scriptToText )
 import Cardano.Address.Style.Shared
     ( Shared (..), hashKey )
+import Cardano.Address.Style.Shelley
+    ( Role (..) )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -96,20 +98,22 @@ spec = do
     let rootK = Shared.genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
     let accXPrv = Shared.deriveAccountPrivateKey rootK minBound
 
+    let role' = UTxOExternal
+
     let index1 = minBound
-    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index1
+    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index1
     let verKeyHash1 = RequireSignatureOf $ hashKey Payment multisigXPub1
 
     let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
-    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index2
+    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index2
     let verKeyHash2 = RequireSignatureOf $ hashKey Payment multisigXPub2
 
     let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
-    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index3
+    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index3
     let verKeyHash3 = RequireSignatureOf $ hashKey Payment multisigXPub3
 
     let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
-    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv index4
+    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index4
     let verKeyHash4 = RequireSignatureOf $ hashKey Payment multisigXPub4
 
     let multisigXPub5 = toXPub <$> Shared.deriveDelegationPrivateKey accXPrv index4
