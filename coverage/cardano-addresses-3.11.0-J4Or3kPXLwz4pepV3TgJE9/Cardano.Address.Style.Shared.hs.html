@@ -219,10 +219,10 @@ span.spaces    { background: white }
 <span class="lineno">  200 </span>-- @since 3.4.0
 <span class="lineno">  201 </span>deriveAddressPrivateKey
 <span class="lineno">  202 </span>    :: Shared 'AccountK XPrv
-<span class="lineno">  203 </span>    -&gt; Index 'Soft 'PaymentK
-<span class="lineno">  204 </span>    -&gt; Shared 'ScriptK XPrv
-<span class="lineno">  205 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey accPrv = coerce .</span>
-<span class="lineno">  206 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey accPrv UTxOExternal</span></span>
+<span class="lineno">  203 </span>    -&gt; Role
+<span class="lineno">  204 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  205 </span>    -&gt; Shared 'ScriptK XPrv
+<span class="lineno">  206 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey = coerce . Internal.deriveAddressPrivateKey</span></span>
 <span class="lineno">  207 </span>
 <span class="lineno">  208 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
 <span class="lineno">  209 </span>--
@@ -243,10 +243,10 @@ span.spaces    { background: white }
 <span class="lineno">  224 </span>-- @since 3.4.0
 <span class="lineno">  225 </span>deriveAddressPublicKey
 <span class="lineno">  226 </span>    :: Shared 'AccountK XPub
-<span class="lineno">  227 </span>    -&gt; Index 'Soft 'PaymentK
-<span class="lineno">  228 </span>    -&gt; Shared 'ScriptK XPub
-<span class="lineno">  229 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey accPub = coerce .</span>
-<span class="lineno">  230 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPublicKey accPub UTxOExternal</span></span>
+<span class="lineno">  227 </span>    -&gt; Role
+<span class="lineno">  228 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  229 </span>    -&gt; Shared 'ScriptK XPub
+<span class="lineno">  230 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey = coerce . Internal.deriveAddressPublicKey</span></span>
 <span class="lineno">  231 </span>
 <span class="lineno">  232 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
 <span class="lineno">  233 </span>--

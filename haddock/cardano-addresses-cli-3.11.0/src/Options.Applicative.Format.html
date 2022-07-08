@@ -20,7 +20,7 @@
 </span><span id="line-20"></span><span>
 </span><span id="line-21"></span><span>
 </span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="FormatType"><span class="annot"><a href="Options.Applicative.Format.html#FormatType"><span class="hs-identifier hs-var">FormatType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Hex"><span class="annot"><a href="Options.Applicative.Format.html#Hex"><span class="hs-identifier hs-var">Hex</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Bech32"><span class="annot"><a href="Options.Applicative.Format.html#Bech32"><span class="hs-identifier hs-var">Bech32</span></a></span></span><span>
-</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679107247"><span id="local-6989586621679107249"><span class="annot"><span class="annottext">FormatType -&gt; FormatType -&gt; Bool
+</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679107245"><span id="local-6989586621679107247"><span class="annot"><span class="annottext">FormatType -&gt; FormatType -&gt; Bool
 (FormatType -&gt; FormatType -&gt; Bool)
 -&gt; (FormatType -&gt; FormatType -&gt; Bool) -&gt; Eq FormatType
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -28,7 +28,7 @@ forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 $c/= :: FormatType -&gt; FormatType -&gt; Bool
 == :: FormatType -&gt; FormatType -&gt; Bool
 $c== :: FormatType -&gt; FormatType -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107240"><span id="local-6989586621679107242"><span id="local-6989586621679107244"><span class="annot"><span class="annottext">Int -&gt; FormatType -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679107238"><span id="local-6989586621679107240"><span id="local-6989586621679107242"><span class="annot"><span class="annottext">Int -&gt; FormatType -&gt; ShowS
 [FormatType] -&gt; ShowS
 FormatType -&gt; String
 (Int -&gt; FormatType -&gt; ShowS)
@@ -53,15 +53,15 @@ $cshowsPrec :: Int -&gt; FormatType -&gt; ShowS
 </span><span id="line-30"></span><span class="annot"><a href="Options.Applicative.Format.html#formatOpt"><span class="hs-identifier hs-type">formatOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Options.Applicative.Format.html#FormatType"><span class="hs-identifier hs-type">FormatType</span></a></span><span>
 </span><span id="line-31"></span><span id="formatOpt"><span class="annot"><span class="annottext">formatOpt :: Parser FormatType
 </span><a href="Options.Applicative.Format.html#formatOpt"><span class="hs-identifier hs-var hs-var">formatOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser FormatType
-</span><a href="#local-6989586621679107238"><span class="hs-identifier hs-var">hex</span></a></span><span> </span><span class="annot"><span class="annottext">Parser FormatType -&gt; Parser FormatType -&gt; Parser FormatType
+</span><a href="#local-6989586621679107236"><span class="hs-identifier hs-var">hex</span></a></span><span> </span><span class="annot"><span class="annottext">Parser FormatType -&gt; Parser FormatType -&gt; Parser FormatType
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">FormatType -&gt; Parser FormatType
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">FormatType
 </span><a href="Options.Applicative.Format.html#Bech32"><span class="hs-identifier hs-var">Bech32</span></a></span><span>
 </span><span id="line-32"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-33"></span><span>    </span><span id="local-6989586621679107238"><span class="annot"><span class="annottext">hex :: Parser FormatType
-</span><a href="#local-6989586621679107238"><span class="hs-identifier hs-var hs-var">hex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FormatType -&gt; Mod FlagFields FormatType -&gt; Parser FormatType
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621679107236"><span class="annot"><span class="annottext">hex :: Parser FormatType
+</span><a href="#local-6989586621679107236"><span class="hs-identifier hs-var hs-var">hex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FormatType -&gt; Mod FlagFields FormatType -&gt; Parser FormatType
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">FormatType
 </span><a href="Options.Applicative.Format.html#Hex"><span class="hs-identifier hs-var">Hex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields FormatType

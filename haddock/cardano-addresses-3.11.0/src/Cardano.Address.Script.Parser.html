@@ -47,27 +47,27 @@
 </span><span id="line-47"></span><span class="hs-comment">-- | Run 'scriptParser' on string input.</span><span>
 </span><span id="line-48"></span><span class="hs-comment">--</span><span>
 </span><span id="line-49"></span><span class="hs-comment">-- @since 3.0.0</span><span>
-</span><span id="line-50"></span><span id="local-6989586621679133131"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptFromString"><span class="hs-identifier hs-type">scriptFromString</span></a></span><span>
-</span><span id="line-51"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133131"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span id="local-6989586621679133134"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptFromString"><span class="hs-identifier hs-type">scriptFromString</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133134"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-52"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#ErrValidateScript"><span class="hs-identifier hs-type">ErrValidateScript</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133131"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#ErrValidateScript"><span class="hs-identifier hs-type">ErrValidateScript</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133134"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-54"></span><span id="scriptFromString"><span class="annot"><span class="annottext">scriptFromString :: ReadP (Script a) -&gt; String -&gt; Either ErrValidateScript (Script a)
-</span><a href="Cardano.Address.Script.Parser.html#scriptFromString"><span class="hs-identifier hs-var hs-var">scriptFromString</span></a></span></span><span> </span><span id="local-6989586621679133130"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133130"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span id="local-6989586621679133129"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133129"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#scriptFromString"><span class="hs-identifier hs-var hs-var">scriptFromString</span></a></span></span><span> </span><span id="local-6989586621679133133"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133133"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span id="local-6989586621679133132"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133132"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-55"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadS (Script a)
 forall a. ReadP a -&gt; ReadS a
 </span><span class="hs-identifier hs-var">readP_to_S</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-var">scriptParser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133130"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133129"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-56"></span><span>         </span><span class="hs-special">[</span><span class="hs-special">(</span><span id="local-6989586621679133128"><span class="annot"><span class="annottext">Script a
-</span><a href="#local-6989586621679133128"><span class="hs-identifier hs-var">script</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133133"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133132"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-56"></span><span>         </span><span class="hs-special">[</span><span class="hs-special">(</span><span id="local-6989586621679133131"><span class="annot"><span class="annottext">Script a
+</span><a href="#local-6989586621679133131"><span class="hs-identifier hs-var">script</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Script a -&gt; Either ErrValidateScript (Script a)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Script a
-</span><a href="#local-6989586621679133128"><span class="hs-identifier hs-var">script</span></a></span><span>
+</span><a href="#local-6989586621679133131"><span class="hs-identifier hs-var">script</span></a></span><span>
 </span><span id="line-57"></span><span>         </span><span class="annot"><span class="annottext">[(Script a, String)]
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ErrValidateScript -&gt; Either ErrValidateScript (Script a)
 forall a b. a -&gt; Either a b
@@ -78,23 +78,39 @@ forall a b. a -&gt; Either a b
 </span><span id="line-60"></span><span class="hs-comment">-- consistent with 'scriptFromString'.</span><span>
 </span><span id="line-61"></span><span class="hs-comment">--</span><span>
 </span><span id="line-62"></span><span class="hs-comment">-- @since 3.10.0</span><span>
-</span><span id="line-63"></span><span id="local-6989586621679133177"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-type">scriptToText</span></a></span><span>
-</span><span id="line-64"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621679133177"><span class="hs-identifier hs-type">a</span></a></span><span>
-</span><span id="line-65"></span><span>    </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133177"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-63"></span><span id="local-6989586621679133180"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-type">scriptToText</span></a></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621679133180"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133180"><span class="hs-identifier hs-type">a</span></a></span><span>
 </span><span id="line-66"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span></span><span>
 </span><span id="line-67"></span><span id="scriptToText"><span class="annot"><span class="annottext">scriptToText :: Script a -&gt; Text
-</span><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var hs-var">scriptToText</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireSignatureOf"><span class="hs-identifier hs-type">RequireSignatureOf</span></a></span><span> </span><span id="local-6989586621679133125"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679133125"><span class="hs-identifier hs-var">object</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var hs-var">scriptToText</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireSignatureOf"><span class="hs-identifier hs-type">RequireSignatureOf</span></a></span><span> </span><span id="local-6989586621679133128"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679133128"><span class="hs-identifier hs-var">object</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679133125"><span class="hs-identifier hs-var">object</span></a></span><span>
-</span><span id="line-68"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireAllOf"><span class="hs-identifier hs-type">RequireAllOf</span></a></span><span> </span><span id="local-6989586621679133121"><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133121"><span class="hs-identifier hs-var">contents</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679133128"><span class="hs-identifier hs-var">object</span></a></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireAllOf"><span class="hs-identifier hs-type">RequireAllOf</span></a></span><span> </span><span id="local-6989586621679133124"><span class="annot"><span class="annottext">[Script a]
+</span><a href="#local-6989586621679133124"><span class="hs-identifier hs-var">contents</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-69"></span><span>    </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;all [&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
+</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;,&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Script a -&gt; Text) -&gt; [Script a] -&gt; [Text]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Script a -&gt; Text
+forall a. Show a =&gt; Script a -&gt; Text
+</span><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="annot"><span class="annottext">[Script a]
+</span><a href="#local-6989586621679133124"><span class="hs-identifier hs-var">contents</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;]&quot;</span></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireAnyOf"><span class="hs-identifier hs-type">RequireAnyOf</span></a></span><span> </span><span id="local-6989586621679133121"><span class="annot"><span class="annottext">[Script a]
+</span><a href="#local-6989586621679133121"><span class="hs-identifier hs-var">contents</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;any [&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
 </span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
@@ -107,25 +123,9 @@ forall a. Show a =&gt; Script a -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;]&quot;</span></span><span>
-</span><span id="line-70"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireAnyOf"><span class="hs-identifier hs-type">RequireAnyOf</span></a></span><span> </span><span id="local-6989586621679133118"><span class="annot"><span class="annottext">[Script a]
+</span><span id="line-72"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireSomeOf"><span class="hs-identifier hs-type">RequireSomeOf</span></a></span><span> </span><span id="local-6989586621679133119"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133119"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679133118"><span class="annot"><span class="annottext">[Script a]
 </span><a href="#local-6989586621679133118"><span class="hs-identifier hs-var">contents</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;any [&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
-forall a. Semigroup a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; Text
-</span><span class="hs-identifier hs-var">T.intercalate</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;,&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Script a -&gt; Text) -&gt; [Script a] -&gt; [Text]
-forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Script a -&gt; Text
-forall a. Show a =&gt; Script a -&gt; Text
-</span><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133118"><span class="hs-identifier hs-var">contents</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
-forall a. Semigroup a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;]&quot;</span></span><span>
-</span><span id="line-72"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#RequireSomeOf"><span class="hs-identifier hs-type">RequireSomeOf</span></a></span><span> </span><span id="local-6989586621679133116"><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679133116"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679133115"><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133115"><span class="hs-identifier hs-var">contents</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;at_least &quot;</span></span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -133,7 +133,7 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679133116"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="#local-6989586621679133119"><span class="hs-identifier hs-var">m</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
 </span><span id="line-74"></span><span>    </span><span class="annot"><span class="annottext">Text
@@ -146,12 +146,12 @@ forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
 </span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Script a -&gt; Text
 forall a. Show a =&gt; Script a -&gt; Text
 </span><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133115"><span class="hs-identifier hs-var">contents</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="#local-6989586621679133118"><span class="hs-identifier hs-var">contents</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;]&quot;</span></span><span>
-</span><span id="line-75"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#ActiveFromSlot"><span class="hs-identifier hs-type">ActiveFromSlot</span></a></span><span> </span><span id="local-6989586621679133113"><span class="annot"><span class="annottext">Natural
-</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#ActiveFromSlot"><span class="hs-identifier hs-type">ActiveFromSlot</span></a></span><span> </span><span id="local-6989586621679133116"><span class="annot"><span class="annottext">Natural
+</span><a href="#local-6989586621679133116"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-76"></span><span>    </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;active_from &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -159,9 +159,9 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Natural -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Natural
-</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-77"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#ActiveUntilSlot"><span class="hs-identifier hs-type">ActiveUntilSlot</span></a></span><span> </span><span id="local-6989586621679133111"><span class="annot"><span class="annottext">Natural
-</span><a href="#local-6989586621679133111"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679133116"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptToText"><span class="hs-identifier hs-var">scriptToText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#ActiveUntilSlot"><span class="hs-identifier hs-type">ActiveUntilSlot</span></a></span><span> </span><span id="local-6989586621679133114"><span class="annot"><span class="annottext">Natural
+</span><a href="#local-6989586621679133114"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-78"></span><span>    </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;active_until &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
@@ -169,7 +169,7 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Natural -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Natural
-</span><a href="#local-6989586621679133111"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679133114"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-79"></span><span>
 </span><span id="line-80"></span><span>
 </span><span id="line-81"></span><span class="hs-comment">-- | The script embodies combination of signing keys that need to be met to make</span><span>
@@ -200,30 +200,30 @@ forall a. Show a =&gt; a -&gt; String
 </span><span id="line-106"></span><span class="hs-comment">-- Parser is insensitive to whitespaces.</span><span>
 </span><span id="line-107"></span><span class="hs-comment">--</span><span>
 </span><span id="line-108"></span><span class="hs-comment">-- @since 3.0.0</span><span>
-</span><span id="line-109"></span><span id="local-6989586621679133191"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-type">scriptParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133191"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133191"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-109"></span><span id="local-6989586621679133194"><span class="annot"><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-type">scriptParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133194"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133194"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-110"></span><span id="scriptParser"><span class="annot"><span class="annottext">scriptParser :: ReadP (Script a) -&gt; ReadP (Script a)
-</span><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-var hs-var">scriptParser</span></a></span></span><span> </span><span id="local-6989586621679133110"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133110"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-var hs-var">scriptParser</span></a></span></span><span> </span><span id="local-6989586621679133113"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-111"></span><span>    </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#requireAllOfParser"><span class="hs-identifier hs-var">requireAllOfParser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133110"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
+</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP a -&gt; ReadP a -&gt; ReadP a
 </span><span class="hs-operator hs-var">&lt;++</span></span><span>
 </span><span id="line-112"></span><span>    </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#requireAnyOfParser"><span class="hs-identifier hs-var">requireAnyOfParser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133110"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
+</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP a -&gt; ReadP a -&gt; ReadP a
 </span><span class="hs-operator hs-var">&lt;++</span></span><span>
 </span><span id="line-113"></span><span>    </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#requireAtLeastOfParser"><span class="hs-identifier hs-var">requireAtLeastOfParser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133110"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
+</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP a -&gt; ReadP a -&gt; ReadP a
 </span><span class="hs-operator hs-var">&lt;++</span></span><span>
 </span><span id="line-114"></span><span>    </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133110"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
+</span><a href="#local-6989586621679133113"><span class="hs-identifier hs-var">parser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP a -&gt; ReadP a -&gt; ReadP a
 </span><span class="hs-operator hs-var">&lt;++</span></span><span>
 </span><span id="line-115"></span><span>    </span><span class="annot"><span class="annottext">ReadP (Script a)
@@ -240,49 +240,49 @@ forall a. ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#requireSignatureOfParser"><span class="hs-identifier hs-var hs-var">requireSignatureOfParser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-120"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-121"></span><span>    </span><span id="local-6989586621679133106"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133106"><span class="hs-identifier hs-var">verKeyStr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ReadP String
-</span><span class="hs-identifier hs-var">P.munch1</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679133104"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span id="line-121"></span><span>    </span><span id="local-6989586621679133109"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133109"><span class="hs-identifier hs-var">verKeyStr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ReadP String
+</span><span class="hs-identifier hs-var">P.munch1</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679133107"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679133107"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621679133107"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isLetter</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621679133107"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621679133107"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'_'</span></span><span class="hs-special">)</span><span>
 </span><span id="line-122"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either ErrKeyHashFromText KeyHash
 </span><a href="Cardano.Address.Script.html#keyHashFromText"><span class="hs-identifier hs-var">keyHashFromText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
 </span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133106"><span class="hs-identifier hs-var">verKeyStr</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-123"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679133102"><span class="annot"><span class="annottext">ErrKeyHashFromText
-</span><a href="#local-6989586621679133102"><span class="hs-identifier hs-var">e</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP (Script KeyHash)
+</span><a href="#local-6989586621679133109"><span class="hs-identifier hs-var">verKeyStr</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-123"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679133105"><span class="annot"><span class="annottext">ErrKeyHashFromText
+</span><a href="#local-6989586621679133105"><span class="hs-identifier hs-var">e</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP (Script KeyHash)
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ErrKeyHashFromText -&gt; String
 </span><a href="Cardano.Address.Script.html#prettyErrKeyHashFromText"><span class="hs-identifier hs-var">prettyErrKeyHashFromText</span></a></span><span> </span><span class="annot"><span class="annottext">ErrKeyHashFromText
-</span><a href="#local-6989586621679133102"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-124"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679133101"><span class="annot"><span class="annottext">KeyHash
-</span><a href="#local-6989586621679133101"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Script KeyHash -&gt; ReadP (Script KeyHash)
+</span><a href="#local-6989586621679133105"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679133104"><span class="annot"><span class="annottext">KeyHash
+</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Script KeyHash -&gt; ReadP (Script KeyHash)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">KeyHash -&gt; Script KeyHash
 forall elem. elem -&gt; Script elem
 </span><a href="Cardano.Address.Script.html#RequireSignatureOf"><span class="hs-identifier hs-var">RequireSignatureOf</span></a></span><span> </span><span class="annot"><span class="annottext">KeyHash
-</span><a href="#local-6989586621679133101"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679133104"><span class="hs-identifier hs-var">h</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-125"></span><span>
 </span><span id="line-126"></span><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireCosignerOfParser"><span class="hs-identifier hs-type">requireCosignerOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#Cosigner"><span class="hs-identifier hs-type">Cosigner</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-127"></span><span id="requireCosignerOfParser"><span class="annot"><span class="annottext">requireCosignerOfParser :: ReadP (Script Cosigner)
 </span><a href="Cardano.Address.Script.Parser.html#requireCosignerOfParser"><span class="hs-identifier hs-var hs-var">requireCosignerOfParser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-128"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-129"></span><span>    </span><span id="local-6989586621679133100"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133100"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-129"></span><span>    </span><span id="local-6989586621679133103"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133103"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;cosigner#&quot;</span></span><span>
-</span><span id="line-130"></span><span>    </span><span id="local-6989586621679133098"><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679133098"><span class="hs-identifier hs-var">cosignerid</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Word8
+</span><span id="line-130"></span><span>    </span><span id="local-6989586621679133101"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679133101"><span class="hs-identifier hs-var">cosignerid</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Word8
 forall a. Num a =&gt; Integer -&gt; a
 </span><span class="hs-identifier hs-var">fromInteger</span></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Word8) -&gt; (String -&gt; Integer) -&gt; String -&gt; Word8
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
@@ -304,16 +304,16 @@ forall elem. elem -&gt; Script elem
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Cosigner
 </span><a href="Cardano.Address.Script.html#Cosigner"><span class="hs-identifier hs-var">Cosigner</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679133098"><span class="hs-identifier hs-var">cosignerid</span></a></span><span>
+</span><a href="#local-6989586621679133101"><span class="hs-identifier hs-var">cosignerid</span></a></span><span>
 </span><span id="line-132"></span><span>
-</span><span id="line-133"></span><span id="local-6989586621679133093"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAllOfParser"><span class="hs-identifier hs-type">requireAllOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133093"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133093"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-133"></span><span id="local-6989586621679133096"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAllOfParser"><span class="hs-identifier hs-type">requireAllOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133096"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133096"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-134"></span><span id="requireAllOfParser"><span class="annot"><span class="annottext">requireAllOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
-</span><a href="Cardano.Address.Script.Parser.html#requireAllOfParser"><span class="hs-identifier hs-var hs-var">requireAllOfParser</span></a></span></span><span> </span><span id="local-6989586621679133092"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133092"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#requireAllOfParser"><span class="hs-identifier hs-var hs-var">requireAllOfParser</span></a></span></span><span> </span><span id="local-6989586621679133095"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133095"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-135"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-136"></span><span>    </span><span id="local-6989586621679133091"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133091"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-136"></span><span>    </span><span id="local-6989586621679133094"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133094"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;all&quot;</span></span><span>
 </span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">[Script a] -&gt; Script a
@@ -323,16 +323,16 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP [Script a]
 forall a. ReadP (Script a) -&gt; ReadP [Script a]
 </span><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-var">commonPart</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133092"><span class="hs-identifier hs-var">parser</span></a></span><span>
+</span><a href="#local-6989586621679133095"><span class="hs-identifier hs-var">parser</span></a></span><span>
 </span><span id="line-138"></span><span>
-</span><span id="line-139"></span><span id="local-6989586621679133089"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAnyOfParser"><span class="hs-identifier hs-type">requireAnyOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133089"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133089"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-139"></span><span id="local-6989586621679133092"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAnyOfParser"><span class="hs-identifier hs-type">requireAnyOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133092"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133092"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-140"></span><span id="requireAnyOfParser"><span class="annot"><span class="annottext">requireAnyOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
-</span><a href="Cardano.Address.Script.Parser.html#requireAnyOfParser"><span class="hs-identifier hs-var hs-var">requireAnyOfParser</span></a></span></span><span> </span><span id="local-6989586621679133088"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133088"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#requireAnyOfParser"><span class="hs-identifier hs-var hs-var">requireAnyOfParser</span></a></span></span><span> </span><span id="local-6989586621679133091"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133091"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-141"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-142"></span><span>    </span><span id="local-6989586621679133087"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133087"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-142"></span><span>    </span><span id="local-6989586621679133090"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133090"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;any&quot;</span></span><span>
 </span><span id="line-143"></span><span>    </span><span class="annot"><span class="annottext">[Script a] -&gt; Script a
@@ -342,16 +342,16 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP [Script a]
 forall a. ReadP (Script a) -&gt; ReadP [Script a]
 </span><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-var">commonPart</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133088"><span class="hs-identifier hs-var">parser</span></a></span><span>
+</span><a href="#local-6989586621679133091"><span class="hs-identifier hs-var">parser</span></a></span><span>
 </span><span id="line-144"></span><span>
-</span><span id="line-145"></span><span id="local-6989586621679133086"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAtLeastOfParser"><span class="hs-identifier hs-type">requireAtLeastOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133086"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133086"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-145"></span><span id="local-6989586621679133089"><span class="annot"><a href="Cardano.Address.Script.Parser.html#requireAtLeastOfParser"><span class="hs-identifier hs-type">requireAtLeastOfParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133089"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133089"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-146"></span><span id="requireAtLeastOfParser"><span class="annot"><span class="annottext">requireAtLeastOfParser :: ReadP (Script a) -&gt; ReadP (Script a)
-</span><a href="Cardano.Address.Script.Parser.html#requireAtLeastOfParser"><span class="hs-identifier hs-var hs-var">requireAtLeastOfParser</span></a></span></span><span> </span><span id="local-6989586621679133085"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133085"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#requireAtLeastOfParser"><span class="hs-identifier hs-var hs-var">requireAtLeastOfParser</span></a></span></span><span> </span><span id="local-6989586621679133088"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133088"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-147"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-148"></span><span>    </span><span id="local-6989586621679133084"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133084"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-148"></span><span>    </span><span id="local-6989586621679133087"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133087"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;at_least&quot;</span></span><span>
 </span><span id="line-149"></span><span>    </span><span class="annot"><span class="annottext">Word8 -&gt; [Script a] -&gt; Script a
@@ -366,15 +366,15 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP [Script a]
 forall a. ReadP (Script a) -&gt; ReadP [Script a]
 </span><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-var">commonPart</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133085"><span class="hs-identifier hs-var">parser</span></a></span><span>
+</span><a href="#local-6989586621679133088"><span class="hs-identifier hs-var">parser</span></a></span><span>
 </span><span id="line-150"></span><span>
-</span><span id="line-151"></span><span id="local-6989586621679133174"><span class="annot"><a href="Cardano.Address.Script.Parser.html#activeFromSlotParser"><span class="hs-identifier hs-type">activeFromSlotParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133174"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-151"></span><span id="local-6989586621679133177"><span class="annot"><a href="Cardano.Address.Script.Parser.html#activeFromSlotParser"><span class="hs-identifier hs-type">activeFromSlotParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133177"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-152"></span><span id="activeFromSlotParser"><span class="annot"><span class="annottext">activeFromSlotParser :: ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#activeFromSlotParser"><span class="hs-identifier hs-var hs-var">activeFromSlotParser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-153"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-154"></span><span>    </span><span id="local-6989586621679133082"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133082"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-154"></span><span>    </span><span id="local-6989586621679133085"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133085"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;active_from&quot;</span></span><span>
 </span><span id="line-155"></span><span>    </span><span class="annot"><span class="annottext">Natural -&gt; Script a
@@ -384,13 +384,13 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReadP Natural
 </span><a href="Cardano.Address.Script.Parser.html#slotParser"><span class="hs-identifier hs-var">slotParser</span></a></span><span>
 </span><span id="line-156"></span><span>
-</span><span id="line-157"></span><span id="local-6989586621679133080"><span class="annot"><a href="Cardano.Address.Script.Parser.html#activeUntilSlotParser"><span class="hs-identifier hs-type">activeUntilSlotParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133080"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-157"></span><span id="local-6989586621679133083"><span class="annot"><a href="Cardano.Address.Script.Parser.html#activeUntilSlotParser"><span class="hs-identifier hs-type">activeUntilSlotParser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133083"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-158"></span><span id="activeUntilSlotParser"><span class="annot"><span class="annottext">activeUntilSlotParser :: ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#activeUntilSlotParser"><span class="hs-identifier hs-var hs-var">activeUntilSlotParser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-159"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-160"></span><span>    </span><span id="local-6989586621679133079"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133079"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-160"></span><span>    </span><span id="local-6989586621679133082"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133082"><span class="hs-identifier hs-var">_identifier</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;active_until&quot;</span></span><span>
 </span><span id="line-161"></span><span>    </span><span class="annot"><span class="annottext">Natural -&gt; Script a
@@ -434,31 +434,31 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-identifier hs-var">P.munch1</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span>
 </span><span id="line-172"></span><span>
-</span><span id="line-173"></span><span id="local-6989586621679133157"><span class="annot"><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-type">commonPart</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133157"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133157"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-173"></span><span id="local-6989586621679133160"><span class="annot"><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-type">commonPart</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133160"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadP</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Cardano.Address.Script.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679133160"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
 </span><span id="line-174"></span><span id="commonPart"><span class="annot"><span class="annottext">commonPart :: ReadP (Script a) -&gt; ReadP [Script a]
-</span><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-var hs-var">commonPart</span></a></span></span><span> </span><span id="local-6989586621679133078"><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133078"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Cardano.Address.Script.Parser.html#commonPart"><span class="hs-identifier hs-var hs-var">commonPart</span></a></span></span><span> </span><span id="local-6989586621679133081"><span class="annot"><span class="annottext">ReadP (Script a)
+</span><a href="#local-6989586621679133081"><span class="hs-identifier hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-175"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-176"></span><span>    </span><span id="local-6989586621679133077"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133077"><span class="hs-identifier hs-var">_open</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-176"></span><span>    </span><span id="local-6989586621679133080"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133080"><span class="hs-identifier hs-var">_open</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;[&quot;</span></span><span>
 </span><span id="line-177"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-178"></span><span>    </span><span id="local-6989586621679133076"><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133076"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP String -&gt; ReadP [Script a]
+</span><span id="line-178"></span><span>    </span><span id="local-6989586621679133079"><span class="annot"><span class="annottext">[Script a]
+</span><a href="#local-6989586621679133079"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP String -&gt; ReadP [Script a]
 forall a sep. ReadP a -&gt; ReadP sep -&gt; ReadP [a]
 </span><span class="hs-identifier hs-var">P.sepBy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadP (Script a) -&gt; ReadP (Script a)
 forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><a href="Cardano.Address.Script.Parser.html#scriptParser"><span class="hs-identifier hs-var">scriptParser</span></a></span><span> </span><span class="annot"><span class="annottext">ReadP (Script a)
-</span><a href="#local-6989586621679133078"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><a href="#local-6989586621679133081"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;,&quot;</span></span><span class="hs-special">)</span><span>
 </span><span id="line-179"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
 </span><span class="hs-identifier hs-var">P.skipSpaces</span></span><span>
-</span><span id="line-180"></span><span>    </span><span id="local-6989586621679133074"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679133074"><span class="hs-identifier hs-var">_close</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
+</span><span id="line-180"></span><span>    </span><span id="local-6989586621679133077"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679133077"><span class="hs-identifier hs-var">_close</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadP String
 </span><span class="hs-identifier hs-var">P.string</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;]&quot;</span></span><span>
 </span><span id="line-181"></span><span>    </span><span class="annot"><span class="annottext">ReadP ()
@@ -466,5 +466,5 @@ forall a. ReadP (Script a) -&gt; ReadP (Script a)
 </span><span id="line-182"></span><span>    </span><span class="annot"><span class="annottext">[Script a] -&gt; ReadP [Script a]
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">[Script a]
-</span><a href="#local-6989586621679133076"><span class="hs-identifier hs-var">content</span></a></span><span>
+</span><a href="#local-6989586621679133079"><span class="hs-identifier hs-var">content</span></a></span><span>
 </span><span id="line-183"></span></pre></body></html>

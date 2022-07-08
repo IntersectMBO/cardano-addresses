@@ -1286,11 +1286,11 @@ deriveAccountPrivateKey :: Shared 'RootK XPrv -> Index 'Hardened 'AccountK -> Sh
 
 -- | Derives a multisig private key from the given account private key for
 --   payment credential.
-deriveAddressPrivateKey :: Shared 'AccountK XPrv -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPrv
+deriveAddressPrivateKey :: Shared 'AccountK XPrv -> Role -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPrv
 
 -- | Derives a multisig public key from the given account public key for
 --   payment credential.
-deriveAddressPublicKey :: Shared 'AccountK XPub -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPub
+deriveAddressPublicKey :: Shared 'AccountK XPub -> Role -> Index 'Soft 'PaymentK -> Shared 'ScriptK XPub
 
 -- | Derives a multisig private key from the given account private key for
 --   delegation credential.
