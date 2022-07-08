@@ -28,6 +28,8 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Style.Shared
     ( Shared (..) )
+import Cardano.Address.Style.Shelley
+    ( Role (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic )
 import Data.ByteArray
@@ -37,7 +39,7 @@ import Test.Arbitrary
 import Test.Hspec
     ( Spec, describe, it )
 import Test.QuickCheck
-    ( Arbitrary (..), Property, choose, property, vector, (===) )
+    ( Arbitrary (..), Property, choose, elements, property, vector, (===) )
 
 import qualified Cardano.Address.Style.Shared as Shared
 import qualified Data.ByteArray as BA
@@ -58,16 +60,16 @@ spec = do
 -------------------------------------------------------------------------------}
 
 prop_publicMultisigForPaymentDerivation
-    :: (SomeMnemonic, SndFactor)
+    :: (SomeMnemonic, SndFactor, PaymentRole)
     -> Index 'Soft 'PaymentK
     -> Property
-prop_publicMultisigForPaymentDerivation (mw, (SndFactor sndFactor)) ix =
+prop_publicMultisigForPaymentDerivation (mw, (SndFactor sndFactor), PaymentRole role) ix =
     multisigXPub1 === multisigXPub2
   where
     rootXPrv = Shared.genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
     accXPrv  = Shared.deriveAccountPrivateKey rootXPrv minBound
-    multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv ix
-    multisigXPub2 = Shared.deriveAddressPublicKey (toXPub <$> accXPrv) ix
+    multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role ix
+    multisigXPub2 = Shared.deriveAddressPublicKey (toXPub <$> accXPrv) role ix
 
 prop_publicMultisigForDelegationDerivation
     :: (SomeMnemonic, SndFactor)
@@ -104,3 +106,9 @@ instance Arbitrary SndFactor where
         n <- choose (0, 64)
         bytes <- BS.pack <$> vector n
         return $ SndFactor $ BA.convert bytes
+
+newtype PaymentRole = PaymentRole Role
+    deriving stock (Eq, Show)
+
+instance Arbitrary PaymentRole where
+    arbitrary = elements [PaymentRole UTxOExternal, PaymentRole UTxOInternal]
