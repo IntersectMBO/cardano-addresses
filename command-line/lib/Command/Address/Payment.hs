@@ -19,7 +19,7 @@ import Cardano.Address
 import Cardano.Address.Derivation
     ( xpubFromBytes )
 import Cardano.Address.Script
-    ( scriptHashFromBytes )
+    ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet )
 import Codec.Binary.Encoding
@@ -83,6 +83,7 @@ run Cmd{networkTag} = do
     -- this stage, so leaving this as an item for later.
     allowedPrefixes =
         [ CIP5.addr_xvk
+        , CIP5.addr_vkh
         , CIP5.script
         ]
 
@@ -93,6 +94,14 @@ run Cmd{networkTag} = do
                     fail "Couldn't convert bytes into script hash."
                 Just h  -> do
                     let credential = PaymentFromScript h
+                    pure $ Shelley.paymentAddress discriminant credential
+
+        | hrp == CIP5.addr_vkh = do
+            case keyHashFromBytes (Payment, bytes) of
+                Nothing  ->
+                    fail "Couldn't convert bytes into payment key hash."
+                Just keyhash -> do
+                    let credential = PaymentFromKeyHash keyhash
                     pure $ Shelley.paymentAddress discriminant credential
 
         | otherwise = do
