@@ -26,10 +26,11 @@ module Options.Applicative.Derivation
     , derivationIndexToString
     , derivationIndexFromString
 
-    -- * XPub / XPrv
+    -- * XPub / XPrv / KeyHash
     , xpubReader
     , xpubOpt
     , xpubArg
+    , keyhashReader
 
     -- * Internal
     , bech32Reader
@@ -39,6 +40,8 @@ import Prelude
 
 import Cardano.Address.Derivation
     ( DerivationType (..), Index, XPub, wholeDomainIndex, xpubFromBytes )
+import Cardano.Address.Script
+    ( KeyHash (..), KeyRole (..), keyHashFromBytes )
 import Codec.Binary.Bech32
     ( HumanReadablePart, humanReadablePartToText )
 import Codec.Binary.Encoding
@@ -209,6 +212,14 @@ xpubArg allowedPrefixes helpDoc =
     argument (eitherReader (xpubReader allowedPrefixes)) $ mempty
         <> metavar "XPUB"
         <> help helpDoc
+
+keyhashReader :: (KeyRole, [HumanReadablePart]) -> String -> Either String KeyHash
+keyhashReader (keyrole, allowedPrefixes) str = do
+    (_hrp, bytes) <- bech32Reader allowedPrefixes str
+    case keyHashFromBytes (keyrole, bytes) of
+        Just keyhash -> pure keyhash
+        Nothing   -> Left
+            "Failed to convert bytes into a valid public key hash."
 
 --
 -- Internal
