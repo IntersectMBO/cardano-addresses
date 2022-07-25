@@ -76,6 +76,8 @@ run Cmd{credential} = do
             fail msg
         Left (ErrInvalidAddressType  msg) ->
             fail msg
+        Left (ErrInvalidKeyHashType msg) ->
+            fail msg
         Right addr ->
             B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr
   where
