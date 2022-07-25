@@ -40,6 +40,7 @@ import Cardano.Address.Derivation
     , SoftDerivation (..)
     , XPrv
     , XPub
+    , hashCredential
     , indexFromWord32
     , toXPub
     , unsafeMkIndex
@@ -47,6 +48,8 @@ import Cardano.Address.Derivation
     , xpubFromBytes
     , xpubToBytes
     )
+import Cardano.Address.Script
+    ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
@@ -164,6 +167,18 @@ spec = do
                     "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
             }
         goldenTestEnterpriseAddress GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress
             {  verKey = "1a2a3a4a5a6a7a8a"
             ,  netTag = 1
             ,  expectedAddr =
@@ -321,6 +336,21 @@ goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
         let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromKey addrXPub)
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
+
+goldenTestEnterpriseAddressKeyHash :: GoldenTestEnterpriseAddress -> SpecWith ()
+goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress{..} =
+    it ("enterprise address for networkId " <> show netTag) $ do
+        let bs = b16encode $ T.append verKey verKey
+        let (Just xPub) = xpubFromBytes bs
+        let addrXPub = liftXPub xPub :: Shelley 'PaymentK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let enterpriseAddrFromKey =
+                Shelley.paymentAddress tag (PaymentFromKey addrXPub)
+        let keyHashDigest = hashCredential $ BS.take 32 bs
+        let keyHash = KeyHash Payment keyHashDigest
+        let enterpriseAddrFromKeyHash =
+                Shelley.paymentAddress tag (PaymentFromKeyHash keyHash)
+        enterpriseAddrFromKey `shouldBe` enterpriseAddrFromKeyHash
 
 data GoldenTestBaseAddress = GoldenTestBaseAddress
     {
