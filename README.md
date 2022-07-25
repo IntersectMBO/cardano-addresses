@@ -185,10 +185,21 @@ addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 
 
 <details>
-  <summary>How to generate a delegated payment address from a stake key (<strong>payment-delegated.addr</strong>)</summary>
+  <summary>How to generate a delegated payment address, ie. base address, from a stake key (<strong>base.addr</strong>)</summary>
 
 ```console
-$ cardano-address address delegation $(cat stake.xvk) < payment.addr > payment-delegated.addr
+$ cardano-address address delegation $(cat stake.xvk) < payment.addr > base.addr
+addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
+```
+</details>
+
+<details>
+  <summary>How to generate a delegated payment address, ie. base address, from a stake key hash (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address key hash < stake.xvk > stake.vkh
+stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6
+$ cardano-address address delegation $(cat stake.vkh) < payment.addr > base.addr
 addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
 ```
 </details>
@@ -198,7 +209,18 @@ addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz
 
 ```console
 $ cardano-address address stake --network-tag testnet < stake.xvk > stake.addr
-stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat%
+stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a stake key hash (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address key hash < stake.xvk > stake.vkh
+stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6
+$ cardano-address address stake --network-tag testnet < stake.vkh > stake.addr
+stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
 ```
 </details>
 
