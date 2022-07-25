@@ -23,6 +23,16 @@ spec = describeCmd [ "address", "delegation" ] $ do
         "addr_test1qptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwv\
         \xwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwk2gqr"
 
+    specFromKeyHash defaultPhrase "1852H/1815H/0H/2/0"
+        defaultAddrMainnet
+        "addr1q9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwvxwdrt\
+        \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qdqhgvu"
+
+    specFromKeyHash defaultPhrase "1852H/1815H/0H/2/0"
+        defaultAddrTestnet
+        "addr_test1qptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwv\
+        \xwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwk2gqr"
+
     specFromScript
         defaultAddrMainnet
         "all [stake_shared_vkh1nqc00hvlc6cq0sfhretk0rmzw8dywmusp8retuqnnxzajtzhjg5]"
@@ -54,6 +64,15 @@ specFromKey phrase path addr want = it ("delegation from key " <> want) $ do
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
     out <- cli [ "address", "delegation", stakeKey ] addr
+    out `shouldBe` want
+
+specFromKeyHash :: [String] -> String -> String -> String -> SpecWith ()
+specFromKeyHash phrase path addr want = it ("delegation from key " <> want) $ do
+    stakeKeyHash <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
+       >>= cli [ "key", "child", path ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "key", "hash" ]
+    out <- cli [ "address", "delegation", stakeKeyHash ] addr
     out `shouldBe` want
 
 specFromScript :: String -> String -> String -> SpecWith ()
