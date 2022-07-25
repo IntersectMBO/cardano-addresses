@@ -198,6 +198,20 @@ spec = do
             ,  expectedAddr =
                     "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
             }
+        goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
 
     describe "Test vectors" $ do
         testVectors
@@ -379,9 +393,31 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
                 xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let baseAddr = delegationAddress tag (PaymentFromKey addrXPub) (DelegationFromKey stakeXPub)
+        let baseAddr =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
+
+goldenTestBaseAddressPayFromKeyHash :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show netTag) $ do
+        let paymentBs = b16encode $ T.append verKeyPayment verKeyPayment
+        let (Just xPub1) = xpubFromBytes paymentBs
+        let addrXPub = liftXPub xPub1 :: Shelley 'PaymentK XPub
+        let (Just xPub2) =
+                xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
+        let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let baseAddrPayFromKey =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
+        let keyHashDigest = hashCredential $ BS.take 32 paymentBs
+        let keyHash = KeyHash Payment keyHashDigest
+        let baseAddrPayFromKeyHash =
+                delegationAddress tag (PaymentFromKeyHash keyHash)
+                (DelegationFromKey stakeXPub)
+        baseAddrPayFromKey `shouldBe` baseAddrPayFromKeyHash
 
 data TestVector = TestVector
     {
