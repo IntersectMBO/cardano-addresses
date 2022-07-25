@@ -173,6 +173,18 @@ addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 </details>
 
 <details>
+  <summary>How to generate a payment address from a payment key hash (<strong>payment.addr</strong>)</summary>
+
+```console
+$ cardano-address key hash < addr.xvk > addr.vkh
+addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v
+$ cardano-address address payment --network-tag testnet < addr.vkh > payment.addr
+addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
+```
+</details>
+
+
+<details>
   <summary>How to generate a delegated payment address from a stake key (<strong>payment-delegated.addr</strong>)</summary>
 
 ```console
