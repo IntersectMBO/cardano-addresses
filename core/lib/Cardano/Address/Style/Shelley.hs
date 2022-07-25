@@ -113,7 +113,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Internal
     ( WithErrorMessage (..), orElse )
 import Cardano.Address.Script
-    ( ScriptHash (..) )
+    ( ScriptHash (..), KeyHash (..), KeyRole (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -731,6 +731,7 @@ data family Credential (purpose :: Depth)
 
 data instance Credential 'PaymentK where
     PaymentFromKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
+    PaymentFromKeyHash :: KeyHash -> Credential 'PaymentK
     PaymentFromScript :: ScriptHash -> Credential 'PaymentK
     deriving Show
 
@@ -756,6 +757,14 @@ paymentAddress discrimination = \case
             (EnterpriseAddress CredentialFromKey)
             discrimination
             (hashCredential . xpubPublicKey . getKey $ keyPub)
+    PaymentFromKeyHash (KeyHash Payment verKeyHash) ->
+        constructPayload
+            (EnterpriseAddress CredentialFromKey)
+            discrimination
+            verKeyHash
+    PaymentFromKeyHash (KeyHash keyrole _) ->
+        error $ "Payment credential should be built from key hash having payment"
+        <> " role. Key hash with " <> show keyrole <> " was used."
     PaymentFromScript (ScriptHash bytes) ->
         constructPayload
             (EnterpriseAddress CredentialFromScript)
