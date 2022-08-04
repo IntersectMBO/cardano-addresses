@@ -259,11 +259,17 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 -- Bech32 encoded text with one of following hrp:
 -- - `addr_shared_vkh`
 -- - `stake_shared_vkh`
+-- - `addr_vkh`
+-- - `stake_vkh`
 -- - `policy_vkh`
 -- - `addr_shared_vk`
 -- - `stake_shared_vk`
+-- - `addr_vk`
+-- - `stake_vk`
 -- - `addr_shared_xvk`
 -- - `stake_shared_xvk`
+-- - `addr_xvk`
+-- - `stake_xvk`
 -- - `policy_vk`
 -- - `policy_xvk`
 -- Raw keys will be hashed on the fly, whereas hash that are directly
@@ -282,11 +288,17 @@ keyHashFromText txt = do
     convertBytes hrp bytes
         | hrp == CIP5.addr_shared_vkh  = Just (Payment, bytes)
         | hrp == CIP5.stake_shared_vkh = Just (Delegation, bytes)
+        | hrp == CIP5.addr_vkh  = Just (Payment, bytes)
+        | hrp == CIP5.stake_vkh = Just (Delegation, bytes)
         | hrp == CIP5.policy_vkh       = Just (Policy, bytes)
         | hrp == CIP5.addr_shared_vk   = Just (Payment, hashCredential bytes)
+        | hrp == CIP5.addr_vk   = Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_shared_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.addr_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
+        | hrp == CIP5.stake_vk  = Just (Delegation, hashCredential bytes)
         | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.stake_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.policy_vk        = Just (Policy, hashCredential bytes)
         | hrp == CIP5.policy_xvk       = Just (Policy, hashCredential $ BS.take 32 bytes)
         | otherwise                    = Nothing

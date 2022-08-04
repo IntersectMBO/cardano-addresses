@@ -25,6 +25,18 @@ spec = describeCmd [ "address", "payment" ] $ do
     specShelley defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
         "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
 
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/0/0" "0"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/0/0" "3"
+        "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
+
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/0/0" "testnet"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
+        "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
+
     specMalformedNetwork "💩"
 
     specInvalidNetwork "42"
@@ -35,6 +47,15 @@ specShelley phrase path networkTag want = it ("golden shelley (payment) " <> pat
     out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "address", "payment", "--network-tag", networkTag ]
+    out `shouldBe` want
+
+specShelleyFromKeyHash :: [String] -> String -> String -> String -> SpecWith ()
+specShelleyFromKeyHash phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
+    out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
+       >>= cli [ "key", "child", path ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "key", "hash" ]
        >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` want
 

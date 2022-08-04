@@ -19,6 +19,12 @@ spec = describeCmd [ "address", "stake" ] $ do
     specShelley defaultPhrase "1852H/1815H/0H/2/0" 3
         "stake1u0a3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tchw5z0e"
 
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/2/0" 0
+        "stake_test1ura3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tcsfhtt2"
+
+    specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/2/0" 3
+        "stake1u0a3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tchw5z0e"
+
     specMalformedNetwork "💩"
 
     specInvalidNetwork "42"
@@ -28,6 +34,15 @@ specShelley phrase path networkTag want = it ("golden shelley (payment) " <> pat
     out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "address", "stake", "--network-tag", show networkTag ]
+    out `shouldBe` want
+
+specShelleyFromKeyHash :: [String] -> String -> Int -> String -> SpecWith ()
+specShelleyFromKeyHash phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
+    out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
+       >>= cli [ "key", "child", path ]
+       >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "key", "hash" ]
        >>= cli [ "address", "stake", "--network-tag", show networkTag ]
     out `shouldBe` want
 

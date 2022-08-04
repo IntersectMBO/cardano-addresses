@@ -40,6 +40,7 @@ import Cardano.Address.Derivation
     , SoftDerivation (..)
     , XPrv
     , XPub
+    , hashCredential
     , indexFromWord32
     , toXPub
     , unsafeMkIndex
@@ -47,6 +48,8 @@ import Cardano.Address.Derivation
     , xpubFromBytes
     , xpubToBytes
     )
+import Cardano.Address.Script
+    ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
@@ -169,6 +172,18 @@ spec = do
             ,  expectedAddr =
                     "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
             }
+        goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "608a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
+        goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress
+            {  verKey = "1a2a3a4a5a6a7a8a"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "618a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d4"
+            }
         goldenTestBaseAddress GoldenTestBaseAddress
             {  verKeyPayment = "1a2a3a4a5a6a7a8a"
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
@@ -177,6 +192,48 @@ spec = do
                     "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
             }
         goldenTestBaseAddress GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressStakeFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressStakeFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 1
+            ,  expectedAddr =
+                    "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressBothFromKeyHash GoldenTestBaseAddress
+            {  verKeyPayment = "1a2a3a4a5a6a7a8a"
+            ,  verKeyStake = "1c2c3c4c5c6c7c8c"
+            ,  netTag = 0
+            ,  expectedAddr =
+                    "008a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestBaseAddressBothFromKeyHash GoldenTestBaseAddress
             {  verKeyPayment = "1a2a3a4a5a6a7a8a"
             ,  verKeyStake = "1c2c3c4c5c6c7c8c"
             ,  netTag = 1
@@ -322,6 +379,21 @@ goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
 
+goldenTestEnterpriseAddressKeyHash :: GoldenTestEnterpriseAddress -> SpecWith ()
+goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress{..} =
+    it ("enterprise address for networkId " <> show netTag) $ do
+        let bs = b16encode $ T.append verKey verKey
+        let (Just xPub) = xpubFromBytes bs
+        let addrXPub = liftXPub xPub :: Shelley 'PaymentK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let enterpriseAddrFromKey =
+                Shelley.paymentAddress tag (PaymentFromKey addrXPub)
+        let keyHashDigest = hashCredential $ BS.take 32 bs
+        let keyHash = KeyHash Payment keyHashDigest
+        let enterpriseAddrFromKeyHash =
+                Shelley.paymentAddress tag (PaymentFromKeyHash keyHash)
+        enterpriseAddrFromKey `shouldBe` enterpriseAddrFromKeyHash
+
 data GoldenTestBaseAddress = GoldenTestBaseAddress
     {
       -- | The verification public key as string to be encoded into base16 form
@@ -349,9 +421,74 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
                 xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let baseAddr = delegationAddress tag (PaymentFromKey addrXPub) (DelegationFromKey stakeXPub)
+        let baseAddr =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
+
+goldenTestBaseAddressPayFromKeyHash :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show netTag) $ do
+        let paymentBs = b16encode $ T.append verKeyPayment verKeyPayment
+        let (Just xPub1) = xpubFromBytes paymentBs
+        let addrXPub = liftXPub xPub1 :: Shelley 'PaymentK XPub
+        let (Just xPub2) =
+                xpubFromBytes $ b16encode $ T.append verKeyStake verKeyStake
+        let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let baseAddrPayFromKey =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
+        let keyHashDigest = hashCredential $ BS.take 32 paymentBs
+        let keyHash = KeyHash Payment keyHashDigest
+        let baseAddrPayFromKeyHash =
+                delegationAddress tag (PaymentFromKeyHash keyHash)
+                (DelegationFromKey stakeXPub)
+        baseAddrPayFromKey `shouldBe` baseAddrPayFromKeyHash
+
+goldenTestBaseAddressStakeFromKeyHash :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddressStakeFromKeyHash GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show netTag) $ do
+        let paymentBs = b16encode $ T.append verKeyPayment verKeyPayment
+        let (Just xPub1) = xpubFromBytes paymentBs
+        let addrXPub = liftXPub xPub1 :: Shelley 'PaymentK XPub
+        let stakeBs = b16encode $ T.append verKeyStake verKeyStake
+        let (Just xPub2) = xpubFromBytes stakeBs
+        let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let baseAddrStakeFromKey =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
+        let keyHashDigest = hashCredential $ BS.take 32 stakeBs
+        let keyHash = KeyHash Delegation keyHashDigest
+        let baseAddrStakeFromKeyHash =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKeyHash keyHash)
+        baseAddrStakeFromKey `shouldBe` baseAddrStakeFromKeyHash
+
+goldenTestBaseAddressBothFromKeyHash :: GoldenTestBaseAddress -> SpecWith ()
+goldenTestBaseAddressBothFromKeyHash GoldenTestBaseAddress{..} =
+    it ("base address for networkId " <> show netTag) $ do
+        let paymentBs = b16encode $ T.append verKeyPayment verKeyPayment
+        let (Just xPub1) = xpubFromBytes paymentBs
+        let addrXPub = liftXPub xPub1 :: Shelley 'PaymentK XPub
+        let stakeBs = b16encode $ T.append verKeyStake verKeyStake
+        let (Just xPub2) = xpubFromBytes stakeBs
+        let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
+        let (Right tag) = mkNetworkDiscriminant netTag
+        let baseAddrBothFromKey =
+                delegationAddress tag (PaymentFromKey addrXPub)
+                (DelegationFromKey stakeXPub)
+        let paymentKeyHashDigest = hashCredential $ BS.take 32 paymentBs
+        let paymentKeyHash = KeyHash Payment paymentKeyHashDigest
+        let stakeKeyHashDigest = hashCredential $ BS.take 32 stakeBs
+        let stakeKeyHash = KeyHash Delegation stakeKeyHashDigest
+        let baseAddrBothFromKeyHash =
+                delegationAddress tag (PaymentFromKeyHash paymentKeyHash)
+                (DelegationFromKeyHash stakeKeyHash)
+        baseAddrBothFromKey `shouldBe` baseAddrBothFromKeyHash
+
 
 data TestVector = TestVector
     {

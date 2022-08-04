@@ -113,7 +113,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Internal
     ( WithErrorMessage (..), orElse )
 import Cardano.Address.Script
-    ( ScriptHash (..) )
+    ( KeyHash (..), KeyRole (..), ScriptHash (..) )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -731,11 +731,13 @@ data family Credential (purpose :: Depth)
 
 data instance Credential 'PaymentK where
     PaymentFromKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
+    PaymentFromKeyHash :: KeyHash -> Credential 'PaymentK
     PaymentFromScript :: ScriptHash -> Credential 'PaymentK
     deriving Show
 
 data instance Credential 'DelegationK where
     DelegationFromKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
+    DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
     DelegationFromScript :: ScriptHash -> Credential 'DelegationK
     DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
     deriving Show
@@ -756,6 +758,14 @@ paymentAddress discrimination = \case
             (EnterpriseAddress CredentialFromKey)
             discrimination
             (hashCredential . xpubPublicKey . getKey $ keyPub)
+    PaymentFromKeyHash (KeyHash Payment verKeyHash) ->
+        constructPayload
+            (EnterpriseAddress CredentialFromKey)
+            discrimination
+            verKeyHash
+    PaymentFromKeyHash (KeyHash keyrole _) ->
+        error $ "Payment credential should be built from key hash having payment"
+        <> " role. Key hash with " <> show keyrole <> " was used."
     PaymentFromScript (ScriptHash bytes) ->
         constructPayload
             (EnterpriseAddress CredentialFromScript)
@@ -807,6 +817,15 @@ stakeAddress discrimination = \case
             discrimination
             (hashCredential . xpubPublicKey . getKey $ keyPub)
 
+    DelegationFromKeyHash (KeyHash Delegation verKeyHash) ->
+        Right $ constructPayload
+            (RewardAccount CredentialFromKey)
+            discrimination
+            verKeyHash
+
+    DelegationFromKeyHash (KeyHash keyrole _) ->
+        Left $ ErrStakeAddressFromKeyHash keyrole
+
     DelegationFromScript (ScriptHash bytes) ->
         Right $ constructPayload
             (RewardAccount CredentialFromScript)
@@ -822,6 +841,7 @@ stakeAddress discrimination = \case
 -- @since 3.0.0
 data ErrInvalidStakeAddress
     = ErrStakeAddressFromPointer
+    | ErrStakeAddressFromKeyHash KeyRole
     deriving (Generic, Show, Eq)
 
 -- | Extend an existing payment 'Address' to make it a delegation address.
@@ -856,6 +876,17 @@ extendAddress addr infoStakeReference = do
                 putWord8 $ fstByte .&. 0b00011111
                 putByteString rest
                 putByteString . hashCredential . xpubPublicKey . getKey $ delegationKey
+        DelegationFromKeyHash (KeyHash Delegation keyhash) -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00011111 = 0
+                -- 0b01110000 .&. 0b00011111 = 16
+                putWord8 $ fstByte .&. 0b00011111
+                putByteString rest
+                putByteString keyhash
+        DelegationFromKeyHash (KeyHash keyrole _) -> do
+            Left $ ErrInvalidKeyHashType $
+                "Delegation part can only be constructed from delegation key hash. "
+                <> "Key hash of " <> show keyrole <> " was used."
 
         -- base address: keyhash28,scripthash32    : 00100000 -> 32
         -- base address: scripthash32,scripthash32 : 00110000 -> 48
@@ -888,6 +919,7 @@ extendAddress addr infoStakeReference = do
 data ErrExtendAddress
     = ErrInvalidAddressStyle String
     | ErrInvalidAddressType String
+    | ErrInvalidKeyHashType String
     deriving (Show)
 
 --
