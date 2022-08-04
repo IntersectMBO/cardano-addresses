@@ -509,11 +509,13 @@ keyHashFromBytes :: (KeyRole, ByteString) -> Maybe KeyHash
 
 -- | Construct a <a>KeyHash</a> from <a>Text</a>. It should be Bech32
 --   encoded text with one of following hrp: - <tt>addr_shared_vkh</tt> -
---   <tt>stake_shared_vkh</tt> - <tt>policy_vkh</tt> -
---   <tt>addr_shared_vk</tt> - <tt>stake_shared_vk</tt> -
+--   <tt>stake_shared_vkh</tt> - <tt>addr_vkh</tt> - <tt>stake_vkh</tt> -
+--   <tt>policy_vkh</tt> - <tt>addr_shared_vk</tt> -
+--   <tt>stake_shared_vk</tt> - <tt>addr_vk</tt> - <tt>stake_vk</tt> -
 --   <tt>addr_shared_xvk</tt> - <tt>stake_shared_xvk</tt> -
---   <tt>policy_vk</tt> - <tt>policy_xvk</tt> Raw keys will be hashed on
---   the fly, whereas hash that are directly provided will remain as such.
+--   <tt>addr_xvk</tt> - <tt>stake_xvk</tt> - <tt>policy_vk</tt> -
+--   <tt>policy_xvk</tt> Raw keys will be hashed on the fly, whereas hash
+--   that are directly provided will remain as such.
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 
 -- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
@@ -1118,6 +1120,7 @@ extendAddress :: Address -> Credential 'DelegationK -> Either ErrExtendAddress A
 data ErrExtendAddress
 ErrInvalidAddressStyle :: String -> ErrExtendAddress
 ErrInvalidAddressType :: String -> ErrExtendAddress
+ErrInvalidKeyHashType :: String -> ErrExtendAddress
 
 -- | Possible errors from inspecting a Shelley address
 data ErrInspectAddressOnlyShelley

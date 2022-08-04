@@ -36,7 +36,7 @@ span.spaces    { background: white }
 <span class="lineno">   17 </span>import Cardano.Address.Derivation
 <span class="lineno">   18 </span>    ( xpubFromBytes )
 <span class="lineno">   19 </span>import Cardano.Address.Script
-<span class="lineno">   20 </span>    ( scriptHashFromBytes )
+<span class="lineno">   20 </span>    ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
 <span class="lineno">   21 </span>import Cardano.Address.Style.Shelley
 <span class="lineno">   22 </span>    ( Credential (..), shelleyTestnet, unsafeFromRight )
 <span class="lineno">   23 </span>import Codec.Binary.Encoding
@@ -103,25 +103,34 @@ span.spaces    { background: white }
 <span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">-- this stage, so leaving this as an item for later.</span>
 <span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
 <span class="lineno">   86 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.stake_xvk</span>
-<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">, <span class="nottickedoff">CIP5.script</span></span>
-<span class="lineno">   88 </span><span class="spaces">        </span><span class="istickedoff">]</span>
-<span class="lineno">   89 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">stakeAddressFromBytes discriminant bytes hrp</span>
-<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">hrp == CIP5.script</span> = <span class="nottickedoff">do</span></span>
-<span class="lineno">   92 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">case scriptHashFromBytes bytes of</span></span>
-<span class="lineno">   93 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Nothing -&gt;</span></span>
-<span class="lineno">   94 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into script hash.&quot;</span></span>
-<span class="lineno">   95 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Just h  -&gt; do</span></span>
-<span class="lineno">   96 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">let credential = DelegationFromScript h</span></span>
-<span class="lineno">   97 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
-<span class="lineno">   98 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
-<span class="lineno">  100 </span><span class="spaces">            </span><span class="istickedoff">case xpubFromBytes bytes of</span>
-<span class="lineno">  101 </span><span class="spaces">                </span><span class="istickedoff">Nothing  -&gt;</span>
-<span class="lineno">  102 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into extended public key.&quot;</span></span>
-<span class="lineno">  103 </span><span class="spaces">                </span><span class="istickedoff">Just key -&gt; do</span>
-<span class="lineno">  104 </span><span class="spaces">                    </span><span class="istickedoff">let credential = DelegationFromKey $ Shelley.liftXPub key</span>
-<span class="lineno">  105 </span><span class="spaces">                    </span><span class="istickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.stake_vkh</span>
+<span class="lineno">   88 </span><span class="spaces">        </span><span class="istickedoff">, <span class="nottickedoff">CIP5.script</span></span>
+<span class="lineno">   89 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">   90 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   91 </span><span class="spaces">    </span><span class="istickedoff">stakeAddressFromBytes discriminant bytes hrp</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">hrp == CIP5.script</span> = <span class="nottickedoff">do</span></span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">case scriptHashFromBytes bytes of</span></span>
+<span class="lineno">   94 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Nothing -&gt;</span></span>
+<span class="lineno">   95 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into script hash.&quot;</span></span>
+<span class="lineno">   96 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Just h  -&gt; do</span></span>
+<span class="lineno">   97 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">let credential = DelegationFromScript h</span></span>
+<span class="lineno">   98 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+<span class="lineno">   99 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">| hrp == CIP5.stake_vkh = do</span>
+<span class="lineno">  101 </span><span class="spaces">            </span><span class="istickedoff">case keyHashFromBytes (Delegation, bytes) of</span>
+<span class="lineno">  102 </span><span class="spaces">                </span><span class="istickedoff">Nothing  -&gt;</span>
+<span class="lineno">  103 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into delegation key hash.&quot;</span></span>
+<span class="lineno">  104 </span><span class="spaces">                </span><span class="istickedoff">Just keyhash -&gt; do</span>
+<span class="lineno">  105 </span><span class="spaces">                    </span><span class="istickedoff">let credential = DelegationFromKeyHash keyhash</span>
+<span class="lineno">  106 </span><span class="spaces">                    </span><span class="istickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span>
+<span class="lineno">  107 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
+<span class="lineno">  109 </span><span class="spaces">            </span><span class="istickedoff">case xpubFromBytes bytes of</span>
+<span class="lineno">  110 </span><span class="spaces">                </span><span class="istickedoff">Nothing  -&gt;</span>
+<span class="lineno">  111 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into extended public key.&quot;</span></span>
+<span class="lineno">  112 </span><span class="spaces">                </span><span class="istickedoff">Just key -&gt; do</span>
+<span class="lineno">  113 </span><span class="spaces">                    </span><span class="istickedoff">let credential = DelegationFromKey $ Shelley.liftXPub key</span>
+<span class="lineno">  114 </span><span class="spaces">                    </span><span class="istickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
 
 </pre>
 </body>

@@ -106,17 +106,19 @@ span.spaces    { background: white }
 <span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (DelegationFromPointer ptr) of</span>
 <span class="lineno">   88 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressStyle msg) -&gt;</span>
 <span class="lineno">   89 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
-<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType  msg) -&gt;</span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType msg) -&gt;</span>
 <span class="lineno">   91 </span><span class="spaces">            </span><span class="istickedoff">fail msg</span>
-<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt;</span>
-<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span>
-<span class="lineno">   94 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
-<span class="lineno">   96 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.addr</span>
-<span class="lineno">   97 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.addr_test</span>
-<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">]</span>
-<span class="lineno">   99 </span><span class="spaces"></span><span class="istickedoff"></span>
-<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">ptr = ChainPointer { slotNum, transactionIndex, outputIndex  }</span></span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidKeyHashType msg) -&gt;</span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   94 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt;</span>
+<span class="lineno">   95 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span>
+<span class="lineno">   96 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
+<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.addr</span>
+<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.addr_test</span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  101 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">ptr = ChainPointer { slotNum, transactionIndex, outputIndex  }</span></span>
 
 </pre>
 </body>

@@ -95,13 +95,15 @@ span.spaces    { background: white }
 <span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
 <span class="lineno">   77 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType  msg) -&gt;</span>
 <span class="lineno">   78 </span><span class="spaces">            </span><span class="istickedoff">fail msg</span>
-<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt;</span>
-<span class="lineno">   80 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span>
-<span class="lineno">   81 </span><span class="spaces">  </span><span class="istickedoff">where</span>
-<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
-<span class="lineno">   83 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.addr</span>
-<span class="lineno">   84 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.addr_test</span>
-<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
+<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidKeyHashType msg) -&gt;</span>
+<span class="lineno">   80 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt;</span>
+<span class="lineno">   82 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span>
+<span class="lineno">   83 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
+<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.addr</span>
+<span class="lineno">   86 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.addr_test</span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">]</span></span>
 
 </pre>
 </body>
