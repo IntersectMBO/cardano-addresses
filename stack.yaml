@@ -24,7 +24,7 @@ extra-deps:
   commit: 1546af7fc267d5eea805ef223dd2b59ac120b784
 
 - git: https://github.com/haskell-works/hw-aeson
-  commit: d99d2f3e39a287607418ae605b132a3deb2b753f
+  commit: 5b4613379830ce06b167301c5ecb3c49c7d7eb4b
 
 - string-interpolate-0.3.0.2
 - hspec-golden-0.1.0.3

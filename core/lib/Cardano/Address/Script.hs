@@ -801,9 +801,11 @@ instance FromJSON ScriptTemplate where
         ScriptTemplate <$> (Map.fromList <$> cosigners') <*> template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
-            case JM.toList o of
+            case toList o of
                 [] -> fail "Cosigners object array should not be empty"
                 cs -> for (reverse cs) $ \(numTxt, str) -> do
                     cosigner' <- parseJSON @Cosigner (String (J.keyToText numTxt))
                     xpub <- parseXPub str
                     pure (cosigner', xpub)
+
+        toList = JM.foldlWithKey' (\acc k v -> (k,v):acc) []
