@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 86912f19e7dacb4916632c2b25bddeb51e1cb689da8f470f34d816a275895da3
+-- hash: 070fcc6aa6b723602d22f1a516bcb1dee8df411b039e2c93e9136ebd0c331ebf
 
 name:           cardano-addresses
 version:        3.11.0
@@ -72,12 +72,7 @@ library
     , extra
     , fmt
     , hashable
-    -- TODO This is a compatibility shim to make it easier for our library dependencies to
-    -- be compatible with both aeson 1 & 2.  Once downstream projects are all upgraded to
-    -- work with aeson-2, library dependencies will need to be updated to no longer use
-    -- this compatibility shim and have bounds to indicate they work with aeson-2 only.
-    -- After this, the dependency to hw-aeson can be dropped.
-    , hw-aeson >= 0.1.7
+    , hw-aeson >=0.1.7
     , memory
     , text
     , unordered-containers
