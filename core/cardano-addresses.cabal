@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 070fcc6aa6b723602d22f1a516bcb1dee8df411b039e2c93e9136ebd0c331ebf
+-- hash: 86912f19e7dacb4916632c2b25bddeb51e1cb689da8f470f34d816a275895da3
 
 name:           cardano-addresses
 version:        3.11.0
@@ -72,7 +72,7 @@ library
     , extra
     , fmt
     , hashable
-    , hw-aeson >=0.1.7
+    , hw-aeson
     , memory
     , text
     , unordered-containers

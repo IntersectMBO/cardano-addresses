@@ -59,7 +59,8 @@ library:
   # work with aeson-2, library dependencies will need to be updated to no longer use
   # this compatibility shim and have bounds to indicate they work with aeson-2 only.
   # After this, the dependency to hw-aeson can be dropped.
-  - hw-aeson >= 0.1.7
+  # cardano-addresses will not build with hw-aeson 1.6.
+  - hw-aeson
   - hashable
   - memory
   - text
