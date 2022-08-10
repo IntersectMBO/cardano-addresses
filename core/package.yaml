@@ -54,6 +54,12 @@ library:
   - exceptions
   - extra
   - fmt
+  # TODO This is a compatibility shim to make it easier for our library dependencies to
+  # be compatible with both aeson 1 & 2.  Once downstream projects are all upgraded to
+  # work with aeson-2, library dependencies will need to be updated to no longer use
+  # this compatibility shim and have bounds to indicate they work with aeson-2 only.
+  # After this, the dependency to hw-aeson can be dropped.
+  # cardano-addresses will not build with hw-aeson 1.6.
   - hw-aeson
   - hashable
   - memory
