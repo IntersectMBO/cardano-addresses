@@ -164,13 +164,26 @@ $ cardano-address key hash --hex < addr.xvk
 
 
 <details>
-  <summary>How to generate a payment address from a payment key (<strong>payment.addr</strong>)</summary>
+  <summary>How to generate a payment address from an extended payment key (<strong>payment.addr</strong>)</summary>
 
 ```console
 $ cardano-address address payment --network-tag testnet < addr.xvk > payment.addr
 addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 ```
 </details>
+
+
+<details>
+  <summary>How to generate a payment address from a non-extended payment key (<strong>payment.addr</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/0/0 < root.xsk | cardano-address key public --without-chain-code > addr.vk
+addr_vk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28qwq4y73
+$ cardano-address address payment --network-tag testnet < addr.vk > payment.addr
+addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
+```
+</details>
+
 
 <details>
   <summary>How to generate a payment address from a payment key hash (<strong>payment.addr</strong>)</summary>
