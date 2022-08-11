@@ -13,16 +13,28 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "address", "payment" ] $ do
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" "0"
+    specShelleyFromXPub defaultPhrase "1852H/1815H/0H/0/0" "0"
         "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
 
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" "3"
+    specShelleyFromXPub defaultPhrase "1852H/1815H/0H/0/0" "3"
         "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
 
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" "testnet"
+    specShelleyFromXPub defaultPhrase "1852H/1815H/0H/0/0" "testnet"
         "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
 
-    specShelley defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
+    specShelleyFromXPub defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
+        "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
+
+    specShelleyFromPub defaultPhrase "1852H/1815H/0H/0/0" "0"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+
+    specShelleyFromPub defaultPhrase "1852H/1815H/0H/0/0" "3"
+        "addr1vdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0m9a08"
+
+    specShelleyFromPub defaultPhrase "1852H/1815H/0H/0/0" "testnet"
+        "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+
+    specShelleyFromPub defaultPhrase "1852H/1815H/0H/0/0" "mainnet"
         "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
 
     specShelleyFromKeyHash defaultPhrase "1852H/1815H/0H/0/0" "0"
@@ -42,11 +54,19 @@ spec = describeCmd [ "address", "payment" ] $ do
     specInvalidNetwork "42"
     specInvalidNetwork "staging"
 
-specShelley :: [String] -> String -> String -> String -> SpecWith ()
-specShelley phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
+specShelleyFromXPub :: [String] -> String -> String -> String -> SpecWith ()
+specShelleyFromXPub phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
     out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
+       >>= cli [ "address", "payment", "--network-tag", networkTag ]
+    out `shouldBe` want
+
+specShelleyFromPub :: [String] -> String -> String -> String -> SpecWith ()
+specShelleyFromPub phrase path networkTag want = it ("golden shelley (payment) " <> path) $ do
+    out <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
+       >>= cli [ "key", "child", path ]
+       >>= cli [ "key", "public", "--without-chain-code" ]
        >>= cli [ "address", "payment", "--network-tag", networkTag ]
     out `shouldBe` want
 

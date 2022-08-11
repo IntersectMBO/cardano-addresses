@@ -77,10 +77,6 @@ run Cmd{networkTag} = do
         | networkTag == shelleyTestnet = CIP5.addr_test
         | otherwise = CIP5.addr
 
-    -- TODO: Also allow `XXX_vk` prefixes. We don't need the chain code to
-    -- construct a payment credential. This will however need some additional
-    -- abstraction over `xpubFromBytes` but I've done enough yake-shaving at
-    -- this stage, so leaving this as an item for later.
     allowedPrefixes =
         [ CIP5.addr_xvk
         , CIP5.addr_vk
