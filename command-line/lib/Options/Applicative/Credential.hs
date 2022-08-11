@@ -22,7 +22,7 @@ import Options.Applicative
 import Options.Applicative.Derivation
     ( keyhashReader, pubReader, xpubReader )
 import Options.Applicative.Script
-    ( scriptHashReader )
+    ( scriptHashReader, scriptReader )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
@@ -32,7 +32,7 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 delegationCredentialArg  :: String -> Parser (Credential 'DelegationK)
 delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
-    <> metavar "EXTENDED KEY || NON-EXTENDED KEY || KEY HASH || SCRIPT HASH"
+    <> metavar "EXTENDED KEY || NON-EXTENDED KEY || KEY HASH || SCRIPT || SCRIPT HASH"
     <> help helpDoc
   where
     reader :: String -> Either String (Credential 'DelegationK)
@@ -45,11 +45,13 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
        `orElse`
        (DelegationFromScriptHash <$> scriptHashReader str)
        `orElse`
+       (DelegationFromScript <$> scriptReader str)
+       `orElse`
        Left errMsg
 
     errMsg = mconcat
         [ "Couldn't parse delegation credentials. Neither an extended public key, "
-        , "a non-extended public key, a public key hash nor a script hash."
+        , "a non-extended public key, a public key hash, a script nor a script hash."
         ]
 
     allowedPrefixesForPub =

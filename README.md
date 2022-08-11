@@ -407,6 +407,18 @@ addr_test1wpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjerashp7y82
 </details>
 
 <details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a script hash (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" > script.stake.hash
+script1nugjzwfs2t9htl7s3dv9ajnd5us8pctpa8aj4ank8dnd6d6unul
+$ cardano-address address delegation $(cat script.stake.hash) < script.addr > base.addr
+addr_test1xpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjera5lzysnjvzjed6ll5yttp0v5md8ypcwzc0flv40va3mvmwsl7grs3
+```
+</details>
+
+
+<details>
   <summary>Correspondence between keys in cardano-addresses and cardano-cli (<strong>key.xsk key.xvk key.vk key.hash</strong>)</summary>
 
 ```console
