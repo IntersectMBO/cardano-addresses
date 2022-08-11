@@ -13,12 +13,22 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd [ "address", "delegation" ] $ do
-    specFromKey defaultPhrase "1852H/1815H/0H/2/0"
+    specFromExtendedKey defaultPhrase "1852H/1815H/0H/2/0"
         defaultAddrMainnet
         "addr1q9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwvxwdrt\
         \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qdqhgvu"
 
-    specFromKey defaultPhrase "1852H/1815H/0H/2/0"
+    specFromExtendedKey defaultPhrase "1852H/1815H/0H/2/0"
+        defaultAddrTestnet
+        "addr_test1qptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwv\
+        \xwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwk2gqr"
+
+    specFromNonextendedKey defaultPhrase "1852H/1815H/0H/2/0"
+        defaultAddrMainnet
+        "addr1q9therz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwvxwdrt\
+        \70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qdqhgvu"
+
+    specFromNonextendedKey defaultPhrase "1852H/1815H/0H/2/0"
         defaultAddrTestnet
         "addr_test1qptherz8fgux9ywdysrcpaclznyyvl23l2zfcery3f4m9qwv\
         \xwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2qwk2gqr"
@@ -58,11 +68,19 @@ spec = describeCmd [ "address", "delegation" ] $ do
     specInvalidXPub
         "stake_xvk1qfqcf4tp4ensj5qypqs640rt06pe5x7v2eul00c7rakzzvsakw3caelfuh6cg6nrkdv9y2ctkeu"
 
-specFromKey :: [String] -> String -> String -> String -> SpecWith ()
-specFromKey phrase path addr want = it ("delegation from key " <> want) $ do
+specFromExtendedKey :: [String] -> String -> String -> String -> SpecWith ()
+specFromExtendedKey phrase path addr want = it ("delegation from key " <> want) $ do
     stakeKey <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", "--with-chain-code" ]
+    out <- cli [ "address", "delegation", stakeKey ] addr
+    out `shouldBe` want
+
+specFromNonextendedKey :: [String] -> String -> String -> String -> SpecWith ()
+specFromNonextendedKey phrase path addr want = it ("delegation from key " <> want) $ do
+    stakeKey <- cli [ "key", "from-recovery-phrase", "shelley" ] (unwords phrase)
+       >>= cli [ "key", "child", path ]
+       >>= cli [ "key", "public", "--without-chain-code" ]
     out <- cli [ "address", "delegation", stakeKey ] addr
     out `shouldBe` want
 
