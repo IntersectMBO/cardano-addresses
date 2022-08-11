@@ -744,6 +744,7 @@ data instance Credential 'DelegationK where
     DelegationFromKey :: Shelley 'DelegationK Pub -> Credential 'DelegationK
     DelegationFromExtendedKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
     DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
+    DelegationFromScript :: Script KeyHash -> Credential 'DelegationK
     DelegationFromScriptHash :: ScriptHash -> Credential 'DelegationK
     DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
     deriving Show
@@ -849,6 +850,13 @@ stakeAddress discrimination = \case
     DelegationFromKeyHash (KeyHash keyrole _) ->
         Left $ ErrStakeAddressFromKeyHash keyrole
 
+    DelegationFromScript script ->
+        let (ScriptHash bytes) = toScriptHash script
+        in Right $ constructPayload
+            (RewardAccount CredentialFromScript)
+            discrimination
+            bytes
+
     DelegationFromScriptHash (ScriptHash bytes) ->
         Right $ constructPayload
             (RewardAccount CredentialFromScript)
@@ -920,6 +928,16 @@ extendAddress addr infoStakeReference = do
             Left $ ErrInvalidKeyHashType $
                 "Delegation part can only be constructed from delegation key hash. "
                 <> "Key hash of " <> show keyrole <> " was used."
+
+        -- base address: keyhash28,scripthash28    : 00100000 -> 32
+        -- base address: scripthash28,scripthash28 : 00110000 -> 48
+        DelegationFromScript script -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00111111 = 32
+                -- 0b01110000 .&. 0b00111111 = 48
+                putWord8 $ fstByte .&. 0b00111111
+                putByteString rest
+                putByteString $ unScriptHash $ toScriptHash script
 
         -- base address: keyhash28,scripthash28    : 00100000 -> 32
         -- base address: scripthash28,scripthash28 : 00110000 -> 48

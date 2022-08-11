@@ -17,17 +17,28 @@ import Cardano.Address
 import Cardano.Address.Derivation
     ( pubFromBytes, xpubFromBytes )
 import Cardano.Address.Script
-    ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
+    ( KeyHash, KeyRole (..), Script, keyHashFromBytes, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet, unsafeFromRight )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , header
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Discrimination
     ( fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
+import Options.Applicative.Script
+    ( scriptArg )
 import Options.Applicative.Style
     ( Style (..) )
 import System.IO
@@ -38,8 +49,9 @@ import System.IO.Extra
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-newtype Cmd = Cmd
-    {  networkTag :: NetworkTag
+data Cmd = Cmd
+    { networkTag :: NetworkTag
+    , delegationScript :: Maybe (Script KeyHash)
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -66,12 +78,18 @@ mod liftCmd = command "stake" $
   where
     parser = Cmd
         <$> networkTagOpt Shelley
+        <*> optional scriptArg
 
 run :: Cmd -> IO ()
-run Cmd{networkTag} = do
+run Cmd{networkTag,delegationScript} = do
     discriminant <- fromNetworkTag networkTag
-    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
-    addr <- stakeAddressFromBytes discriminant bytes hrp
+    addr <- case delegationScript of
+        Just script -> do
+            let credential = DelegationFromScript script
+            pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+        Nothing -> do
+            (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
+            stakeAddressFromBytes discriminant bytes hrp
     hPutBytes stdout (unAddress addr) (EBech32 stakeHrp)
   where
     stakeHrp
