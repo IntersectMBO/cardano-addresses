@@ -137,11 +137,22 @@ addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3
 </details>
 
 <details>
-  <summary>How to generate a stake verification key (<strong>stake.xvk</strong>)</summary>
+  <summary>How to generate an extended stake verification key (<strong>stake.xvk</strong>)</summary>
 
 ```console
 $ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --with-chain-code > stake.xvk
 stake_xvk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7h9z4smmeqsvs67qhyqmc2lqa0vy36rf2la74ym8a5p93zp4qtpuq6ky3ve
+```
+
+> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
+</details>
+
+<details>
+  <summary>How to generate a non-extended stake verification key (<strong>stake.vk</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --without-chain-code > stake.vk
+stake_vk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7sg87an2
 ```
 
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
@@ -229,10 +240,19 @@ addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz
 </details>
 
 <details>
-  <summary>How to generate a stake address from a stake key (<strong>stake.addr</strong>)</summary>
+  <summary>How to generate a stake address from an extended stake key (<strong>stake.addr</strong>)</summary>
 
 ```console
 $ cardano-address address stake --network-tag testnet < stake.xvk > stake.addr
+stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a non-extended stake key (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet < stake.vk > stake.addr
 stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
 ```
 </details>
@@ -417,6 +437,32 @@ addr_test1xpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjera5lzysnjvzjed6ll5yttp0v5m
 ```
 </details>
 
+<details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a script (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address address delegation "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" < script.addr > base.addr
+addr_test1xpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjera5lzysnjvzjed6ll5yttp0v5md8ypcwzc0flv40va3mvmwsl7grs3
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a script hash (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet < script.stake.hash > stake.addr
+stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a script (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" > stake.addr
+stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
+```
+</details>
 
 <details>
   <summary>Correspondence between keys in cardano-addresses and cardano-cli (<strong>key.xsk key.xvk key.vk key.hash</strong>)</summary>
