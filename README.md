@@ -198,10 +198,21 @@ addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 
 
 <details>
-  <summary>How to generate a delegated payment address, i.e. base address, from a stake key (<strong>base.addr</strong>)</summary>
+  <summary>How to generate a delegated payment address, i.e. base address, from an extended stake key (<strong>base.addr</strong>)</summary>
 
 ```console
 $ cardano-address address delegation $(cat stake.xvk) < payment.addr > base.addr
+addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
+```
+</details>
+
+<details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a non-extended stake key (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --without-chain-code > stake.vk
+stake_vk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7sg87an2
+$ cardano-address address delegation $(cat stake.vk) < payment.addr > base.addr
 addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
 ```
 </details>
