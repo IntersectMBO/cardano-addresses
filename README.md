@@ -299,6 +299,7 @@ Let's generate extended root private key for shared style:
 
 ``` console
 $ cardano-address key from-recovery-phrase Shared < phrase.prv > root_shared.xsk
+root_shared_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvzteqlc
 ```
 
 Now generate payment verification key (`role=0` is used). Please note that purpose `1854H` is used for multisig.
@@ -324,6 +325,10 @@ stake_shared_vk18a8z5dcrlwene88n84j6dm9yvj5rt296fjtresqnunmacetdcymquyq43z
 We consider `addr_shared.1.vk` and `addr_shared.2.vk` obtained like `addr_shared.vk` but by replacing the final index by `1` and `2` respectively.
 
 ```console
+$ cardano-address key child 1854H/1815H/0H/0/1 < root_shared.xsk | cardano-address key public --without-chain-code > addr_shared.1.vk
+addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3
+$ cardano-address key child 1854H/1815H/0H/0/2 < root_shared.xsk | cardano-address key public --without-chain-code > addr_shared.2.vk
+addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44
 $ cardano-address script hash "all [$(cat addr_shared.1.vk), $(cat addr_shared.2.vk)]" > script.hash
 script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
@@ -333,7 +338,11 @@ This script requires the signature from both signing keys corresponding to `shar
 We can also use extended verification, eiher payment or delegation, keys. They can be obtained as the non-extended ones by using `--with-chain-code` option rather than `--without-chain-option` as above. They will give rise to the same script hash as for verification keys chain code is stripped upon calculation.
 
 ```console
-$ cardano-address script hash "any [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
+$ cardano-address key child 1854H/1815H/0H/0/1 < root_shared.xsk | cardano-address key public --with-chain-code > addr_shared.1.xvk
+addr_shared_xvk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqhlfft3dn0qcn6q99dvlfl2ws5duy6w65zks5jgufe60fg839sysavl5pc
+$ cardano-address key child 1854H/1815H/0H/0/2 < root_shared.xsk | cardano-address key public --with-chain-code > addr_shared.2.xvk
+addr_shared_xvk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xq3zegcxtslhpghmadrlvsphssfjqp3mxg9gca27e35wpu43lqjqnsmjvxuw
+$ cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
 script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
 
@@ -350,6 +359,7 @@ script13uf3fz3ts5srpjc5zcfe977uvnyvp36wcvxuudryegz0zpjlx6a
 
 ```console
 $  cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]"
+script1nugjzwfs2t9htl7s3dv9ajnd5us8pctpa8aj4ank8dnd6d6unul
 ```
 </details>
 
@@ -383,7 +393,16 @@ $  cardano-address script preimage "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttd
 
 ```console
 $ cardano-address address payment --network-tag testnet < script.hash > script.addr
-addr_test1wqqggtajwkxjgf58v452jz6jl87lt32w3mhez5hd7xz6hugp80tta
+addr_test1wpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjerashp7y82
+```
+</details>
+
+<details>
+  <summary>How to generate a payment script address from a script (<strong>script.addr</strong>)</summary>
+
+```console
+$ cardano-address address payment --network-tag testnet "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"  > script.addr
+addr_test1wpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjerashp7y82
 ```
 </details>
 
