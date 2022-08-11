@@ -65,8 +65,9 @@ mod liftCmd = command "delegation" $
             , indent 2 $ string "addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k..."
             ])
   where
+    msg = "An extended stake public key, anon-extended stake public key, a script or a script hash."
     parser = Cmd
-        <$> delegationCredentialArg "An extended stake public key or a script hash."
+        <$> delegationCredentialArg msg
 
 run :: Cmd -> IO ()
 run Cmd{credential} = do

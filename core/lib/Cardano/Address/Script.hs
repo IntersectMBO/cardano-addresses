@@ -286,22 +286,39 @@ keyHashFromText txt = do
         >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
     convertBytes hrp bytes
-        | hrp == CIP5.addr_shared_vkh  = Just (Payment, bytes)
-        | hrp == CIP5.stake_shared_vkh = Just (Delegation, bytes)
-        | hrp == CIP5.addr_vkh  = Just (Payment, bytes)
-        | hrp == CIP5.stake_vkh = Just (Delegation, bytes)
-        | hrp == CIP5.policy_vkh       = Just (Policy, bytes)
-        | hrp == CIP5.addr_shared_vk   = Just (Payment, hashCredential bytes)
-        | hrp == CIP5.addr_vk   = Just (Payment, hashCredential bytes)
-        | hrp == CIP5.addr_shared_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
-        | hrp == CIP5.addr_xvk  = Just (Payment, hashCredential $ BS.take 32 bytes)
-        | hrp == CIP5.stake_shared_vk  = Just (Delegation, hashCredential bytes)
-        | hrp == CIP5.stake_vk  = Just (Delegation, hashCredential bytes)
-        | hrp == CIP5.stake_shared_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
-        | hrp == CIP5.stake_xvk = Just (Delegation, hashCredential $ BS.take 32 bytes)
-        | hrp == CIP5.policy_vk        = Just (Policy, hashCredential bytes)
-        | hrp == CIP5.policy_xvk       = Just (Policy, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.addr_shared_vkh && checkBSLength bytes 28 =
+              Just (Payment, bytes)
+        | hrp == CIP5.stake_shared_vkh && checkBSLength bytes 28 =
+              Just (Delegation, bytes)
+        | hrp == CIP5.addr_vkh && checkBSLength bytes 28 =
+              Just (Payment, bytes)
+        | hrp == CIP5.stake_vkh && checkBSLength bytes 28 =
+              Just (Delegation, bytes)
+        | hrp == CIP5.policy_vkh && checkBSLength bytes 28 =
+              Just (Policy, bytes)
+        | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
+              Just (Payment, hashCredential bytes)
+        | hrp == CIP5.addr_vk && checkBSLength bytes 32 =
+              Just (Payment, hashCredential bytes)
+        | hrp == CIP5.addr_shared_xvk && checkBSLength bytes 64 =
+              Just (Payment, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.addr_xvk && checkBSLength bytes 64 =
+              Just (Payment, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.stake_shared_vk && checkBSLength bytes 32 =
+              Just (Delegation, hashCredential bytes)
+        | hrp == CIP5.stake_vk && checkBSLength bytes 32 =
+              Just (Delegation, hashCredential bytes)
+        | hrp == CIP5.stake_shared_xvk && checkBSLength bytes 64 =
+              Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.stake_xvk && checkBSLength bytes 64 =
+              Just (Delegation, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.policy_vk && checkBSLength bytes 32 =
+              Just (Policy, hashCredential bytes)
+        | hrp == CIP5.policy_xvk && checkBSLength bytes 64 =
+              Just (Policy, hashCredential $ BS.take 32 bytes)
         | otherwise                    = Nothing
+    checkBSLength bytes expLength =
+              BS.length bytes == expLength
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
