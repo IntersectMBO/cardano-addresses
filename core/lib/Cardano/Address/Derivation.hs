@@ -46,6 +46,12 @@ module Cardano.Address.Derivation
     , xpubPublicKey
     , xpubChainCode
 
+    -- ** Pub
+    , Pub
+    , pubFromBytes
+    , pubToBytes
+    , xpubToPub
+
     -- ** XSignature
     , XSignature
     , sign
@@ -173,6 +179,37 @@ xpubPublicKey (CC.XPub pub _cc) = pub
 -- @since 2.0.0
 xpubChainCode :: XPub -> ByteString
 xpubChainCode (CC.XPub _pub (CC.ChainCode cc)) = cc
+
+-- | An opaque type representing a non-extended public key.
+--
+-- __Properties:__
+--
+-- ===== Roundtripping
+--
+-- @forall pub. 'pubFromBytes' ('pubToBytes' pub) == 'Just' pub@
+--
+-- @since 3.12.0
+newtype Pub = Pub ByteString
+
+-- | Construct a 'Pub' from raw 'ByteString' (32 bytes).
+--
+-- @since 3.12.0
+pubFromBytes :: ByteString -> Maybe Pub
+pubFromBytes bytes
+    | BS.length bytes /= 32 = Nothing
+    | otherwise = Just $ Pub bytes
+
+-- | Convert an 'Pub' to a raw 'ByteString' (32 bytes).
+--
+-- @since 3.12.0
+pubToBytes :: Pub -> ByteString
+pubToBytes (Pub pub) = pub
+
+-- | Extract the public key from an 'XPub' as a 'Pub' (32 bytes).
+--
+-- @since 3.12.0
+xpubToPub :: XPub -> Pub
+xpubToPub (CC.XPub pub _cc) = Pub pub
 
 -- | Construct an 'XPrv' from raw 'ByteString' (96 bytes).
 --
