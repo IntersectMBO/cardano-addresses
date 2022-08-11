@@ -740,6 +740,7 @@ data instance Credential 'PaymentK where
     deriving Show
 
 data instance Credential 'DelegationK where
+    DelegationFromKey :: Shelley 'DelegationK Pub -> Credential 'DelegationK
     DelegationFromExtendedKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
     DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
     DelegationFromScriptHash :: ScriptHash -> Credential 'DelegationK
@@ -820,11 +821,17 @@ stakeAddress
     -> Credential 'DelegationK
     -> Either ErrInvalidStakeAddress Address
 stakeAddress discrimination = \case
-    DelegationFromExtendedKey keyPub ->
+    DelegationFromKey keyPub ->
         Right $ constructPayload
             (RewardAccount CredentialFromKey)
             discrimination
-            (hashCredential . xpubPublicKey . getKey $ keyPub)
+            (hashCredential . pubToBytes . getKey $ keyPub)
+
+    DelegationFromExtendedKey keyXPub ->
+        Right $ constructPayload
+            (RewardAccount CredentialFromKey)
+            discrimination
+            (hashCredential . xpubPublicKey . getKey $ keyXPub)
 
     DelegationFromKeyHash (KeyHash Delegation verKeyHash) ->
         Right $ constructPayload
@@ -877,7 +884,17 @@ extendAddress addr infoStakeReference = do
 
     case infoStakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
-        -- base address: scripthash32,keyhash28 : 00010000 -> 16
+        -- base address: scripthash28,keyhash28 : 00010000 -> 16
+        DelegationFromKey delegationKey -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00011111 = 0
+                -- 0b01110000 .&. 0b00011111 = 16
+                putWord8 $ fstByte .&. 0b00011111
+                putByteString rest
+                putByteString . hashCredential . pubToBytes . getKey $ delegationKey
+
+        -- base address: keyhash28,keyhash28    : 00000000 -> 0
+        -- base address: scripthash28,keyhash28 : 00010000 -> 16
         DelegationFromExtendedKey delegationKey -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
@@ -897,8 +914,8 @@ extendAddress addr infoStakeReference = do
                 "Delegation part can only be constructed from delegation key hash. "
                 <> "Key hash of " <> show keyrole <> " was used."
 
-        -- base address: keyhash28,scripthash32    : 00100000 -> 32
-        -- base address: scripthash32,scripthash32 : 00110000 -> 48
+        -- base address: keyhash28,scripthash28    : 00100000 -> 32
+        -- base address: scripthash28,scripthash28 : 00110000 -> 48
         DelegationFromScriptHash (ScriptHash scriptBytes) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
@@ -908,7 +925,7 @@ extendAddress addr infoStakeReference = do
                 putByteString scriptBytes
 
         -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
-        -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
+        -- pointer address: scripthash28, 3 variable length uint : 01010000 -> 80
         DelegationFromPointer pointer -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b01011111 = 64

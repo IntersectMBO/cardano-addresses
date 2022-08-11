@@ -16,11 +16,11 @@ import Cardano.Address.Internal
 import Cardano.Address.Script
     ( KeyRole (..) )
 import Cardano.Address.Style.Shelley
-    ( Credential (..), liftXPub )
+    ( Credential (..), liftPub, liftXPub )
 import Options.Applicative
     ( Parser, argument, eitherReader, help, metavar )
 import Options.Applicative.Derivation
-    ( keyhashReader, xpubReader )
+    ( keyhashReader, pubReader, xpubReader )
 import Options.Applicative.Script
     ( scriptHashReader )
 
@@ -37,6 +37,8 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
   where
     reader :: String -> Either String (Credential 'DelegationK)
     reader str =
+       (DelegationFromKey . liftPub <$> pubReader allowedPrefixesForPub str)
+       `orElse`
        (DelegationFromExtendedKey . liftXPub <$> xpubReader allowedPrefixesForXPub str)
        `orElse`
        (DelegationFromKeyHash <$> keyhashReader (Delegation, allowedPrefixesForKeyHash) str)
@@ -45,7 +47,9 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
        `orElse`
        Left "Couldn't parse delegation credentials. Neither a public key, a public key hash nor a script hash."
 
-    -- TODO: Allow non-extended keys here.
+    allowedPrefixesForPub =
+        [ CIP5.stake_vk
+        ]
     allowedPrefixesForXPub =
         [ CIP5.stake_xvk
         ]

@@ -15,7 +15,7 @@ import Prelude hiding
 import Cardano.Address
     ( NetworkTag (..), unAddress )
 import Cardano.Address.Derivation
-    ( xpubFromBytes )
+    ( pubFromBytes, xpubFromBytes )
 import Cardano.Address.Script
     ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
@@ -78,12 +78,9 @@ run Cmd{networkTag} = do
         | networkTag == shelleyTestnet = CIP5.stake_test
         | otherwise = CIP5.stake
 
-    -- TODO: Also allow `XXX_vk` prefixes. We don't need the chain code to
-    -- construct a payment credential. This will however need some additional
-    -- abstraction over `xpubFromBytes` but I've done enough yake-shaving at
-    -- this stage, so leaving this as an item for later.
     allowedPrefixes =
         [ CIP5.stake_xvk
+        , CIP5.stake_vk
         , CIP5.stake_vkh
         , CIP5.script
         ]
@@ -103,6 +100,14 @@ run Cmd{networkTag} = do
                     fail "Couldn't convert bytes into delegation key hash."
                 Just keyhash -> do
                     let credential = DelegationFromKeyHash keyhash
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+
+        | hrp == CIP5.stake_vk = do
+            case pubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into non-extended public key."
+                Just key -> do
+                    let credential = DelegationFromKey $ Shelley.liftPub key
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
 
         | otherwise = do
