@@ -17,7 +17,7 @@ import Prelude hiding
 import Cardano.Address
     ( unAddress )
 import Cardano.Address.Derivation
-    ( xpubFromBytes )
+    ( pubFromBytes, xpubFromBytes )
 import Cardano.Address.Script
     ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
@@ -83,6 +83,7 @@ run Cmd{networkTag} = do
     -- this stage, so leaving this as an item for later.
     allowedPrefixes =
         [ CIP5.addr_xvk
+        , CIP5.addr_vk
         , CIP5.addr_vkh
         , CIP5.script
         ]
@@ -102,6 +103,14 @@ run Cmd{networkTag} = do
                     fail "Couldn't convert bytes into payment key hash."
                 Just keyhash -> do
                     let credential = PaymentFromKeyHash keyhash
+                    pure $ Shelley.paymentAddress discriminant credential
+
+        | hrp == CIP5.addr_vk = do
+            case pubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into non-extended public key."
+                Just key -> do
+                    let credential = PaymentFromKey $ Shelley.liftPub key
                     pure $ Shelley.paymentAddress discriminant credential
 
         | otherwise = do

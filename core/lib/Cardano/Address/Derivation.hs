@@ -190,6 +190,7 @@ xpubChainCode (CC.XPub _pub (CC.ChainCode cc)) = cc
 --
 -- @since 3.12.0
 newtype Pub = Pub ByteString
+    deriving (Show, Eq)
 
 -- | Construct a 'Pub' from raw 'ByteString' (32 bytes).
 --

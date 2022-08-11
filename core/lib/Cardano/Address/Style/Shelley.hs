@@ -72,6 +72,7 @@ module Cardano.Address.Style.Shelley
       -- * Unsafe
     , liftXPrv
     , liftXPub
+    , liftPub
     , unsafeFromRight
 
       -- Internals
@@ -99,6 +100,7 @@ import Cardano.Address.Derivation
     , DerivationScheme (..)
     , DerivationType (..)
     , Index (..)
+    , Pub
     , XPrv
     , XPub
     , credentialHashSize
@@ -107,6 +109,7 @@ import Cardano.Address.Derivation
     , generateNew
     , hashCredential
     , indexFromWord32
+    , pubToBytes
     , unsafeMkIndex
     , xpubPublicKey
     )
@@ -730,6 +733,7 @@ unpackAddress (unAddress -> bytes)
 data family Credential (purpose :: Depth)
 
 data instance Credential 'PaymentK where
+    PaymentFromKey :: Shelley 'PaymentK Pub -> Credential 'PaymentK
     PaymentFromExtendedKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
     PaymentFromKeyHash :: KeyHash -> Credential 'PaymentK
     PaymentFromScriptHash :: ScriptHash -> Credential 'PaymentK
@@ -753,11 +757,16 @@ paymentAddress
     -> Credential 'PaymentK
     -> Address
 paymentAddress discrimination = \case
-    PaymentFromExtendedKey keyPub ->
+    PaymentFromKey keyPub ->
         constructPayload
             (EnterpriseAddress CredentialFromKey)
             discrimination
-            (hashCredential . xpubPublicKey . getKey $ keyPub)
+            (hashCredential . pubToBytes . getKey $ keyPub)
+    PaymentFromExtendedKey keyXPub ->
+        constructPayload
+            (EnterpriseAddress CredentialFromKey)
+            discrimination
+            (hashCredential . xpubPublicKey . getKey $ keyXPub)
     PaymentFromKeyHash (KeyHash Payment verKeyHash) ->
         constructPayload
             (EnterpriseAddress CredentialFromKey)
@@ -1002,6 +1011,17 @@ liftXPrv = Shelley
 -- @since 2.0.0
 liftXPub :: XPub -> Shelley depth XPub
 liftXPub = Shelley
+
+-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'Pub'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 3.14.0
+liftPub :: Pub -> Shelley depth Pub
+liftPub = Shelley
 
 -- Use with care when it is _safe_.
 unsafeFromRight :: Either a c -> c
