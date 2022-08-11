@@ -319,7 +319,7 @@ prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv minBound
     addrXPub = toXPub <$> deriveAddressPrivateKey accXPrv cc ix
-    pointerAddr = pointerAddress net (PaymentFromKey addrXPub) ptr
+    pointerAddr = pointerAddress net (PaymentFromExtendedKey addrXPub) ptr
 
 
 {-------------------------------------------------------------------------------
@@ -352,7 +352,7 @@ goldenTestPointerAddress GoldenTestPointerAddress{..} =
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'PaymentK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let ptrAddr = pointerAddress tag (PaymentFromKey addrXPub) stakePtr
+        let ptrAddr = pointerAddress tag (PaymentFromExtendedKey addrXPub) stakePtr
         let (Right bytes) = b16decode expectedAddr
         ptrAddr `shouldBe` unsafeMkAddress bytes
 
@@ -375,7 +375,7 @@ goldenTestEnterpriseAddress GoldenTestEnterpriseAddress{..} =
         let (Just xPub) = xpubFromBytes $ b16encode $ T.append verKey verKey
         let addrXPub = liftXPub xPub :: Shelley 'PaymentK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
-        let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromKey addrXPub)
+        let enterpriseAddr = Shelley.paymentAddress tag (PaymentFromExtendedKey addrXPub)
         let (Right bytes) = b16decode expectedAddr
         enterpriseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -387,7 +387,7 @@ goldenTestEnterpriseAddressKeyHash GoldenTestEnterpriseAddress{..} =
         let addrXPub = liftXPub xPub :: Shelley 'PaymentK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
         let enterpriseAddrFromKey =
-                Shelley.paymentAddress tag (PaymentFromKey addrXPub)
+                Shelley.paymentAddress tag (PaymentFromExtendedKey addrXPub)
         let keyHashDigest = hashCredential $ BS.take 32 bs
         let keyHash = KeyHash Payment keyHashDigest
         let enterpriseAddrFromKeyHash =
@@ -422,7 +422,7 @@ goldenTestBaseAddress GoldenTestBaseAddress{..} =
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddr =
-                delegationAddress tag (PaymentFromKey addrXPub)
+                delegationAddress tag (PaymentFromExtendedKey addrXPub)
                 (DelegationFromKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
@@ -438,7 +438,7 @@ goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress{..} =
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrPayFromKey =
-                delegationAddress tag (PaymentFromKey addrXPub)
+                delegationAddress tag (PaymentFromExtendedKey addrXPub)
                 (DelegationFromKey stakeXPub)
         let keyHashDigest = hashCredential $ BS.take 32 paymentBs
         let keyHash = KeyHash Payment keyHashDigest
@@ -458,12 +458,12 @@ goldenTestBaseAddressStakeFromKeyHash GoldenTestBaseAddress{..} =
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrStakeFromKey =
-                delegationAddress tag (PaymentFromKey addrXPub)
+                delegationAddress tag (PaymentFromExtendedKey addrXPub)
                 (DelegationFromKey stakeXPub)
         let keyHashDigest = hashCredential $ BS.take 32 stakeBs
         let keyHash = KeyHash Delegation keyHashDigest
         let baseAddrStakeFromKeyHash =
-                delegationAddress tag (PaymentFromKey addrXPub)
+                delegationAddress tag (PaymentFromExtendedKey addrXPub)
                 (DelegationFromKeyHash keyHash)
         baseAddrStakeFromKey `shouldBe` baseAddrStakeFromKeyHash
 
@@ -478,7 +478,7 @@ goldenTestBaseAddressBothFromKeyHash GoldenTestBaseAddress{..} =
         let stakeXPub = liftXPub xPub2 :: Shelley 'DelegationK XPub
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrBothFromKey =
-                delegationAddress tag (PaymentFromKey addrXPub)
+                delegationAddress tag (PaymentFromExtendedKey addrXPub)
                 (DelegationFromKey stakeXPub)
         let paymentKeyHashDigest = hashCredential $ BS.take 32 paymentBs
         let paymentKeyHash = KeyHash Payment paymentKeyHashDigest
@@ -645,10 +645,10 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
   where
     getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
     getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
-    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromKey (toXPub <$> addrKPrv))
-    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromKey (toXPub <$> addrKPrv)) ptr
+    getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv))
+    getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
-        bech32 $ delegationAddress net (PaymentFromKey (toXPub <$> addrKPrv)) stakeKPub
+        bech32 $ delegationAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv)) stakeKPub
     toInspect :: Text -> Value
     toInspect = fromMaybe (String "couldn't inspect") .
         (Shelley.inspectAddress Nothing <=< fromBech32)
@@ -676,7 +676,7 @@ prop_roundtripTextEncoding encode' decode addXPub discrimination =
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = paymentAddress discrimination (PaymentFromKey addXPub)
+    address = paymentAddress discrimination (PaymentFromExtendedKey addXPub)
     result  = decode (encode' address)
 
 prop_roundtripTextEncodingDelegation
@@ -699,7 +699,7 @@ prop_roundtripTextEncodingDelegation encode' decode addXPub delegXPub discrimina
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = delegationAddress discrimination (PaymentFromKey addXPub) (DelegationFromKey delegXPub)
+    address = delegationAddress discrimination (PaymentFromExtendedKey addXPub) (DelegationFromKey delegXPub)
     result  = decode (encode' address)
 
 prop_roundtripTextEncodingPointer
@@ -722,7 +722,7 @@ prop_roundtripTextEncodingPointer encode' decode addXPub ptr discrimination =
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = pointerAddress discrimination (PaymentFromKey addXPub) ptr
+    address = pointerAddress discrimination (PaymentFromExtendedKey addXPub) ptr
     result  = decode (encode' address)
 
 goldenTextLazy :: Text -> TL.Text -> Golden TL.Text

@@ -41,7 +41,7 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
        `orElse`
        (DelegationFromKeyHash <$> keyhashReader (Delegation, allowedPrefixesForKeyHash) str)
        `orElse`
-       (DelegationFromScript <$> scriptHashReader str)
+       (DelegationFromScriptHash <$> scriptHashReader str)
        `orElse`
        Left "Couldn't parse delegation credentials. Neither a public key, a public key hash nor a script hash."
 

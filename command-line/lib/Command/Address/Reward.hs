@@ -94,7 +94,7 @@ run Cmd{networkTag} = do
                 Nothing ->
                     fail "Couldn't convert bytes into script hash."
                 Just h  -> do
-                    let credential = DelegationFromScript h
+                    let credential = DelegationFromScriptHash h
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
 
         | hrp == CIP5.stake_vkh = do

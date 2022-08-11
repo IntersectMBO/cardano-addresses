@@ -378,7 +378,7 @@ deriveDelegationPrivateKey accXPrv =
 -- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
 -- > bech32 $ paymentAddress tag paymentCredential
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
@@ -397,13 +397,13 @@ deriveDelegationPrivateKey accXPrv =
 -- > let infoScriptHash@(ScriptHash bytes) = toScriptHash script
 -- > decodeUtf8 (encode EBase16 bytes)
 -- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (PaymentFromScript infoScriptHash)
+-- > bech32 $ paymentAddress tag (PaymentFromScriptHash infoScriptHash)
 -- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
 --
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
 -- > let delegationCredential = DelegationFromKey $ (toXPub <$> stakeK)
 -- > bech32 $ delegationAddress tag paymentCredential delegationCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
@@ -414,12 +414,12 @@ deriveDelegationPrivateKey accXPrv =
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let ptr = ChainPointer 123 1 2
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
 -- > bech32 $ pointerAddress tag paymentCredential ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 --
 -- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
--- > bech32 $ delegationAddress tag (PaymentFromScript infoScriptHash) (DelegationFromScript infoScriptHash)
+-- > bech32 $ delegationAddress tag (PaymentFromScriptHash infoScriptHash) (DelegationFromScript infoScriptHash)
 -- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
 
 -- | Possible errors from inspecting a Shelley, Icarus, or Byron address.
@@ -730,15 +730,15 @@ unpackAddress (unAddress -> bytes)
 data family Credential (purpose :: Depth)
 
 data instance Credential 'PaymentK where
-    PaymentFromKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
+    PaymentFromExtendedKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
     PaymentFromKeyHash :: KeyHash -> Credential 'PaymentK
-    PaymentFromScript :: ScriptHash -> Credential 'PaymentK
+    PaymentFromScriptHash :: ScriptHash -> Credential 'PaymentK
     deriving Show
 
 data instance Credential 'DelegationK where
     DelegationFromKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
     DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
-    DelegationFromScript :: ScriptHash -> Credential 'DelegationK
+    DelegationFromScriptHash :: ScriptHash -> Credential 'DelegationK
     DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
     deriving Show
 
@@ -753,7 +753,7 @@ paymentAddress
     -> Credential 'PaymentK
     -> Address
 paymentAddress discrimination = \case
-    PaymentFromKey keyPub ->
+    PaymentFromExtendedKey keyPub ->
         constructPayload
             (EnterpriseAddress CredentialFromKey)
             discrimination
@@ -766,7 +766,7 @@ paymentAddress discrimination = \case
     PaymentFromKeyHash (KeyHash keyrole _) ->
         error $ "Payment credential should be built from key hash having payment"
         <> " role. Key hash with " <> show keyrole <> " was used."
-    PaymentFromScript (ScriptHash bytes) ->
+    PaymentFromScriptHash (ScriptHash bytes) ->
         constructPayload
             (EnterpriseAddress CredentialFromScript)
             discrimination
@@ -826,7 +826,7 @@ stakeAddress discrimination = \case
     DelegationFromKeyHash (KeyHash keyrole _) ->
         Left $ ErrStakeAddressFromKeyHash keyrole
 
-    DelegationFromScript (ScriptHash bytes) ->
+    DelegationFromScriptHash (ScriptHash bytes) ->
         Right $ constructPayload
             (RewardAccount CredentialFromScript)
             discrimination
@@ -890,7 +890,7 @@ extendAddress addr infoStakeReference = do
 
         -- base address: keyhash28,scripthash32    : 00100000 -> 32
         -- base address: scripthash32,scripthash32 : 00110000 -> 48
-        DelegationFromScript (ScriptHash scriptBytes) -> do
+        DelegationFromScriptHash (ScriptHash scriptBytes) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
                 -- 0b01110000 .&. 0b00111111 = 48

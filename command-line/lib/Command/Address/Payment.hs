@@ -93,7 +93,7 @@ run Cmd{networkTag} = do
                 Nothing ->
                     fail "Couldn't convert bytes into script hash."
                 Just h  -> do
-                    let credential = PaymentFromScript h
+                    let credential = PaymentFromScriptHash h
                     pure $ Shelley.paymentAddress discriminant credential
 
         | hrp == CIP5.addr_vkh = do
@@ -109,5 +109,5 @@ run Cmd{networkTag} = do
                 Nothing  ->
                     fail "Couldn't convert bytes into extended public key."
                 Just key -> do
-                    let credential = PaymentFromKey $ Shelley.liftXPub key
+                    let credential = PaymentFromExtendedKey $ Shelley.liftXPub key
                     pure $ Shelley.paymentAddress discriminant credential
