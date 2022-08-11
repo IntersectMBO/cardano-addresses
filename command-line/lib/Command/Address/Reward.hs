@@ -110,5 +110,5 @@ run Cmd{networkTag} = do
                 Nothing  ->
                     fail "Couldn't convert bytes into extended public key."
                 Just key -> do
-                    let credential = DelegationFromKey $ Shelley.liftXPub key
+                    let credential = DelegationFromExtendedKey $ Shelley.liftXPub key
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential

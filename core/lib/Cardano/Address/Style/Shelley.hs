@@ -407,7 +407,7 @@ deriveDelegationPrivateKey accXPrv =
 --
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
--- > let delegationCredential = DelegationFromKey $ (toXPub <$> stakeK)
+-- > let delegationCredential = DelegationFromExtendedKey $ (toXPub <$> stakeK)
 -- > bech32 $ delegationAddress tag paymentCredential delegationCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
@@ -740,7 +740,7 @@ data instance Credential 'PaymentK where
     deriving Show
 
 data instance Credential 'DelegationK where
-    DelegationFromKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
+    DelegationFromExtendedKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
     DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
     DelegationFromScriptHash :: ScriptHash -> Credential 'DelegationK
     DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
@@ -820,7 +820,7 @@ stakeAddress
     -> Credential 'DelegationK
     -> Either ErrInvalidStakeAddress Address
 stakeAddress discrimination = \case
-    DelegationFromKey keyPub ->
+    DelegationFromExtendedKey keyPub ->
         Right $ constructPayload
             (RewardAccount CredentialFromKey)
             discrimination
@@ -878,7 +878,7 @@ extendAddress addr infoStakeReference = do
     case infoStakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
         -- base address: scripthash32,keyhash28 : 00010000 -> 16
-        DelegationFromKey delegationKey -> do
+        DelegationFromExtendedKey delegationKey -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
                 -- 0b01110000 .&. 0b00011111 = 16

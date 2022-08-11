@@ -440,7 +440,7 @@ goldenTestBaseAddressPayFromXPub GoldenTestBaseAddress{..} =
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddr =
                 delegationAddress tag (PaymentFromExtendedKey addrXPub)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -456,7 +456,7 @@ goldenTestBaseAddressPayFromPub GoldenTestBaseAddress{..} =
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddr =
                 delegationAddress tag (PaymentFromKey addrPub)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         let (Right bytes) = b16decode expectedAddr
         baseAddr `shouldBe` unsafeMkAddress bytes
 
@@ -472,12 +472,12 @@ goldenTestBaseAddressPayFromKeyHash GoldenTestBaseAddress{..} =
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrPayFromKey =
                 delegationAddress tag (PaymentFromExtendedKey addrXPub)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         let keyHashDigest = hashCredential $ BS.take 32 paymentBs
         let keyHash = KeyHash Payment keyHashDigest
         let baseAddrPayFromKeyHash =
                 delegationAddress tag (PaymentFromKeyHash keyHash)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         baseAddrPayFromKey `shouldBe` baseAddrPayFromKeyHash
 
 goldenTestBaseAddressStakeFromKeyHash :: GoldenTestBaseAddress -> SpecWith ()
@@ -492,7 +492,7 @@ goldenTestBaseAddressStakeFromKeyHash GoldenTestBaseAddress{..} =
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrStakeFromKey =
                 delegationAddress tag (PaymentFromExtendedKey addrXPub)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         let keyHashDigest = hashCredential $ BS.take 32 stakeBs
         let keyHash = KeyHash Delegation keyHashDigest
         let baseAddrStakeFromKeyHash =
@@ -512,7 +512,7 @@ goldenTestBaseAddressBothFromKeyHash GoldenTestBaseAddress{..} =
         let (Right tag) = mkNetworkDiscriminant netTag
         let baseAddrBothFromKey =
                 delegationAddress tag (PaymentFromExtendedKey addrXPub)
-                (DelegationFromKey stakeXPub)
+                (DelegationFromExtendedKey stakeXPub)
         let paymentKeyHashDigest = hashCredential $ BS.take 32 paymentBs
         let paymentKeyHash = KeyHash Payment paymentKeyHashDigest
         let stakeKeyHashDigest = hashCredential $ BS.take 32 stakeBs
@@ -660,13 +660,13 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     let pointerAddr0Slot2 = getPointerAddr addrK0prv slot2 <$> networkTags
 
     let stakeKPub0 = toXPub <$> deriveDelegationPrivateKey acctK0
-    let delegationAddr0Stake0 = getDelegationAddr addrK0prv (DelegationFromKey stakeKPub0) <$> networkTags
-    let delegationAddr1Stake0 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub0) <$> networkTags
-    let delegationAddr1442Stake0 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub0) <$> networkTags
+    let delegationAddr0Stake0 = getDelegationAddr addrK0prv (DelegationFromExtendedKey stakeKPub0) <$> networkTags
+    let delegationAddr1Stake0 = getDelegationAddr addrK1prv (DelegationFromExtendedKey stakeKPub0) <$> networkTags
+    let delegationAddr1442Stake0 = getDelegationAddr addrK1442prv (DelegationFromExtendedKey stakeKPub0) <$> networkTags
     let stakeKPub1 = toXPub <$> deriveDelegationPrivateKey acctK1
-    let delegationAddr0Stake1 = getDelegationAddr addrK0prv (DelegationFromKey stakeKPub1) <$> networkTags
-    let delegationAddr1Stake1 = getDelegationAddr addrK1prv (DelegationFromKey stakeKPub1) <$> networkTags
-    let delegationAddr1442Stake1 = getDelegationAddr addrK1442prv (DelegationFromKey stakeKPub1) <$> networkTags
+    let delegationAddr0Stake1 = getDelegationAddr addrK0prv (DelegationFromExtendedKey stakeKPub1) <$> networkTags
+    let delegationAddr1Stake1 = getDelegationAddr addrK1prv (DelegationFromExtendedKey stakeKPub1) <$> networkTags
+    let delegationAddr1442Stake1 = getDelegationAddr addrK1442prv (DelegationFromExtendedKey stakeKPub1) <$> networkTags
     let vec = TestVector {..}
     let inspectVec = InspectVector {..}
     it "should generate correct addresses" $ do
@@ -732,7 +732,7 @@ prop_roundtripTextEncodingDelegation encode' decode addXPub delegXPub discrimina
             ])
         & label (show $ addressDiscrimination @Shelley discrimination)
   where
-    address = delegationAddress discrimination (PaymentFromExtendedKey addXPub) (DelegationFromKey delegXPub)
+    address = delegationAddress discrimination (PaymentFromExtendedKey addXPub) (DelegationFromExtendedKey delegXPub)
     result  = decode (encode' address)
 
 prop_roundtripTextEncodingPointer

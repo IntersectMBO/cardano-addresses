@@ -37,7 +37,7 @@ delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
   where
     reader :: String -> Either String (Credential 'DelegationK)
     reader str =
-       (DelegationFromKey . liftXPub <$> xpubReader allowedPrefixesForXPub str)
+       (DelegationFromExtendedKey . liftXPub <$> xpubReader allowedPrefixesForXPub str)
        `orElse`
        (DelegationFromKeyHash <$> keyhashReader (Delegation, allowedPrefixesForKeyHash) str)
        `orElse`
