@@ -55,8 +55,8 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/haskell-works/hw-aeson
-    tag: f0e30758887d4b6a2ebc3c54668d7ca7dae3f408
-    --sha256: 0lf40f1wmwcqhp6pak50n3vymwixgp9hzy7j9hkcx7kg2qv73nw4
+    tag: ba7c1e41c6e54d6bf9fd1cd013489ac713fc3153
+    --sha256: 1czyn0whgv7czzgwn5y1zgwlkb9p9sn9z9sc9gixrjprcyc0p15p
 
 -- Relax overly strict bounds in hjsonschema and hjsonpointer
 allow-newer:
