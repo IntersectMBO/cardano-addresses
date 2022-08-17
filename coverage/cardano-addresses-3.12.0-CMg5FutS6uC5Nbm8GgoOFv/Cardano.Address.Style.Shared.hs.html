@@ -1,0 +1,331 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE AllowAmbiguousTypes #-}
+<span class="lineno">    2 </span>{-# LANGUAGE BinaryLiterals #-}
+<span class="lineno">    3 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    4 </span>{-# LANGUAGE DeriveFunctor #-}
+<span class="lineno">    5 </span>{-# LANGUAGE DeriveGeneric #-}
+<span class="lineno">    6 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    7 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    8 </span>{-# LANGUAGE GADTs #-}
+<span class="lineno">    9 </span>{-# LANGUAGE StandaloneDeriving #-}
+<span class="lineno">   10 </span>{-# LANGUAGE TypeFamilies #-}
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>{-# OPTIONS_HADDOCK prune #-}
+<span class="lineno">   13 </span>
+<span class="lineno">   14 </span>-- |
+<span class="lineno">   15 </span>-- Copyright: © 2018-2021 IOHK
+<span class="lineno">   16 </span>-- License: Apache-2.0
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>module Cardano.Address.Style.Shared
+<span class="lineno">   19 </span>    ( -- $overview
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>      -- * Shared
+<span class="lineno">   22 </span>      Shared
+<span class="lineno">   23 </span>    , getKey
+<span class="lineno">   24 </span>    , liftXPrv
+<span class="lineno">   25 </span>    , liftXPub
+<span class="lineno">   26 </span>    , sharedWalletId
+<span class="lineno">   27 </span>
+<span class="lineno">   28 </span>      -- * Key Derivation
+<span class="lineno">   29 </span>      -- $keyDerivation
+<span class="lineno">   30 </span>    , genMasterKeyFromXPrv
+<span class="lineno">   31 </span>    , genMasterKeyFromMnemonic
+<span class="lineno">   32 </span>    , deriveAccountPrivateKey
+<span class="lineno">   33 </span>    , deriveAddressPrivateKey
+<span class="lineno">   34 </span>    , deriveAddressPublicKey
+<span class="lineno">   35 </span>    , deriveDelegationPrivateKey
+<span class="lineno">   36 </span>    , deriveDelegationPublicKey
+<span class="lineno">   37 </span>    , hashKey
+<span class="lineno">   38 </span>
+<span class="lineno">   39 </span>    ) where
+<span class="lineno">   40 </span>
+<span class="lineno">   41 </span>import Prelude
+<span class="lineno">   42 </span>
+<span class="lineno">   43 </span>import Cardano.Address.Derivation
+<span class="lineno">   44 </span>    ( Depth (..)
+<span class="lineno">   45 </span>    , DerivationType (..)
+<span class="lineno">   46 </span>    , Index (..)
+<span class="lineno">   47 </span>    , XPrv
+<span class="lineno">   48 </span>    , XPub
+<span class="lineno">   49 </span>    , hashCredential
+<span class="lineno">   50 </span>    , hashWalletId
+<span class="lineno">   51 </span>    , xpubPublicKey
+<span class="lineno">   52 </span>    )
+<span class="lineno">   53 </span>import Cardano.Address.Script
+<span class="lineno">   54 </span>    ( Cosigner, KeyHash (..), KeyRole, Script )
+<span class="lineno">   55 </span>import Cardano.Address.Script.Parser
+<span class="lineno">   56 </span>    ( scriptToText )
+<span class="lineno">   57 </span>import Cardano.Address.Style.Shelley
+<span class="lineno">   58 </span>    ( Role (..)
+<span class="lineno">   59 </span>    , deriveAccountPrivateKeyShelley
+<span class="lineno">   60 </span>    , deriveAddressPrivateKeyShelley
+<span class="lineno">   61 </span>    , deriveAddressPublicKeyShelley
+<span class="lineno">   62 </span>    , genMasterKeyFromMnemonicShelley
+<span class="lineno">   63 </span>    )
+<span class="lineno">   64 </span>import Cardano.Mnemonic
+<span class="lineno">   65 </span>    ( SomeMnemonic )
+<span class="lineno">   66 </span>import Control.DeepSeq
+<span class="lineno">   67 </span>    ( NFData )
+<span class="lineno">   68 </span>import Data.ByteArray
+<span class="lineno">   69 </span>    ( ScrubbedBytes )
+<span class="lineno">   70 </span>import Data.ByteString
+<span class="lineno">   71 </span>    ( ByteString )
+<span class="lineno">   72 </span>import Data.Coerce
+<span class="lineno">   73 </span>    ( coerce )
+<span class="lineno">   74 </span>import Data.Word
+<span class="lineno">   75 </span>    ( Word32 )
+<span class="lineno">   76 </span>import GHC.Generics
+<span class="lineno">   77 </span>    ( Generic )
+<span class="lineno">   78 </span>
+<span class="lineno">   79 </span>import qualified Cardano.Address.Derivation as Internal
+<span class="lineno">   80 </span>import qualified Data.ByteString as BS
+<span class="lineno">   81 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   82 </span>
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>-- $overview
+<span class="lineno">   85 </span>--
+<span class="lineno">   86 </span>-- This module provides an implementation of:
+<span class="lineno">   87 </span>--
+<span class="lineno">   88 </span>-- - 'Cardano.Address.Derivation.GenMasterKey': for generating Shared master keys from mnemonic sentences
+<span class="lineno">   89 </span>-- - 'Cardano.Address.Derivation.HardDerivation': for hierarchical hard derivation of parent to child keys
+<span class="lineno">   90 </span>-- - 'Cardano.Address.Derivation.SoftDerivation': for hierarchical soft derivation of parent to child keys
+<span class="lineno">   91 </span>--
+<span class="lineno">   92 </span>-- - 'paymentAddress': for constructing payment addresses from a address public key or a script
+<span class="lineno">   93 </span>-- - 'delegationAddress': for constructing delegation addresses from payment credential (public key or script) and stake credential (public key or script)
+<span class="lineno">   94 </span>-- - 'pointerAddress': for constructing delegation addresses from payment credential (public key or script) and chain pointer
+<span class="lineno">   95 </span>-- - 'stakeAddress': for constructing reward accounts from stake credential (public key or script)
+<span class="lineno">   96 </span>
+<span class="lineno">   97 </span>-- | A cryptographic key for sequential-scheme address derivation, with
+<span class="lineno">   98 </span>-- phantom-types to disambiguate key types. The derivation is mostly like Shelley, except the used purpose index
+<span class="lineno">   99 </span>-- (here 1854H rather than Shelley's 1852H)
+<span class="lineno">  100 </span>--
+<span class="lineno">  101 </span>-- @
+<span class="lineno">  102 </span>-- let rootPrivateKey = Shared 'RootK XPrv
+<span class="lineno">  103 </span>-- let accountPubKey  = Shared 'AccountK XPub
+<span class="lineno">  104 </span>-- let addressPubKey  = Shared 'PaymentK XPub
+<span class="lineno">  105 </span>-- @
+<span class="lineno">  106 </span>--
+<span class="lineno">  107 </span>-- @since 3.4.0
+<span class="lineno">  108 </span>newtype Shared (depth :: Depth) key = Shared
+<span class="lineno">  109 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">getKey</span></span></span> :: key
+<span class="lineno">  110 </span>        -- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.
+<span class="lineno">  111 </span>        --
+<span class="lineno">  112 </span>        -- @since 3.4.0
+<span class="lineno">  113 </span>    }
+<span class="lineno">  114 </span>    deriving stock (Generic, <span class="decl"><span class="nottickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  115 </span>
+<span class="lineno">  116 </span><span class="decl"><span class="istickedoff"><span class="decl"><span class="nottickedoff">deriving instance (Functor (Shared depth))</span></span></span></span>
+<span class="lineno">  117 </span>instance (NFData key) =&gt; NFData (Shared depth key)
+<span class="lineno">  118 </span>
+<span class="lineno">  119 </span>--
+<span class="lineno">  120 </span>-- Key Derivation
+<span class="lineno">  121 </span>--
+<span class="lineno">  122 </span>-- $keyDerivation
+<span class="lineno">  123 </span>--
+<span class="lineno">  124 </span>-- === Generating a root key from 'SomeMnemonic'
+<span class="lineno">  125 </span>-- &gt; :set -XOverloadedStrings
+<span class="lineno">  126 </span>-- &gt; :set -XTypeApplications
+<span class="lineno">  127 </span>-- &gt; :set -XDataKinds
+<span class="lineno">  128 </span>-- &gt; import Cardano.Mnemonic ( mkSomeMnemonic )
+<span class="lineno">  129 </span>-- &gt;
+<span class="lineno">  130 </span>-- &gt; let (Right mw) = mkSomeMnemonic @'[15] [&quot;network&quot;,&quot;empty&quot;,&quot;cause&quot;,&quot;mean&quot;,&quot;expire&quot;,&quot;private&quot;,&quot;finger&quot;,&quot;accident&quot;,&quot;session&quot;,&quot;problem&quot;,&quot;absurd&quot;,&quot;banner&quot;,&quot;stage&quot;,&quot;void&quot;,&quot;what&quot;]
+<span class="lineno">  131 </span>-- &gt; let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+<span class="lineno">  132 </span>-- &gt; let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+<span class="lineno">  133 </span>--
+<span class="lineno">  134 </span>-- === Deriving child keys
+<span class="lineno">  135 </span>--
+<span class="lineno">  136 </span>-- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
+<span class="lineno">  137 </span>--
+<span class="lineno">  138 </span>-- &gt; let Just accIx = indexFromWord32 0x80000000
+<span class="lineno">  139 </span>-- &gt; let acctK = deriveAccountPrivateKey rootK accIx
+<span class="lineno">  140 </span>-- &gt;
+<span class="lineno">  141 </span>-- &gt; let Just addIx = indexFromWord32 0x00000014
+<span class="lineno">  142 </span>-- &gt; let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+<span class="lineno">  143 </span>--
+<span class="lineno">  144 </span>-- &gt; let stakeK = deriveDelegationPrivateKey acctK
+<span class="lineno">  145 </span>
+<span class="lineno">  146 </span>instance Internal.GenMasterKey Shared where
+<span class="lineno">  147 </span>    type SecondFactor Shared = ScrubbedBytes
+<span class="lineno">  148 </span>
+<span class="lineno">  149 </span>    <span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv = liftXPrv</span></span>
+<span class="lineno">  150 </span>    <span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic fstFactor sndFactor =</span>
+<span class="lineno">  151 </span><span class="spaces">        </span><span class="istickedoff">Shared $ genMasterKeyFromMnemonicShelley fstFactor sndFactor</span></span>
+<span class="lineno">  152 </span>
+<span class="lineno">  153 </span>instance Internal.HardDerivation Shared where
+<span class="lineno">  154 </span>    type AccountIndexDerivationType Shared = 'Hardened
+<span class="lineno">  155 </span>    type AddressIndexDerivationType Shared = 'Soft
+<span class="lineno">  156 </span>    type WithRole Shared = Role
+<span class="lineno">  157 </span>
+<span class="lineno">  158 </span>    <span class="decl"><span class="istickedoff">deriveAccountPrivateKey (Shared rootXPrv) accIx =</span>
+<span class="lineno">  159 </span><span class="spaces">        </span><span class="istickedoff">Shared $ deriveAccountPrivateKeyShelley rootXPrv accIx purposeIndex</span></span>
+<span class="lineno">  160 </span>
+<span class="lineno">  161 </span>    <span class="decl"><span class="istickedoff">deriveAddressPrivateKey (Shared accXPrv) keyRole addrIx =</span>
+<span class="lineno">  162 </span><span class="spaces">        </span><span class="istickedoff">Shared $ deriveAddressPrivateKeyShelley accXPrv keyRole addrIx</span></span>
+<span class="lineno">  163 </span>
+<span class="lineno">  164 </span>instance Internal.SoftDerivation Shared where
+<span class="lineno">  165 </span>    <span class="decl"><span class="istickedoff">deriveAddressPublicKey (Shared accXPub) keyRole addrIx =</span>
+<span class="lineno">  166 </span><span class="spaces">        </span><span class="istickedoff">Shared $ deriveAddressPublicKeyShelley accXPub keyRole addrIx</span></span>
+<span class="lineno">  167 </span>
+<span class="lineno">  168 </span>-- | Generate a root key from a corresponding mnemonic.
+<span class="lineno">  169 </span>--
+<span class="lineno">  170 </span>-- @since 3.4.0
+<span class="lineno">  171 </span>genMasterKeyFromMnemonic
+<span class="lineno">  172 </span>    :: SomeMnemonic
+<span class="lineno">  173 </span>        -- ^ Some valid mnemonic sentence.
+<span class="lineno">  174 </span>    -&gt; ScrubbedBytes
+<span class="lineno">  175 </span>        -- ^ An optional second-factor passphrase (or 'mempty')
+<span class="lineno">  176 </span>    -&gt; Shared 'RootK XPrv
+<span class="lineno">  177 </span><span class="decl"><span class="istickedoff">genMasterKeyFromMnemonic = Internal.genMasterKeyFromMnemonic</span></span>
+<span class="lineno">  178 </span>
+<span class="lineno">  179 </span>-- | Generate a root key from a corresponding root 'XPrv'
+<span class="lineno">  180 </span>--
+<span class="lineno">  181 </span>-- @since 3.4.0
+<span class="lineno">  182 </span>genMasterKeyFromXPrv :: XPrv -&gt; Shared 'RootK XPrv
+<span class="lineno">  183 </span><span class="decl"><span class="nottickedoff">genMasterKeyFromXPrv = Internal.genMasterKeyFromXPrv</span></span>
+<span class="lineno">  184 </span>
+<span class="lineno">  185 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+<span class="lineno">  186 </span>--
+<span class="lineno">  187 </span>-- | Derives an account private key from the given root private key.
+<span class="lineno">  188 </span>--
+<span class="lineno">  189 </span>-- @since 3.4.0
+<span class="lineno">  190 </span>deriveAccountPrivateKey
+<span class="lineno">  191 </span>    :: Shared 'RootK XPrv
+<span class="lineno">  192 </span>    -&gt; Index 'Hardened 'AccountK
+<span class="lineno">  193 </span>    -&gt; Shared 'AccountK XPrv
+<span class="lineno">  194 </span><span class="decl"><span class="istickedoff">deriveAccountPrivateKey = Internal.deriveAccountPrivateKey</span></span>
+<span class="lineno">  195 </span>
+<span class="lineno">  196 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+<span class="lineno">  197 </span>--
+<span class="lineno">  198 </span>-- | Derives a multisig private key from the given account private key for payment credential.
+<span class="lineno">  199 </span>--
+<span class="lineno">  200 </span>-- @since 3.4.0
+<span class="lineno">  201 </span>deriveAddressPrivateKey
+<span class="lineno">  202 </span>    :: Shared 'AccountK XPrv
+<span class="lineno">  203 </span>    -&gt; Role
+<span class="lineno">  204 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  205 </span>    -&gt; Shared 'ScriptK XPrv
+<span class="lineno">  206 </span><span class="decl"><span class="istickedoff">deriveAddressPrivateKey = coerce . Internal.deriveAddressPrivateKey</span></span>
+<span class="lineno">  207 </span>
+<span class="lineno">  208 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock.
+<span class="lineno">  209 </span>--
+<span class="lineno">  210 </span>-- | Derives a multisig private key from the given account private key for delegation credential.
+<span class="lineno">  211 </span>--
+<span class="lineno">  212 </span>-- @since 3.4.0
+<span class="lineno">  213 </span>deriveDelegationPrivateKey
+<span class="lineno">  214 </span>    :: Shared 'AccountK XPrv
+<span class="lineno">  215 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  216 </span>    -&gt; Shared 'ScriptK XPrv
+<span class="lineno">  217 </span><span class="decl"><span class="istickedoff">deriveDelegationPrivateKey accPrv = coerce .</span>
+<span class="lineno">  218 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPrivateKey accPrv Stake</span></span>
+<span class="lineno">  219 </span>
+<span class="lineno">  220 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+<span class="lineno">  221 </span>--
+<span class="lineno">  222 </span>-- | Derives a multisig public key from the given account public key for payment credential.
+<span class="lineno">  223 </span>--
+<span class="lineno">  224 </span>-- @since 3.4.0
+<span class="lineno">  225 </span>deriveAddressPublicKey
+<span class="lineno">  226 </span>    :: Shared 'AccountK XPub
+<span class="lineno">  227 </span>    -&gt; Role
+<span class="lineno">  228 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  229 </span>    -&gt; Shared 'ScriptK XPub
+<span class="lineno">  230 </span><span class="decl"><span class="istickedoff">deriveAddressPublicKey = coerce . Internal.deriveAddressPublicKey</span></span>
+<span class="lineno">  231 </span>
+<span class="lineno">  232 </span>-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+<span class="lineno">  233 </span>--
+<span class="lineno">  234 </span>-- | Derives a multisig public key from the given account public key for delegation credential.
+<span class="lineno">  235 </span>--
+<span class="lineno">  236 </span>-- @since 3.4.0
+<span class="lineno">  237 </span>deriveDelegationPublicKey
+<span class="lineno">  238 </span>    :: Shared 'AccountK XPub
+<span class="lineno">  239 </span>    -&gt; Index 'Soft 'PaymentK
+<span class="lineno">  240 </span>    -&gt; Shared 'ScriptK XPub
+<span class="lineno">  241 </span><span class="decl"><span class="istickedoff">deriveDelegationPublicKey accPub = coerce .</span>
+<span class="lineno">  242 </span><span class="spaces">    </span><span class="istickedoff">Internal.deriveAddressPublicKey accPub Stake</span></span>
+<span class="lineno">  243 </span>
+<span class="lineno">  244 </span>--
+<span class="lineno">  245 </span>-- Unsafe
+<span class="lineno">  246 </span>--
+<span class="lineno">  247 </span>
+<span class="lineno">  248 </span>-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPrv'. this is
+<span class="lineno">  249 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
+<span class="lineno">  250 </span>--
+<span class="lineno">  251 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  252 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  253 </span>-- key down to an address key for instance).
+<span class="lineno">  254 </span>--
+<span class="lineno">  255 </span>-- @since 3.4.0
+<span class="lineno">  256 </span>liftXPrv :: XPrv -&gt; Shared depth XPrv
+<span class="lineno">  257 </span><span class="decl"><span class="nottickedoff">liftXPrv = Shared</span></span>
+<span class="lineno">  258 </span>
+<span class="lineno">  259 </span>-- | Unsafe backdoor for constructing an 'Shared' key from a raw 'XPub'. this is
+<span class="lineno">  260 </span>-- unsafe because it lets the caller choose the actually derivation 'depth'.
+<span class="lineno">  261 </span>--
+<span class="lineno">  262 </span>-- This can be useful however when serializing / deserializing such a type, or to
+<span class="lineno">  263 </span>-- speed up test code (and avoid having to do needless derivations from a master
+<span class="lineno">  264 </span>-- key down to an address key for instance).
+<span class="lineno">  265 </span>--
+<span class="lineno">  266 </span>-- @since 3.4.0
+<span class="lineno">  267 </span>liftXPub :: XPub -&gt; Shared depth XPub
+<span class="lineno">  268 </span><span class="decl"><span class="nottickedoff">liftXPub = Shared</span></span>
+<span class="lineno">  269 </span>
+<span class="lineno">  270 </span>
+<span class="lineno">  271 </span>-- | Calculates wallet id of shared wallet
+<span class="lineno">  272 </span>-- It takes raw bytes of account public kye (64-bytes),
+<span class="lineno">  273 </span>-- spending script template, and
+<span class="lineno">  274 </span>-- optionally staking script template.
+<span class="lineno">  275 </span>--
+<span class="lineno">  276 </span>-- @since 3.10.0
+<span class="lineno">  277 </span>sharedWalletId
+<span class="lineno">  278 </span>    :: ByteString
+<span class="lineno">  279 </span>    -&gt; Script Cosigner
+<span class="lineno">  280 </span>    -&gt; Maybe (Script Cosigner)
+<span class="lineno">  281 </span>    -&gt; ByteString
+<span class="lineno">  282 </span><span class="decl"><span class="istickedoff">sharedWalletId bytes spending stakingM =</span>
+<span class="lineno">  283 </span><span class="spaces">    </span><span class="istickedoff">if <span class="tickonlytrue">BS.length bytes == 64</span> then</span>
+<span class="lineno">  284 </span><span class="spaces">        </span><span class="istickedoff">hashWalletId $</span>
+<span class="lineno">  285 </span><span class="spaces">        </span><span class="istickedoff">bytes &lt;&gt;</span>
+<span class="lineno">  286 </span><span class="spaces">        </span><span class="istickedoff">serializeScriptTemplate spending &lt;&gt;</span>
+<span class="lineno">  287 </span><span class="spaces">        </span><span class="istickedoff">maybe mempty serializeScriptTemplate stakingM</span>
+<span class="lineno">  288 </span><span class="spaces">    </span><span class="istickedoff">else</span>
+<span class="lineno">  289 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">error &quot;Extended account public key is expected to have 64 bytes.&quot;</span></span>
+<span class="lineno">  290 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  291 </span><span class="spaces">    </span><span class="istickedoff">serializeScriptTemplate = T.encodeUtf8 . scriptToText</span></span>
+<span class="lineno">  292 </span>
+<span class="lineno">  293 </span>--
+<span class="lineno">  294 </span>-- Internal
+<span class="lineno">  295 </span>--
+<span class="lineno">  296 </span>
+<span class="lineno">  297 </span>--- | Computes a 28-byte Blake2b224 digest of a Shared 'XPub'.
+<span class="lineno">  298 </span>---
+<span class="lineno">  299 </span>--- @since 3.4.0
+<span class="lineno">  300 </span>hashKey :: KeyRole -&gt; Shared key XPub -&gt; KeyHash
+<span class="lineno">  301 </span><span class="decl"><span class="istickedoff">hashKey cred = KeyHash cred . hashCredential . xpubPublicKey . getKey</span></span>
+<span class="lineno">  302 </span>
+<span class="lineno">  303 </span>-- Purpose is a constant set to 1854' (or 0x8000073e) following the
+<span class="lineno">  304 </span>-- CIP-1854 Multi-signatures HD Wallets
+<span class="lineno">  305 </span>--
+<span class="lineno">  306 </span>-- Hardened derivation is used at this level.
+<span class="lineno">  307 </span>purposeIndex :: Word32
+<span class="lineno">  308 </span><span class="decl"><span class="istickedoff">purposeIndex = 0x8000073e</span></span>
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE TemplateHaskell #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>module Command.Version
+<span class="lineno">    7 </span>    ( opt
+<span class="lineno">    8 </span>    , run
+<span class="lineno">    9 </span>    ) where
+<span class="lineno">   10 </span>
+<span class="lineno">   11 </span>import Prelude
+<span class="lineno">   12 </span>
+<span class="lineno">   13 </span>import Data.Version
+<span class="lineno">   14 </span>    ( showVersion )
+<span class="lineno">   15 </span>import Options.Applicative
+<span class="lineno">   16 </span>    ( Parser
+<span class="lineno">   17 </span>    , command
+<span class="lineno">   18 </span>    , flag'
+<span class="lineno">   19 </span>    , help
+<span class="lineno">   20 </span>    , hidden
+<span class="lineno">   21 </span>    , info
+<span class="lineno">   22 </span>    , long
+<span class="lineno">   23 </span>    , progDesc
+<span class="lineno">   24 </span>    , short
+<span class="lineno">   25 </span>    , subparser
+<span class="lineno">   26 </span>    , (&lt;|&gt;)
+<span class="lineno">   27 </span>    )
+<span class="lineno">   28 </span>import Paths_cardano_addresses_cli
+<span class="lineno">   29 </span>    ( version )
+<span class="lineno">   30 </span>import System.Git.TH
+<span class="lineno">   31 </span>    ( gitRevParseHEAD )
+<span class="lineno">   32 </span>
+<span class="lineno">   33 </span>import qualified Data.ByteString.Char8 as B8
+<span class="lineno">   34 </span>import qualified Data.Text as T
+<span class="lineno">   35 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   36 </span>
+<span class="lineno">   37 </span>opt :: a -&gt; Parser a
+<span class="lineno">   38 </span><span class="decl"><span class="istickedoff">opt a =</span>
+<span class="lineno">   39 </span><span class="spaces">    </span><span class="istickedoff">flag' a (mconcat</span>
+<span class="lineno">   40 </span><span class="spaces">        </span><span class="istickedoff">[ long &quot;version&quot;</span>
+<span class="lineno">   41 </span><span class="spaces">        </span><span class="istickedoff">, short 'v'</span>
+<span class="lineno">   42 </span><span class="spaces">        </span><span class="istickedoff">, help helpText</span>
+<span class="lineno">   43 </span><span class="spaces">        </span><span class="istickedoff">])</span>
+<span class="lineno">   44 </span><span class="spaces">  </span><span class="istickedoff">&lt;|&gt;</span>
+<span class="lineno">   45 </span><span class="spaces">    </span><span class="istickedoff">subparser (mconcat</span>
+<span class="lineno">   46 </span><span class="spaces">        </span><span class="istickedoff">[ hidden</span>
+<span class="lineno">   47 </span><span class="spaces">        </span><span class="istickedoff">, command &quot;version&quot; $ info (pure a) (progDesc helpText)</span>
+<span class="lineno">   48 </span><span class="spaces">        </span><span class="istickedoff">])</span>
+<span class="lineno">   49 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   50 </span><span class="spaces">    </span><span class="istickedoff">helpText = &quot;Show the software current version and build revision.&quot;</span></span>
+<span class="lineno">   51 </span>
+<span class="lineno">   52 </span>run :: IO ()
+<span class="lineno">   53 </span><span class="decl"><span class="istickedoff">run = do</span>
+<span class="lineno">   54 </span><span class="spaces">    </span><span class="istickedoff">B8.putStrLn $ T.encodeUtf8 $ T.pack $</span>
+<span class="lineno">   55 </span><span class="spaces">        </span><span class="istickedoff">showVersion version &lt;&gt; &quot; @ &quot; &lt;&gt; $(gitRevParseHEAD)</span></span>
+
+</pre>
+</body>
+</html>
