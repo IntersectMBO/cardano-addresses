@@ -1,3 +1,9 @@
+## [3.12.0] - 2022-08-17
+
+### Added
+
+- Supported credential construction from key hashes in both payment and delegation credential. The construction scheme is also supported in CLI.
+
 ## [3.11.0] - 2022-06-21
 
 ### Added
