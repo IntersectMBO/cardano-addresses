@@ -83,6 +83,7 @@ library
     , code-page
     , extra
     , fmt
+    , memory
     , mtl >=2.2.2 && <2.3
     , optparse-applicative
     , process

@@ -55,7 +55,7 @@ mod liftCmd = command "from-recovery-phrase" $
 run :: Cmd -> IO ()
 run FromRecoveryPhrase{style} = do
     someMnemonic <- hGetSomeMnemonic stdin
-    rootK <- generateRootKey someMnemonic style
+    rootK <- generateRootKey someMnemonic Nothing style
     hPutBytes stdout (xprvToBytes rootK) (EBech32 $ styleHrp style)
 
 styleHrp :: Style -> HumanReadablePart
