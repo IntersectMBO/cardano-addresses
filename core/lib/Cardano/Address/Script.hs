@@ -316,9 +316,9 @@ keyHashFromText txt = do
               Just (Policy, hashCredential bytes)
         | hrp == CIP5.policy_xvk && checkBSLength bytes 64 =
               Just (Policy, hashCredential $ BS.take 32 bytes)
-        | otherwise                    = Nothing
+        | otherwise = Nothing
     checkBSLength bytes expLength =
-              BS.length bytes == expLength
+        BS.length bytes == expLength
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
