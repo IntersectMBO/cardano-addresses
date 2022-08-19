@@ -28,6 +28,11 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
         \maem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fejp4x04\
         \ty47he9rztj2lp46fwyzz3ad2yszwadjfnv76n80u"
 
+    specGolden "shared" defaultPhrase
+        "root_shared_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7gh\
+        \fgd3ypmaem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fej\
+        \p4x04ty47he9rztj2lp46fwyzz3ad2yszwadjfnvuedzh4"
+
     specGoldenWithPassphrase "icarus" defaultPhrase (unwords sndFactorPhrase)
         rootXPrvIcarusWithPassphrase
 
@@ -45,6 +50,15 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
 
     specGoldenWithPassphrase "shelley" defaultPhrase sndFactorPhraseBase58
         rootXPrvShelleyWithPassphrase
+
+    specGoldenWithPassphrase "shared" defaultPhrase (unwords sndFactorPhrase)
+        rootXPrvSharedWithPassphrase
+
+    specGoldenWithPassphrase "shared" defaultPhrase sndFactorPhraseHex
+        rootXPrvSharedWithPassphrase
+
+    specGoldenWithPassphrase "shared" defaultPhrase sndFactorPhraseBase58
+        rootXPrvSharedWithPassphrase
 
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
@@ -114,6 +128,12 @@ rootXPrvShelleyWithPassphrase =
     "root_xsk1xpk2wzz7xsyhfxxvwraxnq2sps45ygfayrmn8kxjep4gl9jxgfg3tffp7z7w7ltd0\
     \gw32wqhyk5c296u7m28l688n8n6v24hrp326kgzz6cgvkvvj2k0t34jkv6ze0d8vxxnavar4tz\
     \gl96th9qhfayllsl4qsqq"
+
+rootXPrvSharedWithPassphrase :: String
+rootXPrvSharedWithPassphrase =
+    "root_shared_xsk1xpk2wzz7xsyhfxxvwraxnq2sps45ygfayrmn8kxjep4gl9jxgfg3tffp7z\
+    \7w7ltd0gw32wqhyk5c296u7m28l688n8n6v24hrp326kgzz6cgvkvvj2k0t34jkv6ze0d8vxxn\
+    \avar4tzgl96th9qhfayllsak74cf"
 
 invalidPhrase :: [String]
 invalidPhrase =
