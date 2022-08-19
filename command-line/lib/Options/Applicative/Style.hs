@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
@@ -14,6 +15,7 @@ module Options.Applicative.Style
 
     -- * Applicative Parser
     , styleArg
+    , passphraseOpt
     ) where
 
 import Prelude
@@ -21,23 +23,32 @@ import Prelude
 import Cardano.Address.Derivation
     ( XPrv )
 import Cardano.Mnemonic
-    ( SomeMnemonic, someMnemonicToBytes )
+    ( SomeMnemonic, mkSomeMnemonic, someMnemonicToBytes )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.Char
     ( toLower )
 import Data.List
     ( intercalate )
-import Data.Text
-    ( Text )
 import Options.Applicative
-    ( Parser, argument, completer, eitherReader, help, listCompleter, metavar )
+    ( Parser
+    , argument
+    , completer
+    , eitherReader
+    , help
+    , listCompleter
+    , long
+    , metavar
+    , option
+    )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Cardano.Address.Style.Shared as Shared
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
+import qualified Data.ByteString.Char8 as B8
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 --
@@ -56,14 +67,14 @@ data Style
 --
 -- @since 3.13.0
 data Passphrase =
-    FromMnemonic SomeMnemonic | FromText Text
+    FromMnemonic SomeMnemonic | FromText String
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
 toSndFactor = \case
     Nothing -> mempty
     Just (FromMnemonic mnemonic) -> someMnemonicToBytes mnemonic
-    Just (FromText txt) -> BA.convert $ T.encodeUtf8 txt
+    Just (FromText str) -> BA.convert . B8.pack $ str
 
 -- | Generate an extended root private key from a mnemonic sentence, in the
 -- given style.
@@ -106,5 +117,26 @@ styleArg = argument (eitherReader reader) $ mempty
         "byron"       -> Right Byron
         "icarus"      -> Right Icarus
         "shelley"     -> Right Shelley
-        "shared"     -> Right Shared
+        "shared"      -> Right Shared
         _             -> Left $ "Unknown style; expecting one of " <> styles'
+
+passphraseReader :: String -> Either String Passphrase
+passphraseReader str = do
+    let wrds = T.words . T.filter noNewline . T.decodeUtf8 . B8.pack $ str
+    case mkSomeMnemonic @'[ 9, 12 ] wrds of
+        Left _ -> pure $ FromText str
+        Right mw -> pure $ FromMnemonic mw
+  where
+    noNewline :: Char -> Bool
+    noNewline = (`notElem` ['\n', '\r'])
+
+passphraseOpt :: Parser Passphrase
+passphraseOpt = option (eitherReader passphraseReader) $ mempty
+    <> long "passphrase"
+    <> metavar "PASSWORD"
+    <> help helpDoc
+  where
+    helpDoc =
+        "User chosen passphrase for the generation phase. Valid for Icarus, " ++
+        "Shelley and Shared styles. Accept mnemonic (9- or 12-word lenght) or " ++
+        "arbitrary text."

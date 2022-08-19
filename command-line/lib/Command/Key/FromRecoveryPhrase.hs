@@ -20,11 +20,19 @@ import Codec.Binary.Bech32
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
-    ( Style (..), generateRootKey, styleArg )
+    ( Passphrase (..), Style (..), generateRootKey, passphraseOpt, styleArg )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -33,8 +41,9 @@ import System.IO.Extra
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 
-newtype Cmd = FromRecoveryPhrase
+data Cmd = FromRecoveryPhrase
     { style :: Style
+    , passphrase :: Maybe Passphrase
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -51,11 +60,12 @@ mod liftCmd = command "from-recovery-phrase" $
   where
     parser = FromRecoveryPhrase
         <$> styleArg
+        <*> optional passphraseOpt
 
 run :: Cmd -> IO ()
-run FromRecoveryPhrase{style} = do
+run FromRecoveryPhrase{style,passphrase} = do
     someMnemonic <- hGetSomeMnemonic stdin
-    rootK <- generateRootKey someMnemonic Nothing style
+    rootK <- generateRootKey someMnemonic passphrase style
     hPutBytes stdout (xprvToBytes rootK) (EBech32 $ styleHrp style)
 
 styleHrp :: Style -> HumanReadablePart
