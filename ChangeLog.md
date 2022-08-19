@@ -1,8 +1,10 @@
+<<<<<<< HEAD
 ## [3.13.0] - N/A
 
 ### Added
 
 - Support for new environments `preview` and `preprod`.
+- Supported derivation of root private key using second factor mnemonic or its base16/base64/plain text equivalent
 
 ## [3.12.0] - 2022-08-17
 

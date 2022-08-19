@@ -45,10 +45,47 @@ exercise club noble adult miracle awkward problem olympic puppy private goddess 
 ```console
 $ cardano-address key from-recovery-phrase Shelley < phrase.prv > root.xsk
 root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+
+-- which is equivalent to
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase "" < phrase.prv
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
 ```
 
 > :information_source: Notice the `root_xsk` prefix to identify a root extended signing (private) key.
 </details>
+
+<details>
+  <summary>How to generate a root private key with passphrase (<strong>root.xsk</strong>)</summary>
+
+```console
+$ cardano-address recovery-phrase generate --size 9 > sndfactor.prv
+swing payment diagram happy chimney mammal flip become lyrics
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase "$(cat sndfactor.prv)" < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase dc1434f3b472810d56409f85 < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase 59sxYz34oKvse1xur < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+-- NOTE:
+--λ> let (Right m) = mkSomeMnemonic @'[ 9 ] ["swing", "payment", "diagram", "happy", "chimney", "mammal", "flip", "become", "lyrics"]
+--λ> m
+--SomeMnemonic (Mnemonic {mnemonicToEntropy = Entropy {entropyRaw = "\220\DC44\243\180r\129\rV@\159\133", entropyChecksum = Checksum 3}, mnemonicToSentence = MnemonicSentence {mnemonicSentenceToListN = [WordIndex {unWordIndex = Offset 1760},WordIndex {unWordIndex = Offset 1293},WordIndex {unWordIndex = Offset 487},WordIndex {unWordIndex = Offset 839},WordIndex {unWordIndex = Offset 320},WordIndex {unWordIndex = Offset 1077},WordIndex {unWordIndex = Offset 712},WordIndex {unWordIndex = Offset 159},WordIndex {unWordIndex = Offset 1067}]}})
+--λ> let bytes = BA.convert $ someMnemonicToBytes m :: ByteString
+--λ> bytes
+--"\220\DC44\243\180r\129\rV@\159\133"
+--λ> encode EBase16 bytes
+--"dc1434f3b472810d56409f85"
+--λ> encode EBase58 bytes
+--"59sxYz34oKvse1xur"
+```
+> :information_source: Notice the `root_xsk` prefix to identify a root extended signing (private) key.
+</details>
+
 
 <details>
   <summary>How to generate a wallet id based on extended root or account keys (<strong>phrase.prv</strong>)</summary>
