@@ -24,8 +24,14 @@ import Cardano.Address.Derivation
     ( XPrv )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic, someMnemonicToBytes )
+import Codec.Binary.Encoding
+    ( fromBase16, fromBase58 )
+import Control.Applicative
+    ( (<|>) )
 import Data.ByteArray
     ( ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
 import Data.Char
     ( toLower )
 import Data.List
@@ -67,14 +73,14 @@ data Style
 --
 -- @since 3.13.0
 data Passphrase =
-    FromMnemonic SomeMnemonic | FromText String
+    FromMnemonic SomeMnemonic | FromEncoded ByteString
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
 toSndFactor = \case
     Nothing -> mempty
     Just (FromMnemonic mnemonic) -> someMnemonicToBytes mnemonic
-    Just (FromText str) -> BA.convert . B8.pack $ str
+    Just (FromEncoded bs) -> BA.convert bs
 
 -- | Generate an extended root private key from a mnemonic sentence, in the
 -- given style.
@@ -121,12 +127,21 @@ styleArg = argument (eitherReader reader) $ mempty
         _             -> Left $ "Unknown style; expecting one of " <> styles'
 
 passphraseReader :: String -> Either String Passphrase
-passphraseReader str = do
-    let wrds = T.words . T.filter noNewline . T.decodeUtf8 . B8.pack $ str
-    case mkSomeMnemonic @'[ 9, 12 ] wrds of
-        Left _ -> pure $ FromText str
-        Right mw -> pure $ FromMnemonic mw
+passphraseReader str =
+    if null str then
+        pure $ FromEncoded mempty
+    else do
+        let wrds = T.words . T.filter noNewline . T.decodeUtf8 . B8.pack $ str
+        case mkSomeMnemonic @'[ 9, 12 ] wrds of
+            Right mw -> pure $ FromMnemonic mw
+            Left _ -> getBase16 <|> getBase58
   where
+    getBase16 = case fromBase16 (T.encodeUtf8 $ T.pack str) of
+        Right hex -> pure $ FromEncoded hex
+        Left _ -> Left "not hex-encoded bytes"
+    getBase58 = case fromBase58 (T.encodeUtf8 $ T.pack str) of
+        Right bs -> pure $ FromEncoded bs
+        Left _ -> Left "not base58-encoded bytes"
     noNewline :: Char -> Bool
     noNewline = (`notElem` ['\n', '\r'])
 
@@ -138,5 +153,5 @@ passphraseOpt = option (eitherReader passphraseReader) $ mempty
   where
     helpDoc =
         "User chosen passphrase for the generation phase. Valid for Icarus, " ++
-        "Shelley and Shared styles. Accept mnemonic (9- or 12-word lenght) or " ++
-        "arbitrary text."
+        "Shelley and Shared styles. Accept mnemonic (9- or 12-word length) or " ++
+        "arbitrary passphrase encoded as base16 or base58."
