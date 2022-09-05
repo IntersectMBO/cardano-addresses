@@ -17,19 +17,30 @@ import Prelude hiding
 import Cardano.Address
     ( unAddress )
 import Cardano.Address.Derivation
-    ( xpubFromBytes )
+    ( pubFromBytes, xpubFromBytes )
 import Cardano.Address.Script
-    ( KeyRole (..), keyHashFromBytes, scriptHashFromBytes )
+    ( KeyHash, KeyRole (..), Script, keyHashFromBytes, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , header
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
+import Options.Applicative.Script
+    ( scriptArg )
 import Options.Applicative.Style
     ( Style (..) )
 import System.IO
@@ -40,8 +51,9 @@ import System.IO.Extra
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-newtype Cmd = Cmd
-    {  networkTag :: NetworkTag
+data Cmd = Cmd
+    { networkTag :: NetworkTag
+    , paymentScript :: Maybe (Script KeyHash)
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -65,24 +77,27 @@ mod liftCmd = command "payment" $
   where
     parser = Cmd
         <$> networkTagOpt Shelley
+        <*> optional scriptArg
 
 run :: Cmd -> IO ()
-run Cmd{networkTag} = do
+run Cmd{networkTag,paymentScript} = do
     discriminant <- fromNetworkTag networkTag
-    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
-    addr <- addressFromBytes discriminant bytes hrp
+    addr <- case paymentScript of
+        Just script -> do
+            let credential = PaymentFromScript script
+            pure $ Shelley.paymentAddress discriminant credential
+        Nothing -> do
+            (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
+            addressFromBytes discriminant bytes hrp
     hPutBytes stdout (unAddress addr) (EBech32 addrHrp)
   where
     addrHrp
         | networkTag == shelleyTestnet = CIP5.addr_test
         | otherwise = CIP5.addr
 
-    -- TODO: Also allow `XXX_vk` prefixes. We don't need the chain code to
-    -- construct a payment credential. This will however need some additional
-    -- abstraction over `xpubFromBytes` but I've done enough yake-shaving at
-    -- this stage, so leaving this as an item for later.
     allowedPrefixes =
         [ CIP5.addr_xvk
+        , CIP5.addr_vk
         , CIP5.addr_vkh
         , CIP5.script
         ]
@@ -93,7 +108,7 @@ run Cmd{networkTag} = do
                 Nothing ->
                     fail "Couldn't convert bytes into script hash."
                 Just h  -> do
-                    let credential = PaymentFromScript h
+                    let credential = PaymentFromScriptHash h
                     pure $ Shelley.paymentAddress discriminant credential
 
         | hrp == CIP5.addr_vkh = do
@@ -104,10 +119,18 @@ run Cmd{networkTag} = do
                     let credential = PaymentFromKeyHash keyhash
                     pure $ Shelley.paymentAddress discriminant credential
 
+        | hrp == CIP5.addr_vk = do
+            case pubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into non-extended public key."
+                Just key -> do
+                    let credential = PaymentFromKey $ Shelley.liftPub key
+                    pure $ Shelley.paymentAddress discriminant credential
+
         | otherwise = do
             case xpubFromBytes bytes of
                 Nothing  ->
                     fail "Couldn't convert bytes into extended public key."
                 Just key -> do
-                    let credential = PaymentFromKey $ Shelley.liftXPub key
+                    let credential = PaymentFromExtendedKey $ Shelley.liftXPub key
                     pure $ Shelley.paymentAddress discriminant credential

@@ -26,11 +26,12 @@ module Options.Applicative.Derivation
     , derivationIndexToString
     , derivationIndexFromString
 
-    -- * XPub / XPrv / KeyHash
+    -- * XPub / Pub / XPrv / KeyHash
     , xpubReader
     , xpubOpt
     , xpubArg
     , keyhashReader
+    , pubReader
 
     -- * Internal
     , bech32Reader
@@ -39,7 +40,14 @@ module Options.Applicative.Derivation
 import Prelude
 
 import Cardano.Address.Derivation
-    ( DerivationType (..), Index, XPub, wholeDomainIndex, xpubFromBytes )
+    ( DerivationType (..)
+    , Index
+    , Pub
+    , XPub
+    , pubFromBytes
+    , wholeDomainIndex
+    , xpubFromBytes
+    )
 import Cardano.Address.Script
     ( KeyHash (..), KeyRole (..), keyHashFromBytes )
 import Codec.Binary.Bech32
@@ -189,7 +197,7 @@ derivationIndexToString ix_@(DerivationIndex ix)
     ix' = fromIntegral ix - indexToInteger firstHardened
 
 --
--- XPub / XPrv
+-- XPub / Pub / XPrv
 --
 
 xpubReader :: [HumanReadablePart] -> String -> Either String XPub
@@ -199,6 +207,14 @@ xpubReader allowedPrefixes str = do
         Just xpub -> pure xpub
         Nothing   -> Left
             "Failed to convert bytes into a valid extended public key."
+
+pubReader :: [HumanReadablePart] -> String -> Either String Pub
+pubReader allowedPrefixes str = do
+    (_hrp, bytes) <- bech32Reader allowedPrefixes str
+    case pubFromBytes bytes of
+        Just pub -> pure pub
+        Nothing   -> Left
+            "Failed to convert bytes into a valid non-extended public key."
 
 xpubOpt :: [HumanReadablePart] -> String -> String -> Parser XPub
 xpubOpt allowedPrefixes name helpDoc =

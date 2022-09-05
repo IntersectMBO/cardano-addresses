@@ -137,11 +137,22 @@ addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3
 </details>
 
 <details>
-  <summary>How to generate a stake verification key (<strong>stake.xvk</strong>)</summary>
+  <summary>How to generate an extended stake verification key (<strong>stake.xvk</strong>)</summary>
 
 ```console
 $ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --with-chain-code > stake.xvk
 stake_xvk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7h9z4smmeqsvs67qhyqmc2lqa0vy36rf2la74ym8a5p93zp4qtpuq6ky3ve
+```
+
+> :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
+</details>
+
+<details>
+  <summary>How to generate a non-extended stake verification key (<strong>stake.vk</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --without-chain-code > stake.vk
+stake_vk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7sg87an2
 ```
 
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
@@ -164,13 +175,26 @@ $ cardano-address key hash --hex < addr.xvk
 
 
 <details>
-  <summary>How to generate a payment address from a payment key (<strong>payment.addr</strong>)</summary>
+  <summary>How to generate a payment address from an extended payment key (<strong>payment.addr</strong>)</summary>
 
 ```console
 $ cardano-address address payment --network-tag testnet < addr.xvk > payment.addr
 addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 ```
 </details>
+
+
+<details>
+  <summary>How to generate a payment address from a non-extended payment key (<strong>payment.addr</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/0/0 < root.xsk | cardano-address key public --without-chain-code > addr.vk
+addr_vk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28qwq4y73
+$ cardano-address address payment --network-tag testnet < addr.vk > payment.addr
+addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
+```
+</details>
+
 
 <details>
   <summary>How to generate a payment address from a payment key hash (<strong>payment.addr</strong>)</summary>
@@ -185,10 +209,21 @@ addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v
 
 
 <details>
-  <summary>How to generate a delegated payment address, i.e. base address, from a stake key (<strong>base.addr</strong>)</summary>
+  <summary>How to generate a delegated payment address, i.e. base address, from an extended stake key (<strong>base.addr</strong>)</summary>
 
 ```console
 $ cardano-address address delegation $(cat stake.xvk) < payment.addr > base.addr
+addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
+```
+</details>
+
+<details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a non-extended stake key (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address key child 1852H/1815H/0H/2/0 < root.xsk | cardano-address key public --without-chain-code > stake.vk
+stake_vk1658atzttunamzn80204khrg0qfdk5nvmrutlmmpg7xlsyaggwa7sg87an2
+$ cardano-address address delegation $(cat stake.vk) < payment.addr > base.addr
 addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n
 ```
 </details>
@@ -205,10 +240,19 @@ addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz
 </details>
 
 <details>
-  <summary>How to generate a stake address from a stake key (<strong>stake.addr</strong>)</summary>
+  <summary>How to generate a stake address from an extended stake key (<strong>stake.addr</strong>)</summary>
 
 ```console
 $ cardano-address address stake --network-tag testnet < stake.xvk > stake.addr
+stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a non-extended stake key (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet < stake.vk > stake.addr
 stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
 ```
 </details>
@@ -275,6 +319,7 @@ Let's generate extended root private key for shared style:
 
 ``` console
 $ cardano-address key from-recovery-phrase Shared < phrase.prv > root_shared.xsk
+root_shared_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvzteqlc
 ```
 
 Now generate payment verification key (`role=0` is used). Please note that purpose `1854H` is used for multisig.
@@ -300,6 +345,10 @@ stake_shared_vk18a8z5dcrlwene88n84j6dm9yvj5rt296fjtresqnunmacetdcymquyq43z
 We consider `addr_shared.1.vk` and `addr_shared.2.vk` obtained like `addr_shared.vk` but by replacing the final index by `1` and `2` respectively.
 
 ```console
+$ cardano-address key child 1854H/1815H/0H/0/1 < root_shared.xsk | cardano-address key public --without-chain-code > addr_shared.1.vk
+addr_shared_vk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqcd4fp3
+$ cardano-address key child 1854H/1815H/0H/0/2 < root_shared.xsk | cardano-address key public --without-chain-code > addr_shared.2.vk
+addr_shared_vk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xqsuszh44
 $ cardano-address script hash "all [$(cat addr_shared.1.vk), $(cat addr_shared.2.vk)]" > script.hash
 script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
@@ -309,7 +358,11 @@ This script requires the signature from both signing keys corresponding to `shar
 We can also use extended verification, eiher payment or delegation, keys. They can be obtained as the non-extended ones by using `--with-chain-code` option rather than `--without-chain-option` as above. They will give rise to the same script hash as for verification keys chain code is stripped upon calculation.
 
 ```console
-$ cardano-address script hash "any [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
+$ cardano-address key child 1854H/1815H/0H/0/1 < root_shared.xsk | cardano-address key public --with-chain-code > addr_shared.1.xvk
+addr_shared_xvk1wgj79fxw2vmxkp85g88nhwlflkxevd77t6wy0nsktn2f663wdcmqhlfft3dn0qcn6q99dvlfl2ws5duy6w65zks5jgufe60fg839sysavl5pc
+$ cardano-address key child 1854H/1815H/0H/0/2 < root_shared.xsk | cardano-address key public --with-chain-code > addr_shared.2.xvk
+addr_shared_xvk1jthguyss2vffmszq63xsmxlpc9elxnvdyaqk7susl4sppp2s9xq3zegcxtslhpghmadrlvsphssfjqp3mxg9gca27e35wpu43lqjqnsmjvxuw
+$ cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"
 script1gr69m385thgvkrtspk73zmkwk537wxyxuevs2u9cukglvtlkz4k
 ```
 
@@ -326,6 +379,7 @@ script13uf3fz3ts5srpjc5zcfe977uvnyvp36wcvxuudryegz0zpjlx6a
 
 ```console
 $  cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]"
+script1nugjzwfs2t9htl7s3dv9ajnd5us8pctpa8aj4ank8dnd6d6unul
 ```
 </details>
 
@@ -359,7 +413,54 @@ $  cardano-address script preimage "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttd
 
 ```console
 $ cardano-address address payment --network-tag testnet < script.hash > script.addr
-addr_test1wqqggtajwkxjgf58v452jz6jl87lt32w3mhez5hd7xz6hugp80tta
+addr_test1wpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjerashp7y82
+```
+</details>
+
+<details>
+  <summary>How to generate a payment script address from a script (<strong>script.addr</strong>)</summary>
+
+```console
+$ cardano-address address payment --network-tag testnet "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk)]"  > script.addr
+addr_test1wpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjerashp7y82
+```
+</details>
+
+<details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a script hash (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address script hash "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" > script.stake.hash
+script1nugjzwfs2t9htl7s3dv9ajnd5us8pctpa8aj4ank8dnd6d6unul
+$ cardano-address address delegation $(cat script.stake.hash) < script.addr > base.addr
+addr_test1xpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjera5lzysnjvzjed6ll5yttp0v5md8ypcwzc0flv40va3mvmwsl7grs3
+```
+</details>
+
+<details>
+  <summary>How to generate a delegated payment address, i.e. base address, from a script (<strong>base.addr</strong>)</summary>
+
+```console
+$ cardano-address address delegation "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" < script.addr > base.addr
+addr_test1xpq0ghwy73wapjcdwqxm6ytwe66j8eccsmn9jptshrjera5lzysnjvzjed6ll5yttp0v5md8ypcwzc0flv40va3mvmwsl7grs3
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a script hash (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet < script.stake.hash > stake.addr
+stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
+```
+</details>
+
+<details>
+  <summary>How to generate a stake address from a script (<strong>stake.addr</strong>)</summary>
+
+```console
+$ cardano-address address stake --network-tag testnet "all [$(cat addr_shared.1.xvk), $(cat addr_shared.2.xvk), active_from 100, active_until 120]" > stake.addr
+stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
 ```
 </details>
 

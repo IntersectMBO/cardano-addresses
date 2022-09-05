@@ -16,13 +16,13 @@ import Cardano.Address.Internal
 import Cardano.Address.Script
     ( KeyRole (..) )
 import Cardano.Address.Style.Shelley
-    ( Credential (..), liftXPub )
+    ( Credential (..), liftPub, liftXPub )
 import Options.Applicative
     ( Parser, argument, eitherReader, help, metavar )
 import Options.Applicative.Derivation
-    ( keyhashReader, xpubReader )
+    ( keyhashReader, pubReader, xpubReader )
 import Options.Applicative.Script
-    ( scriptHashReader )
+    ( scriptHashReader, scriptReader )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
@@ -32,20 +32,31 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 delegationCredentialArg  :: String -> Parser (Credential 'DelegationK)
 delegationCredentialArg helpDoc = argument (eitherReader reader) $ mempty
-    <> metavar "KEY || KEY HASH || SCRIPT HASH"
+    <> metavar "EXTENDED KEY || NON-EXTENDED KEY || KEY HASH || SCRIPT || SCRIPT HASH"
     <> help helpDoc
   where
     reader :: String -> Either String (Credential 'DelegationK)
     reader str =
-       (DelegationFromKey . liftXPub <$> xpubReader allowedPrefixesForXPub str)
+       (DelegationFromKey . liftPub <$> pubReader allowedPrefixesForPub str)
+       `orElse`
+       (DelegationFromExtendedKey . liftXPub <$> xpubReader allowedPrefixesForXPub str)
        `orElse`
        (DelegationFromKeyHash <$> keyhashReader (Delegation, allowedPrefixesForKeyHash) str)
        `orElse`
-       (DelegationFromScript <$> scriptHashReader str)
+       (DelegationFromScriptHash <$> scriptHashReader str)
        `orElse`
-       Left "Couldn't parse delegation credentials. Neither a public key, a public key hash nor a script hash."
+       (DelegationFromScript <$> scriptReader str)
+       `orElse`
+       Left errMsg
 
-    -- TODO: Allow non-extended keys here.
+    errMsg = mconcat
+        [ "Couldn't parse delegation credentials. Neither an extended public key, "
+        , "a non-extended public key, a public key hash, a script nor a script hash."
+        ]
+
+    allowedPrefixesForPub =
+        [ CIP5.stake_vk
+        ]
     allowedPrefixesForXPub =
         [ CIP5.stake_xvk
         ]

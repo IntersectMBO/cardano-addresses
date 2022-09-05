@@ -72,6 +72,7 @@ module Cardano.Address.Style.Shelley
       -- * Unsafe
     , liftXPrv
     , liftXPub
+    , liftPub
     , unsafeFromRight
 
       -- Internals
@@ -99,6 +100,7 @@ import Cardano.Address.Derivation
     , DerivationScheme (..)
     , DerivationType (..)
     , Index (..)
+    , Pub
     , XPrv
     , XPub
     , credentialHashSize
@@ -107,13 +109,14 @@ import Cardano.Address.Derivation
     , generateNew
     , hashCredential
     , indexFromWord32
+    , pubToBytes
     , unsafeMkIndex
     , xpubPublicKey
     )
 import Cardano.Address.Internal
     ( WithErrorMessage (..), orElse )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole (..), ScriptHash (..) )
+    ( KeyHash (..), KeyRole (..), Script, ScriptHash (..), toScriptHash )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
@@ -378,7 +381,7 @@ deriveDelegationPrivateKey accXPrv =
 -- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
 -- > bech32 $ paymentAddress tag paymentCredential
 -- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
@@ -397,14 +400,14 @@ deriveDelegationPrivateKey accXPrv =
 -- > let infoScriptHash@(ScriptHash bytes) = toScriptHash script
 -- > decodeUtf8 (encode EBase16 bytes)
 -- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (PaymentFromScript infoScriptHash)
+-- > bech32 $ paymentAddress tag (PaymentFromScriptHash infoScriptHash)
 -- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
 --
 -- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
--- > let delegationCredential = DelegationFromKey $ (toXPub <$> stakeK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
+-- > let delegationCredential = DelegationFromExtendedKey $ (toXPub <$> stakeK)
 -- > bech32 $ delegationAddress tag paymentCredential delegationCredential
 -- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
@@ -414,12 +417,12 @@ deriveDelegationPrivateKey accXPrv =
 -- >
 -- > let (Right tag) = mkNetworkDiscriminant 1
 -- > let ptr = ChainPointer 123 1 2
--- > let paymentCredential = PaymentFromKey $ (toXPub <$> addrK)
+-- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
 -- > bech32 $ pointerAddress tag paymentCredential ptr
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 --
 -- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
--- > bech32 $ delegationAddress tag (PaymentFromScript infoScriptHash) (DelegationFromScript infoScriptHash)
+-- > bech32 $ delegationAddress tag (PaymentFromScriptHash infoScriptHash) (DelegationFromScript infoScriptHash)
 -- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
 
 -- | Possible errors from inspecting a Shelley, Icarus, or Byron address.
@@ -730,15 +733,19 @@ unpackAddress (unAddress -> bytes)
 data family Credential (purpose :: Depth)
 
 data instance Credential 'PaymentK where
-    PaymentFromKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
+    PaymentFromKey :: Shelley 'PaymentK Pub -> Credential 'PaymentK
+    PaymentFromExtendedKey :: Shelley 'PaymentK XPub -> Credential 'PaymentK
     PaymentFromKeyHash :: KeyHash -> Credential 'PaymentK
-    PaymentFromScript :: ScriptHash -> Credential 'PaymentK
+    PaymentFromScript :: Script KeyHash -> Credential 'PaymentK
+    PaymentFromScriptHash :: ScriptHash -> Credential 'PaymentK
     deriving Show
 
 data instance Credential 'DelegationK where
-    DelegationFromKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
+    DelegationFromKey :: Shelley 'DelegationK Pub -> Credential 'DelegationK
+    DelegationFromExtendedKey :: Shelley 'DelegationK XPub -> Credential 'DelegationK
     DelegationFromKeyHash :: KeyHash -> Credential 'DelegationK
-    DelegationFromScript :: ScriptHash -> Credential 'DelegationK
+    DelegationFromScript :: Script KeyHash -> Credential 'DelegationK
+    DelegationFromScriptHash :: ScriptHash -> Credential 'DelegationK
     DelegationFromPointer :: ChainPointer -> Credential 'DelegationK
     deriving Show
 
@@ -757,7 +764,12 @@ paymentAddress discrimination = \case
         constructPayload
             (EnterpriseAddress CredentialFromKey)
             discrimination
-            (hashCredential . xpubPublicKey . getKey $ keyPub)
+            (hashCredential . pubToBytes . getKey $ keyPub)
+    PaymentFromExtendedKey keyXPub ->
+        constructPayload
+            (EnterpriseAddress CredentialFromKey)
+            discrimination
+            (hashCredential . xpubPublicKey . getKey $ keyXPub)
     PaymentFromKeyHash (KeyHash Payment verKeyHash) ->
         constructPayload
             (EnterpriseAddress CredentialFromKey)
@@ -766,7 +778,13 @@ paymentAddress discrimination = \case
     PaymentFromKeyHash (KeyHash keyrole _) ->
         error $ "Payment credential should be built from key hash having payment"
         <> " role. Key hash with " <> show keyrole <> " was used."
-    PaymentFromScript (ScriptHash bytes) ->
+    PaymentFromScript script ->
+        let (ScriptHash bytes) = toScriptHash script
+        in constructPayload
+           (EnterpriseAddress CredentialFromScript)
+           discrimination
+           bytes
+    PaymentFromScriptHash (ScriptHash bytes) ->
         constructPayload
             (EnterpriseAddress CredentialFromScript)
             discrimination
@@ -815,7 +833,13 @@ stakeAddress discrimination = \case
         Right $ constructPayload
             (RewardAccount CredentialFromKey)
             discrimination
-            (hashCredential . xpubPublicKey . getKey $ keyPub)
+            (hashCredential . pubToBytes . getKey $ keyPub)
+
+    DelegationFromExtendedKey keyXPub ->
+        Right $ constructPayload
+            (RewardAccount CredentialFromKey)
+            discrimination
+            (hashCredential . xpubPublicKey . getKey $ keyXPub)
 
     DelegationFromKeyHash (KeyHash Delegation verKeyHash) ->
         Right $ constructPayload
@@ -826,7 +850,14 @@ stakeAddress discrimination = \case
     DelegationFromKeyHash (KeyHash keyrole _) ->
         Left $ ErrStakeAddressFromKeyHash keyrole
 
-    DelegationFromScript (ScriptHash bytes) ->
+    DelegationFromScript script ->
+        let (ScriptHash bytes) = toScriptHash script
+        in Right $ constructPayload
+            (RewardAccount CredentialFromScript)
+            discrimination
+            bytes
+
+    DelegationFromScriptHash (ScriptHash bytes) ->
         Right $ constructPayload
             (RewardAccount CredentialFromScript)
             discrimination
@@ -868,8 +899,18 @@ extendAddress addr infoStakeReference = do
 
     case infoStakeReference of
         -- base address: keyhash28,keyhash28    : 00000000 -> 0
-        -- base address: scripthash32,keyhash28 : 00010000 -> 16
+        -- base address: scripthash28,keyhash28 : 00010000 -> 16
         DelegationFromKey delegationKey -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00011111 = 0
+                -- 0b01110000 .&. 0b00011111 = 16
+                putWord8 $ fstByte .&. 0b00011111
+                putByteString rest
+                putByteString . hashCredential . pubToBytes . getKey $ delegationKey
+
+        -- base address: keyhash28,keyhash28    : 00000000 -> 0
+        -- base address: scripthash28,keyhash28 : 00010000 -> 16
+        DelegationFromExtendedKey delegationKey -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00011111 = 0
                 -- 0b01110000 .&. 0b00011111 = 16
@@ -888,9 +929,19 @@ extendAddress addr infoStakeReference = do
                 "Delegation part can only be constructed from delegation key hash. "
                 <> "Key hash of " <> show keyrole <> " was used."
 
-        -- base address: keyhash28,scripthash32    : 00100000 -> 32
-        -- base address: scripthash32,scripthash32 : 00110000 -> 48
-        DelegationFromScript (ScriptHash scriptBytes) -> do
+        -- base address: keyhash28,scripthash28    : 00100000 -> 32
+        -- base address: scripthash28,scripthash28 : 00110000 -> 48
+        DelegationFromScript script -> do
+            pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
+                -- 0b01100000 .&. 0b00111111 = 32
+                -- 0b01110000 .&. 0b00111111 = 48
+                putWord8 $ fstByte .&. 0b00111111
+                putByteString rest
+                putByteString $ unScriptHash $ toScriptHash script
+
+        -- base address: keyhash28,scripthash28    : 00100000 -> 32
+        -- base address: scripthash28,scripthash28 : 00110000 -> 48
+        DelegationFromScriptHash (ScriptHash scriptBytes) -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b00111111 = 32
                 -- 0b01110000 .&. 0b00111111 = 48
@@ -899,7 +950,7 @@ extendAddress addr infoStakeReference = do
                 putByteString scriptBytes
 
         -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
-        -- pointer address: scripthash32, 3 variable length uint : 01010000 -> 80
+        -- pointer address: scripthash28, 3 variable length uint : 01010000 -> 80
         DelegationFromPointer pointer -> do
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b01011111 = 64
@@ -1002,6 +1053,17 @@ liftXPrv = Shelley
 -- @since 2.0.0
 liftXPub :: XPub -> Shelley depth XPub
 liftXPub = Shelley
+
+-- | Unsafe backdoor for constructing an 'Shelley' key from a raw 'Pub'. this is
+-- unsafe because it lets the caller choose the actually derivation 'depth'.
+--
+-- This can be useful however when serializing / deserializing such a type, or to
+-- speed up test code (and avoid having to do needless derivations from a master
+-- key down to an address key for instance).
+--
+-- @since 3.14.0
+liftPub :: Pub -> Shelley depth Pub
+liftPub = Shelley
 
 -- Use with care when it is _safe_.
 unsafeFromRight :: Either a c -> c
