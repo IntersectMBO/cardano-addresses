@@ -391,6 +391,26 @@ xpubPublicKey :: XPub -> ByteString
 --   (32 bytes).
 xpubChainCode :: XPub -> ByteString
 
+-- | An opaque type representing a non-extended public key.
+--   
+--   <b>Properties:</b>
+--   
+--   <h5>Roundtripping</h5>
+--   
+--   <pre>
+--   forall pub. <a>pubFromBytes</a> (<a>pubToBytes</a> pub) == <a>Just</a> pub
+--   </pre>
+data Pub
+
+-- | Construct a <a>Pub</a> from raw <a>ByteString</a> (32 bytes).
+pubFromBytes :: ByteString -> Maybe Pub
+
+-- | Convert an <a>Pub</a> to a raw <a>ByteString</a> (32 bytes).
+pubToBytes :: Pub -> ByteString
+
+-- | Extract the public key from an <a>XPub</a> as a <a>Pub</a> (32 bytes).
+xpubToPub :: XPub -> Pub
+
 -- | An opaque type representing a signature made from an <a>XPrv</a>.
 type XSignature = XSignature
 
@@ -400,6 +420,8 @@ sign :: ByteArrayAccess msg => XPrv -> msg -> XSignature
 -- | Verify the <a>XSignature</a> of a <tt>msg</tt> with the <a>XPub</a>
 --   associated with the <a>XPrv</a> used for signing.
 verify :: ByteArrayAccess msg => XPub -> msg -> XSignature -> Bool
+instance GHC.Classes.Eq Cardano.Address.Derivation.Pub
+instance GHC.Show.Show Cardano.Address.Derivation.Pub
 instance GHC.Classes.Ord (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Classes.Eq (Cardano.Address.Derivation.Index derivationType depth)
 instance GHC.Show.Show (Cardano.Address.Derivation.Index derivationType depth)
@@ -1186,6 +1208,15 @@ liftXPrv :: XPrv -> Shelley depth XPrv
 --   type, or to speed up test code (and avoid having to do needless
 --   derivations from a master key down to an address key for instance).
 liftXPub :: XPub -> Shelley depth XPub
+
+-- | Unsafe backdoor for constructing an <a>Shelley</a> key from a raw
+--   <a>Pub</a>. this is unsafe because it lets the caller choose the
+--   actually derivation <tt>depth</tt>.
+--   
+--   This can be useful however when serializing / deserializing such a
+--   type, or to speed up test code (and avoid having to do needless
+--   derivations from a master key down to an address key for instance).
+liftPub :: Pub -> Shelley depth Pub
 instance GHC.Classes.Eq key => GHC.Classes.Eq (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Show.Show key => GHC.Show.Show (Cardano.Address.Style.Shelley.Shelley depth key)
 instance GHC.Generics.Generic (Cardano.Address.Style.Shelley.Shelley depth key)
