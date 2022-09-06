@@ -50,6 +50,7 @@ module Cardano.Address.Style.Icarus
       -- * Network Discrimination
     , icarusMainnet
     , icarusStaging
+    , icarusTestnet
     , icarusPreview
     , icarusPreprod
 
@@ -89,7 +90,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Internal
     ( DeserialiseFailure, WithErrorMessage (..) )
 import Cardano.Address.Style.Byron
-    ( byronMainnet, byronPreprod, byronPreview, byronStaging )
+    ( byronMainnet, byronPreprod, byronPreview, byronStaging, byronTestnet )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Codec.Binary.Encoding
@@ -475,13 +476,19 @@ icarusMainnet = byronMainnet
 icarusStaging :: NetworkDiscriminant Icarus
 icarusStaging = byronStaging
 
+-- | 'NetworkDiscriminant' for Cardano Testnet & 'Icarus'
+--
+-- @since 2.0.0
+icarusTestnet :: NetworkDiscriminant Icarus
+icarusTestnet = byronTestnet
+
 -- | 'NetworkDiscriminant' for Cardano Preprod & 'Icarus'
 --
 -- @since 3.13.0
 icarusPreprod :: NetworkDiscriminant Icarus
 icarusPreprod = byronPreprod
 
--- | 'NetworkDiscriminant' for Cardano Preprod & 'Icarus'
+-- | 'NetworkDiscriminant' for Cardano Preview & 'Icarus'
 --
 -- @since 3.13.0
 icarusPreview :: NetworkDiscriminant Icarus

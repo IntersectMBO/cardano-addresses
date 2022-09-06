@@ -54,6 +54,7 @@ module Cardano.Address.Style.Byron
       -- * Network Discrimination
     , byronMainnet
     , byronStaging
+    , byronTestnet
     , byronPreprod
     , byronPreview
 
@@ -495,6 +496,12 @@ byronMainnet = (RequiresNoTag, NetworkTag 764824073)
 -- @since 2.0.0
 byronStaging :: NetworkDiscriminant Byron
 byronStaging = (RequiresNetworkTag, NetworkTag 633343913)
+
+-- | 'NetworkDiscriminant' for Cardano Testnet & Byron
+--
+-- @since 2.0.0
+byronTestnet :: NetworkDiscriminant Byron
+byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
 
 -- | 'NetworkDiscriminant' for Cardano Preview & Byron
 --

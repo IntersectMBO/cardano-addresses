@@ -35,9 +35,21 @@ import Cardano.Address.Derivation
     , xprvToBytes
     )
 import Cardano.Address.Style.Byron
-    ( Byron, byronMainnet, byronPreprod, byronPreview, byronStaging )
+    ( Byron
+    , byronMainnet
+    , byronPreprod
+    , byronPreview
+    , byronStaging
+    , byronTestnet
+    )
 import Cardano.Address.Style.Icarus
-    ( Icarus, icarusMainnet, icarusPreprod, icarusPreview, icarusStaging )
+    ( Icarus
+    , icarusMainnet
+    , icarusPreprod
+    , icarusPreview
+    , icarusStaging
+    , icarusTestnet
+    )
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic
@@ -184,10 +196,12 @@ instance {-# OVERLAPS #-} Arbitrary (AddressDiscrimination, NetworkTag) where
         , (RequiresNetworkTag,) <$> arbitrary
         , pure byronMainnet
         , pure byronStaging
+        , pure byronTestnet
         , pure byronPreview
         , pure byronPreprod
         , pure icarusMainnet
         , pure icarusStaging
+        , pure icarusTestnet
         , pure icarusPreview
         , pure icarusPreprod
         ]
