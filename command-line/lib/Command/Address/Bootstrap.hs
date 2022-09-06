@@ -69,7 +69,7 @@ mod liftCmd = command "bootstrap" $
             , indent 4 $ bold $ string $ "| "<>progName<>" key child 14H/42H | tee addr.prv \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
             , indent 4 $ bold $ string $ "| "<>progName<>" address bootstrap --root $(cat root.prv | "<>progName<>" key public --with-chain-code) \\"
-            , indent 8 $ bold $ string "--network-tag testnet 14H/42H"
+            , indent 8 $ bold $ string "--network-tag preview 14H/42H"
             , indent 2 $ string "DdzFFzCqrht2KG1vWt5WGhVC9Ezyu32RgB5M2DocdZ6BQU6zj69LSqksDmdM..."
             ])
   where
