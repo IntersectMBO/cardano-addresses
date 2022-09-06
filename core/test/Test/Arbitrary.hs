@@ -35,9 +35,9 @@ import Cardano.Address.Derivation
     , xprvToBytes
     )
 import Cardano.Address.Style.Byron
-    ( Byron, byronMainnet, byronStaging, byronPreview, byronPreprod)
+    ( Byron, byronMainnet, byronPreprod, byronPreview, byronStaging )
 import Cardano.Address.Style.Icarus
-    ( Icarus, icarusMainnet, icarusStaging, icarusPreview, icarusPreprod)
+    ( Icarus, icarusMainnet, icarusPreprod, icarusPreview, icarusStaging )
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic

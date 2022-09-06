@@ -89,7 +89,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Internal
     ( DeserialiseFailure, WithErrorMessage (..) )
 import Cardano.Address.Style.Byron
-    ( byronMainnet, byronStaging, byronPreview, byronPreprod )
+    ( byronMainnet, byronPreprod, byronPreview, byronStaging )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Codec.Binary.Encoding
