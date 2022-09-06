@@ -122,12 +122,16 @@ networkTagOpt style = option (eitherReader reader) $ mempty
         Icarus -> readKeywordMaybe str Byron
         Shelley | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shelley | str == "testnet" -> pure Shelley.shelleyTestnet
+        Shelley | str == "preview" -> pure Shelley.shelleyTestnet
+        Shelley | str == "preprod" -> pure Shelley.shelleyTestnet
         Shared | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shared | str == "testnet" -> pure Shelley.shelleyTestnet
+        Shared | str == "preview" -> pure Shelley.shelleyTestnet
+        Shared | str == "preprod" -> pure Shelley.shelleyTestnet
         _ -> Nothing
 
     allowedKeywords = \case
         Byron -> ["mainnet", "staging", "testnet", "preview", "preprod"]
         Icarus -> allowedKeywords Byron
-        Shelley -> ["mainnet", "testnet (good for preview or preprod)"]
-        Shared -> ["mainnet", "testnet (good for preview or preprod)"]
+        Shelley -> ["mainnet", "testnet", "preview", "preprod"]
+        Shared -> allowedKeywords Shelley
