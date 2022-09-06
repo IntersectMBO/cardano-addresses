@@ -820,8 +820,14 @@ byronMainnet :: NetworkDiscriminant Byron
 -- | <a>NetworkDiscriminant</a> for Cardano Staging &amp; Byron
 byronStaging :: NetworkDiscriminant Byron
 
--- | <a>NetworkDiscriminant</a> for Cardano TestNet &amp; Byron
+-- | <a>NetworkDiscriminant</a> for Cardano Testnet &amp; Byron
 byronTestnet :: NetworkDiscriminant Byron
+
+-- | <a>NetworkDiscriminant</a> for Cardano Preprod &amp; Byron
+byronPreprod :: NetworkDiscriminant Byron
+
+-- | <a>NetworkDiscriminant</a> for Cardano Preview &amp; Byron
+byronPreview :: NetworkDiscriminant Byron
 
 -- | Backdoor for generating a new key from a raw <a>XPrv</a>.
 --   
@@ -952,8 +958,14 @@ icarusMainnet :: NetworkDiscriminant Icarus
 -- | <a>NetworkDiscriminant</a> for Cardano Staging &amp; <a>Icarus</a>
 icarusStaging :: NetworkDiscriminant Icarus
 
--- | <a>NetworkDiscriminant</a> for Cardano TestNet &amp; <a>Icarus</a>
+-- | <a>NetworkDiscriminant</a> for Cardano Testnet &amp; <a>Icarus</a>
 icarusTestnet :: NetworkDiscriminant Icarus
+
+-- | <a>NetworkDiscriminant</a> for Cardano Preview &amp; <a>Icarus</a>
+icarusPreview :: NetworkDiscriminant Icarus
+
+-- | <a>NetworkDiscriminant</a> for Cardano Preprod &amp; <a>Icarus</a>
+icarusPreprod :: NetworkDiscriminant Icarus
 
 -- | Unsafe backdoor for constructing an <a>Icarus</a> key from a raw
 --   <a>XPrv</a>. this is unsafe because it lets the caller choose the
