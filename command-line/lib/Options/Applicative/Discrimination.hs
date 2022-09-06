@@ -92,6 +92,8 @@ networkTagOpt style = option (eitherReader reader) $ mempty
             [ unNetworkTag (snd Byron.byronMainnet)
             , unNetworkTag (snd Byron.byronStaging)
             , unNetworkTag (snd Byron.byronTestnet)
+            , unNetworkTag (snd Byron.byronPreprod)
+            , unNetworkTag (snd Byron.byronPreview)
             ]
         Icarus ->
             tagsFor Byron
@@ -115,15 +117,21 @@ networkTagOpt style = option (eitherReader reader) $ mempty
         Byron | str == "mainnet" -> pure (snd Byron.byronMainnet)
         Byron | str == "staging" -> pure (snd Byron.byronStaging)
         Byron | str == "testnet" -> pure (snd Byron.byronTestnet)
+        Byron | str == "preview" -> pure (snd Byron.byronPreview)
+        Byron | str == "preprod" -> pure (snd Byron.byronPreprod)
         Icarus -> readKeywordMaybe str Byron
         Shelley | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shelley | str == "testnet" -> pure Shelley.shelleyTestnet
+        Shelley | str == "preview" -> pure Shelley.shelleyTestnet
+        Shelley | str == "preprod" -> pure Shelley.shelleyTestnet
         Shared | str == "mainnet" -> pure Shelley.shelleyMainnet
         Shared | str == "testnet" -> pure Shelley.shelleyTestnet
+        Shared | str == "preview" -> pure Shelley.shelleyTestnet
+        Shared | str == "preprod" -> pure Shelley.shelleyTestnet
         _ -> Nothing
 
     allowedKeywords = \case
-        Byron -> ["mainnet", "staging", "testnet"]
+        Byron -> ["mainnet", "staging", "testnet", "preview", "preprod"]
         Icarus -> allowedKeywords Byron
-        Shelley -> ["mainnet", "testnet"]
-        Shared -> ["mainnet", "testnet"]
+        Shelley -> ["mainnet", "testnet", "preview", "preprod"]
+        Shared -> allowedKeywords Shelley

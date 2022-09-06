@@ -1,3 +1,9 @@
+## [3.13.0] - N/A
+
+### Added
+
+- Support for new environments `preview` and `preprod`.
+
 ## [3.12.0] - 2022-08-17
 
 ### Added
