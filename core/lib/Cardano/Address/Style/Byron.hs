@@ -54,7 +54,8 @@ module Cardano.Address.Style.Byron
       -- * Network Discrimination
     , byronMainnet
     , byronStaging
-    , byronTestnet
+    , byronPreprod
+    , byronPreview
 
       -- * Unsafe
     , liftXPrv
@@ -495,11 +496,17 @@ byronMainnet = (RequiresNoTag, NetworkTag 764824073)
 byronStaging :: NetworkDiscriminant Byron
 byronStaging = (RequiresNetworkTag, NetworkTag 633343913)
 
--- | 'NetworkDiscriminant' for Cardano TestNet & Byron
+-- | 'NetworkDiscriminant' for Cardano Preview & Byron
 --
--- @since 2.0.0
-byronTestnet :: NetworkDiscriminant Byron
-byronTestnet = (RequiresNetworkTag, NetworkTag 1097911063)
+-- @since 3.13.0
+byronPreview :: NetworkDiscriminant Byron
+byronPreview = (RequiresNetworkTag, NetworkTag 2)
+
+-- | 'NetworkDiscriminant' for Cardano Preprod & Byron
+--
+-- @since 3.13.0
+byronPreprod :: NetworkDiscriminant Byron
+byronPreprod = (RequiresNetworkTag, NetworkTag 1)
 
 --
 -- Unsafe

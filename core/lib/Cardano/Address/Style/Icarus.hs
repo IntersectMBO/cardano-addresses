@@ -50,7 +50,8 @@ module Cardano.Address.Style.Icarus
       -- * Network Discrimination
     , icarusMainnet
     , icarusStaging
-    , icarusTestnet
+    , icarusPreview
+    , icarusPreprod
 
       -- * Unsafe
     , liftXPrv
@@ -88,7 +89,7 @@ import Cardano.Address.Derivation
 import Cardano.Address.Internal
     ( DeserialiseFailure, WithErrorMessage (..) )
 import Cardano.Address.Style.Byron
-    ( byronMainnet, byronStaging, byronTestnet )
+    ( byronMainnet, byronStaging, byronPreview, byronPreprod )
 import Cardano.Mnemonic
     ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Codec.Binary.Encoding
@@ -474,11 +475,17 @@ icarusMainnet = byronMainnet
 icarusStaging :: NetworkDiscriminant Icarus
 icarusStaging = byronStaging
 
--- | 'NetworkDiscriminant' for Cardano TestNet & 'Icarus'
+-- | 'NetworkDiscriminant' for Cardano Preprod & 'Icarus'
 --
--- @since 2.0.0
-icarusTestnet :: NetworkDiscriminant Icarus
-icarusTestnet = byronTestnet
+-- @since 3.13.0
+icarusPreprod :: NetworkDiscriminant Icarus
+icarusPreprod = byronPreprod
+
+-- | 'NetworkDiscriminant' for Cardano Preprod & 'Icarus'
+--
+-- @since 3.13.0
+icarusPreview :: NetworkDiscriminant Icarus
+icarusPreview = byronPreview
 
 --
 -- Unsafe
