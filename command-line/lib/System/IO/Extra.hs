@@ -9,11 +9,14 @@ module System.IO.Extra
     -- ** Read
       hGetBytes
     , hGetBech32
-    , hGetSomeMnemonic
     , hGetXPrv
     , hGetXPub
     , hGetXP__
     , hGetScriptHash
+    , hGetSomeMnemonic
+    , hGetSomeMnemonicLine
+    , hGetPassphraseMnemonic
+    , hGetPassphraseBytes
 
     -- ** Write
     , hPutBytes
@@ -43,6 +46,7 @@ import Codec.Binary.Encoding
     , encode
     , fromBase16
     , fromBase58
+    , fromBase64
     , fromBech32
     )
 import Control.Exception
@@ -53,6 +57,8 @@ import Data.ByteString
     ( ByteString )
 import Data.List
     ( nub, sort )
+import Options.Applicative.Style
+    ( PassphraseInfo (..) )
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
@@ -69,6 +75,7 @@ import System.IO
 import System.IO.Unsafe
     ( unsafePerformIO )
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -83,29 +90,29 @@ hGetBytes :: Handle -> IO ByteString
 hGetBytes h = do
     raw <- B8.filter noNewline <$> B8.hGetContents h
     case detectEncoding (T.unpack $ T.decodeUtf8 raw) of
-        Just (EBase16  ) -> decode fromBase16 raw
-        Just (EBech32{}) -> decode (fmap snd . fromBech32 markCharsRedAtIndices) raw
-        Just (EBase58  ) -> decode fromBase58 raw
+        Just (EBase16  ) -> decodeBytes fromBase16 raw
+        Just (EBech32{}) -> decodeBytes (fmap snd . fromBech32 markCharsRedAtIndices) raw
+        Just (EBase58  ) -> decodeBytes fromBase58 raw
         Nothing          -> fail
             "Couldn't detect input encoding? Data on stdin must be encoded as \
             \bech16, bech32 or base58."
-  where
-    decode :: (bin -> Either String result) -> bin -> IO result
-    decode from = either fail pure . from
+
+decodeBytes
+    :: (bin -> Either String result)
+    -> bin
+    -> IO result
+decodeBytes from = either fail pure . from
 
 -- | Read some bytes encoded in Bech32, only allowing the given prefixes.
 hGetBech32 :: Handle -> [HumanReadablePart] -> IO (HumanReadablePart, ByteString)
 hGetBech32 h allowedPrefixes = do
     raw <- B8.filter noNewline <$> B8.hGetContents h
-    (hrp, bytes) <- decode (fromBech32 markCharsRedAtIndices) raw
+    (hrp, bytes) <- decodeBytes (fromBech32 markCharsRedAtIndices) raw
     when (hrp `notElem` allowedPrefixes) $ fail
         $ "Invalid human-readable prefix. Prefix ought to be one of: "
         <> show (showHrp <$> allowedPrefixes)
     pure (hrp, bytes)
   where
-    decode :: (bin -> Either String result) -> bin -> IO result
-    decode from = either fail pure . from
-
     showHrp :: HumanReadablePart -> String
     showHrp = T.unpack . humanReadablePartToText
 
@@ -154,6 +161,37 @@ hGetXP__ h allowedPrefixes = do
         _                      -> fail
             "Couldn't convert bytes into neither extended public or private keys."
 
+-- | Prompt user and read some English mnemonic words from stdin.
+hGetSomeMnemonicLine :: Handle -> IO SomeMnemonic
+hGetSomeMnemonicLine h = do
+    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.hGetLine h
+    case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+-- | Prompt user and read the mnemonic passphrase (second factor) from stdin.
+hGetPassphraseMnemonic
+    :: Handle
+    -> IO SomeMnemonic
+hGetPassphraseMnemonic h = do
+    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.hGetLine h
+    case mkSomeMnemonic @'[ 9, 12 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+-- | Read some bytes from the console, and decode them accoring to passphrase info.
+hGetPassphraseBytes
+    :: Handle
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytes h info = do
+    raw <- B8.filter noNewline <$> B8.hGetLine h
+    case info of
+        Hex        -> decodeBytes fromBase16 raw
+        Base64     -> decodeBytes fromBase64 raw
+        Utf8       -> pure raw
+        _          -> fail
+            "Data on stdin must be encoded as bech16, bech64 or utf8."
 
 --
 -- I/O Write

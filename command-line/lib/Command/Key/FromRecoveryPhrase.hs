@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -32,18 +33,31 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
-    ( Passphrase (..), Style (..), generateRootKey, passphraseOpt, styleArg )
+    ( Passphrase (..)
+    , PassphraseInfo (..)
+    , Style (..)
+    , generateRootKey
+    , passphraseInfoOpt
+    , styleArg
+    )
 import System.IO
-    ( stdin, stdout )
+    ( stderr, stdin, stdout )
 import System.IO.Extra
-    ( hGetSomeMnemonic, hPutBytes, progName )
+    ( hGetPassphraseBytes
+    , hGetPassphraseMnemonic
+    , hGetSomeMnemonic
+    , hGetSomeMnemonicLine
+    , hPutBytes
+    , hPutString
+    , progName
+    )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
 
 data Cmd = FromRecoveryPhrase
     { style :: Style
-    , passphrase :: Maybe Passphrase
+    , passphraseInfo :: Maybe PassphraseInfo
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -60,13 +74,39 @@ mod liftCmd = command "from-recovery-phrase" $
   where
     parser = FromRecoveryPhrase
         <$> styleArg
-        <*> optional passphraseOpt
+        <*> optional passphraseInfoOpt
 
 run :: Cmd -> IO ()
-run FromRecoveryPhrase{style,passphrase} = do
-    someMnemonic <- hGetSomeMnemonic stdin
+run FromRecoveryPhrase{style,passphraseInfo} = do
+    (someMnemonic, passphrase) <- case passphraseInfo of
+        Nothing -> do
+            mnemonic <- hGetSomeMnemonic stdin
+            pure (mnemonic, Nothing)
+        Just pinfo -> do
+            hPutString stderr "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+            mnemonic <- hGetSomeMnemonicLine stdin
+            passwd <- handlePassphraseInfo pinfo
+            pure (mnemonic, Just passwd)
     rootK <- generateRootKey someMnemonic passphrase style
     hPutBytes stdout (xprvToBytes rootK) (EBech32 $ styleHrp style)
+  where
+    handlePassphraseInfo = \case
+        Mnemonic -> do
+            hPutString stderr "Please enter a 9–12 word second factor:"
+            p <- hGetPassphraseMnemonic stdin
+            pure $ FromMnemonic p
+        Hex -> do
+            hPutString stderr "Please enter hex-encoded passphrase:"
+            p <- hGetPassphraseBytes stdin Hex
+            pure $ FromEncoded p
+        Base64 -> do
+            hPutString stderr "Please enter base64-encoded passphrase:"
+            p <- hGetPassphraseBytes stdin Base64
+            pure $ FromEncoded p
+        Utf8 -> do
+            hPutString stderr "Please enter utf8 passphrase:"
+            p <- hGetPassphraseBytes stdin Utf8
+            pure $ FromEncoded p
 
 styleHrp :: Style -> HumanReadablePart
 styleHrp Shared = CIP5.root_shared_xsk

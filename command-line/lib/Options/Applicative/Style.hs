@@ -11,11 +11,12 @@ module Options.Applicative.Style
     -- * Type
       Style(..)
     , Passphrase (..)
+    , PassphraseInfo (..)
     , generateRootKey
 
     -- * Applicative Parser
     , styleArg
-    , passphraseOpt
+    , passphraseInfoOpt
     ) where
 
 import Prelude
@@ -23,11 +24,7 @@ import Prelude
 import Cardano.Address.Derivation
     ( XPrv )
 import Cardano.Mnemonic
-    ( SomeMnemonic, mkSomeMnemonic, someMnemonicToBytes )
-import Codec.Binary.Encoding
-    ( fromBase16, fromBase58 )
-import Control.Applicative
-    ( (<|>) )
+    ( SomeMnemonic, someMnemonicToBytes )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -53,9 +50,6 @@ import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Cardano.Address.Style.Shared as Shared
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.ByteArray as BA
-import qualified Data.ByteString.Char8 as B8
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 
 --
 -- Type
@@ -74,6 +68,10 @@ data Style
 -- @since 3.13.0
 data Passphrase =
     FromMnemonic SomeMnemonic | FromEncoded ByteString
+    deriving (Eq, Show)
+
+data PassphraseInfo =
+    Mnemonic | Hex | Base64 | Utf8
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
@@ -126,32 +124,25 @@ styleArg = argument (eitherReader reader) $ mempty
         "shared"      -> Right Shared
         _             -> Left $ "Unknown style; expecting one of " <> styles'
 
-passphraseReader :: String -> Either String Passphrase
-passphraseReader str =
-    if null str then
-        pure $ FromEncoded mempty
-    else do
-        let wrds = T.words . T.filter noNewline . T.decodeUtf8 . B8.pack $ str
-        case mkSomeMnemonic @'[ 9, 12 ] wrds of
-            Right mw -> pure $ FromMnemonic mw
-            Left _ -> getBase16 <|> getBase58
+passphraseInfoReader :: String -> Either String PassphraseInfo
+passphraseInfoReader s = maybe (Left err) Right (readPassphraseInfoMaybe s)
   where
-    getBase16 = case fromBase16 (T.encodeUtf8 $ T.pack str) of
-        Right hex -> pure $ FromEncoded hex
-        Left _ -> Left "not hex-encoded bytes"
-    getBase58 = case fromBase58 (T.encodeUtf8 $ T.pack str) of
-        Right bs -> pure $ FromEncoded bs
-        Left _ -> Left "not base58-encoded bytes"
-    noNewline :: Char -> Bool
-    noNewline = (`notElem` ['\n', '\r'])
+    err = "Invalid passphrase input type. Must be one of the \
+          \allowed keywords: from-mnemonic, from-hex, from-base64, from-utf8"
+    readPassphraseInfoMaybe str
+        | str == "from-mnemonic" = pure Mnemonic
+        | str == "from-hex"      = pure Hex
+        | str == "from-base64"   = pure Base64
+        | str == "from-utf8"     = pure Utf8
+        | otherwise              = Nothing
 
-passphraseOpt :: Parser Passphrase
-passphraseOpt = option (eitherReader passphraseReader) $ mempty
+passphraseInfoOpt :: Parser PassphraseInfo
+passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
     <> long "passphrase"
     <> metavar "PASSWORD"
     <> help helpDoc
   where
     helpDoc =
-        "User chosen passphrase for the generation phase. Valid for Icarus, " ++
-        "Shelley and Shared styles. Accept mnemonic (9- or 12-word length) or " ++
-        "arbitrary passphrase encoded as base16 or base58."
+        "User chosen passphrase to be read from stdin for the generation phase. " ++
+        "Valid for Icarus, Shelley and Shared styles. Accepting mnemonic " ++
+        "(9- or 12-word length) or arbitrary passphrase encoded as base16, base64 or plain utf8."
