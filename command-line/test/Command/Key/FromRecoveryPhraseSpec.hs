@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Command.Key.FromRecoveryPhraseSpec
     ( spec
