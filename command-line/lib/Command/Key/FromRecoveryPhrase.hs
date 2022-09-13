@@ -104,8 +104,12 @@ run FromRecoveryPhrase{style,passphraseInfo} = do
             p <- hGetPassphraseBytes stdin Base64
             pure $ FromEncoded p
         Utf8 -> do
-            hPutString stderr "Please enter utf8 passphrase:"
+            hPutString stderr "Please enter utf8-encoded passphrase:"
             p <- hGetPassphraseBytes stdin Utf8
+            pure $ FromEncoded p
+        Octets -> do
+            hPutString stderr "Please enter passphrase in the form of octet array:"
+            p <- hGetPassphraseBytes stdin Octets
             pure $ FromEncoded p
 
 styleHrp :: Style -> HumanReadablePart

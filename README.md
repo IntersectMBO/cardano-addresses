@@ -86,10 +86,17 @@ Please enter base64-encoded passphrase:
 3BQ087RygQ1WQJ+F
 root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
 
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-octets
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter passphrase in the form of octet array:
+[220,20,52,243,180,114,129,13,86,64,159,133]
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
 $ cardano-address key from-recovery-phrase Shelley --passphrase from-utf8
 Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
 exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
-Please enter utf8 passphrase:
+Please enter utf8-encoded passphrase:
 my secret passphrase
 root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
 
@@ -106,6 +113,8 @@ root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecd
 --"59sxYz34oKvse1xur"
 --λ> decodeUtf8 $ convertToBase Base64 bytes
 -- "3BQ087RygQ1WQJ+F"
+--λ> BS.unpack bytes
+-- [220,20,52,243,180,114,129,13,86,64,159,133]
 ```
 > :information_source: Notice the `root_xsk` prefix to identify a root extended signing (private) key.
 </details>

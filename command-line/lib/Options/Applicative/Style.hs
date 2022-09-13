@@ -71,7 +71,7 @@ data Passphrase =
     deriving (Eq, Show)
 
 data PassphraseInfo =
-    Mnemonic | Hex | Base64 | Utf8
+    Mnemonic | Hex | Base64 | Utf8 | Octets
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
@@ -134,15 +134,17 @@ passphraseInfoReader s = maybe (Left err) Right (readPassphraseInfoMaybe s)
         | str == "from-hex"      = pure Hex
         | str == "from-base64"   = pure Base64
         | str == "from-utf8"     = pure Utf8
+        | str == "from-octets"   = pure Octets
         | otherwise              = Nothing
 
 passphraseInfoOpt :: Parser PassphraseInfo
 passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
     <> long "passphrase"
-    <> metavar "PASSWORD"
+    <> metavar "SOURCE"
     <> help helpDoc
   where
     helpDoc =
         "User chosen passphrase to be read from stdin for the generation phase. " ++
         "Valid for Icarus, Shelley and Shared styles. Accepting mnemonic " ++
-        "(9- or 12-word length) or arbitrary passphrase encoded as base16, base64 or plain utf8."
+        "(9- or 12 words) or arbitrary passphrase encoded as base16, base64, plain utf8 " ++
+        "or raw bytes in the form of octet array."

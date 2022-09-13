@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_HADDOCK hide #-}
@@ -57,6 +58,8 @@ import Data.ByteString
     ( ByteString )
 import Data.List
     ( nub, sort )
+import Data.Word
+    ( Word8 )
 import Options.Applicative.Style
     ( PassphraseInfo (..) )
 import System.Console.ANSI
@@ -79,7 +82,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-
+import qualified Data.Text.IO as TIO
 
 --
 -- I/O Read
@@ -184,14 +187,22 @@ hGetPassphraseBytes
     :: Handle
     -> PassphraseInfo
     -> IO ByteString
-hGetPassphraseBytes h info = do
-    raw <- B8.filter noNewline <$> B8.hGetLine h
-    case info of
-        Hex        -> decodeBytes fromBase16 raw
-        Base64     -> decodeBytes fromBase64 raw
-        Utf8       -> pure raw
-        _          -> fail
-            "Data on stdin must be encoded as bech16, bech64 or utf8."
+hGetPassphraseBytes h = \case
+    Hex -> do
+       raw <- B8.filter noNewline <$> B8.hGetLine h
+       decodeBytes fromBase16 raw
+    Base64 -> do
+       raw <- B8.filter noNewline <$> B8.hGetLine h
+       decodeBytes fromBase64 raw
+    Utf8 -> do
+       txt <- TIO.hGetLine h
+       pure $ T.encodeUtf8 txt
+    Octets -> do
+       txt <- TIO.hGetLine h
+       let bytes = read @[Word8] (T.unpack txt)
+       pure $ BS.pack bytes
+    _          -> fail
+            "Data on stdin must be encoded as bech16, bech64, utf8 or octet array."
 
 --
 -- I/O Write

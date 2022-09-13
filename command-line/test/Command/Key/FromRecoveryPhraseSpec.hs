@@ -6,10 +6,14 @@ module Command.Key.FromRecoveryPhraseSpec
 
 import Prelude
 
+import System.IO
+    ( hGetLine, hPutStr, stderr, stdin )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldBe, shouldContain )
 import Test.Utils
     ( cli, describeCmd )
+
+import qualified Debug.Trace as TR
 
 spec :: Spec
 spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
@@ -32,7 +36,7 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
         "root_shared_xsk1qz497hekfxq0ftrzjh7sl0m9vseep44mrnmk2dkzawczwy7gh\
         \fgd3ypmaem5k7lcv782p4haa4kcwmdnks4776rkgrx9zn4h8am82dagca203x7fej\
         \p4x04ty47he9rztj2lp46fwyzz3ad2yszwadjfnvuedzh4"
-
+{--
     specGoldenWithPassphrase "icarus" defaultPhrase (unwords sndFactorPhrase)
         rootXPrvIcarusWithPassphrase
 
@@ -41,10 +45,10 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
 
     specGoldenWithPassphrase "icarus" defaultPhrase sndFactorPhraseBase58
         rootXPrvIcarusWithPassphrase
-
-    specGoldenWithPassphrase "shelley" defaultPhrase (unwords sndFactorPhrase)
+--}
+    specGoldenWithMnemonicPassphrase "shelley" defaultPhrase (unwords sndFactorPhrase)
         rootXPrvShelleyWithPassphrase
-
+{--
     specGoldenWithPassphrase "shelley" defaultPhrase sndFactorPhraseHex
         rootXPrvShelleyWithPassphrase
 
@@ -59,7 +63,7 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
 
     specGoldenWithPassphrase "shared" defaultPhrase sndFactorPhraseBase58
         rootXPrvSharedWithPassphrase
-
+--}
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
 
@@ -70,10 +74,14 @@ specGolden style phrase want = it ("golden " <> style) $ do
     out <-  cli [ "key", "from-recovery-phrase",  style ] (unwords phrase)
     out `shouldBe` want
 
-specGoldenWithPassphrase :: String -> [String] -> String -> String -> SpecWith ()
-specGoldenWithPassphrase style phrase sndfactor want = it ("golden " <> style) $ do
-    out <-  cli [ "key", "from-recovery-phrase",  style, "--passphrase", sndfactor ] (unwords phrase)
-    out `shouldBe` want
+specGoldenWithMnemonicPassphrase :: String -> [String] -> String -> String -> SpecWith ()
+specGoldenWithMnemonicPassphrase style phrase sndfactor want = it ("golden " <> style) $ do
+    (out1, err1) <-  cli [ "key", "from-recovery-phrase",  style, "--passphrase", "from-mnemonic" ] ""
+    out1 `shouldBe` ""
+    err1 `shouldContain` "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+    hPutStr stdin (unwords phrase)
+    err2 <- hGetLine stderr
+    err2 `shouldContain` "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
 
 specInvalidStyle :: String -> [String] -> SpecWith ()
 specInvalidStyle style phrase = it ("invalid style " <> style) $ do
@@ -108,14 +116,14 @@ sndFactorPhrase =
 --"\223\132\252{8\192\189@\203\167\180@"
 --λ> encode EBase16 bs
 --"df84fc7b38c0bd40cba7b440"
---λ> encode EBase58 bs
---"5DeNQFNAN1gAArMyh"
+--λ> decodeUtf8 $ convertToBase Base64 bytes
+-- "3BQ087RygQ1WQJ+F"
 
 sndFactorPhraseHex :: String
 sndFactorPhraseHex = "df84fc7b38c0bd40cba7b440"
 
-sndFactorPhraseBase58 :: String
-sndFactorPhraseBase58 = "5DeNQFNAN1gAArMyh"
+sndFactorPhraseBase64 :: String
+sndFactorPhraseBase64 = "3BQ087RygQ1WQJ+F"
 
 rootXPrvIcarusWithPassphrase :: String
 rootXPrvIcarusWithPassphrase =
