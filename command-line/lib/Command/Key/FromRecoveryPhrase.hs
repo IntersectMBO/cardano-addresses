@@ -45,12 +45,11 @@ import Options.Applicative.Style
 import System.IO
     ( stderr, stdin, stdout )
 import System.IO.Extra
-    ( hGetPassphraseBytes
+    ( hGetPassphraseBytesInteractively
     , hGetPassphraseMnemonicInteractively
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
     , hPutBytes
-    , hPutString
     , progName
     )
 
@@ -98,23 +97,28 @@ run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode} = do
     handlePassphraseInfo = \case
         Mnemonic -> do
             let prompt = "Please enter a 9–12 word second factor:"
-            p <- hGetPassphraseMnemonicInteractively (stdin, stderr) passphraseInputMode prompt
+            p <- hGetPassphraseMnemonicInteractively (stdin, stderr)
+                 passphraseInputMode prompt
             pure $ FromMnemonic p
         Hex -> do
-            hPutString stderr "Please enter hex-encoded passphrase:"
-            p <- hGetPassphraseBytes stdin Hex
+            let prompt = "Please enter hex-encoded passphrase:"
+            p <- hGetPassphraseBytesInteractively (stdin, stderr)
+                 passphraseInputMode prompt Hex
             pure $ FromEncoded p
         Base64 -> do
-            hPutString stderr "Please enter base64-encoded passphrase:"
-            p <- hGetPassphraseBytes stdin Base64
+            let prompt = "Please enter base64-encoded passphrase:"
+            p <- hGetPassphraseBytesInteractively (stdin, stderr)
+                 passphraseInputMode prompt Base64
             pure $ FromEncoded p
         Utf8 -> do
-            hPutString stderr "Please enter utf8-encoded passphrase:"
-            p <- hGetPassphraseBytes stdin Utf8
+            let prompt = "Please enter utf8-encoded passphrase:"
+            p <- hGetPassphraseBytesInteractively (stdin, stderr)
+                 passphraseInputMode prompt Utf8
             pure $ FromEncoded p
         Octets -> do
-            hPutString stderr "Please enter passphrase in the form of octet array:"
-            p <- hGetPassphraseBytes stdin Octets
+            let prompt = "Please enter passphrase in the form of octet array:"
+            p <- hGetPassphraseBytesInteractively (stdin, stderr)
+                 passphraseInputMode prompt Octets
             pure $ FromEncoded p
 
 styleHrp :: Style -> HumanReadablePart

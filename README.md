@@ -72,6 +72,20 @@ Please enter a 9–12 word second factor:
 swing payment diagram happy chimney mammal flip become lyrics
 root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
 
+ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic --sensitive
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+**********************************************************************************************************
+Please enter a 9–12 word second factor:
+*************************************************************
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic --silent
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+
+Please enter a 9–12 word second factor:
+
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
 $ cardano-address key from-recovery-phrase Shelley --passphrase from-hex
 Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
 exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum

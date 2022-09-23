@@ -17,7 +17,7 @@ module System.IO.Extra
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
     , hGetPassphraseMnemonicInteractively
-    , hGetPassphraseBytes
+    , hGetPassphraseBytesInteractively
 
     -- ** Write
     , hPutBytes
@@ -94,7 +94,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.Text.IO as TIO
 
 --
 -- I/O Read
@@ -260,22 +259,24 @@ hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt = do
         Right mw -> pure mw
 
 -- | Read some bytes from the console, and decode them accoring to passphrase info.
-hGetPassphraseBytes
-    :: Handle
+hGetPassphraseBytesInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
     -> PassphraseInfo
     -> IO ByteString
-hGetPassphraseBytes h = \case
+hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt = \case
     Hex -> do
-       raw <- B8.filter noNewline <$> B8.hGetLine h
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> hGetSensitiveLine (hstdin, hstderr) mode prompt
        decodeBytes fromBase16 raw
     Base64 -> do
-       raw <- B8.filter noNewline <$> B8.hGetLine h
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> hGetSensitiveLine (hstdin, hstderr) mode prompt
        decodeBytes fromBase64 raw
     Utf8 -> do
-       txt <- TIO.hGetLine h
+       txt <- hGetSensitiveLine (hstdin, hstderr) mode prompt
        pure $ T.encodeUtf8 txt
     Octets -> do
-       txt <- TIO.hGetLine h
+       txt <- hGetSensitiveLine (hstdin, hstderr) mode prompt
        let bytes = read @[Word8] (T.unpack txt)
        pure $ BS.pack bytes
     _          -> fail
