@@ -15,7 +15,7 @@ module System.IO.Extra
     , hGetXP__
     , hGetScriptHash
     , hGetSomeMnemonic
-    , hGetSomeMnemonicLine
+    , hGetSomeMnemonicInteractively
     , hGetPassphraseMnemonic
     , hGetPassphraseBytes
 
@@ -63,7 +63,7 @@ import Data.Text
 import Data.Word
     ( Word8 )
 import Options.Applicative.Style
-    ( PassphraseInfo (..) )
+    ( PassphraseInfo (..), PassphraseInputMode (..) )
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
@@ -194,39 +194,72 @@ withEcho h echo action = bracket aFirst aLast aBetween
 -- placeholder character.
 hGetSensitiveLine
     :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
     -> IO Text
-hGetSensitiveLine (hstdin, hstderr) =
+hGetSensitiveLine (hstdin, hstderr) mode prompt =
     withBuffering hstderr NoBuffering $
     withBuffering hstdin NoBuffering $
-    withEcho hstdin False $
-        getLineProtected '*'
+    withEcho hstdin False $ do
+        hPutString hstderr prompt
+        case mode of
+            Sensitive ->
+                getLineSensitive '*'
+            Explicit ->
+                getLineExplicit
   where
-    getLineProtected :: Char -> IO Text
-    getLineProtected placeholder =
-        getLineProtected' mempty
+    backspace = toEnum 127
+
+    getLineSensitive :: Char -> IO Text
+    getLineSensitive placeholder =
+        getLineSensitive' mempty
       where
-        backspace = toEnum 127
-        getLineProtected' line = do
+        getLineSensitive' line = do
             hGetChar hstdin >>= \case
                 '\n' -> do
                     hPutChar hstderr '\n'
                     return line
                 c | c == backspace ->
                     if T.null line
-                        then getLineProtected' line
+                        then getLineSensitive' line
                         else do
                             hCursorBackward hstderr  1
                             hPutChar hstderr ' '
                             hCursorBackward hstderr 1
-                            getLineProtected' (T.init line)
+                            getLineSensitive' (T.init line)
                 c -> do
                     hPutChar hstderr placeholder
-                    getLineProtected' (line <> T.singleton c)
+                    getLineSensitive' (line <> T.singleton c)
+
+    getLineExplicit :: IO Text
+    getLineExplicit  =
+        getLineExplicit' mempty
+      where
+        getLineExplicit' line = do
+            hGetChar hstdin >>= \case
+                '\n' -> do
+                    hPutChar hstderr '\n'
+                    return line
+                c | c == backspace ->
+                    if T.null line
+                        then getLineExplicit' line
+                        else do
+                            hCursorBackward hstderr  1
+                            hPutChar hstderr ' '
+                            hCursorBackward hstderr 1
+                            getLineExplicit' (T.init line)
+                c -> do
+                    getLineExplicit' (line <> T.singleton c)
 
 -- | Prompt user and read some English mnemonic words from stdin.
-hGetSomeMnemonicLine :: Handle -> IO SomeMnemonic
-hGetSomeMnemonicLine h = do
-    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.hGetLine h
+hGetSomeMnemonicInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
+    -> IO SomeMnemonic
+hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do
+    wrds <- T.words . T.filter noNewline <$>
+            hGetSensitiveLine (hstdin, hstderr) mode prompt
     case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw

@@ -35,9 +35,11 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Style
     ( Passphrase (..)
     , PassphraseInfo (..)
+    , PassphraseInputMode
     , Style (..)
     , generateRootKey
     , passphraseInfoOpt
+    , passphraseInputModeOpt
     , styleArg
     )
 import System.IO
@@ -46,7 +48,7 @@ import System.IO.Extra
     ( hGetPassphraseBytes
     , hGetPassphraseMnemonic
     , hGetSomeMnemonic
-    , hGetSomeMnemonicLine
+    , hGetSomeMnemonicInteractively
     , hPutBytes
     , hPutString
     , progName
@@ -58,6 +60,7 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 data Cmd = FromRecoveryPhrase
     { style :: Style
     , passphraseInfo :: Maybe PassphraseInfo
+    , passphraseInputMode :: PassphraseInputMode
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -75,16 +78,18 @@ mod liftCmd = command "from-recovery-phrase" $
     parser = FromRecoveryPhrase
         <$> styleArg
         <*> optional passphraseInfoOpt
+        <*> passphraseInputModeOpt
 
 run :: Cmd -> IO ()
-run FromRecoveryPhrase{style,passphraseInfo} = do
+run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode} = do
     (someMnemonic, passphrase) <- case passphraseInfo of
         Nothing -> do
             mnemonic <- hGetSomeMnemonic stdin
             pure (mnemonic, Nothing)
         Just pinfo -> do
-            hPutString stderr "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
-            mnemonic <- hGetSomeMnemonicLine stdin
+            let prompt = "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+            mnemonic <- hGetSomeMnemonicInteractively (stdin, stderr)
+                        passphraseInputMode prompt
             passwd <- handlePassphraseInfo pinfo
             pure (mnemonic, Just passwd)
     rootK <- generateRootKey someMnemonic passphrase style

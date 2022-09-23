@@ -12,11 +12,13 @@ module Options.Applicative.Style
       Style(..)
     , Passphrase (..)
     , PassphraseInfo (..)
+    , PassphraseInputMode (..)
     , generateRootKey
 
     -- * Applicative Parser
     , styleArg
     , passphraseInfoOpt
+    , passphraseInputModeOpt
     ) where
 
 import Prelude
@@ -25,6 +27,8 @@ import Cardano.Address.Derivation
     ( XPrv )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
+import Control.Applicative
+    ( (<|>) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -38,6 +42,7 @@ import Options.Applicative
     , argument
     , completer
     , eitherReader
+    , flag'
     , help
     , listCompleter
     , long
@@ -72,6 +77,10 @@ data Passphrase =
 
 data PassphraseInfo =
     Mnemonic | Hex | Base64 | Utf8 | Octets
+    deriving (Eq, Show)
+
+data PassphraseInputMode =
+    Sensitive | Explicit
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
@@ -148,3 +157,9 @@ passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
         "Valid for Icarus, Shelley and Shared styles. Accepting mnemonic " ++
         "(9- or 12 words) or arbitrary passphrase encoded as base16, base64, plain utf8 " ++
         "or raw bytes in the form of octet array."
+
+-- | Parse an 'PassphraseInputMode' from the command-line, if there is proper flag then sensitive is set.
+passphraseInputModeOpt :: Parser PassphraseInputMode
+passphraseInputModeOpt = sensitive <|> pure Explicit
+  where
+    sensitive = flag' Sensitive (long "sensitive")
