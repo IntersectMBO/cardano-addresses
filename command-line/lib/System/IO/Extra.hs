@@ -17,7 +17,7 @@ module System.IO.Extra
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
     , hGetPassphraseMnemonic
-    , hGetPassphraseBytesInteractively
+    , hGetPassphraseBytes
 
     -- ** Write
     , hPutBytes
@@ -94,7 +94,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-
+import qualified Data.Text.IO as TIO
 --
 -- I/O Read
 --
@@ -245,6 +245,7 @@ hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
 
+-- | Read mnemonic passphrase from either file or interactively.
 hGetPassphraseMnemonic
     :: (Handle, Handle)
     -> PassphraseInputMode
@@ -268,7 +269,7 @@ hGetPassphraseMnemonicFromFile path = do
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
 
--- | Prompt user and read the mnemonic passphrase (second factor) from stdin.
+-- | Prompt user and read the mnemonic passphrase (second factor) interactively.
 hGetPassphraseMnemonicInteractively
     :: (Handle, Handle)
     -> PassphraseInputMode
@@ -280,6 +281,42 @@ hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt = do
     case mkSomeMnemonic @'[ 9, 12 ] wrds of
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
+
+-- | Read passphrase from either file or interactively, and decode them accoring to passphrase info.
+hGetPassphraseBytes
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> PassphraseInput
+    -> String
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytes (hstdin, hstderr) mode input prompt info =
+    case input of
+        Interactive ->
+            hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt info
+        FromFile path ->
+            hGetPassphraseBytesFromFile path info
+
+-- | Read some bytes from the file, and decode them accoring to passphrase info.
+hGetPassphraseBytesFromFile
+    :: FilePath
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytesFromFile path = \case
+    Hex -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+       decodeBytes fromBase16 raw
+    Base64 -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+       decodeBytes fromBase64 raw
+    Utf8 -> do
+       B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+    Octets -> do
+       txt <- TIO.readFile path
+       let bytes = read @[Word8] (T.unpack txt)
+       pure $ BS.pack bytes
+    _          -> fail
+            "Data in file must be encoded as hex, base64, utf8 or octet array."
 
 -- | Read some bytes from the console, and decode them accoring to passphrase info.
 hGetPassphraseBytesInteractively
@@ -303,7 +340,7 @@ hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt = \case
        let bytes = read @[Word8] (T.unpack txt)
        pure $ BS.pack bytes
     _          -> fail
-            "Data on stdin must be encoded as bech16, bech64, utf8 or octet array."
+            "Data on stdin must be encoded as hex, base64, utf8 or octet array."
 
 --
 -- I/O Write
