@@ -35,8 +35,10 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Style
     ( Passphrase (..)
     , PassphraseInfo (..)
+    , PassphraseInput (..)
     , PassphraseInputMode
     , Style (..)
+    , fileOpt
     , generateRootKey
     , passphraseInfoOpt
     , passphraseInputModeOpt
@@ -46,7 +48,7 @@ import System.IO
     ( stderr, stdin, stdout )
 import System.IO.Extra
     ( hGetPassphraseBytesInteractively
-    , hGetPassphraseMnemonicInteractively
+    , hGetPassphraseMnemonic
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
     , hPutBytes
@@ -60,6 +62,7 @@ data Cmd = FromRecoveryPhrase
     { style :: Style
     , passphraseInfo :: Maybe PassphraseInfo
     , passphraseInputMode :: PassphraseInputMode
+    , passphraseFromFile :: Maybe FilePath
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -78,27 +81,34 @@ mod liftCmd = command "from-recovery-phrase" $
         <$> styleArg
         <*> optional passphraseInfoOpt
         <*> passphraseInputModeOpt
+        <*> optional fileOpt
 
 run :: Cmd -> IO ()
-run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode} = do
+run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode,passphraseFromFile} = do
     (someMnemonic, passphrase) <- case passphraseInfo of
         Nothing -> do
             mnemonic <- hGetSomeMnemonic stdin
             pure (mnemonic, Nothing)
         Just pinfo -> do
-            let prompt = "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
-            mnemonic <- hGetSomeMnemonicInteractively (stdin, stderr)
+            mnemonic <- case passphraseFromFile of
+                Nothing -> do
+                    let prompt = "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+                    hGetSomeMnemonicInteractively (stdin, stderr)
                         passphraseInputMode prompt
-            passwd <- handlePassphraseInfo pinfo
+                Just _ ->
+                    hGetSomeMnemonic stdin
+            let passphraseSrc =
+                    maybe Interactive FromFile passphraseFromFile
+            passwd <- handlePassphraseInfo passphraseSrc pinfo
             pure (mnemonic, Just passwd)
     rootK <- generateRootKey someMnemonic passphrase style
     hPutBytes stdout (xprvToBytes rootK) (EBech32 $ styleHrp style)
   where
-    handlePassphraseInfo = \case
+    handlePassphraseInfo passphraseSrc = \case
         Mnemonic -> do
             let prompt = "Please enter a 9–12 word second factor:"
-            p <- hGetPassphraseMnemonicInteractively (stdin, stderr)
-                 passphraseInputMode prompt
+            p <- hGetPassphraseMnemonic (stdin, stderr)
+                 passphraseInputMode passphraseSrc prompt
             pure $ FromMnemonic p
         Hex -> do
             let prompt = "Please enter hex-encoded passphrase:"

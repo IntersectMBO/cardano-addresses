@@ -16,7 +16,7 @@ module System.IO.Extra
     , hGetScriptHash
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
-    , hGetPassphraseMnemonicInteractively
+    , hGetPassphraseMnemonic
     , hGetPassphraseBytesInteractively
 
     -- ** Write
@@ -63,7 +63,7 @@ import Data.Text
 import Data.Word
     ( Word8 )
 import Options.Applicative.Style
-    ( PassphraseInfo (..), PassphraseInputMode (..) )
+    ( PassphraseInfo (..), PassphraseInput (..), PassphraseInputMode (..) )
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
@@ -242,6 +242,29 @@ hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do
     wrds <- T.words . T.filter noNewline <$>
             hGetSensitiveLine (hstdin, hstderr) mode prompt
     case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+hGetPassphraseMnemonic
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> PassphraseInput
+    -> String
+    -> IO SomeMnemonic
+hGetPassphraseMnemonic (hstdin, hstderr) mode input prompt =
+    case input of
+        Interactive ->
+            hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt
+        FromFile path ->
+            hGetPassphraseMnemonicFromFile path
+
+-- | Read the mnemonic passphrase (second factor) from file.
+hGetPassphraseMnemonicFromFile
+    :: FilePath
+    -> IO SomeMnemonic
+hGetPassphraseMnemonicFromFile path = do
+    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.readFile path
+    case mkSomeMnemonic @'[ 9, 12 ] wrds of
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw
 

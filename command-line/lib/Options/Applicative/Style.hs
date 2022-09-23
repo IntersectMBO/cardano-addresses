@@ -13,12 +13,14 @@ module Options.Applicative.Style
     , Passphrase (..)
     , PassphraseInfo (..)
     , PassphraseInputMode (..)
+    , PassphraseInput (..)
     , generateRootKey
 
     -- * Applicative Parser
     , styleArg
     , passphraseInfoOpt
     , passphraseInputModeOpt
+    , fileOpt
     ) where
 
 import Prelude
@@ -83,6 +85,10 @@ data PassphraseInputMode =
     Sensitive | Silent | Explicit
     deriving (Eq, Show)
 
+data PassphraseInput =
+    Interactive | FromFile FilePath
+    deriving (Eq, Show)
+
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
 toSndFactor = \case
     Nothing -> mempty
@@ -140,23 +146,16 @@ passphraseInfoReader s = maybe (Left err) Right (readPassphraseInfoMaybe s)
           \allowed keywords: from-mnemonic, from-hex, from-base64 or from-utf8. \
           \Missing input type denotes from-utf8 is chosen."
     readPassphraseInfoMaybe str
+        | str == mempty          = pure Utf8
         | str == "from-mnemonic" = pure Mnemonic
         | str == "from-hex"      = pure Hex
         | str == "from-base64"   = pure Base64
         | str == "from-utf8"     = pure Utf8
         | str == "from-octets"   = pure Octets
-        | str == mempty          = pure Utf8
         | otherwise              = Nothing
 
-
 passphraseInfoOpt :: Parser PassphraseInfo
-passphraseInfoOpt =
-    withoutFormat <|> passphraseInfoOptWithFormat
-  where
-    withoutFormat = flag' Utf8 (long "passphrase")
-
-passphraseInfoOptWithFormat :: Parser PassphraseInfo
-passphraseInfoOptWithFormat = option (eitherReader passphraseInfoReader) $ mempty
+passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
     <> long "passphrase"
     <> metavar "FORMAT"
     <> help helpDoc
@@ -173,3 +172,9 @@ passphraseInputModeOpt = sensitive <|> silent <|> pure Explicit
   where
     sensitive = flag' Sensitive (long "sensitive")
     silent = flag' Silent (long "silent")
+
+fileOpt :: Parser FilePath
+fileOpt = option (eitherReader (\s ->  Right s)) $ mempty
+   <> long "from-file"
+   <> metavar "FILE"
+   <> help ("Passphrase from specified filepath.")
