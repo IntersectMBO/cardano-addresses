@@ -51,13 +51,15 @@ import Codec.Binary.Encoding
     , fromBech32
     )
 import Control.Exception
-    ( IOException )
+    ( IOException, bracket )
 import Control.Monad
     ( when )
 import Data.ByteString
     ( ByteString )
 import Data.List
     ( nub, sort )
+import Data.Text
+    ( Text )
 import Data.Word
     ( Word8 )
 import Options.Applicative.Style
@@ -67,6 +69,7 @@ import System.Console.ANSI
     , ColorIntensity (..)
     , ConsoleLayer (..)
     , SGR (..)
+    , hCursorBackward
     , setSGRCode
     )
 import System.Environment
@@ -74,7 +77,16 @@ import System.Environment
 import System.Exit
     ( exitFailure )
 import System.IO
-    ( Handle, stderr )
+    ( BufferMode (..)
+    , Handle
+    , hGetBuffering
+    , hGetChar
+    , hGetEcho
+    , hPutChar
+    , hSetBuffering
+    , hSetEcho
+    , stderr
+    )
 import System.IO.Unsafe
     ( unsafePerformIO )
 
@@ -163,6 +175,53 @@ hGetXP__ h allowedPrefixes = do
         (_        , Just xprv) -> pure (Right (hrp, xprv))
         _                      -> fail
             "Couldn't convert bytes into neither extended public or private keys."
+
+withBuffering :: Handle -> BufferMode -> IO a -> IO a
+withBuffering h buffering action = bracket aFirst aLast aBetween
+  where
+    aFirst = (hGetBuffering h <* hSetBuffering h buffering)
+    aLast = hSetBuffering h
+    aBetween = const action
+
+withEcho :: Handle -> Bool -> IO a -> IO a
+withEcho h echo action = bracket aFirst aLast aBetween
+  where
+    aFirst = (hGetEcho h <* hSetEcho h echo)
+    aLast = hSetEcho h
+    aBetween = const action
+
+-- | Gather user inputs until a newline is met, hiding what's typed with a
+-- placeholder character.
+hGetSensitiveLine
+    :: (Handle, Handle)
+    -> IO Text
+hGetSensitiveLine (hstdin, hstderr) =
+    withBuffering hstderr NoBuffering $
+    withBuffering hstdin NoBuffering $
+    withEcho hstdin False $
+        getLineProtected '*'
+  where
+    getLineProtected :: Char -> IO Text
+    getLineProtected placeholder =
+        getLineProtected' mempty
+      where
+        backspace = toEnum 127
+        getLineProtected' line = do
+            hGetChar hstdin >>= \case
+                '\n' -> do
+                    hPutChar hstderr '\n'
+                    return line
+                c | c == backspace ->
+                    if T.null line
+                        then getLineProtected' line
+                        else do
+                            hCursorBackward hstderr  1
+                            hPutChar hstderr ' '
+                            hCursorBackward hstderr 1
+                            getLineProtected' (T.init line)
+                c -> do
+                    hPutChar hstderr placeholder
+                    getLineProtected' (line <> T.singleton c)
 
 -- | Prompt user and read some English mnemonic words from stdin.
 hGetSomeMnemonicLine :: Handle -> IO SomeMnemonic
