@@ -114,6 +114,20 @@ Please enter utf8-encoded passphrase:
 my secret passphrase
 root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
 
+$ cardano-address key from-recovery-phrase Shelley --passphrase ""
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter utf8-encoded passphrase:
+my secret passphrase
+root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter utf8-encoded passphrase:
+my secret passphrase
+root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
+
 -- NOTE:
 --λ> let (Right m) = mkSomeMnemonic @'[ 9 ] ["swing", "payment", "diagram", "happy", "chimney", "mammal", "flip", "become", "lyrics"]
 --λ> m

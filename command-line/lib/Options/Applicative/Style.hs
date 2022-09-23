@@ -137,19 +137,28 @@ passphraseInfoReader :: String -> Either String PassphraseInfo
 passphraseInfoReader s = maybe (Left err) Right (readPassphraseInfoMaybe s)
   where
     err = "Invalid passphrase input type. Must be one of the \
-          \allowed keywords: from-mnemonic, from-hex, from-base64, from-utf8"
+          \allowed keywords: from-mnemonic, from-hex, from-base64 or from-utf8. \
+          \Missing input type denotes from-utf8 is chosen."
     readPassphraseInfoMaybe str
         | str == "from-mnemonic" = pure Mnemonic
         | str == "from-hex"      = pure Hex
         | str == "from-base64"   = pure Base64
         | str == "from-utf8"     = pure Utf8
         | str == "from-octets"   = pure Octets
+        | str == mempty          = pure Utf8
         | otherwise              = Nothing
 
+
 passphraseInfoOpt :: Parser PassphraseInfo
-passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
+passphraseInfoOpt =
+    withoutFormat <|> passphraseInfoOptWithFormat
+  where
+    withoutFormat = flag' Utf8 (long "passphrase")
+
+passphraseInfoOptWithFormat :: Parser PassphraseInfo
+passphraseInfoOptWithFormat = option (eitherReader passphraseInfoReader) $ mempty
     <> long "passphrase"
-    <> metavar "SOURCE"
+    <> metavar "FORMAT"
     <> help helpDoc
   where
     helpDoc =
