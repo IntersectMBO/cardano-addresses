@@ -16,7 +16,7 @@ module System.IO.Extra
     , hGetScriptHash
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
-    , hGetPassphraseMnemonic
+    , hGetPassphraseMnemonicInteractively
     , hGetPassphraseBytes
 
     -- ** Write
@@ -202,11 +202,7 @@ hGetSensitiveLine (hstdin, hstderr) mode prompt =
     withBuffering hstdin NoBuffering $
     withEcho hstdin False $ do
         hPutString hstderr prompt
-        case mode of
-            Sensitive ->
-                getLineSensitive '*'
-            Explicit ->
-                getLineExplicit
+        getLineSensitive '*'
   where
     backspace = toEnum 127
 
@@ -228,28 +224,14 @@ hGetSensitiveLine (hstdin, hstderr) mode prompt =
                             hCursorBackward hstderr 1
                             getLineSensitive' (T.init line)
                 c -> do
-                    hPutChar hstderr placeholder
+                    case mode of
+                        Sensitive ->
+                            hPutChar hstderr placeholder
+                        Explicit ->
+                            hPutChar hstderr c
+                        Silent ->
+                            pure ()
                     getLineSensitive' (line <> T.singleton c)
-
-    getLineExplicit :: IO Text
-    getLineExplicit  =
-        getLineExplicit' mempty
-      where
-        getLineExplicit' line = do
-            hGetChar hstdin >>= \case
-                '\n' -> do
-                    hPutChar hstderr '\n'
-                    return line
-                c | c == backspace ->
-                    if T.null line
-                        then getLineExplicit' line
-                        else do
-                            hCursorBackward hstderr  1
-                            hPutChar hstderr ' '
-                            hCursorBackward hstderr 1
-                            getLineExplicit' (T.init line)
-                c -> do
-                    getLineExplicit' (line <> T.singleton c)
 
 -- | Prompt user and read some English mnemonic words from stdin.
 hGetSomeMnemonicInteractively
@@ -265,11 +247,14 @@ hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do
         Right mw -> pure mw
 
 -- | Prompt user and read the mnemonic passphrase (second factor) from stdin.
-hGetPassphraseMnemonic
-    :: Handle
+hGetPassphraseMnemonicInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
     -> IO SomeMnemonic
-hGetPassphraseMnemonic h = do
-    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.hGetLine h
+hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt = do
+    wrds <- T.words . T.filter noNewline <$>
+            hGetSensitiveLine (hstdin, hstderr) mode prompt
     case mkSomeMnemonic @'[ 9, 12 ] wrds of
         Left (MkSomeMnemonicError e) -> fail e
         Right mw -> pure mw

@@ -46,7 +46,7 @@ import System.IO
     ( stderr, stdin, stdout )
 import System.IO.Extra
     ( hGetPassphraseBytes
-    , hGetPassphraseMnemonic
+    , hGetPassphraseMnemonicInteractively
     , hGetSomeMnemonic
     , hGetSomeMnemonicInteractively
     , hPutBytes
@@ -97,8 +97,8 @@ run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode} = do
   where
     handlePassphraseInfo = \case
         Mnemonic -> do
-            hPutString stderr "Please enter a 9–12 word second factor:"
-            p <- hGetPassphraseMnemonic stdin
+            let prompt = "Please enter a 9–12 word second factor:"
+            p <- hGetPassphraseMnemonicInteractively (stdin, stderr) passphraseInputMode prompt
             pure $ FromMnemonic p
         Hex -> do
             hPutString stderr "Please enter hex-encoded passphrase:"

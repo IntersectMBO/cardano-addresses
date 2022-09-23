@@ -80,7 +80,7 @@ data PassphraseInfo =
     deriving (Eq, Show)
 
 data PassphraseInputMode =
-    Sensitive | Explicit
+    Sensitive | Silent | Explicit
     deriving (Eq, Show)
 
 toSndFactor :: Maybe Passphrase -> ScrubbedBytes
@@ -160,6 +160,7 @@ passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
 
 -- | Parse an 'PassphraseInputMode' from the command-line, if there is proper flag then sensitive is set.
 passphraseInputModeOpt :: Parser PassphraseInputMode
-passphraseInputModeOpt = sensitive <|> pure Explicit
+passphraseInputModeOpt = sensitive <|> silent <|> pure Explicit
   where
     sensitive = flag' Sensitive (long "sensitive")
+    silent = flag' Silent (long "silent")
