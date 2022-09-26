@@ -107,7 +107,7 @@ specGoldenWithMnemonicPassphrase style phrase method sndfactor want =
     it ("golden " <> style <> " from-file "<> method) $
     withSystemTempFile "passphrase" $ \f _ -> do
     let sep = T.pack "/"
-    let tmpFile = T.unpack $ head $ reverse $ T.splitOn sep (T.pack f)
+    let tmpFile = T.unpack $ last $ T.splitOn sep (T.pack f)
     f1 <- writeSystemTempFile tmpFile sndfactor
     out <-  cli [ "key", "from-recovery-phrase",  style, "--passphrase"
                 , method, "--from-file", f1] (unwords phrase)
