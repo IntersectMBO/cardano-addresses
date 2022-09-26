@@ -32,7 +32,7 @@ jobs:
         ruby-version: 2.7.1
 
     - name: 🧰 Setup Stack
-      uses: mstksg/setup-stack@v1
+      uses: timbod7/setup-stack@1f68f27c99094a718fe60a2790550aafd042f729
 
     - name: 💾 Cache Dependencies
       id: cache
