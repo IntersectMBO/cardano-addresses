@@ -40,6 +40,15 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
     specGoldenWithMnemonicPassphrase "shelley" defaultPhrase "from-mnemonic"
         (unwords sndFactorPhrase) rootXPrvWithPassphrase
 
+    specGoldenWithMnemonicPassphrase "shelley" defaultPhrase "from-hex"
+        sndFactorPhraseHex rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shelley" defaultPhrase "from-base64"
+        sndFactorPhraseBase64 rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shelley" defaultPhrase "from-octets"
+        sndFactorPhraseOctets rootXPrvWithPassphrase
+
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
 
@@ -97,26 +106,30 @@ sndFactorPhrase =
     , "parrot", "company", "walk", "dog"
     ]
 
---λ> mkSomeMnemonic @'[ 9, 12, 15 ] [ "test", "child", "burst", "immense", "armed", "parrot", "company", "walk", "dog" ]
+--λ> let (Right m9) = mkSomeMnemonic @'[ 9, 12, 15 ] [ "test", "child", "burst", "immense", "armed", "parrot", "company", "walk", "dog" ]
 --Right (SomeMnemonic (Mnemonic {mnemonicToEntropy = Entropy {entropyRaw = "\223\132\252{8\192\189@\203\167\180@", entropyChecksum = Checksum 4}, mnemonicToSentence = MnemonicSentence {mnemonicSentenceToListN = [WordIndex {unWordIndex = Offset 1788},WordIndex {unWordIndex = Offset 319},WordIndex {unWordIndex = Offset 246},WordIndex {unWordIndex = Offset 908},WordIndex {unWordIndex = Offset 94},WordIndex {unWordIndex = Offset 1283},WordIndex {unWordIndex = Offset 372},WordIndex {unWordIndex = Offset 1972},WordIndex {unWordIndex = Offset 516}]}}))
---λ> let bs = BA.convert $ someMnemonicToBytes m9 :: ByteString
---λ> bs
+--λ> import qualified Data.ByteString as BS
+--λ> import qualified Data.ByteArray as BA
+--λ> let bytes = BA.convert $ someMnemonicToBytes m9 :: BS.ByteString
+--λ> bytes
 --"\223\132\252{8\192\189@\203\167\180@"
---λ> encode EBase16 bs
+--λ> encode EBase16 bytes
 --"df84fc7b38c0bd40cba7b440"
---λ> decodeUtf8 $ convertToBase Base64 bytes
--- "3BQ087RygQ1WQJ+F"
+--λ> import qualified Data.Text.Encoding as T
+--λ> import qualified Data.ByteArray.Encoding as BA
+--λ> T.decodeUtf8 $ BA.convertToBase BA.Base64 bytes
+--"34T8ezjAvUDLp7RA"
 --λ> BS.unpack bytes
--- [220,20,52,243,180,114,129,13,86,64,159,133]
+-- [223,132,252,123,56,192,189,64,203,167,180,64]
 
 sndFactorPhraseHex :: String
 sndFactorPhraseHex = "df84fc7b38c0bd40cba7b440"
 
 sndFactorPhraseBase64 :: String
-sndFactorPhraseBase64 = "3BQ087RygQ1WQJ+F"
+sndFactorPhraseBase64 = "34T8ezjAvUDLp7RA"
 
 sndFactorPhraseOctets :: String
-sndFactorPhraseOctets = "[220,20,52,243,180,114,129,13,86,64,159,133]"
+sndFactorPhraseOctets = "[223,132,252,123,56,192,189,64,203,167,180,64]"
 
 rootXPrvWithPassphrase :: String
 rootXPrvWithPassphrase =
