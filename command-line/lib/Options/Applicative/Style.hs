@@ -160,6 +160,7 @@ passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
     <> help helpDoc
   where
     helpDoc =
+        "(from-mnemonic | from-hex | from-base64 | from-utf8 | from-octets) " ++
         "User chosen passphrase to be read from stdin for the generation phase. " ++
         "Valid for Icarus, Shelley and Shared styles. Accepting mnemonic " ++
         "(9- or 12 words) or arbitrary passphrase encoded as base16, base64, plain utf8 " ++
@@ -169,8 +170,8 @@ passphraseInfoOpt = option (eitherReader passphraseInfoReader) $ mempty
 passphraseInputModeOpt :: Parser PassphraseInputMode
 passphraseInputModeOpt = sensitive <|> silent <|> pure Explicit
   where
-    sensitive = flag' Sensitive (long "sensitive")
-    silent = flag' Silent (long "silent")
+    sensitive = flag' Sensitive (long "sensitive" <> help ("Input is shown as * in interactive mode."))
+    silent = flag' Silent (long "silent" <> help ("Input is not shown in interactive mode."))
 
 fileOpt :: Parser FilePath
 fileOpt = option (eitherReader Right) $ mempty

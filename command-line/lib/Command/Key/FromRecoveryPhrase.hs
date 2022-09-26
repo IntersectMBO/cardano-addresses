@@ -90,8 +90,13 @@ mod liftCmd = command "from-recovery-phrase" $
             , string "In case of passphrase reading from file the recovery phrase is read from stdin."
             , string ""
             , string "Example:"
+            , indent 2 $ bold $ string "$ echo \"Secret Secondary Phrase\" > sndfactor.prv"
             , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
             , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley --from-file \"./sndfactor.prv\""
+            , string ""
+            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 12 > sndfactor.prv"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
+            , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --from-file \"./sndfactor.prv\""
             ])
   where
     parser = FromRecoveryPhrase
