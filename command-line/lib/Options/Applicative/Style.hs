@@ -173,7 +173,7 @@ passphraseInputModeOpt = sensitive <|> silent <|> pure Explicit
     silent = flag' Silent (long "silent")
 
 fileOpt :: Parser FilePath
-fileOpt = option (eitherReader (\s ->  Right s)) $ mempty
+fileOpt = option (eitherReader Right) $ mempty
    <> long "from-file"
    <> metavar "FILE"
    <> help ("Passphrase from specified filepath.")

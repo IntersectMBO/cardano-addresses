@@ -70,11 +70,28 @@ mod liftCmd = command "from-recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Convert a recovery phrase to an extended private key"
         <> footerDoc (Just $ vsep
-            [ string "The recovery phrase is read from stdin."
+            [ string "The recovery phrase without passphrase is read from stdin."
             , string ""
             , string "Example:"
             , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
             , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Icarus"
+            , string ""
+            , string "The recovery phrase with passphrase can be entered interactively or from file."
+            , string "In both cases passhrase can take form of mnemonic, base16, base64, utf8 or octet array."
+            , string "In interactive case one can select explicit, sensitive or silent mode."
+            , string ""
+            , string "Example:"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --sensitive"
+            , indent 2 $ bold $ string $ "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+            , indent 2 $ bold $ string $ "**********************************************************************************************************"
+            , indent 2 $ bold $ string $ "Please enter a 9–12 word second factor:"
+            , indent 2 $ bold $ string $ "*************************************************************"
+            , string ""
+            , string "In case of passphrase reading from file the recovery phrase is read from stdin."
+            , string ""
+            , string "Example:"
+            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
+            , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley --from-file "./sndfactor.prv""
             ])
   where
     parser = FromRecoveryPhrase
