@@ -49,6 +49,30 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
     specGoldenWithMnemonicPassphrase "shelley" defaultPhrase "from-octets"
         sndFactorPhraseOctets rootXPrvWithPassphrase
 
+    specGoldenWithMnemonicPassphrase "icarus" defaultPhrase "from-mnemonic"
+        (unwords sndFactorPhrase) rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "icarus" defaultPhrase "from-hex"
+        sndFactorPhraseHex rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "icarus" defaultPhrase "from-base64"
+        sndFactorPhraseBase64 rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "icarus" defaultPhrase "from-octets"
+        sndFactorPhraseOctets rootXPrvWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shared" defaultPhrase "from-mnemonic"
+        (unwords sndFactorPhrase) rootXPrvSharedWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shared" defaultPhrase "from-hex"
+        sndFactorPhraseHex rootXPrvSharedWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shared" defaultPhrase "from-base64"
+        sndFactorPhraseBase64 rootXPrvSharedWithPassphrase
+
+    specGoldenWithMnemonicPassphrase "shared" defaultPhrase "from-octets"
+        sndFactorPhraseOctets rootXPrvSharedWithPassphrase
+
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
 
