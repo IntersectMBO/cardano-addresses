@@ -33,7 +33,7 @@ jobs:
 
     - name: 🧰 Setup Stack
       run: |
-        curl -sSL https://get.haskellstack.org/ | sh
+        stack upgrade
 
     - name: 💾 Cache Dependencies
       id: cache
