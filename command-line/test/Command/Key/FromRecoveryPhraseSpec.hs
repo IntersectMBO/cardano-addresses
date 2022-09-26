@@ -7,13 +7,11 @@ module Command.Key.FromRecoveryPhraseSpec
 import Prelude
 
 import System.IO.Temp
-    ( withSystemTempFile, writeSystemTempFile )
+    ( withSystemTempDirectory, writeTempFile )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldBe, shouldContain )
 import Test.Utils
     ( cli, describeCmd )
-
-import qualified Data.Text as T
 
 spec :: Spec
 spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
@@ -105,12 +103,10 @@ specGoldenWithMnemonicPassphrase
     -> SpecWith ()
 specGoldenWithMnemonicPassphrase style phrase method sndfactor want =
     it ("golden " <> style <> " from-file "<> method) $
-    withSystemTempFile "passphrase" $ \f _ -> do
-    let sep = T.pack "/"
-    let tmpFile = T.unpack $ last $ T.splitOn sep (T.pack f)
-    f1 <- writeSystemTempFile tmpFile sndfactor
+    withSystemTempDirectory "tmpdir" $ \dir -> do
+    filepath <- writeTempFile dir "passphrase" sndfactor
     out <-  cli [ "key", "from-recovery-phrase",  style, "--passphrase"
-                , method, "--from-file", f1] (unwords phrase)
+                , method, "--from-file", filepath] (unwords phrase)
     out `shouldBe` want
 
 defaultPhrase :: [String]
