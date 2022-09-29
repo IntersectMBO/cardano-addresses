@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c883d8e7191310cae0d5ad89a1b8a76a85cde64190e736c0f7f11c96bdcf49d
+-- hash: f62e314dc237430fb27f153ee5c9a1474c11230a9aabc96f7afa2087c371d1c5
 
 name:           cardano-addresses-jsbits
 version:        3.12.0
@@ -34,8 +34,8 @@ library
       NoImplicitPrelude
   build-depends:
       base >=4.7 && <5
+  default-language: Haskell2010
   if impl(ghcjs) || os(ghcjs)
     ghc-options: jsbits/cardano-crypto.js
     js-sources:
         jsbits/cardano-crypto.js
-  default-language: Haskell2010
