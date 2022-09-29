@@ -1,0 +1,282 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE DerivingStrategies #-}
+<span class="lineno">    3 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    4 </span>{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+<span class="lineno">    5 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    6 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">    7 </span>
+<span class="lineno">    8 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    9 </span>
+<span class="lineno">   10 </span>module Options.Applicative.Derivation
+<span class="lineno">   11 </span>    (
+<span class="lineno">   12 </span>    -- * Derivation Path
+<span class="lineno">   13 </span>    -- ** Type
+<span class="lineno">   14 </span>      DerivationPath
+<span class="lineno">   15 </span>    , castDerivationPath
+<span class="lineno">   16 </span>    , derivationPathToString
+<span class="lineno">   17 </span>    , derivationPathFromString
+<span class="lineno">   18 </span>    -- ** Applicative Parser
+<span class="lineno">   19 </span>    , derivationPathArg
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>    -- * Derivation Index
+<span class="lineno">   22 </span>    , DerivationIndex
+<span class="lineno">   23 </span>    , mkDerivationIndex
+<span class="lineno">   24 </span>    , firstHardened
+<span class="lineno">   25 </span>    , indexToInteger
+<span class="lineno">   26 </span>    , derivationIndexToString
+<span class="lineno">   27 </span>    , derivationIndexFromString
+<span class="lineno">   28 </span>
+<span class="lineno">   29 </span>    -- * XPub / Pub / XPrv / KeyHash
+<span class="lineno">   30 </span>    , xpubReader
+<span class="lineno">   31 </span>    , xpubOpt
+<span class="lineno">   32 </span>    , xpubArg
+<span class="lineno">   33 </span>    , keyhashReader
+<span class="lineno">   34 </span>    , pubReader
+<span class="lineno">   35 </span>
+<span class="lineno">   36 </span>    -- * Internal
+<span class="lineno">   37 </span>    , bech32Reader
+<span class="lineno">   38 </span>    ) where
+<span class="lineno">   39 </span>
+<span class="lineno">   40 </span>import Prelude
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>import Cardano.Address.Derivation
+<span class="lineno">   43 </span>    ( DerivationType (..)
+<span class="lineno">   44 </span>    , Index
+<span class="lineno">   45 </span>    , Pub
+<span class="lineno">   46 </span>    , XPub
+<span class="lineno">   47 </span>    , pubFromBytes
+<span class="lineno">   48 </span>    , wholeDomainIndex
+<span class="lineno">   49 </span>    , xpubFromBytes
+<span class="lineno">   50 </span>    )
+<span class="lineno">   51 </span>import Cardano.Address.Script
+<span class="lineno">   52 </span>    ( KeyHash (..), KeyRole (..), keyHashFromBytes )
+<span class="lineno">   53 </span>import Codec.Binary.Bech32
+<span class="lineno">   54 </span>    ( HumanReadablePart, humanReadablePartToText )
+<span class="lineno">   55 </span>import Codec.Binary.Encoding
+<span class="lineno">   56 </span>    ( fromBech32 )
+<span class="lineno">   57 </span>import Control.Arrow
+<span class="lineno">   58 </span>    ( left )
+<span class="lineno">   59 </span>import Control.Monad
+<span class="lineno">   60 </span>    ( when )
+<span class="lineno">   61 </span>import Data.ByteString
+<span class="lineno">   62 </span>    ( ByteString )
+<span class="lineno">   63 </span>import Data.List
+<span class="lineno">   64 </span>    ( intercalate, isSuffixOf )
+<span class="lineno">   65 </span>import Data.Word
+<span class="lineno">   66 </span>    ( Word32 )
+<span class="lineno">   67 </span>import Options.Applicative
+<span class="lineno">   68 </span>    ( Parser
+<span class="lineno">   69 </span>    , argument
+<span class="lineno">   70 </span>    , completer
+<span class="lineno">   71 </span>    , eitherReader
+<span class="lineno">   72 </span>    , help
+<span class="lineno">   73 </span>    , listCompleter
+<span class="lineno">   74 </span>    , long
+<span class="lineno">   75 </span>    , metavar
+<span class="lineno">   76 </span>    , option
+<span class="lineno">   77 </span>    )
+<span class="lineno">   78 </span>import Safe
+<span class="lineno">   79 </span>    ( readEitherSafe )
+<span class="lineno">   80 </span>import System.IO.Extra
+<span class="lineno">   81 </span>    ( markCharsRedAtIndices )
+<span class="lineno">   82 </span>
+<span class="lineno">   83 </span>import qualified Data.Text as T
+<span class="lineno">   84 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   85 </span>
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>--
+<span class="lineno">   88 </span>-- Derivation Path
+<span class="lineno">   89 </span>--
+<span class="lineno">   90 </span>
+<span class="lineno">   91 </span>-- | Represent a user-provided 'DerivationPath'.
+<span class="lineno">   92 </span>newtype DerivationPath = DerivationPath [DerivationIndex]
+<span class="lineno">   93 </span>    deriving (<span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Eq</span></span></span></span>)
+<span class="lineno">   94 </span>
+<span class="lineno">   95 </span>derivationPathFromString :: String -&gt; Either String DerivationPath
+<span class="lineno">   96 </span><span class="decl"><span class="istickedoff">derivationPathFromString str =</span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">DerivationPath</span>
+<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; mapM (derivationIndexFromString . T.unpack) (T.splitOn &quot;/&quot; txt)</span>
+<span class="lineno">   99 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">txt = T.pack str</span></span>
+<span class="lineno">  101 </span>
+<span class="lineno">  102 </span>derivationPathToString :: DerivationPath -&gt; String
+<span class="lineno">  103 </span><span class="decl"><span class="istickedoff">derivationPathToString (DerivationPath xs) =</span>
+<span class="lineno">  104 </span><span class="spaces">    </span><span class="istickedoff">intercalate &quot;/&quot; $ map derivationIndexToString xs</span></span>
+<span class="lineno">  105 </span>
+<span class="lineno">  106 </span>castDerivationPath :: DerivationPath -&gt; [Index 'WholeDomain depth]
+<span class="lineno">  107 </span><span class="decl"><span class="istickedoff">castDerivationPath (DerivationPath xs) = map (wholeDomainIndex . getDerivationIndex) xs</span></span>
+<span class="lineno">  108 </span>
+<span class="lineno">  109 </span>derivationPathArg :: Parser DerivationPath
+<span class="lineno">  110 </span><span class="decl"><span class="istickedoff">derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty</span>
+<span class="lineno">  111 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;DERIVATION-PATH&quot;</span>
+<span class="lineno">  112 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; help</span>
+<span class="lineno">  113 </span><span class="spaces">        </span><span class="istickedoff">&quot;Slash-separated derivation path. Hardened indexes are marked with a \</span>
+<span class="lineno">  114 </span><span class="spaces">        </span><span class="istickedoff">\'H' (e.g. 1852H/1815H/0H/0).&quot;</span>
+<span class="lineno">  115 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter [&quot;1852H/1815H/0H/&quot;, &quot;44H/1815H/0H/&quot;])</span></span></span>
+<span class="lineno">  116 </span>
+<span class="lineno">  117 </span>--
+<span class="lineno">  118 </span>-- Derivation Index
+<span class="lineno">  119 </span>--
+<span class="lineno">  120 </span>
+<span class="lineno">  121 </span>newtype DerivationIndex = DerivationIndex { <span class="istickedoff"><span class="decl"><span class="istickedoff">getDerivationIndex</span></span></span> :: Word32 }
+<span class="lineno">  122 </span>    deriving stock   (<span class="decl"><span class="istickedoff">Show</span></span>, <span class="decl"><span class="istickedoff">Eq</span></span>)
+<span class="lineno">  123 </span>    deriving newtype (<span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Bounded</span></span></span></span>, <span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff"><span class="decl"><span class="istickedoff">Ord</span></span></span></span></span></span></span></span></span></span></span></span></span></span>)
+<span class="lineno">  124 </span>
+<span class="lineno">  125 </span>-- | Safely cast a 'DerivationIndex' to an 'Integer'.
+<span class="lineno">  126 </span>indexToInteger :: DerivationIndex -&gt; Integer
+<span class="lineno">  127 </span><span class="decl"><span class="istickedoff">indexToInteger (DerivationIndex ix) = fromIntegral ix</span></span>
+<span class="lineno">  128 </span>
+<span class="lineno">  129 </span>-- | Get the first 'DerivationIndex' considered /hardened/.
+<span class="lineno">  130 </span>firstHardened :: DerivationIndex
+<span class="lineno">  131 </span><span class="decl"><span class="istickedoff">firstHardened = DerivationIndex 0x80000000</span></span>
+<span class="lineno">  132 </span>
+<span class="lineno">  133 </span>-- | Smart-constructor for a 'DerivationIndex'
+<span class="lineno">  134 </span>mkDerivationIndex :: Integer -&gt; Either String DerivationIndex
+<span class="lineno">  135 </span><span class="decl"><span class="istickedoff">mkDerivationIndex ix</span>
+<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlyfalse">ix &gt; fromIntegral (maxBound @Word32)</span> =</span>
+<span class="lineno">  137 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Left $ show ix &lt;&gt; &quot; is too high to be a derivation index.&quot;</span></span>
+<span class="lineno">  138 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  139 </span><span class="spaces">        </span><span class="istickedoff">pure $ DerivationIndex $ fromIntegral ix</span></span>
+<span class="lineno">  140 </span>
+<span class="lineno">  141 </span>-- | Convert a string to a derivation index. String must be followed by a
+<span class="lineno">  142 </span>-- capital /H/ to mark hardened index. For example @0@ refers to the first soft
+<span class="lineno">  143 </span>-- index, whereas @0H@ refers to the first hardened index.
+<span class="lineno">  144 </span>derivationIndexFromString :: String -&gt; Either String DerivationIndex
+<span class="lineno">  145 </span><span class="decl"><span class="istickedoff">derivationIndexFromString &quot;&quot; = Left &quot;An empty string is not a derivation index!&quot;</span>
+<span class="lineno">  146 </span><span class="spaces"></span><span class="istickedoff">derivationIndexFromString str</span>
+<span class="lineno">  147 </span><span class="spaces">    </span><span class="istickedoff">| &quot;H&quot; `isSuffixOf` str = do</span>
+<span class="lineno">  148 </span><span class="spaces">        </span><span class="istickedoff">parseHardenedIndex (init str)</span>
+<span class="lineno">  149 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
+<span class="lineno">  150 </span><span class="spaces">        </span><span class="istickedoff">parseSoftIndex str</span>
+<span class="lineno">  151 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  152 </span><span class="spaces">    </span><span class="istickedoff">parseHardenedIndex txt = do</span>
+<span class="lineno">  153 </span><span class="spaces">        </span><span class="istickedoff">ix &lt;- left (const msg) $ readEitherSafe txt</span>
+<span class="lineno">  154 </span><span class="spaces">        </span><span class="istickedoff">mkDerivationIndex $ ix + indexToInteger firstHardened</span>
+<span class="lineno">  155 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  156 </span><span class="spaces">        </span><span class="istickedoff">msg = mconcat</span>
+<span class="lineno">  157 </span><span class="spaces">            </span><span class="istickedoff">[ &quot;Unable to parse hardened index. Hardened indexes are integer &quot;</span>
+<span class="lineno">  158 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot;values, between &quot;</span></span>
+<span class="lineno">  159 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">show (indexToInteger (minBound @DerivationIndex))</span></span>
+<span class="lineno">  160 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot; and &quot;</span></span>
+<span class="lineno">  161 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">show (indexToInteger firstHardened)</span></span>
+<span class="lineno">  162 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot; ending with a capital 'H'. For example: \&quot;42H\&quot;,&quot;</span></span>
+<span class="lineno">  163 </span><span class="spaces">            </span><span class="istickedoff">]</span>
+<span class="lineno">  164 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  165 </span><span class="spaces">    </span><span class="istickedoff">parseSoftIndex txt = do</span>
+<span class="lineno">  166 </span><span class="spaces">        </span><span class="istickedoff">ix &lt;- left (const msg) $ readEitherSafe txt</span>
+<span class="lineno">  167 </span><span class="spaces">        </span><span class="istickedoff">guardSoftIndex ix</span>
+<span class="lineno">  168 </span><span class="spaces">        </span><span class="istickedoff">mkDerivationIndex ix</span>
+<span class="lineno">  169 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  170 </span><span class="spaces">        </span><span class="istickedoff">guardSoftIndex ix</span>
+<span class="lineno">  171 </span><span class="spaces">            </span><span class="istickedoff">| <span class="tickonlyfalse">ix &gt;= indexToInteger firstHardened</span> =</span>
+<span class="lineno">  172 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Left $ mconcat</span></span>
+<span class="lineno">  173 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">[ show ix</span></span>
+<span class="lineno">  174 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot; is too high to be a soft derivation index. &quot;</span></span>
+<span class="lineno">  175 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;Did you mean \&quot;&quot;</span></span>
+<span class="lineno">  176 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, show (ix - indexToInteger firstHardened)</span></span>
+<span class="lineno">  177 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">, &quot;H\&quot;?&quot;</span></span>
+<span class="lineno">  178 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  179 </span><span class="spaces">            </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> =</span>
+<span class="lineno">  180 </span><span class="spaces">                </span><span class="istickedoff">pure <span class="nottickedoff">()</span></span>
+<span class="lineno">  181 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  182 </span><span class="spaces">        </span><span class="istickedoff">msg = mconcat</span>
+<span class="lineno">  183 </span><span class="spaces">            </span><span class="istickedoff">[ &quot;Unable to parse soft index. Soft indexes are integer &quot;</span>
+<span class="lineno">  184 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot;values, between &quot;</span></span>
+<span class="lineno">  185 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">show (indexToInteger (minBound @DerivationIndex))</span></span>
+<span class="lineno">  186 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot; and &quot;</span></span>
+<span class="lineno">  187 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">show (indexToInteger firstHardened)</span></span>
+<span class="lineno">  188 </span><span class="spaces">            </span><span class="istickedoff">, <span class="nottickedoff">&quot;. For example: \&quot;14\&quot;.&quot;</span></span>
+<span class="lineno">  189 </span><span class="spaces">            </span><span class="istickedoff">]</span></span>
+<span class="lineno">  190 </span>
+<span class="lineno">  191 </span>-- | Convert a 'DerivationIndex' back to string.
+<span class="lineno">  192 </span>derivationIndexToString :: DerivationIndex -&gt; String
+<span class="lineno">  193 </span><span class="decl"><span class="istickedoff">derivationIndexToString ix_@(DerivationIndex ix)</span>
+<span class="lineno">  194 </span><span class="spaces">    </span><span class="istickedoff">| ix_ &gt;= firstHardened = show ix' ++ &quot;H&quot;</span>
+<span class="lineno">  195 </span><span class="spaces">    </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span>            = show ix</span>
+<span class="lineno">  196 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  197 </span><span class="spaces">    </span><span class="istickedoff">ix' = fromIntegral ix - indexToInteger firstHardened</span></span>
+<span class="lineno">  198 </span>
+<span class="lineno">  199 </span>--
+<span class="lineno">  200 </span>-- XPub / Pub / XPrv
+<span class="lineno">  201 </span>--
+<span class="lineno">  202 </span>
+<span class="lineno">  203 </span>xpubReader :: [HumanReadablePart] -&gt; String -&gt; Either String XPub
+<span class="lineno">  204 </span><span class="decl"><span class="istickedoff">xpubReader allowedPrefixes str = do</span>
+<span class="lineno">  205 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, bytes) &lt;- bech32Reader allowedPrefixes str</span>
+<span class="lineno">  206 </span><span class="spaces">    </span><span class="istickedoff">case xpubFromBytes bytes of</span>
+<span class="lineno">  207 </span><span class="spaces">        </span><span class="istickedoff">Just xpub -&gt; pure xpub</span>
+<span class="lineno">  208 </span><span class="spaces">        </span><span class="istickedoff">Nothing   -&gt; Left</span>
+<span class="lineno">  209 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;Failed to convert bytes into a valid extended public key.&quot;</span></span></span>
+<span class="lineno">  210 </span>
+<span class="lineno">  211 </span>pubReader :: [HumanReadablePart] -&gt; String -&gt; Either String Pub
+<span class="lineno">  212 </span><span class="decl"><span class="istickedoff">pubReader allowedPrefixes str = do</span>
+<span class="lineno">  213 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, bytes) &lt;- bech32Reader allowedPrefixes str</span>
+<span class="lineno">  214 </span><span class="spaces">    </span><span class="istickedoff">case pubFromBytes bytes of</span>
+<span class="lineno">  215 </span><span class="spaces">        </span><span class="istickedoff">Just pub -&gt; pure pub</span>
+<span class="lineno">  216 </span><span class="spaces">        </span><span class="istickedoff">Nothing   -&gt; <span class="nottickedoff">Left</span></span>
+<span class="lineno">  217 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;Failed to convert bytes into a valid non-extended public key.&quot;</span></span></span>
+<span class="lineno">  218 </span>
+<span class="lineno">  219 </span>xpubOpt :: [HumanReadablePart] -&gt; String -&gt; String -&gt; Parser XPub
+<span class="lineno">  220 </span><span class="decl"><span class="istickedoff">xpubOpt allowedPrefixes name helpDoc =</span>
+<span class="lineno">  221 </span><span class="spaces">    </span><span class="istickedoff">option (eitherReader (xpubReader allowedPrefixes)) $ mempty</span>
+<span class="lineno">  222 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; long name</span>
+<span class="lineno">  223 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; metavar &quot;XPUB&quot;</span>
+<span class="lineno">  224 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; help helpDoc</span></span>
+<span class="lineno">  225 </span>
+<span class="lineno">  226 </span>xpubArg :: [HumanReadablePart] -&gt; String -&gt; Parser XPub
+<span class="lineno">  227 </span><span class="decl"><span class="nottickedoff">xpubArg allowedPrefixes helpDoc =</span>
+<span class="lineno">  228 </span><span class="spaces">    </span><span class="nottickedoff">argument (eitherReader (xpubReader allowedPrefixes)) $ mempty</span>
+<span class="lineno">  229 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; metavar &quot;XPUB&quot;</span>
+<span class="lineno">  230 </span><span class="spaces">        </span><span class="nottickedoff">&lt;&gt; help helpDoc</span></span>
+<span class="lineno">  231 </span>
+<span class="lineno">  232 </span>keyhashReader :: (KeyRole, [HumanReadablePart]) -&gt; String -&gt; Either String KeyHash
+<span class="lineno">  233 </span><span class="decl"><span class="istickedoff">keyhashReader (keyrole, allowedPrefixes) str = do</span>
+<span class="lineno">  234 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, bytes) &lt;- bech32Reader allowedPrefixes str</span>
+<span class="lineno">  235 </span><span class="spaces">    </span><span class="istickedoff">case keyHashFromBytes (keyrole, bytes) of</span>
+<span class="lineno">  236 </span><span class="spaces">        </span><span class="istickedoff">Just keyhash -&gt; pure keyhash</span>
+<span class="lineno">  237 </span><span class="spaces">        </span><span class="istickedoff">Nothing   -&gt; <span class="nottickedoff">Left</span></span>
+<span class="lineno">  238 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;Failed to convert bytes into a valid public key hash.&quot;</span></span></span>
+<span class="lineno">  239 </span>
+<span class="lineno">  240 </span>--
+<span class="lineno">  241 </span>-- Internal
+<span class="lineno">  242 </span>--
+<span class="lineno">  243 </span>
+<span class="lineno">  244 </span>bech32Reader
+<span class="lineno">  245 </span>    :: [HumanReadablePart]
+<span class="lineno">  246 </span>    -&gt; String
+<span class="lineno">  247 </span>    -&gt; Either String (HumanReadablePart, ByteString)
+<span class="lineno">  248 </span><span class="decl"><span class="istickedoff">bech32Reader allowedPrefixes str = do</span>
+<span class="lineno">  249 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- fromBech32 <span class="nottickedoff">markCharsRedAtIndices</span> (toBytes str)</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">when (hrp `notElem` allowedPrefixes) $ Left</span>
+<span class="lineno">  251 </span><span class="spaces">        </span><span class="istickedoff">$ <span class="nottickedoff">&quot;Invalid human-readable prefix. Prefix ought to be one of: &quot;</span></span>
+<span class="lineno">  252 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&lt;&gt; show (showHrp &lt;$&gt; allowedPrefixes)</span></span>
+<span class="lineno">  253 </span><span class="spaces">    </span><span class="istickedoff">pure (<span class="nottickedoff">hrp</span>, bytes)</span>
+<span class="lineno">  254 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  255 </span><span class="spaces">    </span><span class="istickedoff">showHrp :: HumanReadablePart -&gt; String</span>
+<span class="lineno">  256 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">showHrp = T.unpack . humanReadablePartToText</span></span>
+<span class="lineno">  257 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  258 </span><span class="spaces">    </span><span class="istickedoff">toBytes :: String -&gt; ByteString</span>
+<span class="lineno">  259 </span><span class="spaces">    </span><span class="istickedoff">toBytes = T.encodeUtf8 . T.pack</span></span>
+
+</pre>
+</body>
+</html>

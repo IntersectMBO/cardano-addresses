@@ -1,0 +1,127 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    2 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    5 </span>{-# OPTIONS_GHC -fno-warn-deprecations #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module Command.Address.Bootstrap
+<span class="lineno">    8 </span>    ( Cmd
+<span class="lineno">    9 </span>    , mod
+<span class="lineno">   10 </span>    , run
+<span class="lineno">   11 </span>    ) where
+<span class="lineno">   12 </span>
+<span class="lineno">   13 </span>import Prelude hiding
+<span class="lineno">   14 </span>    ( mod )
+<span class="lineno">   15 </span>
+<span class="lineno">   16 </span>import Cardano.Address
+<span class="lineno">   17 </span>    ( AddressDiscrimination (..), NetworkDiscriminant, base58 )
+<span class="lineno">   18 </span>import Cardano.Address.Derivation
+<span class="lineno">   19 </span>    ( XPub, coerceWholeDomainIndex )
+<span class="lineno">   20 </span>import Cardano.Address.Style.Byron
+<span class="lineno">   21 </span>    ( Byron )
+<span class="lineno">   22 </span>import Options.Applicative
+<span class="lineno">   23 </span>    ( CommandFields
+<span class="lineno">   24 </span>    , Mod
+<span class="lineno">   25 </span>    , command
+<span class="lineno">   26 </span>    , footerDoc
+<span class="lineno">   27 </span>    , header
+<span class="lineno">   28 </span>    , helper
+<span class="lineno">   29 </span>    , info
+<span class="lineno">   30 </span>    , optional
+<span class="lineno">   31 </span>    , progDesc
+<span class="lineno">   32 </span>    )
+<span class="lineno">   33 </span>import Options.Applicative.Derivation
+<span class="lineno">   34 </span>    ( DerivationPath, castDerivationPath, derivationPathArg, xpubOpt )
+<span class="lineno">   35 </span>import Options.Applicative.Discrimination
+<span class="lineno">   36 </span>    ( NetworkTag (..), networkTagOpt )
+<span class="lineno">   37 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   38 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   39 </span>import Options.Applicative.Style
+<span class="lineno">   40 </span>    ( Style (..) )
+<span class="lineno">   41 </span>import System.IO
+<span class="lineno">   42 </span>    ( stdin, stdout )
+<span class="lineno">   43 </span>import System.IO.Extra
+<span class="lineno">   44 </span>    ( hGetXPub, progName )
+<span class="lineno">   45 </span>
+<span class="lineno">   46 </span>import qualified Cardano.Address.Style.Byron as Byron
+<span class="lineno">   47 </span>import qualified Cardano.Address.Style.Icarus as Icarus
+<span class="lineno">   48 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   49 </span>import qualified Data.ByteString.Char8 as B8
+<span class="lineno">   50 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   51 </span>
+<span class="lineno">   52 </span>data Cmd = Cmd
+<span class="lineno">   53 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">rootXPub</span></span></span> :: Maybe XPub
+<span class="lineno">   54 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">networkTag</span></span></span> :: NetworkTag
+<span class="lineno">   55 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">derivationPath</span></span></span> :: Maybe DerivationPath
+<span class="lineno">   56 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   57 </span>
+<span class="lineno">   58 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   59 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;bootstrap&quot; $</span>
+<span class="lineno">   60 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a bootstrap address&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Those addresses, now deprecated, were used during the Byron era.&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;Example:&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 12 \\&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Byron &gt; root.prv&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 14H/42H | tee addr.prv \\&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public --with-chain-code \\&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address bootstrap --root $(cat root.prv | &quot;&lt;&gt;progName&lt;&gt;&quot; key public --with-chain-code) \\&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 8 $ bold $ string &quot;--network-tag preview 14H/42H&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;KjgoiXJS2coBYYTM69pafiau6bbGqKrzbFiRzahpWsPvit48YNiHocPpB7VJ...&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   75 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   77 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; optional (xpubOpt [CIP5.root_xvk] &quot;root&quot; &quot;A root public key. Needed for Byron addresses only.&quot;)</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; networkTagOpt Byron</span>
+<span class="lineno">   79 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; optional derivationPathArg</span></span>
+<span class="lineno">   80 </span>
+<span class="lineno">   81 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   82 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag,rootXPub,derivationPath} = do</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">(_hrp, xpub) &lt;- hGetXPub stdin [CIP5.addr_xvk]</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">addr &lt;- case derivationPath of</span>
+<span class="lineno">   85 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt;</span>
+<span class="lineno">   86 </span><span class="spaces">            </span><span class="istickedoff">pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)</span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">Just untypedPath -&gt; do</span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff">root &lt;- maybe</span>
+<span class="lineno">   89 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">(fail &quot;A root public key must be provided when --path is provided&quot;)</span> pure rootXPub</span>
+<span class="lineno">   90 </span><span class="spaces">            </span><span class="istickedoff">case castDerivationPath untypedPath of</span>
+<span class="lineno">   91 </span><span class="spaces">                </span><span class="istickedoff">[acctIx, addrIx] -&gt; do</span>
+<span class="lineno">   92 </span><span class="spaces">                    </span><span class="istickedoff">let path = (acctIx, coerceWholeDomainIndex addrIx)</span>
+<span class="lineno">   93 </span><span class="spaces">                        </span><span class="istickedoff">xkey = Byron.liftXPub root path xpub</span>
+<span class="lineno">   94 </span><span class="spaces">                    </span><span class="istickedoff">pure $ Byron.paymentAddress discriminant xkey</span>
+<span class="lineno">   95 </span><span class="spaces">                </span><span class="istickedoff">_ -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   96 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Byron derivation path must describe 2 levels (e.g. 0H/0H)&quot;</span></span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ base58 addr</span>
+<span class="lineno">   98 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">discriminant :: NetworkDiscriminant Byron -- Or Icarus, same.</span>
+<span class="lineno">  100 </span><span class="spaces">    </span><span class="istickedoff">discriminant</span>
+<span class="lineno">  101 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">networkTag == snd Byron.byronMainnet</span> =</span>
+<span class="lineno">  102 </span><span class="spaces">            </span><span class="istickedoff">Byron.byronMainnet</span>
+<span class="lineno">  103 </span><span class="spaces">        </span><span class="istickedoff">| <span class="nottickedoff">otherwise</span> =</span>
+<span class="lineno">  104 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">(RequiresNetworkTag, <span class="istickedoff">networkTag</span>)</span></span></span>
+
+</pre>
+</body>
+</html>

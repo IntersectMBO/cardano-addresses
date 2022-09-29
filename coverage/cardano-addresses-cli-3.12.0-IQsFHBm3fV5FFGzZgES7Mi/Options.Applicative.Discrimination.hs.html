@@ -1,0 +1,160 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    2 </span>
+<span class="lineno">    3 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    4 </span>{-# OPTIONS_GHC -fno-warn-deprecations #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>module Options.Applicative.Discrimination
+<span class="lineno">    7 </span>    (
+<span class="lineno">    8 </span>    -- * Type (re-export from Cardano.Address)
+<span class="lineno">    9 </span>      NetworkTag(..)
+<span class="lineno">   10 </span>    , fromNetworkTag
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>    -- * Applicative Parser
+<span class="lineno">   13 </span>    , networkTagOpt
+<span class="lineno">   14 </span>    ) where
+<span class="lineno">   15 </span>
+<span class="lineno">   16 </span>import Prelude
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>import Cardano.Address
+<span class="lineno">   19 </span>    ( NetworkDiscriminant (..), NetworkTag (..) )
+<span class="lineno">   20 </span>import Cardano.Address.Style.Shelley
+<span class="lineno">   21 </span>    ( Shelley )
+<span class="lineno">   22 </span>import Data.List
+<span class="lineno">   23 </span>    ( intercalate )
+<span class="lineno">   24 </span>import Options.Applicative
+<span class="lineno">   25 </span>    ( Parser
+<span class="lineno">   26 </span>    , completer
+<span class="lineno">   27 </span>    , eitherReader
+<span class="lineno">   28 </span>    , helpDoc
+<span class="lineno">   29 </span>    , listCompleter
+<span class="lineno">   30 </span>    , long
+<span class="lineno">   31 </span>    , metavar
+<span class="lineno">   32 </span>    , option
+<span class="lineno">   33 </span>    , (&lt;|&gt;)
+<span class="lineno">   34 </span>    )
+<span class="lineno">   35 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   36 </span>    ( string, vsep )
+<span class="lineno">   37 </span>import Options.Applicative.Style
+<span class="lineno">   38 </span>    ( Style (..) )
+<span class="lineno">   39 </span>import Text.Read
+<span class="lineno">   40 </span>    ( readMaybe )
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>import qualified Cardano.Address.Style.Byron as Byron
+<span class="lineno">   43 </span>import qualified Cardano.Address.Style.Shelley as Shelley
+<span class="lineno">   44 </span>
+<span class="lineno">   45 </span>-- | Construct a Shelley 'NetworkDiscriminant' from a network tag. Fails loudly
+<span class="lineno">   46 </span>-- if not possible.
+<span class="lineno">   47 </span>fromNetworkTag :: MonadFail m =&gt; NetworkTag -&gt; m (NetworkDiscriminant Shelley)
+<span class="lineno">   48 </span><span class="decl"><span class="istickedoff">fromNetworkTag tag =</span>
+<span class="lineno">   49 </span><span class="spaces">    </span><span class="istickedoff">case (Shelley.mkNetworkDiscriminant . fromIntegral . unNetworkTag) tag of</span>
+<span class="lineno">   50 </span><span class="spaces">        </span><span class="istickedoff">Left Shelley.ErrWrongNetworkTag{} -&gt; do</span>
+<span class="lineno">   51 </span><span class="spaces">            </span><span class="istickedoff">fail &quot;Invalid network tag. Must be between [0, 15]&quot;</span>
+<span class="lineno">   52 </span><span class="spaces">        </span><span class="istickedoff">Right discriminant -&gt;</span>
+<span class="lineno">   53 </span><span class="spaces">            </span><span class="istickedoff">pure discriminant</span></span>
+<span class="lineno">   54 </span>
+<span class="lineno">   55 </span>--
+<span class="lineno">   56 </span>-- Applicative Parser
+<span class="lineno">   57 </span>--
+<span class="lineno">   58 </span>
+<span class="lineno">   59 </span>-- | Parse a 'NetworkTag' from the command-line, as an option
+<span class="lineno">   60 </span>networkTagOpt :: Style -&gt; Parser NetworkTag
+<span class="lineno">   61 </span><span class="decl"><span class="istickedoff">networkTagOpt style = option (eitherReader reader) $ mempty</span>
+<span class="lineno">   62 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; metavar &quot;NETWORK-TAG&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; long &quot;network-tag&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; helpDoc  (Just (vsep (string &lt;$&gt; doc style)))</span>
+<span class="lineno">   65 </span><span class="spaces">    </span><span class="istickedoff">&lt;&gt; completer <span class="nottickedoff">(listCompleter $ show &lt;$&gt; tagsFor style)</span></span>
+<span class="lineno">   66 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   67 </span><span class="spaces">    </span><span class="istickedoff">doc style' =</span>
+<span class="lineno">   68 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;A tag which identifies a Cardano network.&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">        </span><span class="istickedoff">, &quot;&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">        </span><span class="istickedoff">, header</span>
+<span class="lineno">   71 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">   72 </span><span class="spaces">        </span><span class="istickedoff">++ (fmtAllowedKeyword &lt;$&gt; (&quot;&quot; : allowedKeywords style'))</span>
+<span class="lineno">   73 </span><span class="spaces">        </span><span class="istickedoff">++</span>
+<span class="lineno">   74 </span><span class="spaces">        </span><span class="istickedoff">[ &quot;&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">        </span><span class="istickedoff">, &quot;...or alternatively, an explicit network tag as an integer.&quot;</span>
+<span class="lineno">   76 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">   77 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">   78 </span><span class="spaces">        </span><span class="istickedoff">header = case style' of</span>
+<span class="lineno">   79 </span><span class="spaces">            </span><span class="istickedoff">Byron -&gt;</span>
+<span class="lineno">   80 </span><span class="spaces">                </span><span class="istickedoff">&quot;┌ Byron / Icarus ──────────&quot;</span>
+<span class="lineno">   81 </span><span class="spaces">            </span><span class="istickedoff">Icarus -&gt;</span>
+<span class="lineno">   82 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">&quot;┌ Byron / Icarus ──────────&quot;</span></span>
+<span class="lineno">   83 </span><span class="spaces">            </span><span class="istickedoff">Shelley -&gt;</span>
+<span class="lineno">   84 </span><span class="spaces">                </span><span class="istickedoff">&quot;┌ Shelley ─────────────────&quot;</span>
+<span class="lineno">   85 </span><span class="spaces">            </span><span class="istickedoff">Shared -&gt;</span>
+<span class="lineno">   86 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">&quot;┌ Shared ──────────────────&quot;</span></span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">fmtAllowedKeyword network =</span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff">&quot;│ &quot; &lt;&gt; network</span>
+<span class="lineno">   89 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">tagsFor = \case</span></span>
+<span class="lineno">   91 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Byron -&gt;</span></span>
+<span class="lineno">   92 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag (snd Byron.byronMainnet)</span></span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronStaging)</span></span>
+<span class="lineno">   94 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronTestnet)</span></span>
+<span class="lineno">   95 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronPreprod)</span></span>
+<span class="lineno">   96 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag (snd Byron.byronPreview)</span></span>
+<span class="lineno">   97 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Icarus -&gt;</span></span>
+<span class="lineno">   99 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">tagsFor Byron</span></span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Shelley -&gt;</span></span>
+<span class="lineno">  101 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag Shelley.shelleyMainnet</span></span>
+<span class="lineno">  102 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag Shelley.shelleyTestnet</span></span>
+<span class="lineno">  103 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  104 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">Shared -&gt;</span></span>
+<span class="lineno">  105 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">[ unNetworkTag Shelley.shelleyMainnet</span></span>
+<span class="lineno">  106 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">, unNetworkTag Shelley.shelleyTestnet</span></span>
+<span class="lineno">  107 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">]</span></span>
+<span class="lineno">  108 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  109 </span><span class="spaces">    </span><span class="istickedoff">reader str = maybe (Left err) Right</span>
+<span class="lineno">  110 </span><span class="spaces">        </span><span class="istickedoff">((NetworkTag &lt;$&gt; readMaybe str) &lt;|&gt; (readKeywordMaybe str style))</span>
+<span class="lineno">  111 </span><span class="spaces">      </span><span class="istickedoff">where</span>
+<span class="lineno">  112 </span><span class="spaces">        </span><span class="istickedoff">err =</span>
+<span class="lineno">  113 </span><span class="spaces">            </span><span class="istickedoff">&quot;Invalid network tag. Must be an integer value or one of the \</span>
+<span class="lineno">  114 </span><span class="spaces">            </span><span class="istickedoff">\allowed keywords: &quot; &lt;&gt; intercalate &quot;, &quot; (allowedKeywords style)</span>
+<span class="lineno">  115 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  116 </span><span class="spaces">    </span><span class="istickedoff">readKeywordMaybe str = \case</span>
+<span class="lineno">  117 </span><span class="spaces">        </span><span class="istickedoff">Byron | str == &quot;mainnet&quot; -&gt; pure (snd Byron.byronMainnet)</span>
+<span class="lineno">  118 </span><span class="spaces">        </span><span class="istickedoff">Byron | <span class="tickonlyfalse">str == &quot;staging&quot;</span> -&gt; <span class="nottickedoff">pure (snd Byron.byronStaging)</span></span>
+<span class="lineno">  119 </span><span class="spaces">        </span><span class="istickedoff">Byron | <span class="tickonlyfalse">str == &quot;testnet&quot;</span> -&gt; <span class="nottickedoff">pure (snd Byron.byronTestnet)</span></span>
+<span class="lineno">  120 </span><span class="spaces">        </span><span class="istickedoff">Byron | <span class="tickonlyfalse">str == &quot;preview&quot;</span> -&gt; <span class="nottickedoff">pure (snd Byron.byronPreview)</span></span>
+<span class="lineno">  121 </span><span class="spaces">        </span><span class="istickedoff">Byron | <span class="tickonlyfalse">str == &quot;preprod&quot;</span> -&gt; <span class="nottickedoff">pure (snd Byron.byronPreprod)</span></span>
+<span class="lineno">  122 </span><span class="spaces">        </span><span class="istickedoff">Icarus -&gt; <span class="nottickedoff">readKeywordMaybe str Byron</span></span>
+<span class="lineno">  123 </span><span class="spaces">        </span><span class="istickedoff">Shelley | str == &quot;mainnet&quot; -&gt; pure Shelley.shelleyMainnet</span>
+<span class="lineno">  124 </span><span class="spaces">        </span><span class="istickedoff">Shelley | str == &quot;testnet&quot; -&gt; pure Shelley.shelleyTestnet</span>
+<span class="lineno">  125 </span><span class="spaces">        </span><span class="istickedoff">Shelley | <span class="tickonlyfalse">str == &quot;preview&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyTestnet</span></span>
+<span class="lineno">  126 </span><span class="spaces">        </span><span class="istickedoff">Shelley | <span class="tickonlyfalse">str == &quot;preprod&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyTestnet</span></span>
+<span class="lineno">  127 </span><span class="spaces">        </span><span class="istickedoff">Shared | <span class="nottickedoff">str == &quot;mainnet&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyMainnet</span></span>
+<span class="lineno">  128 </span><span class="spaces">        </span><span class="istickedoff">Shared | <span class="nottickedoff">str == &quot;testnet&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyTestnet</span></span>
+<span class="lineno">  129 </span><span class="spaces">        </span><span class="istickedoff">Shared | <span class="nottickedoff">str == &quot;preview&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyTestnet</span></span>
+<span class="lineno">  130 </span><span class="spaces">        </span><span class="istickedoff">Shared | <span class="nottickedoff">str == &quot;preprod&quot;</span> -&gt; <span class="nottickedoff">pure Shelley.shelleyTestnet</span></span>
+<span class="lineno">  131 </span><span class="spaces">        </span><span class="istickedoff">_ -&gt; Nothing</span>
+<span class="lineno">  132 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  133 </span><span class="spaces">    </span><span class="istickedoff">allowedKeywords = \case</span>
+<span class="lineno">  134 </span><span class="spaces">        </span><span class="istickedoff">Byron -&gt; [&quot;mainnet&quot;, &quot;staging&quot;, &quot;testnet&quot;, &quot;preview&quot;, &quot;preprod&quot;]</span>
+<span class="lineno">  135 </span><span class="spaces">        </span><span class="istickedoff">Icarus -&gt; <span class="nottickedoff">allowedKeywords Byron</span></span>
+<span class="lineno">  136 </span><span class="spaces">        </span><span class="istickedoff">Shelley -&gt; [&quot;mainnet&quot;, &quot;testnet&quot;, &quot;preview&quot;, &quot;preprod&quot;]</span>
+<span class="lineno">  137 </span><span class="spaces">        </span><span class="istickedoff">Shared -&gt; <span class="nottickedoff">allowedKeywords Shelley</span></span></span>
+
+</pre>
+</body>
+</html>

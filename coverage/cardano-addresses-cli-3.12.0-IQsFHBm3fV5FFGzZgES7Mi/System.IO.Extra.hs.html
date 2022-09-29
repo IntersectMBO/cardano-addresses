@@ -1,0 +1,412 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DataKinds #-}
+<span class="lineno">    2 </span>{-# LANGUAGE LambdaCase #-}
+<span class="lineno">    3 </span>{-# LANGUAGE TypeApplications #-}
+<span class="lineno">    4 </span>
+<span class="lineno">    5 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    6 </span>
+<span class="lineno">    7 </span>module System.IO.Extra
+<span class="lineno">    8 </span>    (
+<span class="lineno">    9 </span>    -- * I/O application-specific helpers
+<span class="lineno">   10 </span>    -- ** Read
+<span class="lineno">   11 </span>      hGetBytes
+<span class="lineno">   12 </span>    , hGetBech32
+<span class="lineno">   13 </span>    , hGetXPrv
+<span class="lineno">   14 </span>    , hGetXPub
+<span class="lineno">   15 </span>    , hGetXP__
+<span class="lineno">   16 </span>    , hGetScriptHash
+<span class="lineno">   17 </span>    , hGetSomeMnemonic
+<span class="lineno">   18 </span>    , hGetSomeMnemonicInteractively
+<span class="lineno">   19 </span>    , hGetPassphraseMnemonic
+<span class="lineno">   20 </span>    , hGetPassphraseBytes
+<span class="lineno">   21 </span>
+<span class="lineno">   22 </span>    -- ** Write
+<span class="lineno">   23 </span>    , hPutBytes
+<span class="lineno">   24 </span>    , hPutString
+<span class="lineno">   25 </span>
+<span class="lineno">   26 </span>    -- * I/O Helpers
+<span class="lineno">   27 </span>    , prettyIOException
+<span class="lineno">   28 </span>    , progName
+<span class="lineno">   29 </span>    , markCharsRedAtIndices
+<span class="lineno">   30 </span>    , noNewline
+<span class="lineno">   31 </span>    ) where
+<span class="lineno">   32 </span>
+<span class="lineno">   33 </span>import Prelude
+<span class="lineno">   34 </span>
+<span class="lineno">   35 </span>import Cardano.Address.Derivation
+<span class="lineno">   36 </span>    ( XPrv, XPub, xprvFromBytes, xpubFromBytes )
+<span class="lineno">   37 </span>import Cardano.Address.Script
+<span class="lineno">   38 </span>    ( ScriptHash, scriptHashFromBytes )
+<span class="lineno">   39 </span>import Cardano.Mnemonic
+<span class="lineno">   40 </span>    ( MkSomeMnemonicError (..), SomeMnemonic, mkSomeMnemonic )
+<span class="lineno">   41 </span>import Codec.Binary.Bech32
+<span class="lineno">   42 </span>    ( HumanReadablePart, humanReadablePartToText )
+<span class="lineno">   43 </span>import Codec.Binary.Encoding
+<span class="lineno">   44 </span>    ( AbstractEncoding (..)
+<span class="lineno">   45 </span>    , Encoding
+<span class="lineno">   46 </span>    , detectEncoding
+<span class="lineno">   47 </span>    , encode
+<span class="lineno">   48 </span>    , fromBase16
+<span class="lineno">   49 </span>    , fromBase58
+<span class="lineno">   50 </span>    , fromBase64
+<span class="lineno">   51 </span>    , fromBech32
+<span class="lineno">   52 </span>    )
+<span class="lineno">   53 </span>import Control.Exception
+<span class="lineno">   54 </span>    ( IOException, bracket )
+<span class="lineno">   55 </span>import Control.Monad
+<span class="lineno">   56 </span>    ( when )
+<span class="lineno">   57 </span>import Data.ByteString
+<span class="lineno">   58 </span>    ( ByteString )
+<span class="lineno">   59 </span>import Data.List
+<span class="lineno">   60 </span>    ( nub, sort )
+<span class="lineno">   61 </span>import Data.Text
+<span class="lineno">   62 </span>    ( Text )
+<span class="lineno">   63 </span>import Data.Word
+<span class="lineno">   64 </span>    ( Word8 )
+<span class="lineno">   65 </span>import Options.Applicative.Style
+<span class="lineno">   66 </span>    ( PassphraseInfo (..), PassphraseInput (..), PassphraseInputMode (..) )
+<span class="lineno">   67 </span>import System.Console.ANSI
+<span class="lineno">   68 </span>    ( Color (..)
+<span class="lineno">   69 </span>    , ColorIntensity (..)
+<span class="lineno">   70 </span>    , ConsoleLayer (..)
+<span class="lineno">   71 </span>    , SGR (..)
+<span class="lineno">   72 </span>    , hCursorBackward
+<span class="lineno">   73 </span>    , setSGRCode
+<span class="lineno">   74 </span>    )
+<span class="lineno">   75 </span>import System.Environment
+<span class="lineno">   76 </span>    ( getProgName )
+<span class="lineno">   77 </span>import System.Exit
+<span class="lineno">   78 </span>    ( exitFailure )
+<span class="lineno">   79 </span>import System.IO
+<span class="lineno">   80 </span>    ( BufferMode (..)
+<span class="lineno">   81 </span>    , Handle
+<span class="lineno">   82 </span>    , hGetBuffering
+<span class="lineno">   83 </span>    , hGetChar
+<span class="lineno">   84 </span>    , hGetEcho
+<span class="lineno">   85 </span>    , hPutChar
+<span class="lineno">   86 </span>    , hSetBuffering
+<span class="lineno">   87 </span>    , hSetEcho
+<span class="lineno">   88 </span>    , stderr
+<span class="lineno">   89 </span>    )
+<span class="lineno">   90 </span>import System.IO.Unsafe
+<span class="lineno">   91 </span>    ( unsafePerformIO )
+<span class="lineno">   92 </span>
+<span class="lineno">   93 </span>import qualified Data.ByteString as BS
+<span class="lineno">   94 </span>import qualified Data.ByteString.Char8 as B8
+<span class="lineno">   95 </span>import qualified Data.Text as T
+<span class="lineno">   96 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   97 </span>import qualified Data.Text.IO as TIO
+<span class="lineno">   98 </span>--
+<span class="lineno">   99 </span>-- I/O Read
+<span class="lineno">  100 </span>--
+<span class="lineno">  101 </span>
+<span class="lineno">  102 </span>-- | Read some bytes from the console, and decode them if the encoding is recognized.
+<span class="lineno">  103 </span>hGetBytes :: Handle -&gt; IO ByteString
+<span class="lineno">  104 </span><span class="decl"><span class="istickedoff">hGetBytes h = do</span>
+<span class="lineno">  105 </span><span class="spaces">    </span><span class="istickedoff">raw &lt;- B8.filter noNewline &lt;$&gt; B8.hGetContents h</span>
+<span class="lineno">  106 </span><span class="spaces">    </span><span class="istickedoff">case detectEncoding (T.unpack $ T.decodeUtf8 raw) of</span>
+<span class="lineno">  107 </span><span class="spaces">        </span><span class="istickedoff">Just (EBase16  ) -&gt; decodeBytes fromBase16 raw</span>
+<span class="lineno">  108 </span><span class="spaces">        </span><span class="istickedoff">Just (EBech32{}) -&gt; decodeBytes (fmap snd . fromBech32 <span class="nottickedoff">markCharsRedAtIndices</span>) raw</span>
+<span class="lineno">  109 </span><span class="spaces">        </span><span class="istickedoff">Just (EBase58  ) -&gt; decodeBytes fromBase58 raw</span>
+<span class="lineno">  110 </span><span class="spaces">        </span><span class="istickedoff">Nothing          -&gt; fail</span>
+<span class="lineno">  111 </span><span class="spaces">            </span><span class="istickedoff">&quot;Couldn't detect input encoding? Data on stdin must be encoded as \</span>
+<span class="lineno">  112 </span><span class="spaces">            </span><span class="istickedoff">\bech16, bech32 or base58.&quot;</span></span>
+<span class="lineno">  113 </span>
+<span class="lineno">  114 </span>decodeBytes
+<span class="lineno">  115 </span>    :: (bin -&gt; Either String result)
+<span class="lineno">  116 </span>    -&gt; bin
+<span class="lineno">  117 </span>    -&gt; IO result
+<span class="lineno">  118 </span><span class="decl"><span class="istickedoff">decodeBytes from = either fail pure . from</span></span>
+<span class="lineno">  119 </span>
+<span class="lineno">  120 </span>-- | Read some bytes encoded in Bech32, only allowing the given prefixes.
+<span class="lineno">  121 </span>hGetBech32 :: Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, ByteString)
+<span class="lineno">  122 </span><span class="decl"><span class="istickedoff">hGetBech32 h allowedPrefixes = do</span>
+<span class="lineno">  123 </span><span class="spaces">    </span><span class="istickedoff">raw &lt;- B8.filter noNewline &lt;$&gt; B8.hGetContents h</span>
+<span class="lineno">  124 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- decodeBytes (fromBech32 <span class="nottickedoff">markCharsRedAtIndices</span>) raw</span>
+<span class="lineno">  125 </span><span class="spaces">    </span><span class="istickedoff">when (hrp `notElem` allowedPrefixes) $ fail</span>
+<span class="lineno">  126 </span><span class="spaces">        </span><span class="istickedoff">$ &quot;Invalid human-readable prefix. Prefix ought to be one of: &quot;</span>
+<span class="lineno">  127 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; show (showHrp &lt;$&gt; allowedPrefixes)</span>
+<span class="lineno">  128 </span><span class="spaces">    </span><span class="istickedoff">pure (hrp, bytes)</span>
+<span class="lineno">  129 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  130 </span><span class="spaces">    </span><span class="istickedoff">showHrp :: HumanReadablePart -&gt; String</span>
+<span class="lineno">  131 </span><span class="spaces">    </span><span class="istickedoff">showHrp = T.unpack . humanReadablePartToText</span></span>
+<span class="lineno">  132 </span>
+<span class="lineno">  133 </span>-- | Read some English mnemonic words from the console, or fail.
+<span class="lineno">  134 </span>hGetSomeMnemonic :: Handle -&gt; IO SomeMnemonic
+<span class="lineno">  135 </span><span class="decl"><span class="istickedoff">hGetSomeMnemonic h = do</span>
+<span class="lineno">  136 </span><span class="spaces">    </span><span class="istickedoff">wrds &lt;- T.words . T.filter noNewline . T.decodeUtf8 &lt;$&gt; B8.hGetContents h</span>
+<span class="lineno">  137 </span><span class="spaces">    </span><span class="istickedoff">case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of</span>
+<span class="lineno">  138 </span><span class="spaces">        </span><span class="istickedoff">Left (MkSomeMnemonicError e) -&gt; fail e</span>
+<span class="lineno">  139 </span><span class="spaces">        </span><span class="istickedoff">Right mw -&gt; pure mw</span></span>
+<span class="lineno">  140 </span>
+<span class="lineno">  141 </span>-- | Read an encoded private key from the console, or fail.
+<span class="lineno">  142 </span>hGetXPrv :: Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, XPrv)
+<span class="lineno">  143 </span><span class="decl"><span class="istickedoff">hGetXPrv h allowedPrefixes = do</span>
+<span class="lineno">  144 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- hGetBech32 h allowedPrefixes</span>
+<span class="lineno">  145 </span><span class="spaces">    </span><span class="istickedoff">case xprvFromBytes bytes of</span>
+<span class="lineno">  146 </span><span class="spaces">        </span><span class="istickedoff">Nothing  -&gt; <span class="nottickedoff">fail &quot;Couldn't convert bytes into extended private key.&quot;</span></span>
+<span class="lineno">  147 </span><span class="spaces">        </span><span class="istickedoff">Just key -&gt; pure (hrp, key)</span></span>
+<span class="lineno">  148 </span>
+<span class="lineno">  149 </span>-- | Read an encoded public key from the console, or fail.
+<span class="lineno">  150 </span>hGetXPub :: Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, XPub)
+<span class="lineno">  151 </span><span class="decl"><span class="istickedoff">hGetXPub h allowedPrefixes = do</span>
+<span class="lineno">  152 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- hGetBech32 h allowedPrefixes</span>
+<span class="lineno">  153 </span><span class="spaces">    </span><span class="istickedoff">case xpubFromBytes bytes of</span>
+<span class="lineno">  154 </span><span class="spaces">        </span><span class="istickedoff">Nothing  -&gt; <span class="nottickedoff">fail &quot;Couldn't convert bytes into extended public key.&quot;</span></span>
+<span class="lineno">  155 </span><span class="spaces">        </span><span class="istickedoff">Just key -&gt; pure (hrp, key)</span></span>
+<span class="lineno">  156 </span>
+<span class="lineno">  157 </span>-- | Read a script hash from the console, or fail.
+<span class="lineno">  158 </span>hGetScriptHash :: Handle -&gt; IO ScriptHash
+<span class="lineno">  159 </span><span class="decl"><span class="nottickedoff">hGetScriptHash h = do</span>
+<span class="lineno">  160 </span><span class="spaces">    </span><span class="nottickedoff">bytes &lt;- hGetBytes h</span>
+<span class="lineno">  161 </span><span class="spaces">    </span><span class="nottickedoff">case scriptHashFromBytes bytes of</span>
+<span class="lineno">  162 </span><span class="spaces">        </span><span class="nottickedoff">Nothing  -&gt; fail &quot;Couldn't convert bytes into script hash.&quot;</span>
+<span class="lineno">  163 </span><span class="spaces">        </span><span class="nottickedoff">Just scriptHash -&gt; pure scriptHash</span></span>
+<span class="lineno">  164 </span>
+<span class="lineno">  165 </span>-- | Read either an encoded public or private key from the console, or fail.
+<span class="lineno">  166 </span>hGetXP__
+<span class="lineno">  167 </span>    :: Handle
+<span class="lineno">  168 </span>    -&gt; [HumanReadablePart]
+<span class="lineno">  169 </span>    -&gt; IO (Either (HumanReadablePart, XPub) (HumanReadablePart, XPrv))
+<span class="lineno">  170 </span><span class="decl"><span class="istickedoff">hGetXP__ h allowedPrefixes = do</span>
+<span class="lineno">  171 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- hGetBech32 h allowedPrefixes</span>
+<span class="lineno">  172 </span><span class="spaces">    </span><span class="istickedoff">case (xpubFromBytes bytes, xprvFromBytes bytes) of</span>
+<span class="lineno">  173 </span><span class="spaces">        </span><span class="istickedoff">(Just xpub,         _) -&gt; pure (Left  (hrp, xpub))</span>
+<span class="lineno">  174 </span><span class="spaces">        </span><span class="istickedoff">(_        , Just xprv) -&gt; pure (Right (hrp, xprv))</span>
+<span class="lineno">  175 </span><span class="spaces">        </span><span class="istickedoff">_                      -&gt; <span class="nottickedoff">fail</span></span>
+<span class="lineno">  176 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;Couldn't convert bytes into neither extended public or private keys.&quot;</span></span></span>
+<span class="lineno">  177 </span>
+<span class="lineno">  178 </span>withBuffering :: Handle -&gt; BufferMode -&gt; IO a -&gt; IO a
+<span class="lineno">  179 </span><span class="decl"><span class="nottickedoff">withBuffering h buffering action = bracket aFirst aLast aBetween</span>
+<span class="lineno">  180 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">  181 </span><span class="spaces">    </span><span class="nottickedoff">aFirst = (hGetBuffering h &lt;* hSetBuffering h buffering)</span>
+<span class="lineno">  182 </span><span class="spaces">    </span><span class="nottickedoff">aLast = hSetBuffering h</span>
+<span class="lineno">  183 </span><span class="spaces">    </span><span class="nottickedoff">aBetween = const action</span></span>
+<span class="lineno">  184 </span>
+<span class="lineno">  185 </span>withEcho :: Handle -&gt; Bool -&gt; IO a -&gt; IO a
+<span class="lineno">  186 </span><span class="decl"><span class="nottickedoff">withEcho h echo action = bracket aFirst aLast aBetween</span>
+<span class="lineno">  187 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">  188 </span><span class="spaces">    </span><span class="nottickedoff">aFirst = (hGetEcho h &lt;* hSetEcho h echo)</span>
+<span class="lineno">  189 </span><span class="spaces">    </span><span class="nottickedoff">aLast = hSetEcho h</span>
+<span class="lineno">  190 </span><span class="spaces">    </span><span class="nottickedoff">aBetween = const action</span></span>
+<span class="lineno">  191 </span>
+<span class="lineno">  192 </span>-- | Gather user inputs until a newline is met, hiding what's typed with a
+<span class="lineno">  193 </span>-- placeholder character.
+<span class="lineno">  194 </span>hGetSensitiveLine
+<span class="lineno">  195 </span>    :: (Handle, Handle)
+<span class="lineno">  196 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  197 </span>    -&gt; String
+<span class="lineno">  198 </span>    -&gt; IO Text
+<span class="lineno">  199 </span><span class="decl"><span class="nottickedoff">hGetSensitiveLine (hstdin, hstderr) mode prompt =</span>
+<span class="lineno">  200 </span><span class="spaces">    </span><span class="nottickedoff">withBuffering hstderr NoBuffering $</span>
+<span class="lineno">  201 </span><span class="spaces">    </span><span class="nottickedoff">withBuffering hstdin NoBuffering $</span>
+<span class="lineno">  202 </span><span class="spaces">    </span><span class="nottickedoff">withEcho hstdin False $ do</span>
+<span class="lineno">  203 </span><span class="spaces">        </span><span class="nottickedoff">hPutString hstderr prompt</span>
+<span class="lineno">  204 </span><span class="spaces">        </span><span class="nottickedoff">getLineSensitive '*'</span>
+<span class="lineno">  205 </span><span class="spaces">  </span><span class="nottickedoff">where</span>
+<span class="lineno">  206 </span><span class="spaces">    </span><span class="nottickedoff">backspace = toEnum 127</span>
+<span class="lineno">  207 </span><span class="spaces"></span><span class="nottickedoff"></span>
+<span class="lineno">  208 </span><span class="spaces">    </span><span class="nottickedoff">getLineSensitive :: Char -&gt; IO Text</span>
+<span class="lineno">  209 </span><span class="spaces">    </span><span class="nottickedoff">getLineSensitive placeholder =</span>
+<span class="lineno">  210 </span><span class="spaces">        </span><span class="nottickedoff">getLineSensitive' mempty</span>
+<span class="lineno">  211 </span><span class="spaces">      </span><span class="nottickedoff">where</span>
+<span class="lineno">  212 </span><span class="spaces">        </span><span class="nottickedoff">getLineSensitive' line = do</span>
+<span class="lineno">  213 </span><span class="spaces">            </span><span class="nottickedoff">hGetChar hstdin &gt;&gt;= \case</span>
+<span class="lineno">  214 </span><span class="spaces">                </span><span class="nottickedoff">'\n' -&gt; do</span>
+<span class="lineno">  215 </span><span class="spaces">                    </span><span class="nottickedoff">hPutChar hstderr '\n'</span>
+<span class="lineno">  216 </span><span class="spaces">                    </span><span class="nottickedoff">return line</span>
+<span class="lineno">  217 </span><span class="spaces">                </span><span class="nottickedoff">c | c == backspace -&gt;</span>
+<span class="lineno">  218 </span><span class="spaces">                    </span><span class="nottickedoff">if T.null line</span>
+<span class="lineno">  219 </span><span class="spaces">                        </span><span class="nottickedoff">then getLineSensitive' line</span>
+<span class="lineno">  220 </span><span class="spaces">                        </span><span class="nottickedoff">else do</span>
+<span class="lineno">  221 </span><span class="spaces">                            </span><span class="nottickedoff">hCursorBackward hstderr  1</span>
+<span class="lineno">  222 </span><span class="spaces">                            </span><span class="nottickedoff">hPutChar hstderr ' '</span>
+<span class="lineno">  223 </span><span class="spaces">                            </span><span class="nottickedoff">hCursorBackward hstderr 1</span>
+<span class="lineno">  224 </span><span class="spaces">                            </span><span class="nottickedoff">getLineSensitive' (T.init line)</span>
+<span class="lineno">  225 </span><span class="spaces">                </span><span class="nottickedoff">c -&gt; do</span>
+<span class="lineno">  226 </span><span class="spaces">                    </span><span class="nottickedoff">case mode of</span>
+<span class="lineno">  227 </span><span class="spaces">                        </span><span class="nottickedoff">Sensitive -&gt;</span>
+<span class="lineno">  228 </span><span class="spaces">                            </span><span class="nottickedoff">hPutChar hstderr placeholder</span>
+<span class="lineno">  229 </span><span class="spaces">                        </span><span class="nottickedoff">Explicit -&gt;</span>
+<span class="lineno">  230 </span><span class="spaces">                            </span><span class="nottickedoff">hPutChar hstderr c</span>
+<span class="lineno">  231 </span><span class="spaces">                        </span><span class="nottickedoff">Silent -&gt;</span>
+<span class="lineno">  232 </span><span class="spaces">                            </span><span class="nottickedoff">pure ()</span>
+<span class="lineno">  233 </span><span class="spaces">                    </span><span class="nottickedoff">getLineSensitive' (line &lt;&gt; T.singleton c)</span></span>
+<span class="lineno">  234 </span>
+<span class="lineno">  235 </span>-- | Prompt user and read some English mnemonic words from stdin.
+<span class="lineno">  236 </span>hGetSomeMnemonicInteractively
+<span class="lineno">  237 </span>    :: (Handle, Handle)
+<span class="lineno">  238 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  239 </span>    -&gt; String
+<span class="lineno">  240 </span>    -&gt; IO SomeMnemonic
+<span class="lineno">  241 </span><span class="decl"><span class="nottickedoff">hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do</span>
+<span class="lineno">  242 </span><span class="spaces">    </span><span class="nottickedoff">wrds &lt;- T.words . T.filter noNewline &lt;$&gt;</span>
+<span class="lineno">  243 </span><span class="spaces">            </span><span class="nottickedoff">hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  244 </span><span class="spaces">    </span><span class="nottickedoff">case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of</span>
+<span class="lineno">  245 </span><span class="spaces">        </span><span class="nottickedoff">Left (MkSomeMnemonicError e) -&gt; fail e</span>
+<span class="lineno">  246 </span><span class="spaces">        </span><span class="nottickedoff">Right mw -&gt; pure mw</span></span>
+<span class="lineno">  247 </span>
+<span class="lineno">  248 </span>-- | Read mnemonic passphrase from either file or interactively.
+<span class="lineno">  249 </span>hGetPassphraseMnemonic
+<span class="lineno">  250 </span>    :: (Handle, Handle)
+<span class="lineno">  251 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  252 </span>    -&gt; PassphraseInput
+<span class="lineno">  253 </span>    -&gt; String
+<span class="lineno">  254 </span>    -&gt; IO SomeMnemonic
+<span class="lineno">  255 </span><span class="decl"><span class="istickedoff">hGetPassphraseMnemonic (hstdin, hstderr) mode input prompt =</span>
+<span class="lineno">  256 </span><span class="spaces">    </span><span class="istickedoff">case input of</span>
+<span class="lineno">  257 </span><span class="spaces">        </span><span class="istickedoff">Interactive -&gt;</span>
+<span class="lineno">  258 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt</span></span>
+<span class="lineno">  259 </span><span class="spaces">        </span><span class="istickedoff">FromFile path -&gt;</span>
+<span class="lineno">  260 </span><span class="spaces">            </span><span class="istickedoff">hGetPassphraseMnemonicFromFile path</span></span>
+<span class="lineno">  261 </span>
+<span class="lineno">  262 </span>-- | Read the mnemonic passphrase (second factor) from file.
+<span class="lineno">  263 </span>hGetPassphraseMnemonicFromFile
+<span class="lineno">  264 </span>    :: FilePath
+<span class="lineno">  265 </span>    -&gt; IO SomeMnemonic
+<span class="lineno">  266 </span><span class="decl"><span class="istickedoff">hGetPassphraseMnemonicFromFile path = do</span>
+<span class="lineno">  267 </span><span class="spaces">    </span><span class="istickedoff">wrds &lt;- T.words . T.filter noNewline . T.decodeUtf8 &lt;$&gt; BS.readFile path</span>
+<span class="lineno">  268 </span><span class="spaces">    </span><span class="istickedoff">case mkSomeMnemonic @'[ 9, 12 ] wrds of</span>
+<span class="lineno">  269 </span><span class="spaces">        </span><span class="istickedoff">Left (MkSomeMnemonicError e) -&gt; <span class="nottickedoff">fail e</span></span>
+<span class="lineno">  270 </span><span class="spaces">        </span><span class="istickedoff">Right mw -&gt; pure mw</span></span>
+<span class="lineno">  271 </span>
+<span class="lineno">  272 </span>-- | Prompt user and read the mnemonic passphrase (second factor) interactively.
+<span class="lineno">  273 </span>hGetPassphraseMnemonicInteractively
+<span class="lineno">  274 </span>    :: (Handle, Handle)
+<span class="lineno">  275 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  276 </span>    -&gt; String
+<span class="lineno">  277 </span>    -&gt; IO SomeMnemonic
+<span class="lineno">  278 </span><span class="decl"><span class="nottickedoff">hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt = do</span>
+<span class="lineno">  279 </span><span class="spaces">    </span><span class="nottickedoff">wrds &lt;- T.words . T.filter noNewline &lt;$&gt;</span>
+<span class="lineno">  280 </span><span class="spaces">            </span><span class="nottickedoff">hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  281 </span><span class="spaces">    </span><span class="nottickedoff">case mkSomeMnemonic @'[ 9, 12 ] wrds of</span>
+<span class="lineno">  282 </span><span class="spaces">        </span><span class="nottickedoff">Left (MkSomeMnemonicError e) -&gt; fail e</span>
+<span class="lineno">  283 </span><span class="spaces">        </span><span class="nottickedoff">Right mw -&gt; pure mw</span></span>
+<span class="lineno">  284 </span>
+<span class="lineno">  285 </span>-- | Read passphrase from either file or interactively, and decode them accoring to passphrase info.
+<span class="lineno">  286 </span>hGetPassphraseBytes
+<span class="lineno">  287 </span>    :: (Handle, Handle)
+<span class="lineno">  288 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  289 </span>    -&gt; PassphraseInput
+<span class="lineno">  290 </span>    -&gt; String
+<span class="lineno">  291 </span>    -&gt; PassphraseInfo
+<span class="lineno">  292 </span>    -&gt; IO ByteString
+<span class="lineno">  293 </span><span class="decl"><span class="istickedoff">hGetPassphraseBytes (hstdin, hstderr) mode input prompt info =</span>
+<span class="lineno">  294 </span><span class="spaces">    </span><span class="istickedoff">case input of</span>
+<span class="lineno">  295 </span><span class="spaces">        </span><span class="istickedoff">Interactive -&gt;</span>
+<span class="lineno">  296 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt info</span></span>
+<span class="lineno">  297 </span><span class="spaces">        </span><span class="istickedoff">FromFile path -&gt;</span>
+<span class="lineno">  298 </span><span class="spaces">            </span><span class="istickedoff">hGetPassphraseBytesFromFile path info</span></span>
+<span class="lineno">  299 </span>
+<span class="lineno">  300 </span>-- | Read some bytes from the file, and decode them accoring to passphrase info.
+<span class="lineno">  301 </span>hGetPassphraseBytesFromFile
+<span class="lineno">  302 </span>    :: FilePath
+<span class="lineno">  303 </span>    -&gt; PassphraseInfo
+<span class="lineno">  304 </span>    -&gt; IO ByteString
+<span class="lineno">  305 </span><span class="decl"><span class="istickedoff">hGetPassphraseBytesFromFile path = \case</span>
+<span class="lineno">  306 </span><span class="spaces">    </span><span class="istickedoff">Hex -&gt; do</span>
+<span class="lineno">  307 </span><span class="spaces">       </span><span class="istickedoff">raw &lt;- B8.filter noNewline . T.encodeUtf8 &lt;$&gt; TIO.readFile path</span>
+<span class="lineno">  308 </span><span class="spaces">       </span><span class="istickedoff">decodeBytes fromBase16 raw</span>
+<span class="lineno">  309 </span><span class="spaces">    </span><span class="istickedoff">Base64 -&gt; do</span>
+<span class="lineno">  310 </span><span class="spaces">       </span><span class="istickedoff">raw &lt;- B8.filter noNewline . T.encodeUtf8 &lt;$&gt; TIO.readFile path</span>
+<span class="lineno">  311 </span><span class="spaces">       </span><span class="istickedoff">decodeBytes fromBase64 raw</span>
+<span class="lineno">  312 </span><span class="spaces">    </span><span class="istickedoff">Utf8 -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">  313 </span><span class="spaces">       </span><span class="istickedoff"><span class="nottickedoff">B8.filter noNewline . T.encodeUtf8 &lt;$&gt; TIO.readFile path</span></span>
+<span class="lineno">  314 </span><span class="spaces">    </span><span class="istickedoff">Octets -&gt; do</span>
+<span class="lineno">  315 </span><span class="spaces">       </span><span class="istickedoff">txt &lt;- TIO.readFile path</span>
+<span class="lineno">  316 </span><span class="spaces">       </span><span class="istickedoff">let bytes = read @[Word8] (T.unpack txt)</span>
+<span class="lineno">  317 </span><span class="spaces">       </span><span class="istickedoff">pure $ BS.pack bytes</span>
+<span class="lineno">  318 </span><span class="spaces">    </span><span class="istickedoff">_          -&gt; <span class="nottickedoff">fail</span></span>
+<span class="lineno">  319 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">&quot;Data in file must be encoded as hex, base64, utf8 or octet array.&quot;</span></span></span>
+<span class="lineno">  320 </span>
+<span class="lineno">  321 </span>-- | Read some bytes from the console, and decode them accoring to passphrase info.
+<span class="lineno">  322 </span>hGetPassphraseBytesInteractively
+<span class="lineno">  323 </span>    :: (Handle, Handle)
+<span class="lineno">  324 </span>    -&gt; PassphraseInputMode
+<span class="lineno">  325 </span>    -&gt; String
+<span class="lineno">  326 </span>    -&gt; PassphraseInfo
+<span class="lineno">  327 </span>    -&gt; IO ByteString
+<span class="lineno">  328 </span><span class="decl"><span class="nottickedoff">hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt = \case</span>
+<span class="lineno">  329 </span><span class="spaces">    </span><span class="nottickedoff">Hex -&gt; do</span>
+<span class="lineno">  330 </span><span class="spaces">       </span><span class="nottickedoff">raw &lt;- B8.filter noNewline . T.encodeUtf8 &lt;$&gt; hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  331 </span><span class="spaces">       </span><span class="nottickedoff">decodeBytes fromBase16 raw</span>
+<span class="lineno">  332 </span><span class="spaces">    </span><span class="nottickedoff">Base64 -&gt; do</span>
+<span class="lineno">  333 </span><span class="spaces">       </span><span class="nottickedoff">raw &lt;- B8.filter noNewline . T.encodeUtf8 &lt;$&gt; hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  334 </span><span class="spaces">       </span><span class="nottickedoff">decodeBytes fromBase64 raw</span>
+<span class="lineno">  335 </span><span class="spaces">    </span><span class="nottickedoff">Utf8 -&gt; do</span>
+<span class="lineno">  336 </span><span class="spaces">       </span><span class="nottickedoff">txt &lt;- hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  337 </span><span class="spaces">       </span><span class="nottickedoff">pure $ T.encodeUtf8 txt</span>
+<span class="lineno">  338 </span><span class="spaces">    </span><span class="nottickedoff">Octets -&gt; do</span>
+<span class="lineno">  339 </span><span class="spaces">       </span><span class="nottickedoff">txt &lt;- hGetSensitiveLine (hstdin, hstderr) mode prompt</span>
+<span class="lineno">  340 </span><span class="spaces">       </span><span class="nottickedoff">let bytes = read @[Word8] (T.unpack txt)</span>
+<span class="lineno">  341 </span><span class="spaces">       </span><span class="nottickedoff">pure $ BS.pack bytes</span>
+<span class="lineno">  342 </span><span class="spaces">    </span><span class="nottickedoff">_          -&gt; fail</span>
+<span class="lineno">  343 </span><span class="spaces">            </span><span class="nottickedoff">&quot;Data on stdin must be encoded as hex, base64, utf8 or octet array.&quot;</span></span>
+<span class="lineno">  344 </span>
+<span class="lineno">  345 </span>--
+<span class="lineno">  346 </span>-- I/O Write
+<span class="lineno">  347 </span>--
+<span class="lineno">  348 </span>
+<span class="lineno">  349 </span>-- | Print bytes to the console with the given encoding.
+<span class="lineno">  350 </span>hPutBytes :: Handle -&gt; ByteString -&gt; Encoding -&gt; IO ()
+<span class="lineno">  351 </span><span class="decl"><span class="istickedoff">hPutBytes h bytes =</span>
+<span class="lineno">  352 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStr h . flip encode bytes</span></span>
+<span class="lineno">  353 </span>
+<span class="lineno">  354 </span>-- | Print string to the console.
+<span class="lineno">  355 </span>hPutString :: Handle -&gt; String -&gt; IO ()
+<span class="lineno">  356 </span><span class="decl"><span class="istickedoff">hPutString h =</span>
+<span class="lineno">  357 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStrLn h . T.encodeUtf8 . T.pack</span></span>
+<span class="lineno">  358 </span>
+<span class="lineno">  359 </span>--
+<span class="lineno">  360 </span>-- Helpers
+<span class="lineno">  361 </span>--
+<span class="lineno">  362 </span>
+<span class="lineno">  363 </span>noNewline :: Char -&gt; Bool
+<span class="lineno">  364 </span><span class="decl"><span class="istickedoff">noNewline = (`notElem` ['\n', '\r'])</span></span>
+<span class="lineno">  365 </span>
+<span class="lineno">  366 </span>-- | Fail with a colored red error message.
+<span class="lineno">  367 </span>prettyIOException :: IOException -&gt; IO a
+<span class="lineno">  368 </span><span class="decl"><span class="istickedoff">prettyIOException e = do</span>
+<span class="lineno">  369 </span><span class="spaces">    </span><span class="istickedoff">B8.hPutStrLn stderr $ T.encodeUtf8 $ T.pack $ show e</span>
+<span class="lineno">  370 </span><span class="spaces">    </span><span class="istickedoff">exitFailure</span></span>
+<span class="lineno">  371 </span>
+<span class="lineno">  372 </span>-- | Mark all characters from a given string as red (in a console).
+<span class="lineno">  373 </span>markCharsRedAtIndices :: Integral i =&gt; [i] -&gt; String -&gt; String
+<span class="lineno">  374 </span><span class="decl"><span class="istickedoff">markCharsRedAtIndices ixs = go 0 (sort $ nub ixs)</span>
+<span class="lineno">  375 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">  376 </span><span class="spaces">    </span><span class="istickedoff">go _c [] [] = mempty</span>
+<span class="lineno">  377 </span><span class="spaces">    </span><span class="istickedoff">go c (i:is) (s:ss)</span>
+<span class="lineno">  378 </span><span class="spaces">        </span><span class="istickedoff">| c == i    = red ++ <span class="nottickedoff">s</span>:def ++ go (c + 1) is ss</span>
+<span class="lineno">  379 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = s : go (c + 1) (i:is) ss</span>
+<span class="lineno">  380 </span><span class="spaces">    </span><span class="istickedoff">go _ [] ss = ss</span>
+<span class="lineno">  381 </span><span class="spaces">    </span><span class="istickedoff">go _ _ [] = [] -- NOTE: Really an error case.</span>
+<span class="lineno">  382 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  383 </span><span class="spaces">    </span><span class="istickedoff">red = setSGRCode [SetColor Foreground Vivid Red]</span>
+<span class="lineno">  384 </span><span class="spaces">    </span><span class="istickedoff">def = setSGRCode [Reset]</span></span>
+<span class="lineno">  385 </span>
+<span class="lineno">  386 </span>-- | Get program name to avoid hard-coding it in documentation excerpt.
+<span class="lineno">  387 </span>progName :: String
+<span class="lineno">  388 </span><span class="decl"><span class="istickedoff">progName = unsafePerformIO getProgName</span></span>
+<span class="lineno">  389 </span>{-# NOINLINE progName #-}
+
+</pre>
+</body>
+</html>
