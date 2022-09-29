@@ -45,10 +45,118 @@ exercise club noble adult miracle awkward problem olympic puppy private goddess 
 ```console
 $ cardano-address key from-recovery-phrase Shelley < phrase.prv > root.xsk
 root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+
+-- which is equivalent to empty passphrase
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-hex
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter hex-encoded passphrase:
+
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
 ```
 
 > :information_source: Notice the `root_xsk` prefix to identify a root extended signing (private) key.
 </details>
+
+<details>
+  <summary>How to generate a root private key with passphrase (<strong>root.xsk</strong>)</summary>
+
+```console
+$ cardano-address recovery-phrase generate --size 9 > sndfactor.prv
+swing payment diagram happy chimney mammal flip become lyrics
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter a 9–12 word second factor:
+swing payment diagram happy chimney mammal flip become lyrics
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic --sensitive
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+**********************************************************************************************************
+Please enter a 9–12 word second factor:
+*************************************************************
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic --silent
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+
+Please enter a 9–12 word second factor:
+
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-mnemonic --from-file "./sndfactor.prv" < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-hex
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter hex-encoded passphrase:
+dc1434f3b472810d56409f85
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ echo "dc1434f3b472810d56409f85" > base16.prv
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-hex --from-file "./base16.prv" < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-base64
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter base64-encoded passphrase:
+3BQ087RygQ1WQJ+F
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ echo "3BQ087RygQ1WQJ+F" > base64.prv
+[pawel@arch testingCardanoAddresses]$ cardano-address key from-recovery-phrase Shelley --passphrase from-base64 --from-file "./base64.prv" < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-octets
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter passphrase in the form of octet array:
+[220,20,52,243,180,114,129,13,86,64,159,133]
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ echo "[220,20,52,243,180,114,129,13,86,64,159,133]" > octets.prv
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-octets --from-file "./octets.prv" < phrase.prv
+root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-utf8
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter utf8-encoded passphrase:
+my secret passphrase
+root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
+
+$ cardano-address key from-recovery-phrase Shelley --passphrase ""
+Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:
+exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+Please enter utf8-encoded passphrase:
+my secret passphrase
+root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
+
+$ echo "my secret passphrase" > utf8.prv
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-utf8 --from-file "./utf8.prv" < phrase.prv
+root_xsk1aq5jduvnx7s6a4wl845jggvnhey5agqjv55dsexsx43np59pse0u4yfxpdfecz9h95jwecduqpt7zlk97j9mprmvjcfeyrcu9nyagpjq6k5cxpnwve5pj3cu24m9my94xtrqvzrlmu0893guffzazyk95cvprwzp
+
+-- NOTE:
+--λ> let (Right m) = mkSomeMnemonic @'[ 9 ] ["swing", "payment", "diagram", "happy", "chimney", "mammal", "flip", "become", "lyrics"]
+--λ> m
+--SomeMnemonic (Mnemonic {mnemonicToEntropy = Entropy {entropyRaw = "\220\DC44\243\180r\129\rV@\159\133", entropyChecksum = Checksum 3}, mnemonicToSentence = MnemonicSentence {mnemonicSentenceToListN = [WordIndex {unWordIndex = Offset 1760},WordIndex {unWordIndex = Offset 1293},WordIndex {unWordIndex = Offset 487},WordIndex {unWordIndex = Offset 839},WordIndex {unWordIndex = Offset 320},WordIndex {unWordIndex = Offset 1077},WordIndex {unWordIndex = Offset 712},WordIndex {unWordIndex = Offset 159},WordIndex {unWordIndex = Offset 1067}]}})
+--λ> let bytes = BA.convert $ someMnemonicToBytes m :: ByteString
+--λ> bytes
+--"\220\DC44\243\180r\129\rV@\159\133"
+--λ> encode EBase16 bytes
+--"dc1434f3b472810d56409f85"
+--λ> decodeUtf8 $ convertToBase Base64 bytes
+-- "3BQ087RygQ1WQJ+F"
+--λ> BS.unpack bytes
+-- [220,20,52,243,180,114,129,13,86,64,159,133]
+```
+> :information_source: Notice the `root_xsk` prefix to identify a root extended signing (private) key.
+</details>
+
 
 <details>
   <summary>How to generate a wallet id based on extended root or account keys (<strong>phrase.prv</strong>)</summary>

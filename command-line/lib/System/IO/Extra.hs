@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_HADDOCK hide #-}
@@ -9,11 +10,14 @@ module System.IO.Extra
     -- ** Read
       hGetBytes
     , hGetBech32
-    , hGetSomeMnemonic
     , hGetXPrv
     , hGetXPub
     , hGetXP__
     , hGetScriptHash
+    , hGetSomeMnemonic
+    , hGetSomeMnemonicInteractively
+    , hGetPassphraseMnemonic
+    , hGetPassphraseBytes
 
     -- ** Write
     , hPutBytes
@@ -43,21 +47,29 @@ import Codec.Binary.Encoding
     , encode
     , fromBase16
     , fromBase58
+    , fromBase64
     , fromBech32
     )
 import Control.Exception
-    ( IOException )
+    ( IOException, bracket )
 import Control.Monad
     ( when )
 import Data.ByteString
     ( ByteString )
 import Data.List
     ( nub, sort )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word8 )
+import Options.Applicative.Style
+    ( PassphraseInfo (..), PassphraseInput (..), PassphraseInputMode (..) )
 import System.Console.ANSI
     ( Color (..)
     , ColorIntensity (..)
     , ConsoleLayer (..)
     , SGR (..)
+    , hCursorBackward
     , setSGRCode
     )
 import System.Environment
@@ -65,15 +77,24 @@ import System.Environment
 import System.Exit
     ( exitFailure )
 import System.IO
-    ( Handle, stderr )
+    ( BufferMode (..)
+    , Handle
+    , hGetBuffering
+    , hGetChar
+    , hGetEcho
+    , hPutChar
+    , hSetBuffering
+    , hSetEcho
+    , stderr
+    )
 import System.IO.Unsafe
     ( unsafePerformIO )
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-
-
+import qualified Data.Text.IO as TIO
 --
 -- I/O Read
 --
@@ -83,29 +104,29 @@ hGetBytes :: Handle -> IO ByteString
 hGetBytes h = do
     raw <- B8.filter noNewline <$> B8.hGetContents h
     case detectEncoding (T.unpack $ T.decodeUtf8 raw) of
-        Just (EBase16  ) -> decode fromBase16 raw
-        Just (EBech32{}) -> decode (fmap snd . fromBech32 markCharsRedAtIndices) raw
-        Just (EBase58  ) -> decode fromBase58 raw
+        Just (EBase16  ) -> decodeBytes fromBase16 raw
+        Just (EBech32{}) -> decodeBytes (fmap snd . fromBech32 markCharsRedAtIndices) raw
+        Just (EBase58  ) -> decodeBytes fromBase58 raw
         Nothing          -> fail
             "Couldn't detect input encoding? Data on stdin must be encoded as \
             \bech16, bech32 or base58."
-  where
-    decode :: (bin -> Either String result) -> bin -> IO result
-    decode from = either fail pure . from
+
+decodeBytes
+    :: (bin -> Either String result)
+    -> bin
+    -> IO result
+decodeBytes from = either fail pure . from
 
 -- | Read some bytes encoded in Bech32, only allowing the given prefixes.
 hGetBech32 :: Handle -> [HumanReadablePart] -> IO (HumanReadablePart, ByteString)
 hGetBech32 h allowedPrefixes = do
     raw <- B8.filter noNewline <$> B8.hGetContents h
-    (hrp, bytes) <- decode (fromBech32 markCharsRedAtIndices) raw
+    (hrp, bytes) <- decodeBytes (fromBech32 markCharsRedAtIndices) raw
     when (hrp `notElem` allowedPrefixes) $ fail
         $ "Invalid human-readable prefix. Prefix ought to be one of: "
         <> show (showHrp <$> allowedPrefixes)
     pure (hrp, bytes)
   where
-    decode :: (bin -> Either String result) -> bin -> IO result
-    decode from = either fail pure . from
-
     showHrp :: HumanReadablePart -> String
     showHrp = T.unpack . humanReadablePartToText
 
@@ -154,6 +175,172 @@ hGetXP__ h allowedPrefixes = do
         _                      -> fail
             "Couldn't convert bytes into neither extended public or private keys."
 
+withBuffering :: Handle -> BufferMode -> IO a -> IO a
+withBuffering h buffering action = bracket aFirst aLast aBetween
+  where
+    aFirst = (hGetBuffering h <* hSetBuffering h buffering)
+    aLast = hSetBuffering h
+    aBetween = const action
+
+withEcho :: Handle -> Bool -> IO a -> IO a
+withEcho h echo action = bracket aFirst aLast aBetween
+  where
+    aFirst = (hGetEcho h <* hSetEcho h echo)
+    aLast = hSetEcho h
+    aBetween = const action
+
+-- | Gather user inputs until a newline is met, hiding what's typed with a
+-- placeholder character.
+hGetSensitiveLine
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
+    -> IO Text
+hGetSensitiveLine (hstdin, hstderr) mode prompt =
+    withBuffering hstderr NoBuffering $
+    withBuffering hstdin NoBuffering $
+    withEcho hstdin False $ do
+        hPutString hstderr prompt
+        getLineSensitive '*'
+  where
+    backspace = toEnum 127
+
+    getLineSensitive :: Char -> IO Text
+    getLineSensitive placeholder =
+        getLineSensitive' mempty
+      where
+        getLineSensitive' line = do
+            hGetChar hstdin >>= \case
+                '\n' -> do
+                    hPutChar hstderr '\n'
+                    return line
+                c | c == backspace ->
+                    if T.null line
+                        then getLineSensitive' line
+                        else do
+                            hCursorBackward hstderr  1
+                            hPutChar hstderr ' '
+                            hCursorBackward hstderr 1
+                            getLineSensitive' (T.init line)
+                c -> do
+                    case mode of
+                        Sensitive ->
+                            hPutChar hstderr placeholder
+                        Explicit ->
+                            hPutChar hstderr c
+                        Silent ->
+                            pure ()
+                    getLineSensitive' (line <> T.singleton c)
+
+-- | Prompt user and read some English mnemonic words from stdin.
+hGetSomeMnemonicInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
+    -> IO SomeMnemonic
+hGetSomeMnemonicInteractively (hstdin, hstderr) mode prompt = do
+    wrds <- T.words . T.filter noNewline <$>
+            hGetSensitiveLine (hstdin, hstderr) mode prompt
+    case mkSomeMnemonic @'[ 9, 12, 15, 18, 21, 24 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+-- | Read mnemonic passphrase from either file or interactively.
+hGetPassphraseMnemonic
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> PassphraseInput
+    -> String
+    -> IO SomeMnemonic
+hGetPassphraseMnemonic (hstdin, hstderr) mode input prompt =
+    case input of
+        Interactive ->
+            hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt
+        FromFile path ->
+            hGetPassphraseMnemonicFromFile path
+
+-- | Read the mnemonic passphrase (second factor) from file.
+hGetPassphraseMnemonicFromFile
+    :: FilePath
+    -> IO SomeMnemonic
+hGetPassphraseMnemonicFromFile path = do
+    wrds <- T.words . T.filter noNewline . T.decodeUtf8 <$> BS.readFile path
+    case mkSomeMnemonic @'[ 9, 12 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+-- | Prompt user and read the mnemonic passphrase (second factor) interactively.
+hGetPassphraseMnemonicInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
+    -> IO SomeMnemonic
+hGetPassphraseMnemonicInteractively (hstdin, hstderr) mode prompt = do
+    wrds <- T.words . T.filter noNewline <$>
+            hGetSensitiveLine (hstdin, hstderr) mode prompt
+    case mkSomeMnemonic @'[ 9, 12 ] wrds of
+        Left (MkSomeMnemonicError e) -> fail e
+        Right mw -> pure mw
+
+-- | Read passphrase from either file or interactively, and decode them accoring to passphrase info.
+hGetPassphraseBytes
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> PassphraseInput
+    -> String
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytes (hstdin, hstderr) mode input prompt info =
+    case input of
+        Interactive ->
+            hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt info
+        FromFile path ->
+            hGetPassphraseBytesFromFile path info
+
+-- | Read some bytes from the file, and decode them accoring to passphrase info.
+hGetPassphraseBytesFromFile
+    :: FilePath
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytesFromFile path = \case
+    Hex -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+       decodeBytes fromBase16 raw
+    Base64 -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+       decodeBytes fromBase64 raw
+    Utf8 -> do
+       B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
+    Octets -> do
+       txt <- TIO.readFile path
+       let bytes = read @[Word8] (T.unpack txt)
+       pure $ BS.pack bytes
+    _          -> fail
+            "Data in file must be encoded as hex, base64, utf8 or octet array."
+
+-- | Read some bytes from the console, and decode them accoring to passphrase info.
+hGetPassphraseBytesInteractively
+    :: (Handle, Handle)
+    -> PassphraseInputMode
+    -> String
+    -> PassphraseInfo
+    -> IO ByteString
+hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt = \case
+    Hex -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> hGetSensitiveLine (hstdin, hstderr) mode prompt
+       decodeBytes fromBase16 raw
+    Base64 -> do
+       raw <- B8.filter noNewline . T.encodeUtf8 <$> hGetSensitiveLine (hstdin, hstderr) mode prompt
+       decodeBytes fromBase64 raw
+    Utf8 -> do
+       txt <- hGetSensitiveLine (hstdin, hstderr) mode prompt
+       pure $ T.encodeUtf8 txt
+    Octets -> do
+       txt <- hGetSensitiveLine (hstdin, hstderr) mode prompt
+       let bytes = read @[Word8] (T.unpack txt)
+       pure $ BS.pack bytes
+    _          -> fail
+            "Data on stdin must be encoded as hex, base64, utf8 or octet array."
 
 --
 -- I/O Write

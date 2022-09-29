@@ -16,6 +16,7 @@ module Codec.Binary.Encoding
       -- * Decode
     , detectEncoding
     , fromBase16
+    , fromBase64
     , fromBase58
     , fromBech32
     ) where
@@ -119,6 +120,12 @@ detectEncoding str = isBase16 <|> isBech32  <|> isBase58
 -- @since 2.0.0
 fromBase16 :: ByteString -> Either String ByteString
 fromBase16 = convertFromBase Base16
+
+-- | Try decoding a base64-encoded 'ByteString'
+--
+-- @since 3.13.0
+fromBase64 :: ByteString -> Either String ByteString
+fromBase64 = convertFromBase Base64
 
 -- | Try decoding a bech32-encoded 'ByteString'
 --

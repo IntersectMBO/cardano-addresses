@@ -35,4 +35,14 @@ RSpec.describe "CLI examples" do
     run_examples(examples)
   end
 
+  it "cardano-address key from-recovery-phrase" do
+    examples = get_examples('key', 'from-recovery-phrase')
+    # Omit interactive example but run others
+    examples_to_run = examples.first.split("Example:").last.strip.
+                               split("$").
+                               reject(&:empty?).
+                               map {|e| e.strip }
+    run_examples(examples_to_run)
+  end
+
 end
