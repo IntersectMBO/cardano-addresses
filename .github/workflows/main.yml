@@ -32,8 +32,7 @@ jobs:
         ruby-version: 2.7.1
 
     - name: 🧰 Setup Stack
-      run: |
-        stack upgrade
+      uses: mstksg/setup-stack@v2
 
     - name: 💾 Cache Dependencies
       id: cache
