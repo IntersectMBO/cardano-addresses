@@ -32,7 +32,11 @@ jobs:
         ruby-version: 2.7.1
 
     - name: 🧰 Setup Stack
-      uses: mstksg/setup-stack@v2
+      uses: haskell/actions/setup@v2
+      with:
+        ghc-version: '8.10.7'
+        enable-stack: true
+        stack-version: 'latest'
 
     - name: 💾 Cache Dependencies
       id: cache
