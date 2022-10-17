@@ -13,14 +13,17 @@
 , supportedSystems ? [ "x86_64-linux" "x86_64-darwin" ]
 }:
 let
-  defaultNix = import cardano-addresses;
+  flake =
+    if cardano-addresses ? inputs
+    then cardano-addresses # is an evaluated flake already
+    else import cardano-addresses; # evaluate through flake-compat
   linuxBuild = builtins.elem "x86_64-linux" supportedSystems;
   defaultSystem =
     if linuxBuild then "x86_64-linux"
     else builtins.head supportedSystems;
-  inherit (defaultNix.legacyPackages.${builtins.currentSystem}) pkgs;
+  inherit (flake.legacyPackages.${defaultSystem}) pkgs;
   inherit (pkgs) lib;
-  inherit (defaultNix) packages checks devShell;
+  inherit (flake) packages checks devShell;
 in
 let
 
@@ -33,7 +36,7 @@ let
   build-version = pkgs.writeText "revision.json" (builtins.toJSON
     { inherit (cardano-addresses) rev; });
 
-  jobs = lib.genAttrs [ "packages" "checks" "devShell" ] (n: collectJobs defaultNix.${n})
+  jobs = lib.genAttrs [ "packages" "checks" "devShell" ] (n: collectJobs flake.${n})
     // {
     required = pkgs.releaseTools.aggregate {
       name = "github-required";
