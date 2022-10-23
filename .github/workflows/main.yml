@@ -99,8 +99,8 @@ jobs:
     - name: 🏷️ Variables
       id: variables
       run: |
-        echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-        echo ::set-output name=pkg_name::$(cat core/*.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")
+        echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+        echo "pkg_name=$(cat core/*.cabal | grep "name:" | sed "s/name:\s*\(.*\)/\1/")" >> $GITHUB_OUTPUT
 
     - name: 🐧 Download Artifact (linux)
       if: matrix.os == 'ubuntu-latest'
