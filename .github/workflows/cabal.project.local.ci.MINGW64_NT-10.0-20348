@@ -1,0 +1,8 @@
+package cardano-crypto-praos
+  flags: -external-libsodium-vrf
+
+package HsOpenSSL
+  flags: +use-pkg-config
+
+package pcre-light
+  flags: +use-pkg-config

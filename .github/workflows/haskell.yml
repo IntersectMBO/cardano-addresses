@@ -1,8 +1,4 @@
-name: Binaries
-
-defaults:
-  run:
-    shell: bash
+name: Haskell CI
 
 on:
   push:
@@ -17,39 +13,161 @@ jobs:
       fail-fast: false
       matrix:
         ghc: ["8.10.7"]
-        os: [ubuntu-latest]
-        # TODO This is used to test the project compiles with aeson 1 & 2.  This can be moved when the
-        # library is modified to work strictly with aeson-2 only, which can only be done once all
-        # downstream projects have upgraded to aeson 2.
-        aeson: ["1.5.6.0", "2.0.3.0"]
-        exclude:
-          - ghc: "9.2.2"
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        aeson: ["2.0.3.0"]
+        include:
+          - ghc: "8.10.7"
+            os: ubuntu-latest
             aeson: "1.5.6.0"
 
+    env:
+      # we need the LD_LIBRARY_PATH env var here because we ended up installing libsecp256k1 into /usr/local,
+      # pkg-config, *does* return the proper location, but the library does not appear to be properly referenced.
+      # FIXME: this is arguably a bug, and pkg-config should return the right values!
+      LD_LIBRARY_PATH: ${{ (matrix.os != 'windows-latest' && '/usr/local/lib') || '' }}
+
     steps:
-      - uses: actions/checkout@v2
+    - name: "WIN: Install System Dependencies via pacman (msys2)"
+      if: runner.os == 'Windows'
+      run: |
+         # ghcup should be installed on current GHA Windows runners. Let's use ghcup to run
+         # pacman, to install the necessary dependencies, ...
+         ghcup run -- pacman --noconfirm -S `
+            mingw-w64-x86_64-pkg-config `
+            mingw-w64-x86_64-pcre `
+            mingw-w64-x86_64-libsodium `
+            base-devel `
+            autoconf-wrapper `
+            autoconf `
+            automake `
+            libtool `
+            make
 
-      - uses: haskell/actions/setup@v1
-        id: setup-haskell
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: 3.6.2.0
+     # this seems to break something. It _must_ come after the pacman setup
+     # above. It appears as if PATHEXT is set _after_ ghcup install ghc/cabal, and
+     # as such we'd need pacman.exe instead.
+    - name: Setup Haskell
+      run: |
+        # Use GHCUP to manage ghc/cabal
+        ghcup install ghc --set ${{ matrix.ghc }}
+        ghcup install cabal --set 3.6.2.0
 
-      - name: Configure project
-        run: |
-          # We can't update the index state yet because nix flake is locked to an earlier one.
-          sed -i 's|^index-state:.*$|index-state: 2022-04-04T00:00:00Z|g' cabal.project
-          cabal configure --enable-tests --write-ghc-environment-files=ghc8.4.4+ --constraint="aeson == ${{ matrix.aeson }}"
+        ghc --version
+        cabal --version
 
-      - uses: actions/cache@v2
-        name: Cache cabal store
-        with:
-          path: ${{ steps.setup-haskell.outputs.cabal-store }}
-          key: cache-${{ runner.os }}-${{ matrix.ghc }}
-          restore-keys: cache-${{ runner.os }}-${{ matrix.ghc }}
+    - name: "WIN: fixup cabal config"
+      if: runner.os == 'Windows'
+      run: |
+        # make sure cabal knows about msys64, and mingw64 tools. Not clear why C:/cabal/config is empty
+        # and C:/cabal doesn't even exist.  The ghcup bootstrap file should have create it in the image:
+        # See https://github.com/haskell/ghcup-hs/blob/787edc17af4907dbc51c85e25c490edd8d68b80b/scripts/bootstrap/bootstrap-haskell#L591
+        # So we'll do it by hand here for now.
+        #
+        # We'll _not_ add extra-include-dirs, or extra-lib-dirs, and rely on what's shipped with GHC.
+        # https://github.com/msys2/MINGW-packages/issues/10837#issuecomment-1047105402
+        # https://gitlab.haskell.org/ghc/ghc/-/issues/21111
+        # if we _do_ want them, this would be the lines to add below
 
-      - name: Build
-        run: cabal build all --enable-tests
+        $ghcMingwDir = Join-Path -Path $(ghc --print-libdir) `
+                                 -ChildPath ../mingw/x86_64-*-mingw32/lib/ `
+                                 -Resolve
 
-      - name: Test
-        run: cabal test cardano-addresses:unit cardano-addresses-cli:unit --enable-tests
+        cabal user-config -a "extra-prog-path: C:/msys64/mingw64/bin, C:/msys64/usr/bin" `
+                          -a "extra-include-dirs: C:/msys64/mingw64/include" `
+                          -a ("extra-lib-dirs: {0}, C:/msys64/mingw64/lib" -f $ghcMingwDir) `
+                          -f init
+
+    - name: "OUTPUT Record cabal-store (Linux)"
+      id: lin-setup-haskell
+      if: runner.os != 'Windows'
+      run: echo "cabal-store=/home/runner/.cabal/store" >> $GITHUB_OUTPUT
+
+    - name: "OUTPUT Record cabal-store (Windows)"
+      id: win-setup-haskell
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "cabal-store=C:\\cabal\\store" >> $GITHUB_OUTPUT
+
+    - name: Set cache version
+      run: echo "CACHE_VERSION=grFfw7r" >> $GITHUB_ENV
+
+    - uses: actions/checkout@v2
+
+    - name: "[PowerShell] Add build script path"
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: Add-Content $env:GITHUB_PATH "$(pwd)/.github/bin"
+
+    - name: "[Bash] Add build script path"
+      if: runner.os != 'Windows'
+      run: echo "$(pwd)/.github/bin" >> $GITHUB_PATH
+
+    - name: "LINUX: Install build environment (apt-get)"
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install libsodium23 libsodium-dev
+        sudo apt-get -y remove --purge software-properties-common
+        sudo apt-get -y autoremove
+
+    - name: "MAC: Install build environment (brew)"
+      if: runner.os == 'macOS'
+      run: |
+        brew install libsodium
+        brew install pcre
+
+    - name: Cabal update
+      run: cabal update
+
+    - name: Configure build
+      shell: bash
+      run: |
+        if [ "${{github.event.inputs.tests}}" == "all" ]; then
+          echo "Reconfigure cabal projects to run tests for all dependencies"
+          sed -i 's|tests: False|tests: True|g' cabal.project
+        fi
+
+        cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
+
+        echo "# cabal.project.local"
+        cat cabal.project.local
+
+    - name: Record dependencies
+      id: record-deps
+      run: |
+        cabal build all --dry-run
+        cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
+
+    - name: "OUTPUT Record weeknum"
+      shell: bash
+      run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
+
+    - name: Cache Cabal store
+      uses: actions/cache@v2
+      with:
+        path: ${{ runner.os == 'Windows' && steps.win-setup-haskell.outputs.cabal-store || steps.lin-setup-haskell.outputs.cabal-store }}
+        key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}-${{ hashFiles('date.txt') }}
+        restore-keys: |
+          cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
+          cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
+
+    - uses: actions/cache@v2
+      name: "Cache `dist-newstyle`"
+      with:
+        path: |
+          dist-newstyle
+          !dist-newstyle/**/.git
+        key: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ steps.record-deps.outputs.weeknum }}
+        restore-keys: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
+
+    - name: Install dependencies
+      run: cabal build all --only-dependencies
+
+    - name: Build
+      run: cabal build all
+
+    - name: Run tests
+      run: cabal test all
+
+    - name: Run benchmarks
+      run: cabal bench all
