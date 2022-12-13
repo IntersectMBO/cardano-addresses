@@ -168,6 +168,3 @@ jobs:
 
     - name: Run tests
       run: cabal test all
-
-    - name: Run benchmarks
-      run: cabal bench all
