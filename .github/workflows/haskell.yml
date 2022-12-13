@@ -1,4 +1,4 @@
-name: Haskell CI
+name: Haskell CI using Cabal
 
 on:
   push:
@@ -166,6 +166,21 @@ jobs:
     - name: Build
       run: cabal build all
 
-    - name: Run tests
-      run: cabal test cardano-addresses
-      run: cabal test cardano-addresses-cli
+    - name: Run unit tests
+      run: |
+        cabal test cardano-addresses
+        cabal test cardano-addresses-cli
+
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v1
+      if: runner.os == 'Windows'
+      with:
+        name: ${{ matrix.os }}-exe
+        path: ${{ steps.win-setup-haskell.outputs.cabal-store }}
+
+    - name: Upload macOS Artifact
+      uses: actions/upload-artifact@v1
+      if: runner.os == 'macOS'
+      with:
+        name: ${{ matrix.os }}-exe
+        path: ${{ steps.lin-setup-haskell.outputs.cabal-store }}
