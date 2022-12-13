@@ -1,4 +1,4 @@
-name: Continuous Integration (Linux)
+name: Haskell CI using stack for Linux
 
 on:
   pull_request:
@@ -36,7 +36,7 @@ jobs:
       with:
         ghc-version: '8.10.7'
         enable-stack: true
-        stack-version: 'latest'
+        stack-version: '2.7.3'
 
     - name: 💾 Cache Dependencies
       id: cache
