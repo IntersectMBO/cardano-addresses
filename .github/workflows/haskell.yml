@@ -177,10 +177,3 @@ jobs:
       with:
         name: ${{ matrix.os }}-exe
         path: ${{ steps.win-setup-haskell.outputs.cabal-store }}
-
-    - name: Upload macOS Artifact
-      uses: actions/upload-artifact@v1
-      if: runner.os == 'macOS'
-      with:
-        name: ${{ matrix.os }}-exe
-        path: ${{ steps.lin-setup-haskell.outputs.cabal-store }}

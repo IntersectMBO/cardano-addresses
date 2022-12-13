@@ -1,4 +1,4 @@
-name: Continuous Integration (Linux with stack)
+name: Haskell CI using stack for Linux
 
 on:
   pull_request:
