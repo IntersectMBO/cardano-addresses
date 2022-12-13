@@ -1,4 +1,4 @@
-name: Continuous Integration (Linux)
+name: Continuous Integration (Linux with stack)
 
 on:
   pull_request:

@@ -167,4 +167,5 @@ jobs:
       run: cabal build all
 
     - name: Run tests
-      run: cabal test all
+      run: cabal test cardano-addresses
+      run: cabal test cardano-addresses-cli
