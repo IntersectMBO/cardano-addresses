@@ -16,6 +16,7 @@ mkShell rec {
   tools = [
     ghc
     cabal-install
+    haskell-language-server
     stack
     nix
     pkgconfig
