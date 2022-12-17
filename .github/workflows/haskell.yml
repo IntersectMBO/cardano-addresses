@@ -77,17 +77,6 @@ jobs:
                           -a ("extra-lib-dirs: {0}, C:/msys64/mingw64/lib" -f $ghcMingwDir) `
                           -f init
 
-    - name: "OUTPUT Record cabal-store (Linux)"
-      id: lin-setup-haskell
-      if: runner.os != 'Windows'
-      run: echo "cabal-store=/home/runner/.cabal/store" >> $GITHUB_OUTPUT
-
-    - name: "OUTPUT Record cabal-store (Windows)"
-      id: win-setup-haskell
-      if: runner.os == 'Windows'
-      shell: bash
-      run: echo "cabal-store=C:\\cabal\\store" >> $GITHUB_OUTPUT
-
     - name: Set cache version
       run: echo "CACHE_VERSION=grFfw7r" >> $GITHUB_ENV
 
@@ -119,6 +108,22 @@ jobs:
     - name: Cabal update
       run: cabal update
 
+    - name: "Setup cabal-store"
+      id: cabal-store
+      shell: bash
+      run: |
+        cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
+
+        if [[ '${{ runner.os }}' != 'Windows' ]]; then
+          echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
+        else
+          echo "cabal-store=C:\\cabal\\store" | tee -a "$GITHUB_OUTPUT"
+        fi
+
+    - name: "Check cabal-store"
+      shell: bash
+      run: echo '${{ steps.cabal-store.outputs.cabal-store }}'
+
     - name: Configure build
       shell: bash
       run: |
@@ -145,8 +150,8 @@ jobs:
     - name: Cache Cabal store
       uses: actions/cache@v2
       with:
-        path: ${{ runner.os == 'Windows' && steps.win-setup-haskell.outputs.cabal-store || steps.lin-setup-haskell.outputs.cabal-store }}
-        key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}-${{ hashFiles('date.txt') }}
+        path: ${{ steps.cabal-store.outputs.cabal-store }}
+        key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
         restore-keys: |
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
@@ -176,4 +181,4 @@ jobs:
       if: runner.os == 'Windows'
       with:
         name: ${{ matrix.os }}-exe
-        path: ${{ steps.win-setup-haskell.outputs.cabal-store }}
+        path: ${{ steps.cabal-store.outputs.cabal-store }}
