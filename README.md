@@ -5,13 +5,19 @@
 <p align="center">
   <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
   <a href="https://www.npmjs.com/package/cardano-addresses"><img src="https://img.shields.io/npm/v/cardano-addresses?color=%239b59b6&style=for-the-badge"/></a>
-  <br>
-  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Linux)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Linux)?style=for-the-badge&label=BUILD%20(Linux)" /></a>
-  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"Continuous Integration (Windows)"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/Continuous%20Integration%20(Windows)?style=for-the-badge&label=BUILD%20(Windows)" /></a>
-  <a href='https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A"TypeScript NPM Package"'><img src="https://img.shields.io/github/workflow/status/input-output-hk/cardano-addresses/TypeScript%20NPM%20Package?style=for-the-badge&label=BUILD%20(TypeScript)" /></a>
-  <br>
   <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
+  <br>
 </p>
+
+
+<div align="center">
+
+  <a href="">[![Coding Standards](https://github.com/input-output-hk/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/style.yml)</a>
+  <a href="">[![Haskell CI using Cabal](https://github.com/input-output-hk/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/haskell.yml)</a>
+  <a href="">[![Haskell CI using stack for Linux](https://github.com/input-output-hk/cardano-addresses/actions/workflows/main.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/main.yml)</a>
+  <a href="">[![TypeScript NPM Package](https://github.com/input-output-hk/cardano-addresses/actions/workflows/typescript.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/typescript.yml)</a>
+
+</div>
 
 ## Overview
 
