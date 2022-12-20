@@ -221,7 +221,7 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
-data KeyRole = Payment | Delegation | Policy
+data KeyRole = Payment | Delegation | Policy | Unknown
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyRole
 
@@ -243,7 +243,7 @@ keyHashFromBytes (cred, bytes)
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ KeyHash cred bytes
 
--- | Encode a 'KeyHash' to bech32 'Text', using @script_vkh@ as a human readable prefix.
+-- | Encode a 'KeyHash' to bech32 'Text' or hex is key role unknown.
 --
 -- @since 3.0.0
 keyHashToText :: KeyHash -> Text
@@ -254,6 +254,8 @@ keyHashToText (KeyHash cred keyHash) = case cred of
         T.decodeUtf8 $ encode (EBech32 CIP5.stake_shared_vkh) keyHash
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
+    Unknown ->
+        T.decodeUtf8 $ encode EBase16 keyHash
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
@@ -274,16 +276,28 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 -- - `policy_xvk`
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
+-- If if hex is encountered Unknown policy key is assumed
 --
 -- @since 3.1.0
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
-keyHashFromText txt = do
-    (hrp, dp) <- first (const ErrKeyHashFromTextInvalidString) $
-        Bech32.decodeLenient txt
+keyHashFromText txt =
+    case (fromBase16 $ T.encodeUtf8 txt) of
+        Right bs ->
+            if checkBSLength bs 28 then
+                pure $ KeyHash Unknown bs
+            else if checkBSLength bs 32 then
+                pure $ KeyHash Unknown (hashCredential bs)
+            else if checkBSLength bs 64 then
+                pure $ KeyHash Unknown (hashCredential $ BS.take 32 bs)
+            else
+                Left ErrKeyHashFromTextInvalidHex
+        Left _ -> do
+            (hrp, dp) <- first (const ErrKeyHashFromTextInvalidString) $
+                Bech32.decodeLenient txt
 
-    maybeToRight ErrKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
-        >>= maybeToRight ErrKeyHashFromTextWrongHrp . convertBytes hrp
-        >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
+            maybeToRight ErrKeyHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
+                >>= maybeToRight ErrKeyHashFromTextWrongHrp . convertBytes hrp
+                >>= maybeToRight ErrKeyHashFromTextWrongPayload . keyHashFromBytes
  where
     convertBytes hrp bytes
         | hrp == CIP5.addr_shared_vkh && checkBSLength bytes 28 =
@@ -337,6 +351,7 @@ data ErrKeyHashFromText
     | ErrKeyHashFromTextWrongPayload
     | ErrKeyHashFromTextWrongHrp
     | ErrKeyHashFromTextWrongDataPart
+    | ErrKeyHashFromTextInvalidHex
     deriving (Show, Eq)
 
 -- Possible errors when deserializing a key hash from text.
@@ -345,13 +360,15 @@ data ErrKeyHashFromText
 prettyErrKeyHashFromText :: ErrKeyHashFromText -> String
 prettyErrKeyHashFromText = \case
     ErrKeyHashFromTextInvalidString ->
-        "Invalid encoded string: must be bech32-encoded."
+        "Invalid encoded string: must be either bech32 or hex-encoded."
     ErrKeyHashFromTextWrongPayload ->
         "Verification key hash must contain exactly 28 bytes."
     ErrKeyHashFromTextWrongHrp ->
         "Invalid human-readable prefix: must be 'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy'."
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
+    ErrKeyHashFromTextInvalidHex ->
+        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes"
 
 --
 -- Script folding
