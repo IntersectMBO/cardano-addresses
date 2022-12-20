@@ -537,11 +537,12 @@ keyHashFromBytes :: (KeyRole, ByteString) -> Maybe KeyHash
 --   <tt>addr_shared_xvk</tt> - <tt>stake_shared_xvk</tt> -
 --   <tt>addr_xvk</tt> - <tt>stake_xvk</tt> - <tt>policy_vk</tt> -
 --   <tt>policy_xvk</tt> Raw keys will be hashed on the fly, whereas hash
---   that are directly provided will remain as such.
+--   that are directly provided will remain as such. If if hex is
+--   encountered Unknown policy key is assumed
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
 
--- | Encode a <a>KeyHash</a> to bech32 <a>Text</a>, using
---   <tt>script_vkh</tt> as a human readable prefix.
+-- | Encode a <a>KeyHash</a> to bech32 <a>Text</a> or hex is key role
+--   unknown.
 keyHashToText :: KeyHash -> Text
 instance GHC.Classes.Eq elem => GHC.Classes.Eq (Cardano.Address.Script.Script elem)
 instance GHC.Show.Show elem => GHC.Show.Show (Cardano.Address.Script.Script elem)
