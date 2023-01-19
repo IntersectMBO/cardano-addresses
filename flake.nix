@@ -3,6 +3,10 @@
 
   inputs = {
     nixpkgs.follows = "haskellNix/nixpkgs-2305";
+    hackageNix = {
+      url = "github:input-output-hk/hackage.nix";
+      flake = false;
+    };
     haskellNix = {
       url = "github:input-output-hk/haskell.nix";
       inputs.nixpkgs.follows = "nixpkgs";
