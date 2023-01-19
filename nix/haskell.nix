@@ -188,7 +188,7 @@ haskell-nix: haskell-nix.cabalProject' (
           '';
         in
         if stdenv.hostPlatform.isGhcjs then {
-          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+          packages.digest.components.library.pkgconfig = lib.mkForce [[ pkgs.buildPackages.zlib ]];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
