@@ -36,16 +36,7 @@ haskell-nix: haskell-nix.cabalProject' (
       constraints: Win32 ==2.6.1.0, mintty ==0.1.2
     '';
 
-    compiler-nix-name =
-      let
-        # Look for a with-compiler: field in the cabal.project file
-        withCompiler = lib.lists.concatLists (
-          lib.lists.filter (l: l != null)
-            (builtins.map (l: builtins.match "^with-compiler: *(.*)" l)
-              (lib.splitString "\n" cabalProject)));
-      in
-      lib.lists.head (
-        map (lib.replaceStrings [ "-" "." ] [ "" "" ]) withCompiler);
+    compiler-nix-name = "ghc8107";
 
     shell = {
       crossPlatforms = p: [ p.ghcjs ];
