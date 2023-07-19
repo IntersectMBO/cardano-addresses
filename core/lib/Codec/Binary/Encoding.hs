@@ -95,7 +95,7 @@ detectEncoding :: String -> Maybe (AbstractEncoding ())
 detectEncoding str = isBase16 <|> isBech32  <|> isBase58
   where
     isBase16 = do
-        guard (all (`elem` "0123456789abcdef") (toLower <$> str))
+        guard (all ((`elem` "0123456789abcdef") . toLower) str)
         guard (even (length str))
         pure EBase16
 

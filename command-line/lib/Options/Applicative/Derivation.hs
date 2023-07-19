@@ -57,7 +57,7 @@ import Codec.Binary.Encoding
 import Control.Arrow
     ( left )
 import Control.Monad
-    ( when )
+    ( unless )
 import Data.ByteString
     ( ByteString )
 import Data.List
@@ -247,7 +247,7 @@ bech32Reader
     -> Either String (HumanReadablePart, ByteString)
 bech32Reader allowedPrefixes str = do
     (hrp, bytes) <- fromBech32 markCharsRedAtIndices (toBytes str)
-    when (hrp `notElem` allowedPrefixes) $ Left
+    unless (elem hrp allowedPrefixes) $ Left
         $ "Invalid human-readable prefix. Prefix ought to be one of: "
         <> show (showHrp <$> allowedPrefixes)
     pure (hrp, bytes)
