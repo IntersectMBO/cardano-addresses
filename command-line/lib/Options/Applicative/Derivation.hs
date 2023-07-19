@@ -247,7 +247,7 @@ bech32Reader
     -> Either String (HumanReadablePart, ByteString)
 bech32Reader allowedPrefixes str = do
     (hrp, bytes) <- fromBech32 markCharsRedAtIndices (toBytes str)
-    unless (elem hrp allowedPrefixes) $ Left
+    unless (hrp `elem` allowedPrefixes) $ Left
         $ "Invalid human-readable prefix. Prefix ought to be one of: "
         <> show (showHrp <$> allowedPrefixes)
     pure (hrp, bytes)
