@@ -76,7 +76,7 @@ span.spaces    { background: white }
 <span class="lineno">   57 </span>import Control.Arrow
 <span class="lineno">   58 </span>    ( left )
 <span class="lineno">   59 </span>import Control.Monad
-<span class="lineno">   60 </span>    ( when )
+<span class="lineno">   60 </span>    ( unless )
 <span class="lineno">   61 </span>import Data.ByteString
 <span class="lineno">   62 </span>    ( ByteString )
 <span class="lineno">   63 </span>import Data.List
@@ -266,7 +266,7 @@ span.spaces    { background: white }
 <span class="lineno">  247 </span>    -&gt; Either String (HumanReadablePart, ByteString)
 <span class="lineno">  248 </span><span class="decl"><span class="istickedoff">bech32Reader allowedPrefixes str = do</span>
 <span class="lineno">  249 </span><span class="spaces">    </span><span class="istickedoff">(hrp, bytes) &lt;- fromBech32 <span class="nottickedoff">markCharsRedAtIndices</span> (toBytes str)</span>
-<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">when (hrp `notElem` allowedPrefixes) $ Left</span>
+<span class="lineno">  250 </span><span class="spaces">    </span><span class="istickedoff">unless (hrp `elem` allowedPrefixes) $ Left</span>
 <span class="lineno">  251 </span><span class="spaces">        </span><span class="istickedoff">$ <span class="nottickedoff">&quot;Invalid human-readable prefix. Prefix ought to be one of: &quot;</span></span>
 <span class="lineno">  252 </span><span class="spaces">        </span><span class="istickedoff"><span class="nottickedoff">&lt;&gt; show (showHrp &lt;$&gt; allowedPrefixes)</span></span>
 <span class="lineno">  253 </span><span class="spaces">    </span><span class="istickedoff">pure (<span class="nottickedoff">hrp</span>, bytes)</span>

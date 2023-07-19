@@ -51,7 +51,7 @@
 </span><span id="line-51"></span><span class="hs-keyword">newtype</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.Inspect.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Inspect"><span class="annot"><a href="Command.Address.Inspect.html#Inspect"><span class="hs-identifier hs-var">Inspect</span></a></span></span><span>
 </span><span id="line-52"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="rootPublicKey"><span class="annot"><span class="annottext">Cmd -&gt; Maybe XPub
 </span><a href="Command.Address.Inspect.html#rootPublicKey"><span class="hs-identifier hs-var hs-var">rootPublicKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">XPub</span></span><span>
-</span><span id="line-53"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679112720"><span id="local-6989586621679112722"><span id="local-6989586621679112724"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-53"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679112724"><span id="local-6989586621679112726"><span id="local-6989586621679112728"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -66,10 +66,10 @@ showsPrec :: Int -&gt; Cmd -&gt; ShowS
 $cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-54"></span><span>
-</span><span id="line-55"></span><span id="local-6989586621679112718"><span class="annot"><a href="Command.Address.Inspect.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Inspect.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679112718"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679112718"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-55"></span><span id="local-6989586621679112722"><span class="annot"><a href="Command.Address.Inspect.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Inspect.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679112722"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679112722"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-56"></span><span id="mod"><span class="annot"><span class="annottext">mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.Address.Inspect.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679112717"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679112717"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Inspect.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679112721"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679112721"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;inspect&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -85,8 +85,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679112717"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679112716"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679112721"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679112720"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -263,8 +263,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-string">&quot;}&quot;</span></span><span>
 </span><span id="line-76"></span><span>            </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-77"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-78"></span><span>    </span><span id="local-6989586621679112716"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679112716"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe XPub -&gt; Cmd
+</span><span id="line-78"></span><span>    </span><span id="local-6989586621679112720"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679112720"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe XPub -&gt; Cmd
 </span><a href="Command.Address.Inspect.html#Inspect"><span class="hs-identifier hs-var">Inspect</span></a></span><span>
 </span><span id="line-79"></span><span>        </span><span class="annot"><span class="annottext">(Maybe XPub -&gt; Cmd) -&gt; Parser (Maybe XPub) -&gt; Parser Cmd
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
@@ -274,40 +274,40 @@ forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f (Maybe a)
 </span><a href="Options.Applicative.Derivation.html#xpubOpt"><span class="hs-identifier hs-var">xpubOpt</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">HumanReadablePart
 </span><span class="hs-identifier hs-var">CIP5.root_xvk</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;root&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679112713"><span class="hs-identifier hs-var">helpDoc</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-80"></span><span>    </span><span id="local-6989586621679112713"><span class="annot"><span class="annottext">helpDoc :: String
-</span><a href="#local-6989586621679112713"><span class="hs-identifier hs-var hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679112717"><span class="hs-identifier hs-var">helpDoc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>    </span><span id="local-6989586621679112717"><span class="annot"><span class="annottext">helpDoc :: String
+</span><a href="#local-6989586621679112717"><span class="hs-identifier hs-var hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-81"></span><span>        </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;A root public key. If specified, tries to decrypt the derivation path \
         \of Byron addresses.&quot;</span></span><span>
 </span><span id="line-83"></span><span>
 </span><span id="line-84"></span><span class="hs-comment">-- used for 'inspect'</span><span>
-</span><span id="line-85"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679112709"><span id="local-6989586621679112711"><span class="annot"><span class="hs-identifier hs-type">Error</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span></span></span><span>
+</span><span id="line-85"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679112713"><span id="local-6989586621679112715"><span class="annot"><span class="hs-identifier hs-type">Error</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span></span></span><span>
 </span><span id="line-86"></span><span>
 </span><span id="line-87"></span><span class="annot"><a href="Command.Address.Inspect.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.Address.Inspect.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-88"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
-</span><a href="Command.Address.Inspect.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Inspect.html#Inspect"><span class="hs-identifier hs-type">Inspect</span></a></span><span class="hs-special">{</span><span id="local-6989586621679112707"><span class="annot"><span class="annottext">Maybe XPub
+</span><a href="Command.Address.Inspect.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Inspect.html#Inspect"><span class="hs-identifier hs-type">Inspect</span></a></span><span class="hs-special">{</span><span id="local-6989586621679112711"><span class="annot"><span class="annottext">Maybe XPub
 rootPublicKey :: Maybe XPub
 rootPublicKey :: Cmd -&gt; Maybe XPub
-</span><a href="#local-6989586621679112707"><span class="hs-identifier hs-var hs-var">rootPublicKey</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-89"></span><span>    </span><span id="local-6989586621679112706"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679112706"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO ByteString
+</span><a href="#local-6989586621679112711"><span class="hs-identifier hs-var hs-var">rootPublicKey</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-89"></span><span>    </span><span id="local-6989586621679112710"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679112710"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO ByteString
 </span><a href="System.IO.Extra.html#hGetBytes"><span class="hs-identifier hs-var">hGetBytes</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><span class="hs-identifier hs-var">stdin</span></span><span>
 </span><span id="line-90"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Address -&gt; Either SomeException Value
 forall e. (e ~ SomeException) =&gt; Address -&gt; Either e Value
-</span><a href="#local-6989586621679112705"><span class="hs-identifier hs-var">inspect</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Address
+</span><a href="#local-6989586621679112709"><span class="hs-identifier hs-var">inspect</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Address
 </span><span class="hs-identifier hs-var">unsafeMkAddress</span></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679112706"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-91"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679112704"><span class="annot"><span class="annottext">Value
-</span><a href="#local-6989586621679112704"><span class="hs-identifier hs-var">json</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; ByteString -&gt; IO ()
+</span><a href="#local-6989586621679112710"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-91"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679112708"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621679112708"><span class="hs-identifier hs-var">json</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; ByteString -&gt; IO ()
 </span><span class="hs-identifier hs-var">BL8.hPutStrLn</span></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><span class="hs-identifier hs-var">stdout</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Value -&gt; ByteString
 forall a. ToJSON a =&gt; a -&gt; ByteString
 </span><span class="hs-identifier hs-var">Json.encodePretty</span></span><span> </span><span class="annot"><span class="annottext">Value
-</span><a href="#local-6989586621679112704"><span class="hs-identifier hs-var">json</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-92"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span>  </span><span id="local-6989586621679112701"><span class="annot"><span class="annottext">SomeException
-</span><a href="#local-6989586621679112701"><span class="hs-identifier hs-var">e</span></a></span></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><a href="#local-6989586621679112708"><span class="hs-identifier hs-var">json</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span>  </span><span id="local-6989586621679112705"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679112705"><span class="hs-identifier hs-var">e</span></a></span></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall a. String -&gt; IO a
 </span><span class="hs-identifier hs-var">die</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO ()) -&gt; String -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -317,19 +317,19 @@ forall r. (HasCallStack, FormatType r) =&gt; Format -&gt; r
 </span><span class="hs-string">&quot;Error: {}&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeException -&gt; String
 forall e. Exception e =&gt; e -&gt; String
 </span><span class="hs-identifier hs-var">displayException</span></span><span> </span><span class="annot"><span class="annottext">SomeException
-</span><a href="#local-6989586621679112701"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679112705"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-93"></span><span>  </span><span class="hs-keyword">where</span><span>
 </span><span id="line-94"></span><span>    </span><span class="hs-comment">-- We can't use IO here, because (&lt;|&gt;) in IO only catches IOException type,</span><span>
 </span><span id="line-95"></span><span>    </span><span class="hs-comment">-- but MonadThrow in IO doesn't specialize to IOException.</span><span>
 </span><span id="line-96"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-97"></span><span>    </span><span class="hs-comment">-- Luckily, there's an existing instance for:</span><span>
 </span><span id="line-98"></span><span>    </span><span class="hs-comment">--   instance (Error e) =&gt; Alternative (Either e)</span><span>
-</span><span id="line-99"></span><span>    </span><span id="local-6989586621679112763"><span class="annot"><a href="#local-6989586621679112705"><span class="hs-identifier hs-type">inspect</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679112763"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Address</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679112763"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
-</span><span id="line-100"></span><span>    </span><span id="local-6989586621679112705"><span class="annot"><span class="annottext">inspect :: Address -&gt; Either e Value
-</span><a href="#local-6989586621679112705"><span class="hs-identifier hs-var hs-var">inspect</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe XPub -&gt; Address -&gt; Either e Value
+</span><span id="line-99"></span><span>    </span><span id="local-6989586621679112767"><span class="annot"><a href="#local-6989586621679112709"><span class="hs-identifier hs-type">inspect</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679112767"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">~</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Address</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679112767"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
+</span><span id="line-100"></span><span>    </span><span id="local-6989586621679112709"><span class="annot"><span class="annottext">inspect :: Address -&gt; Either e Value
+</span><a href="#local-6989586621679112709"><span class="hs-identifier hs-var hs-var">inspect</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe XPub -&gt; Address -&gt; Either e Value
 forall (m :: * -&gt; *).
 (Alternative m, MonadThrow m) =&gt;
 Maybe XPub -&gt; Address -&gt; m Value
 </span><span class="hs-identifier hs-var">Shelley.inspectAddress</span></span><span> </span><span class="annot"><span class="annottext">Maybe XPub
-</span><a href="#local-6989586621679112707"><span class="hs-identifier hs-var">rootPublicKey</span></a></span><span>
+</span><a href="#local-6989586621679112711"><span class="hs-identifier hs-var">rootPublicKey</span></a></span><span>
 </span><span id="line-101"></span></pre></body></html>

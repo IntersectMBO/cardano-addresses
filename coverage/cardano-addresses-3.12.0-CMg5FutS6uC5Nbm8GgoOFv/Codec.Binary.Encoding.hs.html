@@ -114,7 +114,7 @@ span.spaces    { background: white }
 <span class="lineno">   95 </span><span class="decl"><span class="istickedoff">detectEncoding str = isBase16 &lt;|&gt; isBech32  &lt;|&gt; isBase58</span>
 <span class="lineno">   96 </span><span class="spaces">  </span><span class="istickedoff">where</span>
 <span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">isBase16 = do</span>
-<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">guard (all (`elem` &quot;0123456789abcdef&quot;) (toLower &lt;$&gt; str))</span>
+<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">guard (all ((`elem` &quot;0123456789abcdef&quot;) . toLower) str)</span>
 <span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">guard (even (length str))</span>
 <span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">pure EBase16</span>
 <span class="lineno">  101 </span><span class="spaces"></span><span class="istickedoff"></span>
