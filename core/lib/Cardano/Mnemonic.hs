@@ -134,7 +134,7 @@ import qualified Data.Text as T
 -- The concatenated result is split into groups of @11@ bits, each encoding a
 -- number from 0 to 2047 serving as an index into a known dictionary:
 --
--- https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt
+-- https://github.com/cardano-foundation/cardano-wallet/tree/master/specifications/mnemonic/english.txt
 --
 -- This makes for a __human-readable sentence__ of English words.
 --
