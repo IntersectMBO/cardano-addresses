@@ -426,7 +426,7 @@ instance
             ErrDictionary (ErrInvalidDictionaryWord _) ->
                 "Found an unknown word not present in the pre-defined dictionary. \
                 \The full dictionary is available here: \
-                \https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt"
+                \https://github.com/cardano-foundation/cardano-wallet/tree/master/specifications/mnemonic/english.txt"
             ErrEntropy ErrInvalidEntropyChecksum{} ->
                 "Invalid entropy checksum: please double-check the last word of \
                 \your mnemonic sentence."
