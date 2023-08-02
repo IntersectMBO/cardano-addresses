@@ -120,16 +120,22 @@ import qualified Crypto.Random.Entropy as Crypto
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
 
-
 -- $introduction
 --
--- We call 'Entropy' an arbitrary sequence of bytes that has been generated through __high quality randomness methods__.
--- The allowed size of an 'Entropy' is @96-256@ bits and is __necessarily a multiple of 32 bits__ (4 bytes).
+-- We call 'Entropy' an arbitrary sequence of bytes that has been generated
+-- through __high quality randomness methods__. The allowed size of an
+-- 'Entropy' is @96-256@ bits and is __necessarily a multiple of 32 bits__ (4
+-- bytes).
 --
--- We call 'Mnemonic' an 'Entropy' with an appended checksum calculated by taking the first @ent / 32@ bits of the /SHA256/ hash of it,
--- where ent designates the 'Entropy' size in bits.
+-- We call 'Mnemonic' an 'Entropy' with an appended checksum calculated by
+-- taking the first @ent / 32@ bits of the /SHA256/ hash of it, where ent
+-- designates the 'Entropy' size in bits.
 --
--- The concatenated result is split into groups of @11@ bits, each encoding a number from 0 to 2047 serving as an index into a [known dictionary](https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt).
+-- The concatenated result is split into groups of @11@ bits, each encoding a
+-- number from 0 to 2047 serving as an index into a known dictionary:
+--
+-- https://github.com/cardano-foundation/cardano-wallet/tree/master/specifications/mnemonic/english.txt
+--
 -- This makes for a __human-readable sentence__ of English words.
 --
 -- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -426,7 +432,7 @@ instance
             ErrDictionary (ErrInvalidDictionaryWord _) ->
                 "Found an unknown word not present in the pre-defined dictionary. \
                 \The full dictionary is available here: \
-                \https://github.com/input-output-hk/cardano-wallet/tree/master/specifications/mnemonic/english.txt"
+                \https://github.com/cardano-foundation/cardano-wallet/tree/master/specifications/mnemonic/english.txt"
             ErrEntropy ErrInvalidEntropyChecksum{} ->
                 "Invalid entropy checksum: please double-check the last word of \
                 \your mnemonic sentence."
