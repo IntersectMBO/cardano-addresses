@@ -39,15 +39,21 @@ system: haskell-nix: haskell-nix.cabalProject' (
     compiler-nix-name = "ghc928";
     flake = {
       variants = {
-        ghc8107.compiler-nix-name = lib.mkForce "ghc8107";
-        ghc962.compiler-nix-name = lib.mkForce "ghc962";
-      };
-      crossPlatforms = p: with p;
-        lib.optional (config.compiler-nix-name == "ghc8107") ghcjs
+        ghc8107 = {
+          compiler-nix-name = lib.mkForce "ghc8107";
+          crossPlatforms = p: with p; [ghcjs]
             ++ (lib.optionals (system == "x86_64-linux") [
               mingwW64
               musl64
             ]);
+        }; 
+        ghc962.compiler-nix-name = lib.mkForce "ghc962";
+      };
+      crossPlatforms = p: with p;
+        lib.optionals (system == "x86_64-linux") [
+          mingwW64
+          musl64
+        ];
     };
     shell = {
       crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;

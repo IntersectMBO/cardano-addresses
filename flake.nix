@@ -28,7 +28,7 @@
         {
           cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
           inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
-          inherit (final.cardanoAddressesHaskellProject.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
+          inherit (final.cardanoAddressesHaskellProject.projectVariants.ghc8107.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
           inherit (self.packages.${final.system}) cardano-addresses-js cardano-addresses-demo-js;
         };
     in
@@ -59,9 +59,7 @@
           cardano-addresses-demo-js = pkgs.callPackage ./nix/cardano-addresses-demo-js.nix { };
           cardano-addresses-js-shell = pkgs.callPackage ./nix/cardano-addresses-js-shell.nix { };
 
-          flake = haskellProject.flake {
-          };
-
+          flake = haskellProject.flake {};
         in
         lib.recursiveUpdate flake {
 
