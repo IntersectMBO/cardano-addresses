@@ -202,21 +202,28 @@ roleToIndex = unsafeMkIndex . \case
 -- > :set -XOverloadedStrings
 -- > :set -XTypeApplications
 -- > :set -XDataKinds
+-- > :set -XFlexibleContexts
 -- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address ( base58 )
+-- > import Cardano.Address.Derivation ( toXPub )
+-- > import qualified Cardano.Address.Style.Icarus as Icarus
 -- >
 -- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
+-- > let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 --
 -- === Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
 -- > let Just accIx = indexFromWord32 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
+-- > let acctK = Icarus.deriveAccountPrivateKey rootK accIx
 -- >
 -- > let Just addIx = indexFromWord32 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- > let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
+-- >
+-- > base58 $ Icarus.paymentAddress Icarus.icarusMainnet (toXPub <$> addrK)
+-- >"Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
 
 instance Internal.GenMasterKey Icarus where
     type SecondFactor Icarus = ScrubbedBytes
@@ -339,12 +346,6 @@ deriveAddressPublicKey =
 -- $addresses
 -- === Generating a 'PaymentAddress'
 --
--- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( toXPub(..) )
--- >
--- > bech32 $ paymentAddress icarusMainnet (toXPub <$> addrK)
--- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
-
 -- | Possible errors from inspecting a Shelley address
 --
 -- @since 3.0.0

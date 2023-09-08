@@ -209,19 +209,20 @@ type family DerivationPath (depth :: Depth) :: Type where
 -- > import Cardano.Mnemonic ( mkSomeMnemonic )
 -- > import Cardano.Address ( base58 )
 -- > import Cardano.Address.Derivation ( toXPub )
+-- > import qualified Cardano.Address.Style.Byron as Byron
 -- >
 -- > let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
--- > let rootK = genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
+-- > let rootK = Byron.genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
 --
 -- === Deriving child keys
 --
 -- > let Just accIx = indexFromWord32 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
+-- > let acctK = Byron.deriveAccountPrivateKey rootK accIx
 -- >
 -- > let Just addIx = indexFromWord32 0x80000014
--- > let addrK = deriveAddressPrivateKey acctK addIx
+-- > let addrK = Byron.deriveAddressPrivateKey acctK addIx
 -- >
--- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
+-- > base58 $ Byron.paymentAddress Byron.byronMainnet (toXPub <$> addrK)
 -- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 instance Internal.GenMasterKey Byron where
