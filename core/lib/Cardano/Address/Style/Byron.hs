@@ -205,18 +205,24 @@ type family DerivationPath (depth :: Depth) :: Type where
 -- > :set -XOverloadedStrings
 -- > :set -XTypeApplications
 -- > :set -XDataKinds
+-- > :set -XFlexibleContexts
 -- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address ( base58 )
+-- > import Cardano.Address.Derivation ( toXPub )
 -- >
 -- > let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
 -- > let rootK = genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
 --
 -- === Deriving child keys
 --
--- > let Just accIx = fromWord32 0x80000000
+-- > let Just accIx = indexFromWord32 0x80000000
 -- > let acctK = deriveAccountPrivateKey rootK accIx
 -- >
--- > let Just addIx = fromWord32 0x80000014
+-- > let Just addIx = indexFromWord32 0x80000014
 -- > let addrK = deriveAddressPrivateKey acctK addIx
+-- >
+-- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
+-- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 instance Internal.GenMasterKey Byron where
     type SecondFactor Byron = ()
@@ -302,12 +308,6 @@ deriveAddressPrivateKey acctK =
 -- $addresses
 -- === Generating a 'PaymentAddress'
 --
--- > import Cardano.Address ( base58 )
--- > import Cardano.Address.Derivation ( toXPub(..) )
--- >
--- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
--- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
-
 -- | Possible errors from inspecting a Byron address
 --
 -- @since 3.0.0
