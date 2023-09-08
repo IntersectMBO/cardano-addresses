@@ -2,7 +2,7 @@
   description = "Cardano Addresses";
 
   inputs = {
-    nixpkgs.follows = "haskellNix/nixpkgs-2105";
+    nixpkgs.follows = "haskellNix/nixpkgs-2305";
     haskellNix = {
       url = "github:input-output-hk/haskell.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -53,18 +53,13 @@
             ];
           };
 
-          haskellProject = (import ./nix/haskell.nix pkgs.haskell-nix);
+          haskellProject = (import ./nix/haskell.nix system pkgs.haskell-nix);
 
           cardano-addresses-js = pkgs.callPackage ./nix/cardano-addresses-js.nix { };
           cardano-addresses-demo-js = pkgs.callPackage ./nix/cardano-addresses-demo-js.nix { };
           cardano-addresses-js-shell = pkgs.callPackage ./nix/cardano-addresses-js-shell.nix { };
 
           flake = haskellProject.flake {
-            crossPlatforms = p: with p; [ ghcjs ]
-            ++ (lib.optionals (system == "x86_64-linux") [
-              mingwW64
-              musl64
-            ]);
           };
 
         in

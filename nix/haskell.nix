@@ -1,7 +1,7 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-haskell-nix: haskell-nix.cabalProject' (
+system: haskell-nix: haskell-nix.cabalProject' (
   { pkgs
   , lib
   , config
@@ -36,10 +36,21 @@ haskell-nix: haskell-nix.cabalProject' (
       constraints: Win32 ==2.6.1.0, mintty ==0.1.2
     '';
 
-    compiler-nix-name = "ghc8107";
-
+    compiler-nix-name = "ghc928";
+    flake = {
+      variants = {
+        ghc8107.compiler-nix-name = lib.mkForce "ghc8107";
+        ghc962.compiler-nix-name = lib.mkForce "ghc962";
+      };
+      crossPlatforms = p: with p;
+        lib.optional (config.compiler-nix-name == "ghc8107") ghcjs
+            ++ (lib.optionals (system == "x86_64-linux") [
+              mingwW64
+              musl64
+            ]);
+    };
     shell = {
-      crossPlatforms = p: [ p.ghcjs ];
+      crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
       tools = {
         hpack.version = "latest";
         haskell-language-server.version = "latest";
