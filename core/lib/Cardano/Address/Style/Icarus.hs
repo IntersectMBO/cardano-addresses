@@ -382,7 +382,48 @@ inspectIcarusAddress = inspectAddress
 --
 -- Returns a JSON object with information about the address, or throws
 -- 'ErrInspectAddress' if the address isn't an icarus address.
+-- λ> :set -XOverloadedStrings
+-- λ> :set -XTypeApplications
+-- λ> :set -XDataKinds
+-- λ> :set -XFlexibleContexts
+-- λ> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- λ> import qualified Cardano.Address.Style.Icarus as Icarus
+-- λ> import Cardano.Address.Derivation ( toXPub )
+-- λ> import Cardano.Address ( base58 )
+-- λ> let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
+-- λ> let sndFactor = mempty
+-- λ> let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
+-- λ> let Just accIx = indexFromWord32 0x80000000
+-- λ> let acctK = Icarus.deriveAccountPrivateKey rootK accIx
+-- λ> let Just addIx = indexFromWord32 0x00000014
+-- λ> let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
+-- λ> (toXPub <$> addrK)
+-- Icarus {getKey = XPub {xpubPublicKey = "\223\148\230\206\187\135\253\SO\151\216\183\210]}s:\151\134\174q\173\207\184\202\EM\176\170\220\216\235\&1\243", xpubChaincode = ChainCode "\\\160\196\&8~\208\165\241\138\SOH\222\ETX*\150&\214\185\196 \153\DC2\167\165\243\155\136\228\255\229~d\253"}}
+-- λ> base58 $ Icarus.paymentAddress icarusMainnet (toXPub <$> addrK)
+-- "Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5"
 --
+-- λ> import Cardano.Codec.Cbor
+-- λ> import Crypto.Hash.Algorithms (Blake2b_224, SHA3_256)
+-- λ> import Crypto.Hash (hash)
+-- λ> let blake2b224 = hash @_ @Blake2b_224
+-- λ> let sha3256 = hash @_ @SHA3_256
+-- λ> import qualified Codec.CBOR.Encoding as CBOR
+-- λ> let encodeXPub = CBOR.encodeBytes (xpubToBytes . Icarus.getKey $ icarusAddrKPub)
+-- λ> let encodeSpendingData = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0 <> encodeXPub
+-- λ> let encodeAttrs = CBOR.encodeMapLen 0
+-- λ> import qualified Data.ByteArray as BA
+-- λ> let rootAddr = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty <> CBOR.encodeListLen 3 <> CBOR.encodeWord8 0 <> encodeSpendingData <> encodeAttrs
+-- λ> encode EBase16 rootAddr
+-- "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf"
+--
+-- $ echo Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5 | cardano-address address inspect
+-- {
+--    "stake_reference": "none",
+--    "address_style": "Icarus",
+--    "address_root": "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf",
+--    "network_tag": null,
+--    "address_type": 8
+--}
 -- @since 2.0.0
 inspectAddress :: MonadThrow m => Address -> m Json.Value
 inspectAddress = either throwM (pure . toJSON) . eitherInspectAddress
