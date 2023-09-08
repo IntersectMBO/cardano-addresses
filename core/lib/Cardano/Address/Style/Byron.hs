@@ -148,6 +148,13 @@ import qualified Data.Text.Encoding as T
 -- contains what is necessary to perform key derivation and generate addresses
 -- from a 'Byron' type.
 --
+-- Byron uses WholeDomain (meaning Soft+Hardened) for account key and payment key derivation.
+-- It should use Hardened for account and Soft for payment as design,
+-- but due to the error made prior 2019 in cardano-sl
+-- implementation WholeDomain was adopted to handle all the keys. Nevertheless,
+-- it was recommended and enforced to use Hardened for account derivation and Soft for payment
+-- key derivation from 2019 onwards.
+
 -- == Deprecation Notice
 --
 -- Unless you have good reason to do so (like writing backward-compatible code
