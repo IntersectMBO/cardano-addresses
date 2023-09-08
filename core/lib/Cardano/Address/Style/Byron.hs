@@ -153,7 +153,8 @@ import qualified Data.Text.Encoding as T
 -- but due to the error made prior 2019 in cardano-sl
 -- implementation WholeDomain was adopted to handle all the keys. Nevertheless,
 -- it was recommended and enforced to use Hardened for account derivation and Soft for payment
--- key derivation from 2019 onwards.
+-- key derivation from 2019 onwards. To sum up both account index and payment index can assume
+-- values from 0 to 4294967295 (ie. 0xFFFFFFFF)
 
 -- == Deprecation Notice
 --
@@ -222,7 +223,7 @@ type family DerivationPath (depth :: Depth) :: Type where
 -- > let rootK = Byron.genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
 --
 -- === Deriving child keys
---
+-- === Both accIx and addIx assume values from 0 to 4294967295 (ie. 0xFFFFFFFF)
 -- > let Just accIx = indexFromWord32 0x80000000
 -- > let acctK = Byron.deriveAccountPrivateKey rootK accIx
 -- >
