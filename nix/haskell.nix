@@ -46,7 +46,7 @@ system: haskell-nix: haskell-nix.cabalProject' (
               mingwW64
               musl64
             ]);
-        }; 
+        };
         ghc962.compiler-nix-name = lib.mkForce "ghc962";
       };
       crossPlatforms = p: with p;
