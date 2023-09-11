@@ -121,8 +121,6 @@ import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
-import Control.Applicative
-    ( Alternative )
 import Control.DeepSeq
     ( NFData )
 import Control.Exception
@@ -481,7 +479,7 @@ prettyErrInspectAddress = \case
 --
 -- @since 2.0.0
 inspectShelleyAddress
-    :: (Alternative m, MonadThrow m)
+    :: MonadThrow m
     => Maybe XPub
     -> Address
     -> m Json.Value
@@ -497,7 +495,7 @@ inspectShelleyAddress = inspectAddress
 --
 -- @since 3.0.0
 inspectAddress
-    :: (Alternative m, MonadThrow m)
+    :: MonadThrow m
     => Maybe XPub
     -> Address
     -> m Json.Value
