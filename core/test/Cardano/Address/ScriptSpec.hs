@@ -690,7 +690,7 @@ spec = do
                 `shouldBe` Left err
 
         it "Invalid JSON" $ do
-            let err = "Error in $: Failed reading: not a valid json value"
+            let err = "Unexpected \"'';[][\""
             case Json.eitherDecode @(Script KeyHash) "'';[][" of
                 Right _ -> expectationFailure "Parsed invalid json?"
                 Left msg -> msg `shouldStartWith` err
