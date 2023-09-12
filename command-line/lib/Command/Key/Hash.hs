@@ -21,12 +21,14 @@ import Control.Monad
     ( when )
 import Data.Maybe
     ( fromJust )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Format
     ( FormatType (..), formatOpt )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( pretty )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -43,8 +45,8 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "hash" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the hash of a public key"
-        <> footerDoc (Just $ string $ mconcat
-            [ "The public key is read from stdin."
+        <> footerDoc (Just $ pretty $ mconcat
+            [ "The public key is read from stdin." :: Text
             , "To get hex-encoded output pass '--hex'."
             , "Otherwise bech32-encoded hash is returned."
             ])

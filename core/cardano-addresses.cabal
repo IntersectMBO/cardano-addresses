@@ -53,7 +53,7 @@ library
       NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
   build-depends:
-      aeson
+      aeson >= 2.0
     , base >=4.7 && <5
     , base58-bytestring
     , basement
@@ -72,7 +72,6 @@ library
     , extra
     , fmt
     , hashable
-    , hw-aeson
     , memory
     , text
     , unordered-containers
@@ -111,7 +110,7 @@ test-suite unit
       hspec-discover:hspec-discover
   build-depends:
       QuickCheck >=2.14.2
-    , aeson
+    , aeson >= 2.0
     , aeson-pretty
     , base >=4.7 && <5
     , bech32

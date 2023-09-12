@@ -1,63 +1,27 @@
-index-state: 2023-01-14T00:00:00Z
+repository cardano-haskell-packages
+  url: https://input-output-hk.github.io/cardano-haskell-packages
+  secure: True
+  root-keys:
+    3e0cce471cf09815f930210f7827266fd09045445d65923e6d0238a6cd15126f
+    443abb7fb497a134c343faf52f0b659bd7999bc06b7f63fa76dc99d631f9bea1
+    a86a1f6ce86c449c46666bda44268677abf29b5b2d2eb5ec7af903ec2f117a82
+    bcec67e8e99cabfa7764d75ad9b158d72bfacf70ca1d0ec8bc6b4406d1bf8413
+    c00aae8461a256275598500ea0e187588c35a5d5d7454fb57eac18d9edb86a56
+    d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
-constraints:
-    ghcjs-base >=0.2.0.3
-  , bytestring >= 0.11.4
+index-state:
+  , hackage.haskell.org 2023-09-11T03:58:21Z
+  , cardano-haskell-packages 2023-09-12T01:01:08Z
 
 packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
   jsapi/cardano-addresses-jsapi.cabal
 
-source-repository-package
-    type: git
-    location: https://github.com/input-output-hk/cardano-crypto
-    tag: 2547ad1e80aeabca2899951601079408becbc92c
-    --sha256: 1p2kg2w02q5w1cvqzhfhqmxviy4xrzada3mmb096j2n6hfr20kri
+constraints:
+    ghcjs-base >=0.2.0.3
+  , bytestring >= 0.11.4
+  , optparse-applicative >= 0.18.1.0
 
--- TODO This was patched to work with aeson 1 & 2 with the help of hw-aeson.
--- Once downstream projects are all upgraded to work with aeson-2, they can
--- be changed to work strictly with aeson 2 only.
-source-repository-package
-    type: git
-    location: https://github.com/input-output-hk/hjsonpointer
-    tag: bb99294424e0c5b3c2942c743b545e4b01c12ce8
-    --sha256: 11z5s4xmm6cxy6sdcf9ly4lr0qh3c811hpm0bmlp4c3yq8v3m9rk
-
--- TODO This was patched to work with aeson 1 & 2 with the help of hw-aeson.
--- Once downstream projects are all upgraded to work with aeson-2, they can
--- be changed to work strictly with aeson 2 only.
-source-repository-package
-    type: git
-    location: https://github.com/input-output-hk/hjsonschema
-    tag: 1546af7fc267d5eea805ef223dd2b59ac120b784
-    --sha256: 0sdikhsq6nnhmmvcpwzzrwfn9cn7rg75629qnrx01i5vm5ci4314
-
--- TODO This is a compatibility shim to make it easier for our library dependencies to
--- be compatible with both aeson 1 & 2.  Once downstream projects are all upgraded to
--- work with aeson-2, library dependencies will need to be updated to no longer use
--- this compatibility shim and have bounds to indicate they work with aeson-2 only.
--- After this, the dependency to hw-aeson can be dropped.
-source-repository-package
-    type: git
-    location: https://github.com/haskell-works/hw-aeson
-    tag: ba7c1e41c6e54d6bf9fd1cd013489ac713fc3153
-    --sha256: 1czyn0whgv7czzgwn5y1zgwlkb9p9sn9z9sc9gixrjprcyc0p15p
-
--- Relax overly strict bounds in hjsonschema and hjsonpointer
-allow-newer:
-    *:aeson
-  , hjsonschema:QuickCheck
-  , hjsonschema:aeson
-  , hjsonschema:hashable
-  , hjsonschema:hjsonpointer
-  , hjsonschema:protolude
-  , hjsonpointer:aeson
-  , hjsonpointer:hashable
-  , jsaddle:base-compat
-  , jsaddle:attoparsec
-  , jsaddle:lens
-  , jsaddle:bytestring
-  , protolude:bytestring
-
+tests: True
 test-show-details: direct

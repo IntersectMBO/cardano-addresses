@@ -34,7 +34,7 @@ library
   js-sources:
       glue/test.js
   build-depends:
-      aeson
+      aeson >= 2.0
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
