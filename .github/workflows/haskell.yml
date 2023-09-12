@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["8.10.7", "9.2.4"]
+        ghc: ["8.10.7", "9.2.4", "9.6.2"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     env:
@@ -45,7 +45,7 @@ jobs:
       run: |
         # Use GHCUP to manage ghc/cabal
         ghcup install ghc --set ${{ matrix.ghc }}
-        ghcup install cabal --set 3.6.2.0
+        ghcup install cabal --set 3.10.1.0
 
         ghc --version
         cabal --version
