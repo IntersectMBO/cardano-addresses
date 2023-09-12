@@ -218,6 +218,8 @@ roleToIndex = unsafeMkIndex . \case
 -- === accIx assumes values from 2147483648 (ie. 0x80000000) to 4294967295 (ie. 0xFFFFFFFF)
 -- === addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
 -- > let Just accIx = indexFromWord32 0x80000000
+-- === this is the same as
+-- > let accIx = minBound @(Index 'Hardened 'AccountK)
 -- > let acctK = Icarus.deriveAccountPrivateKey rootK accIx
 -- >
 -- > let Just addIx = indexFromWord32 0x00000014

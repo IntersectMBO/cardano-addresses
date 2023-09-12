@@ -224,10 +224,13 @@ type family DerivationPath (depth :: Depth) :: Type where
 --
 -- === Deriving child keys
 -- === Both accIx and addIx assume values from 0 to 4294967295 (ie. 0xFFFFFFFF)
--- > let Just accIx = indexFromWord32 0x80000000
+-- === In case of account one can get this bound via
+-- === let accIxMin = minBound @(Index 'WholeDomain 'AccountK)
+-- === let accIxMax = maxBound @(Index 'WholeDomain 'AccountK)
+-- > let Just accIx = wholeDomainIndex 0x80000000
 -- > let acctK = Byron.deriveAccountPrivateKey rootK accIx
 -- >
--- > let Just addIx = indexFromWord32 0x80000014
+-- > let Just addIx = wholeDomainIndex 0x80000014
 -- > let addrK = Byron.deriveAddressPrivateKey acctK addIx
 -- >
 -- > base58 $ Byron.paymentAddress Byron.byronMainnet (toXPub <$> addrK)
