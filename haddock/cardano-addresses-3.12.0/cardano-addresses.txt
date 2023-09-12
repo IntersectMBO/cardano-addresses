@@ -806,12 +806,6 @@ inspectAddress :: forall m. MonadThrow m => Maybe XPub -> Address -> m Value
 --   network discrimination.
 paymentAddress :: NetworkDiscriminant Byron -> Byron 'PaymentK XPub -> Address
 
--- | Possible errors from inspecting a Byron address
-data ErrInspectAddress
-MissingExpectedDerivationPath :: ErrInspectAddress
-DeserialiseError :: DeserialiseFailure -> ErrInspectAddress
-FailedToDecryptPath :: ErrInspectAddress
-
 -- | Pretty-print an <a>ErrInspectAddress</a>
 prettyErrInspectAddress :: ErrInspectAddress -> String
 
@@ -937,18 +931,9 @@ AddressInfo :: !ByteString -> !Maybe NetworkTag -> AddressInfo
 --   <a>ErrInspectAddress</a> if it's not a valid icarus address.
 eitherInspectAddress :: Address -> Either ErrInspectAddress AddressInfo
 
--- | Determines whether an <a>Address</a> is an Icarus address.
---   
---   Returns a JSON object with information about the address, or throws
---   <a>ErrInspectAddress</a> if the address isn't an icarus address.
-inspectAddress :: MonadThrow m => Address -> m Value
-
 -- | Convert a public key to a payment <a>Address</a> valid for the given
 --   network discrimination.
 paymentAddress :: NetworkDiscriminant Icarus -> Icarus 'PaymentK XPub -> Address
-
--- | Possible errors from inspecting a Shelley address
-data ErrInspectAddress
 
 -- | Pretty-print an <a>ErrInspectAddress</a>
 prettyErrInspectAddress :: ErrInspectAddress -> String
