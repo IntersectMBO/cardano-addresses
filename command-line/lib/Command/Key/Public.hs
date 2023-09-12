@@ -19,10 +19,12 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Data.Maybe
     ( fromJust )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( pretty )
 import Options.Applicative.Public
     ( PublicType (..), publicOpt )
 import System.IO
@@ -40,8 +42,8 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "public" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the public counterpart of a private key"
-        <> footerDoc (Just $ string $ mconcat
-            [ "The private key is read from stdin."
+        <> footerDoc (Just $ pretty $ mconcat
+            [ "The private key is read from stdin." :: Text
             , "To get extended public key pass '--with-chain-code'."
             , "To get public key pass '--without-chain-code'."
             ])
