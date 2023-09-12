@@ -148,6 +148,14 @@ import qualified Data.Text.Encoding as T
 -- contains what is necessary to perform key derivation and generate addresses
 -- from a 'Byron' type.
 --
+-- Byron uses WholeDomain (meaning Soft+Hardened) for account key and payment key derivation.
+-- It should use Hardened for account and Soft for payment as design,
+-- but due to the error made prior 2019 in cardano-sl
+-- implementation WholeDomain was adopted to handle all the keys. Nevertheless,
+-- it was recommended and enforced to use Hardened for account derivation and Soft for payment
+-- key derivation from 2019 onwards. To sum up both account index and payment index can assume
+-- values from 0 to 4294967295 (ie. 0xFFFFFFFF)
+
 -- == Deprecation Notice
 --
 -- Unless you have good reason to do so (like writing backward-compatible code
@@ -205,18 +213,28 @@ type family DerivationPath (depth :: Depth) :: Type where
 -- > :set -XOverloadedStrings
 -- > :set -XTypeApplications
 -- > :set -XDataKinds
+-- > :set -XFlexibleContexts
 -- > import Cardano.Mnemonic ( mkSomeMnemonic )
+-- > import Cardano.Address ( base58 )
+-- > import Cardano.Address.Derivation ( toXPub )
+-- > import qualified Cardano.Address.Style.Byron as Byron
 -- >
 -- > let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
--- > let rootK = genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
+-- > let rootK = Byron.genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
 --
 -- === Deriving child keys
---
--- > let Just accIx = fromWord32 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
+-- === Both accIx and addIx assume values from 0 to 4294967295 (ie. 0xFFFFFFFF)
+-- === In case of account one can get this bound via
+-- === let accIxMin = minBound @(Index 'WholeDomain 'AccountK)
+-- === let accIxMax = maxBound @(Index 'WholeDomain 'AccountK)
+-- > let Just accIx = wholeDomainIndex 0x80000000
+-- > let acctK = Byron.deriveAccountPrivateKey rootK accIx
 -- >
--- > let Just addIx = fromWord32 0x80000014
--- > let addrK = deriveAddressPrivateKey acctK addIx
+-- > let Just addIx = wholeDomainIndex 0x80000014
+-- > let addrK = Byron.deriveAddressPrivateKey acctK addIx
+-- >
+-- > base58 $ Byron.paymentAddress Byron.byronMainnet (toXPub <$> addrK)
+-- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
 
 instance Internal.GenMasterKey Byron where
     type SecondFactor Byron = ()
@@ -302,12 +320,6 @@ deriveAddressPrivateKey acctK =
 -- $addresses
 -- === Generating a 'PaymentAddress'
 --
--- > import Cardano.Address ( base58 )
--- > import Cardano.Address.Derivation ( toXPub(..) )
--- >
--- > base58 $ paymentAddress byronMainnet (toXPub <$> addrK)
--- > "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
-
 -- | Possible errors from inspecting a Byron address
 --
 -- @since 3.0.0
