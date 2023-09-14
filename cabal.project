@@ -9,6 +9,23 @@ repository cardano-haskell-packages
     c00aae8461a256275598500ea0e187588c35a5d5d7454fb57eac18d9edb86a56
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
+repository ghcjs-overlay
+  url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/91f4ce9bea0e7f739b7495647c3f72a308ed1c6f
+  secure: True
+  root-keys:
+  key-threshold: 0
+  --sha256: sha256-mZT7c+xR5cUTjLdCqOxpprjYL3kr/+9rmumtXvWAQlM=
+
+if os(ghcjs)
+  allow-newer:
+    ghcjs-base:*
+
+  constraints: digest == 0.0.1.2, text < 2.0
+
+  active-repositories: hackage.haskell.org, ghcjs-overlay:override, cardano-haskell-packages
+else
+  active-repositories: hackage.haskell.org, cardano-haskell-packages
+
 index-state:
   , hackage.haskell.org 2023-09-11T03:58:21Z
   , cardano-haskell-packages 2023-09-12T01:01:08Z
