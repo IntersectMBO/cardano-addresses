@@ -1,7 +1,8 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-haskell-nix: haskell-nix.cabalProject' (
+{ system, CHaP, haskell-nix }:
+haskell-nix.cabalProject' (
   { pkgs
   , lib
   , config
@@ -24,9 +25,21 @@ haskell-nix: haskell-nix.cabalProject' (
   {
     src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
 
+    inputMap = {
+      "https://input-output-hk.github.io/cardano-haskell-packages" = CHaP;
+    };
+
+    # Setting this to builtins.currentSystem allows --impure to be used
+    # to run evaluation on the current system.  For instance
+    #   nix flake show --impure --allow-import-from-derivation
+    # Falling back onto "x86_64-linux" should improve eval performance
+    # on hydra.
+    # evalSystem = builtins.currentSystem or "x86_64-linux";
+
     # because src is filtered, (src + "./file") does not yet work with flake without https://github.com/NixOS/nix/pull/5163
     # So we avoid this idiom:
     inherit cabalProject;
+    cabalProjectDefaults = null; # TODO remove once haskell.nix is updated
     cabalProjectFreeze = null;
     cabalProjectLocal = ''
       -- Constraints not in `cabal.project.freeze for cross platform support
@@ -36,10 +49,27 @@ haskell-nix: haskell-nix.cabalProject' (
       constraints: Win32 ==2.6.1.0, mintty ==0.1.2
     '';
 
-    compiler-nix-name = "ghc8107";
-
+    compiler-nix-name = "ghc928";
+    flake = {
+      variants = {
+        ghc8107 = {
+          compiler-nix-name = lib.mkForce "ghc8107";
+          crossPlatforms = p: with p; [ghcjs]
+            ++ (lib.optionals (system == "x86_64-linux") [
+              mingwW64
+              musl64
+            ]);
+        };
+        ghc962.compiler-nix-name = lib.mkForce "ghc962";
+      };
+      crossPlatforms = p: with p;
+        lib.optionals (system == "x86_64-linux") [
+          mingwW64
+          musl64
+        ];
+    };
     shell = {
-      crossPlatforms = p: [ p.ghcjs ];
+      crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
       tools = {
         hpack.version = "latest";
         haskell-language-server.version = "latest";
@@ -178,8 +208,8 @@ haskell-nix: haskell-nix.cabalProject' (
             cp ${jsbits}/* jsbits
           '';
         in
-        if stdenv.hostPlatform.isGhcjs then {
-          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+        lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.buildPackages.zlib ];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
@@ -190,7 +220,8 @@ haskell-nix: haskell-nix.cabalProject' (
             config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
             pkgs.buildPackages.nodejs
           ];
-        } else {
+        })
+      ({ pkgs, ... }: lib.mkIf (!pkgs.stdenv.hostPlatform.isGhcjs) {
           # Disable jsapi-test on jsaddle/native. It's not working yet.
           packages.cardano-addresses-jsapi.components.tests.jsapi-test.preCheck = ''
             echo "Tests disabled on non-ghcjs"
