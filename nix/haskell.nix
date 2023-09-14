@@ -39,7 +39,6 @@ haskell-nix.cabalProject' (
     # because src is filtered, (src + "./file") does not yet work with flake without https://github.com/NixOS/nix/pull/5163
     # So we avoid this idiom:
     inherit cabalProject;
-    cabalProjectDefaults = null; # TODO remove once haskell.nix is updated
     cabalProjectFreeze = null;
     cabalProjectLocal = ''
       -- Constraints not in `cabal.project.freeze for cross platform support
