@@ -270,11 +270,11 @@
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1694743473,
-        "narHash": "sha256-Eg0pS15XnXFfkB2iRFtwCBIw+tLcvyg2NEbGpW0whQs=",
+        "lastModified": 1694773367,
+        "narHash": "sha256-bDIQ9FRE+jc5CN65QfLTk0JgjKJgl5fAEISV0X5XkKU=",
         "owner": "input-output-hk",
         "repo": "haskell.nix",
-        "rev": "445086f35d450af485cd9200b86211355095b2a1",
+        "rev": "ef09c9687d2f66bd8f5e226acaaf3f85af9b24cc",
         "type": "github"
       },
       "original": {
