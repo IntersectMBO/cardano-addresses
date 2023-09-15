@@ -34,7 +34,7 @@ haskell-nix.cabalProject' (
     #   nix flake show --impure --allow-import-from-derivation
     # Falling back onto "x86_64-linux" should improve eval performance
     # on hydra.
-    # evalSystem = builtins.currentSystem or "x86_64-linux";
+    evalSystem = builtins.currentSystem or "x86_64-linux";
 
     # because src is filtered, (src + "./file") does not yet work with flake without https://github.com/NixOS/nix/pull/5163
     # So we avoid this idiom:
@@ -51,17 +51,11 @@ haskell-nix.cabalProject' (
     compiler-nix-name = "ghc928";
     flake = {
       variants = {
-        ghc8107 = {
-          compiler-nix-name = lib.mkForce "ghc8107";
-          crossPlatforms = p: with p; [ghcjs]
-            ++ (lib.optionals (system == "x86_64-linux") [
-              mingwW64
-              musl64
-            ]);
-        };
+        ghc8107.compiler-nix-name = lib.mkForce "ghc8107";
         ghc962.compiler-nix-name = lib.mkForce "ghc962";
       };
       crossPlatforms = p: with p;
+        lib.optional (config.compiler-nix-name == "ghc8107") ghcjs ++
         lib.optionals (system == "x86_64-linux") [
           mingwW64
           musl64
