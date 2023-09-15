@@ -70,7 +70,7 @@ haskell-nix.cabalProject' (
     shell = {
       crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
       tools = {
-        haskell-language-server.version = "latest";
+        haskell-language-server.src = haskell-nix.sources."hls-2.2";
       };
       nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
       packages = ps:
