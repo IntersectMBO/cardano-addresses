@@ -20,7 +20,7 @@ if os(ghcjs)
   allow-newer:
     ghcjs-base:*
 
-  constraints: digest == 0.0.1.2, text < 2.0
+  constraints: digest == 0.0.1.2, entropy == 0.4.1.7, text < 2.0
 
   active-repositories: hackage.haskell.org, ghcjs-overlay:override, cardano-haskell-packages
 else
