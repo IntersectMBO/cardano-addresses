@@ -85,11 +85,6 @@ haskell-nix.cabalProject' (
     };
 
     modules = [
-      {
-        packages = lib.genAttrs projectPackages (_: {
-          configureFlags = [ "--ghc-option=-Werror" ];
-        });
-      }
       ({ config, ... }: {
         # This works around an issue with `cardano-addresses-cli.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
