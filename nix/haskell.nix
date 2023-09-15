@@ -70,10 +70,9 @@ haskell-nix.cabalProject' (
     shell = {
       crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
       tools = {
-        hpack.version = "latest";
         haskell-language-server.version = "latest";
       };
-      nativeBuildInputs = with pkgs; [ nodejs nixWrapped cabalWrapped ];
+      nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
       packages = ps:
         let
           projectPackages' = haskellLib.selectProjectPackages ps;
@@ -91,48 +90,6 @@ haskell-nix.cabalProject' (
           configureFlags = [ "--ghc-option=-Werror" ];
         });
       }
-      (lib.mkIf stdenv.hostPlatform.isWindows ({ config, ... }: {
-        # Allow reinstallation of Win32
-        nonReinstallablePkgs =
-          [
-            "rts"
-            "ghc-heap"
-            "ghc-prim"
-            "integer-gmp"
-            "integer-simple"
-            "base"
-            "deepseq"
-            "array"
-            "ghc-boot-th"
-            "pretty"
-            "template-haskell"
-            # ghcjs custom packages
-            "ghcjs-prim"
-            "ghcjs-th"
-            "ghc-boot"
-            "ghc"
-            "array"
-            "binary"
-            "bytestring"
-            "containers"
-            "filepath"
-            "ghc-boot"
-            "ghc-compact"
-            "ghc-prim"
-            # "ghci" "haskeline"
-            "hpc"
-            "mtl"
-            "parsec"
-            "text"
-            "transformers"
-            "xhtml"
-            # "stm" "terminfo"
-          ];
-        # Windows cross-compilation only works on Linux
-        packages = lib.genAttrs projectPackages (_: {
-          package.buildable = stdenv.buildPlatform.isLinux;
-        });
-      }))
       ({ config, ... }: {
         # This works around an issue with `cardano-addresses-cli.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
