@@ -20,9 +20,14 @@ if os(ghcjs)
   allow-newer:
     ghcjs-base:*
 
-  constraints: digest == 0.0.1.2, entropy == 0.4.1.7, text < 2.0
+  constraints:
+      cborg == 0.2.4.0
+    , digest == 0.0.1.2
+    , entropy == 0.4.1.7
+    , filepath == 1.4.2.1
+    , text < 2.0
 
-  active-repositories: hackage.haskell.org, ghcjs-overlay:override, cardano-haskell-packages
+  active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
 else
   active-repositories: hackage.haskell.org, cardano-haskell-packages
 
@@ -37,7 +42,6 @@ packages:
 
 constraints:
     ghcjs-base >=0.2.0.3
-  , bytestring >= 0.11.4
   , optparse-applicative >= 0.18.1.0
 
 tests: True
