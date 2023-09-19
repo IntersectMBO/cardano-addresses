@@ -24,8 +24,13 @@ if os(ghcjs)
       cborg == 0.2.4.0
     , digest == 0.0.1.2
     , entropy == 0.4.1.7
-    , filepath == 1.4.2.1
-    , text < 2.0
+
+  if impl(ghc<9)
+    constraints:
+        text < 2.0
+      , filepath == 1.4.2.1
+  else
+    allow-newer: *:*
 
   active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
 else
