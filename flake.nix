@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.follows = "haskellNix/nixpkgs-2305";
     haskellNix = {
-      url = "github:input-output-hk/haskell.nix";
+      url = "github:input-output-hk/haskell.nix/angerman/fix-win-thdll";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     CHaP = {
