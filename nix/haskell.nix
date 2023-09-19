@@ -44,6 +44,12 @@ haskell-nix.cabalProject' (
       -- Constraints not in `cabal.project.freeze for cross platform support
       packages:
         jsbits/cardano-addresses-jsbits.cabal
+    '' + lib.optionalString (stdenv.hostPlatform.isGhcjs && config.compiler-nix-name == "ghc962") ''
+      source-repository-package
+        type: git
+        location: https://github.com/hsyl20/ghcjs-base.git
+        tag: db50683c8a20f79c04c385f3ec43dc5730d966ce
+        --sha256: sha256-Ywd/TCIcArFB7ovMaO+SzbPaQeMwMtF3ux/Q0b7bXkM=
     '';
 
     compiler-nix-name = "ghc928";
