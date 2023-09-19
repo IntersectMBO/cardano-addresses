@@ -44,8 +44,6 @@ haskell-nix.cabalProject' (
       -- Constraints not in `cabal.project.freeze for cross platform support
       packages:
         jsbits/cardano-addresses-jsbits.cabal
-    '' + lib.optionalString stdenv.hostPlatform.isWindows ''
-      constraints: Win32 ==2.6.1.0, mintty ==0.1.2
     '';
 
     compiler-nix-name = "ghc928";
