@@ -270,16 +270,15 @@
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1695186716,
-        "narHash": "sha256-G+OKRmUZTEp4Oej/kbgCxS4Si8j+5qC80EjxW2wLadE=",
+        "lastModified": 1695206781,
+        "narHash": "sha256-yTWw9uDmjNF8iFciGJzaKUu4pyY8L9Mv4m9g9rBHPkA=",
         "owner": "input-output-hk",
         "repo": "haskell.nix",
-        "rev": "d9e4789c2718ba13eb7edd5a62fa8cda19adf63e",
+        "rev": "d7b8a32fdeeb009f6c908987cba8298df497c4e1",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "angerman/fix-win-thdll",
         "repo": "haskell.nix",
         "type": "github"
       }
