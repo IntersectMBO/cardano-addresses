@@ -57,9 +57,10 @@ haskell-nix.cabalProject' (
       variants = {
         ghc8107.compiler-nix-name = lib.mkForce "ghc8107";
         ghc962.compiler-nix-name = lib.mkForce "ghc962";
+        ghc99.compiler-nix-name = lib.mkForce "ghc99";
       };
       crossPlatforms = p: with p;
-        lib.optional (builtins.elem config.compiler-nix-name ["ghc8107" "ghc962"]) ghcjs ++
+        lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
         lib.optionals (system == "x86_64-linux") [
           mingwW64
           musl64
