@@ -21,6 +21,7 @@ haskell-nix.cabalProject' (
     ];
     isCrossBuild = stdenv.hostPlatform != stdenv.buildPlatform;
     cabalProject = builtins.readFile ../cabal.project;
+    compareGhc = builtins.compareVersion pkgs.buildPackage.compiler.${config.compiler-nix-name}.version;
   in
   {
     src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
@@ -67,8 +68,8 @@ haskell-nix.cabalProject' (
         ];
     };
     shell = {
-      crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
-      tools = {
+      crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
+      tools = lib.optionalAttrs (compareGhc "9.8" < 0) {
         haskell-language-server.src = haskell-nix.sources."hls-2.2";
       };
       nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
