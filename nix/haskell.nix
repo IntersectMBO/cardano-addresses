@@ -21,7 +21,7 @@ haskell-nix.cabalProject' (
     ];
     isCrossBuild = stdenv.hostPlatform != stdenv.buildPlatform;
     cabalProject = builtins.readFile ../cabal.project;
-    compareGhc = builtins.compareVersion pkgs.buildPackage.compiler.${config.compiler-nix-name}.version;
+    compareGhc = builtins.compareVersions pkgs.buildPackage.compiler.${config.compiler-nix-name}.version;
   in
   {
     src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
