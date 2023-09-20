@@ -1,3 +1,13 @@
+repository head.hackage.ghc.haskell.org
+  url: https://ghc.gitlab.haskell.org/head.hackage/
+  secure: True
+  key-threshold: 3
+  root-keys:
+     f76d08be13e9a61a377a85e2fb63f4c5435d40f8feb3e12eb05905edb8cdea89
+     26021a13b401500c8eb2761ca95c61f2d625bfef951b939a8124ed12ecf07329
+     7541f32a4ccca4f97aea3b22f5e593ba2c0267546016b992dfadcd2fe944e55d
+  --sha256: sha256-DXv6ZLGdD17ppJdww7NUYdKnKtEAMOIayvK/hO4+DL8=
+
 repository cardano-haskell-packages
   url: https://input-output-hk.github.io/cardano-haskell-packages
   secure: True
@@ -32,9 +42,16 @@ if os(ghcjs)
   else
     allow-newer: *:*
 
-  active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
+  if impl(ghc>=9.8)
+    active-repositories: hackage.haskell.org, head.hackage.ghc.haskell.org:override, cardano-haskell-packages, ghcjs-overlay:override
+  else
+    active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
 else
-  active-repositories: hackage.haskell.org, cardano-haskell-packages
+  if impl(ghc>=9.8)
+    allow-newer: *:*
+    active-repositories: hackage.haskell.org, head.hackage.ghc.haskell.org:override, cardano-haskell-packages
+  else
+    active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 index-state:
   , hackage.haskell.org 2023-09-11T03:58:21Z
