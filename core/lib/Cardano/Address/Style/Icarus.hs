@@ -72,6 +72,7 @@ import Cardano.Address
     , NetworkTag (..)
     , unAddress
     , unsafeMkAddress
+    , HasNetworkDiscriminant (..)
     )
 import Cardano.Address.Derivation
     ( Depth (..)

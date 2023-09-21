@@ -94,6 +94,7 @@ import Cardano.Address
     , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
+    , HasNetworkDiscriminant (..)
     )
 import Cardano.Address.Derivation
     ( Depth (..)
