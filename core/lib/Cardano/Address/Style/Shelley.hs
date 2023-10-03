@@ -89,12 +89,12 @@ import Cardano.Address
     ( Address (..)
     , AddressDiscrimination (..)
     , ChainPointer (..)
+    , HasNetworkDiscriminant (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , invariantNetworkTag
     , invariantSize
     , unsafeMkAddress
-    , HasNetworkDiscriminant (..)
     )
 import Cardano.Address.Derivation
     ( Depth (..)

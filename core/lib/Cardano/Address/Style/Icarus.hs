@@ -68,11 +68,11 @@ import Prelude
 import Cardano.Address
     ( Address
     , AddressDiscrimination (..)
+    , HasNetworkDiscriminant (..)
     , NetworkDiscriminant (..)
     , NetworkTag (..)
     , unAddress
     , unsafeMkAddress
-    , HasNetworkDiscriminant (..)
     )
 import Cardano.Address.Derivation
     ( Depth (..)
