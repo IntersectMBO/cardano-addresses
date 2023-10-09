@@ -1,6 +1,6 @@
 name:                cardano-addresses-cli
 version:             3.12.0
-github:              input-output-hk/cardano-addresses
+github:              IntersectMBO/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io
@@ -9,7 +9,7 @@ synopsis:            Utils for constructing a command-line on top of cardano-add
 category:            Cardano
 
 description: |
-  Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+  Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
 
 extra-source-files:
   ./schemas/address-inspect.json

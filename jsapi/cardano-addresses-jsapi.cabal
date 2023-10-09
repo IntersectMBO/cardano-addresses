@@ -7,8 +7,8 @@ description:    This package provides functions callable from Javascript on top 
                 package to provide all dependencies  necessary for compilation under ghcjs
                 and execution under a JavaScript interpreter.
 category:       Cardano
-homepage:       https://github.com/input-output-hk/cardano-addresses#readme
-bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
+homepage:       https://github.com/IntersectMBO/cardano-addresses#readme
+bug-reports:    https://github.com/IntersectMBO/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
 copyright:      2021 IOHK
@@ -17,7 +17,7 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/input-output-hk/cardano-addresses
+  location: https://github.com/IntersectMBO/cardano-addresses
 
 library
   exposed-modules:

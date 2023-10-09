@@ -3,19 +3,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/input-output-hk/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
+  <a href="https://github.com/IntersectMBO/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/IntersectMBO/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
   <a href="https://www.npmjs.com/package/cardano-addresses"><img src="https://img.shields.io/npm/v/cardano-addresses?color=%239b59b6&style=for-the-badge"/></a>
-  <a href="https://input-output-hk.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://input-output-hk.github.io/cardano-addresses/coverage/badge.svg" /></a>
+  <a href="https://IntersectMBO.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/badge.svg" /></a>
   <br>
 </p>
 
 
 <div align="center">
 
-  <a href="">[![Coding Standards](https://github.com/input-output-hk/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/style.yml)</a>
-  <a href="">[![Haskell CI using Cabal](https://github.com/input-output-hk/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/haskell.yml)</a>
-  <a href="">[![Haskell CI using stack for Linux](https://github.com/input-output-hk/cardano-addresses/actions/workflows/main.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/main.yml)</a>
-  <a href="">[![TypeScript NPM Package](https://github.com/input-output-hk/cardano-addresses/actions/workflows/typescript.yml/badge.svg)](https://github.com/input-output-hk/cardano-addresses/actions/workflows/typescript.yml)</a>
+  <a href="">[![Coding Standards](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml)</a>
+  <a href="">[![Haskell CI using Cabal](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml)</a>
+  <a href="">[![Haskell CI using stack for Linux](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/main.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/main.yml)</a>
+  <a href="">[![TypeScript NPM Package](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/typescript.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/typescript.yml)</a>
 
 </div>
 
@@ -28,11 +28,11 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ## Documentation
 
-API documentation is available [here](https://input-output-hk.github.io/cardano-addresses/haddock).
+API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
 
 ## Command-Line
 
-`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/input-output-hk/cardano-addresses/releases) or [continuous integration artifacts](https://github.com/input-output-hk/cardano-addresses/actions?query=workflow%3A%22Continuous+Integration%22) to get a pre-compiled binary, or [build a Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
+`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/IntersectMBO/cardano-addresses/releases) or [continuous integration artifacts](https://github.com/IntersectMBO/cardano-addresses/actions?query=workflow%3A%22Continuous+Integration%22) to get a pre-compiled binary, or [build a Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 
@@ -708,8 +708,8 @@ cardanoAddresses.inspectAddress(addr)
 ```
 
 - [NPM Package](https://www.npmjs.com/package/cardano-addresses)
-- [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
-- [Web Demo](https://input-output-hk.github.io/cardano-addresses/demo/)
+- [API Documentation](https://IntersectMBO.github.io/cardano-addresses/typescript/)
+- [Web Demo](https://IntersectMBO.github.io/cardano-addresses/demo/)
 - [Development Info](./jsapi/README.md)
 
 ## Contributing
@@ -722,5 +722,5 @@ When creating a pull request, please make sure that your code adheres to our
 <hr />
 
 <p align="center">
-  <a href="https://github.com/input-output-hk/cardano-addresses/blob/master/LICENSE"><img src="https://img.shields.io/github/license/input-output-hk/cardano-addresses.svg?style=for-the-badge" /></a>
+  <a href="https://github.com/IntersectMBO/cardano-addresses/blob/master/LICENSE"><img src="https://img.shields.io/github/license/IntersectMBO/cardano-addresses.svg?style=for-the-badge" /></a>
 </p>
