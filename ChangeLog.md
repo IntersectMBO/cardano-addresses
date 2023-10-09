@@ -34,7 +34,7 @@
 ### Added
 
 - Adds the `cardano-address key walletid` command, which derives a
-  [`cardano-wallet` wallet ID](https://IntersectMBO.github.io/cardano-wallet/design/WalletId)
+  [`cardano-wallet` wallet ID](https://cardano-foundation.github.io/cardano-wallet/design/WalletId)
   from a wallet key.
 
 ### Changed
