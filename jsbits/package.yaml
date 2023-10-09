@@ -1,6 +1,6 @@
 name:                cardano-addresses-jsbits
 version:             3.12.0
-github:              input-output-hk/cardano-addresses
+github:              IntersectMBO/cardano-addresses
 license:             Apache-2.0
 author:              IOHK
 maintainer:          operations@iohk.io

@@ -37,7 +37,7 @@
   "author": "IOHK <adrestia@iohk.io>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/input-output-hk/cardano-addresses.git",
+    "url": "https://github.com/IntersectMBO/cardano-addresses.git",
     "directory": "jsapi"
   },
   "module": "dist/cardano-addresses.esm.js",
