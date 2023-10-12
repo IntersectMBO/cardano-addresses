@@ -31,7 +31,9 @@ jobs:
       run: 'nix-shell --run "npm run test"'
     - name: 'Typedoc'
       run: |
-        du -cBM --max-depth=1 / 2> >(grep -v 'Permission denied') | sort -n
+        du -cBM --max-depth=1 /opt 2> >(grep -v 'Permission denied') | sort -n
+        du -cBM --max-depth=1 /nix 2> >(grep -v 'Permission denied') | sort -n
+        du -cBM --max-depth=1 /usr 2> >(grep -v 'Permission denied') | sort -n
         nix-shell --run "npm run typedoc"
     - name: 'Demo'
       run: 'nix-build -A demo -o result-demo'
