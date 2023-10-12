@@ -31,8 +31,7 @@ jobs:
       run: 'nix-shell --run "npm run test"'
     - name: 'Typedoc'
       run: |
-        df -h
-        du -s /*
+        du -h --max-depth=1 /
         nix-shell --run "npm run typedoc"
     - name: 'Demo'
       run: 'nix-build -A demo -o result-demo'
