@@ -13,7 +13,7 @@ jobs:
       run:
         working-directory: jsapi
     env:
-      NODE_OPTIONS: "--max-old-space-size=1240"
+      NODE_OPTIONS: "--max-old-space-size=12400"
     steps:
     - name: '📥 Checkout Code'
       uses: actions/checkout@v2.3.4
