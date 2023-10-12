@@ -80,7 +80,6 @@ library
     , bytestring
     , cardano-addresses
     , cardano-crypto
-    , code-page
     , extra
     , fmt
     , memory
@@ -105,6 +104,7 @@ executable cardano-address
       base >=4.7 && <5
     , cardano-addresses
     , cardano-addresses-cli
+    , with-utf8
   if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
     cc-options: -static
@@ -164,6 +164,7 @@ test-suite unit
     , string-interpolate
     , temporary
     , text
+    , with-utf8
   if flag(release)
     ghc-options: -Werror
   if !(impl(ghcjs) || os(ghcjs))
