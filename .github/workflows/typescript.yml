@@ -30,7 +30,9 @@ jobs:
     - name: 'Test'
       run: 'nix-shell --run "npm run test"'
     - name: 'Typedoc'
-      run: 'nix-shell --run "npm run typedoc"'
+      run: |
+        df -h /tmp
+        nix-shell --run "npm run typedoc"
     - name: 'Demo'
       run: 'nix-build -A demo -o result-demo'
     - name: 'Prepare Documentation'
