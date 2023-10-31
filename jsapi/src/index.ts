@@ -3,7 +3,7 @@
 
 /**
  * This module is a TypeScript/JavaScript binding for the
- * [cardano-addresses package](https://input-output-hk.github.io/cardano-addresses/haddock/).
+ * [cardano-addresses package](https://IntersectMBO.github.io/cardano-addresses/haddock/).
  *
  *
  *
