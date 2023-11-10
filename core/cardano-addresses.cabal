@@ -1,11 +1,5 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
---
--- see: https://github.com/sol/hpack
---
--- hash: 683d57ce889099c5714810307f69788b00ca3e71f2ccf6dc2060536507726494
-
 name:           cardano-addresses
 version:        3.12.0
 synopsis:       Library utilities for mnemonic generation and address derivation.

@@ -13,7 +13,7 @@ jobs:
       run:
         working-directory: jsapi
     env:
-      NODE_OPTIONS: "--max-old-space-size=5120"
+      NODE_OPTIONS: "--max-old-space-size=32768"
     steps:
     - name: '📥 Checkout Code'
       uses: actions/checkout@v2.3.4
@@ -30,7 +30,11 @@ jobs:
     - name: 'Test'
       run: 'nix-shell --run "npm run test"'
     - name: 'Typedoc'
-      run: 'nix-shell --run "npm run typedoc"'
+      run: |
+        du -cBM --max-depth=1 /opt 2> >(grep -v 'Permission denied') | sort -n
+        du -cBM --max-depth=1 /nix 2> >(grep -v 'Permission denied') | sort -n
+        du -cBM --max-depth=1 /usr 2> >(grep -v 'Permission denied') | sort -n
+        nix-shell --run "npm run typedoc"
     - name: 'Demo'
       run: 'nix-build -A demo -o result-demo'
     - name: 'Prepare Documentation'

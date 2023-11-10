@@ -1,11 +1,5 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
---
--- see: https://github.com/sol/hpack
---
--- hash: 5c6323cb761f68008587a992f90484eecf803a98774b0690e97bc8b8eb8d7c98
-
 name:           cardano-addresses-cli
 version:        3.12.0
 synopsis:       Utils for constructing a command-line on top of cardano-addresses.
@@ -80,7 +74,6 @@ library
     , bytestring
     , cardano-addresses
     , cardano-crypto
-    , code-page
     , extra
     , fmt
     , memory
@@ -105,6 +98,7 @@ executable cardano-address
       base >=4.7 && <5
     , cardano-addresses
     , cardano-addresses-cli
+    , with-utf8
   if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
     cc-options: -static
@@ -164,6 +158,7 @@ test-suite unit
     , string-interpolate
     , temporary
     , text
+    , with-utf8
   if flag(release)
     ghc-options: -Werror
   if !(impl(ghcjs) || os(ghcjs))
