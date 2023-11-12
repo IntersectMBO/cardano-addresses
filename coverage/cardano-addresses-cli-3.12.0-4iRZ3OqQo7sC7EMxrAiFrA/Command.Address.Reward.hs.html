@@ -1,0 +1,160 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    2 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>module Command.Address.Reward
+<span class="lineno">    7 </span>    ( Cmd
+<span class="lineno">    8 </span>    , mod
+<span class="lineno">    9 </span>    , run
+<span class="lineno">   10 </span>    ) where
+<span class="lineno">   11 </span>
+<span class="lineno">   12 </span>import Prelude hiding
+<span class="lineno">   13 </span>    ( mod )
+<span class="lineno">   14 </span>
+<span class="lineno">   15 </span>import Cardano.Address
+<span class="lineno">   16 </span>    ( NetworkTag (..), unAddress )
+<span class="lineno">   17 </span>import Cardano.Address.Derivation
+<span class="lineno">   18 </span>    ( pubFromBytes, xpubFromBytes )
+<span class="lineno">   19 </span>import Cardano.Address.Script
+<span class="lineno">   20 </span>    ( KeyHash, KeyRole (..), Script, keyHashFromBytes, scriptHashFromBytes )
+<span class="lineno">   21 </span>import Cardano.Address.Style.Shelley
+<span class="lineno">   22 </span>    ( Credential (..), shelleyTestnet, unsafeFromRight )
+<span class="lineno">   23 </span>import Codec.Binary.Encoding
+<span class="lineno">   24 </span>    ( AbstractEncoding (..) )
+<span class="lineno">   25 </span>import Options.Applicative
+<span class="lineno">   26 </span>    ( CommandFields
+<span class="lineno">   27 </span>    , Mod
+<span class="lineno">   28 </span>    , command
+<span class="lineno">   29 </span>    , footerDoc
+<span class="lineno">   30 </span>    , header
+<span class="lineno">   31 </span>    , helper
+<span class="lineno">   32 </span>    , info
+<span class="lineno">   33 </span>    , optional
+<span class="lineno">   34 </span>    , progDesc
+<span class="lineno">   35 </span>    )
+<span class="lineno">   36 </span>import Options.Applicative.Discrimination
+<span class="lineno">   37 </span>    ( fromNetworkTag, networkTagOpt )
+<span class="lineno">   38 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   39 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   40 </span>import Options.Applicative.Script
+<span class="lineno">   41 </span>    ( scriptArg )
+<span class="lineno">   42 </span>import Options.Applicative.Style
+<span class="lineno">   43 </span>    ( Style (..) )
+<span class="lineno">   44 </span>import System.IO
+<span class="lineno">   45 </span>    ( stdin, stdout )
+<span class="lineno">   46 </span>import System.IO.Extra
+<span class="lineno">   47 </span>    ( hGetBech32, hPutBytes, progName )
+<span class="lineno">   48 </span>
+<span class="lineno">   49 </span>import qualified Cardano.Address.Style.Shelley as Shelley
+<span class="lineno">   50 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   51 </span>
+<span class="lineno">   52 </span>data Cmd = Cmd
+<span class="lineno">   53 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">networkTag</span></span></span> :: NetworkTag
+<span class="lineno">   54 </span>    , <span class="nottickedoff"><span class="decl"><span class="nottickedoff">delegationScript</span></span></span> :: Maybe (Script KeyHash)
+<span class="lineno">   55 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   56 </span>
+<span class="lineno">   57 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   58 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;stake&quot; $</span>
+<span class="lineno">   59 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a stake address&quot;</span>
+<span class="lineno">   61 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Create a stake address \</span>
+<span class="lineno">   62 </span><span class="spaces">            </span><span class="istickedoff">\that references a delegation key (1-1).&quot;</span>
+<span class="lineno">   63 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The public key is read from stdin.&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/2/0 &gt; stake.prv&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat stake.prv \\&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public --with-chain-code \\&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address stake --network-tag testnet&quot;</span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;stake_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35&quot;</span>
+<span class="lineno">   77 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   78 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   80 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; networkTagOpt Shelley</span>
+<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; optional scriptArg</span></span>
+<span class="lineno">   82 </span>
+<span class="lineno">   83 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   84 </span><span class="decl"><span class="istickedoff">run Cmd{networkTag,delegationScript} = do</span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">discriminant &lt;- fromNetworkTag networkTag</span>
+<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">addr &lt;- case delegationScript of</span>
+<span class="lineno">   87 </span><span class="spaces">        </span><span class="istickedoff">Just script -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   88 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">let credential = DelegationFromScript script</span></span>
+<span class="lineno">   89 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">Nothing -&gt; do</span>
+<span class="lineno">   91 </span><span class="spaces">            </span><span class="istickedoff">(hrp, bytes) &lt;- hGetBech32 stdin allowedPrefixes</span>
+<span class="lineno">   92 </span><span class="spaces">            </span><span class="istickedoff">stakeAddressFromBytes discriminant bytes hrp</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">hPutBytes stdout (unAddress addr) (EBech32 stakeHrp)</span>
+<span class="lineno">   94 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   95 </span><span class="spaces">    </span><span class="istickedoff">stakeHrp</span>
+<span class="lineno">   96 </span><span class="spaces">        </span><span class="istickedoff">| networkTag == shelleyTestnet = CIP5.stake_test</span>
+<span class="lineno">   97 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = CIP5.stake</span>
+<span class="lineno">   98 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">   99 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.stake_xvk</span>
+<span class="lineno">  101 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.stake_vk</span>
+<span class="lineno">  102 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.stake_vkh</span>
+<span class="lineno">  103 </span><span class="spaces">        </span><span class="istickedoff">, <span class="nottickedoff">CIP5.script</span></span>
+<span class="lineno">  104 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  105 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  106 </span><span class="spaces">    </span><span class="istickedoff">stakeAddressFromBytes discriminant bytes hrp</span>
+<span class="lineno">  107 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">hrp == CIP5.script</span> = <span class="nottickedoff">do</span></span>
+<span class="lineno">  108 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">case scriptHashFromBytes bytes of</span></span>
+<span class="lineno">  109 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Nothing -&gt;</span></span>
+<span class="lineno">  110 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into script hash.&quot;</span></span>
+<span class="lineno">  111 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Just h  -&gt; do</span></span>
+<span class="lineno">  112 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">let credential = DelegationFromScriptHash h</span></span>
+<span class="lineno">  113 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+<span class="lineno">  114 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  115 </span><span class="spaces">        </span><span class="istickedoff">| hrp == CIP5.stake_vkh = do</span>
+<span class="lineno">  116 </span><span class="spaces">            </span><span class="istickedoff">case keyHashFromBytes (Delegation, bytes) of</span>
+<span class="lineno">  117 </span><span class="spaces">                </span><span class="istickedoff">Nothing  -&gt;</span>
+<span class="lineno">  118 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into delegation key hash.&quot;</span></span>
+<span class="lineno">  119 </span><span class="spaces">                </span><span class="istickedoff">Just keyhash -&gt; do</span>
+<span class="lineno">  120 </span><span class="spaces">                    </span><span class="istickedoff">let credential = DelegationFromKeyHash keyhash</span>
+<span class="lineno">  121 </span><span class="spaces">                    </span><span class="istickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span>
+<span class="lineno">  122 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  123 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlyfalse">hrp == CIP5.stake_vk</span> = <span class="nottickedoff">do</span></span>
+<span class="lineno">  124 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">case pubFromBytes bytes of</span></span>
+<span class="lineno">  125 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Nothing  -&gt;</span></span>
+<span class="lineno">  126 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into non-extended public key.&quot;</span></span>
+<span class="lineno">  127 </span><span class="spaces">                </span><span class="istickedoff"><span class="nottickedoff">Just key -&gt; do</span></span>
+<span class="lineno">  128 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">let credential = DelegationFromKey $ Shelley.liftPub key</span></span>
+<span class="lineno">  129 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+<span class="lineno">  130 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  131 </span><span class="spaces">        </span><span class="istickedoff">| <span class="tickonlytrue">otherwise</span> = do</span>
+<span class="lineno">  132 </span><span class="spaces">            </span><span class="istickedoff">case xpubFromBytes bytes of</span>
+<span class="lineno">  133 </span><span class="spaces">                </span><span class="istickedoff">Nothing  -&gt;</span>
+<span class="lineno">  134 </span><span class="spaces">                    </span><span class="istickedoff"><span class="nottickedoff">fail &quot;Couldn't convert bytes into extended public key.&quot;</span></span>
+<span class="lineno">  135 </span><span class="spaces">                </span><span class="istickedoff">Just key -&gt; do</span>
+<span class="lineno">  136 </span><span class="spaces">                    </span><span class="istickedoff">let credential = DelegationFromExtendedKey $ Shelley.liftXPub key</span>
+<span class="lineno">  137 </span><span class="spaces">                    </span><span class="istickedoff">pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential</span></span>
+
+</pre>
+</body>
+</html>

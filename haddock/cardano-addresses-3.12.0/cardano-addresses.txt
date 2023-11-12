@@ -5,7 +5,7 @@
 -- | Library utilities for mnemonic generation and address derivation.
 --   
 --   Please see the README on GitHub at
---   <a>https://github.com/input-output-hk/cardano-addresses</a>
+--   <a>https://github.com/IntersectMBO/cardano-addresses</a>
 @package cardano-addresses
 @version 3.12.0
 

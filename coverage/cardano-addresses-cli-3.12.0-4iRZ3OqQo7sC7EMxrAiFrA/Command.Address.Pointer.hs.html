@@ -1,0 +1,125 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE DuplicateRecordFields #-}
+<span class="lineno">    2 </span>{-# LANGUAGE FlexibleContexts #-}
+<span class="lineno">    3 </span>{-# LANGUAGE NamedFieldPuns #-}
+<span class="lineno">    4 </span>{-# LANGUAGE OverloadedStrings #-}
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>{-# OPTIONS_HADDOCK hide #-}
+<span class="lineno">    7 </span>{-# OPTIONS_GHC -fno-warn-deprecations #-}
+<span class="lineno">    8 </span>
+<span class="lineno">    9 </span>module Command.Address.Pointer
+<span class="lineno">   10 </span>    ( Cmd
+<span class="lineno">   11 </span>    , mod
+<span class="lineno">   12 </span>    , run
+<span class="lineno">   13 </span>    ) where
+<span class="lineno">   14 </span>
+<span class="lineno">   15 </span>import Prelude hiding
+<span class="lineno">   16 </span>    ( mod )
+<span class="lineno">   17 </span>
+<span class="lineno">   18 </span>import Cardano.Address
+<span class="lineno">   19 </span>    ( ChainPointer (..), bech32, unsafeMkAddress )
+<span class="lineno">   20 </span>import Cardano.Address.Style.Shelley
+<span class="lineno">   21 </span>    ( Credential (..), ErrExtendAddress (..) )
+<span class="lineno">   22 </span>import Numeric.Natural
+<span class="lineno">   23 </span>    ( Natural )
+<span class="lineno">   24 </span>import Options.Applicative
+<span class="lineno">   25 </span>    ( CommandFields
+<span class="lineno">   26 </span>    , Mod
+<span class="lineno">   27 </span>    , argument
+<span class="lineno">   28 </span>    , auto
+<span class="lineno">   29 </span>    , command
+<span class="lineno">   30 </span>    , footerDoc
+<span class="lineno">   31 </span>    , header
+<span class="lineno">   32 </span>    , help
+<span class="lineno">   33 </span>    , helper
+<span class="lineno">   34 </span>    , info
+<span class="lineno">   35 </span>    , metavar
+<span class="lineno">   36 </span>    , progDesc
+<span class="lineno">   37 </span>    )
+<span class="lineno">   38 </span>import Options.Applicative.Help.Pretty
+<span class="lineno">   39 </span>    ( bold, indent, string, vsep )
+<span class="lineno">   40 </span>import System.IO
+<span class="lineno">   41 </span>    ( stdin, stdout )
+<span class="lineno">   42 </span>import System.IO.Extra
+<span class="lineno">   43 </span>    ( hGetBech32, progName )
+<span class="lineno">   44 </span>
+<span class="lineno">   45 </span>import qualified Cardano.Address.Style.Shelley as Shelley
+<span class="lineno">   46 </span>import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+<span class="lineno">   47 </span>import qualified Data.ByteString.Char8 as B8
+<span class="lineno">   48 </span>import qualified Data.Text.Encoding as T
+<span class="lineno">   49 </span>
+<span class="lineno">   50 </span>data Cmd = Cmd
+<span class="lineno">   51 </span>    { <span class="istickedoff"><span class="decl"><span class="istickedoff">slotNum</span></span></span> :: Natural
+<span class="lineno">   52 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">transactionIndex</span></span></span> :: Natural
+<span class="lineno">   53 </span>    , <span class="istickedoff"><span class="decl"><span class="istickedoff">outputIndex</span></span></span> :: Natural
+<span class="lineno">   54 </span>    } deriving (<span class="decl"><span class="istickedoff">Show</span></span>)
+<span class="lineno">   55 </span>
+<span class="lineno">   56 </span>mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+<span class="lineno">   57 </span><span class="decl"><span class="istickedoff">mod liftCmd = command &quot;pointer&quot; $</span>
+<span class="lineno">   58 </span><span class="spaces">    </span><span class="istickedoff">info (helper &lt;*&gt; fmap liftCmd parser) $ mempty</span>
+<span class="lineno">   59 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; progDesc &quot;Create a pointer address&quot;</span>
+<span class="lineno">   60 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; header &quot;Create addresses with a pointer that indicate the position \</span>
+<span class="lineno">   61 </span><span class="spaces">            </span><span class="istickedoff">\of a registered stake address on the chain.&quot;</span>
+<span class="lineno">   62 </span><span class="spaces">        </span><span class="istickedoff">&lt;&gt; footerDoc (Just $ vsep</span>
+<span class="lineno">   63 </span><span class="spaces">            </span><span class="istickedoff">[ string &quot;The payment address is read from stdin.&quot;</span>
+<span class="lineno">   64 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;&quot;</span>
+<span class="lineno">   65 </span><span class="spaces">            </span><span class="istickedoff">, string &quot;Example:&quot;</span>
+<span class="lineno">   66 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string $ &quot;$ &quot;&lt;&gt;progName&lt;&gt;&quot; recovery-phrase generate --size 15 \\&quot;</span>
+<span class="lineno">   67 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key from-recovery-phrase Shelley &gt; root.prv&quot;</span>
+<span class="lineno">   68 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   69 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat root.prv \\&quot;</span>
+<span class="lineno">   70 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key child 1852H/1815H/0H/0/0 &gt; addr.prv&quot;</span>
+<span class="lineno">   71 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;&quot;</span>
+<span class="lineno">   72 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ bold $ string &quot;$ cat addr.prv \\&quot;</span>
+<span class="lineno">   73 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; key public --with-chain-code \\&quot;</span>
+<span class="lineno">   74 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address payment --network-tag 0\\&quot;</span>
+<span class="lineno">   75 </span><span class="spaces">            </span><span class="istickedoff">, indent 4 $ bold $ string $ &quot;| &quot;&lt;&gt;progName&lt;&gt;&quot; address pointer 42 14 0&quot;</span>
+<span class="lineno">   76 </span><span class="spaces">            </span><span class="istickedoff">, indent 2 $ string &quot;addr1grq8e0smk44luyl897e24gn6qfkx4ax734r6pzq29zcew032pcqqef7zzu&quot;</span>
+<span class="lineno">   77 </span><span class="spaces">            </span><span class="istickedoff">])</span>
+<span class="lineno">   78 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   79 </span><span class="spaces">    </span><span class="istickedoff">parser = Cmd</span>
+<span class="lineno">   80 </span><span class="spaces">        </span><span class="istickedoff">&lt;$&gt; argument auto (metavar &quot;SLOT&quot; &lt;&gt; help &quot;A slot number&quot;)</span>
+<span class="lineno">   81 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; argument auto (metavar &quot;TX&quot;   &lt;&gt; help &quot;A transaction index within that slot&quot;)</span>
+<span class="lineno">   82 </span><span class="spaces">        </span><span class="istickedoff">&lt;*&gt; argument auto (metavar &quot;OUT&quot;  &lt;&gt; help &quot;An output index within that transaction&quot;)</span></span>
+<span class="lineno">   83 </span>
+<span class="lineno">   84 </span>run :: Cmd -&gt; IO ()
+<span class="lineno">   85 </span><span class="decl"><span class="istickedoff">run Cmd{slotNum,transactionIndex,outputIndex} = do</span>
+<span class="lineno">   86 </span><span class="spaces">    </span><span class="istickedoff">(_, bytes) &lt;- hGetBech32 stdin allowedPrefixes</span>
+<span class="lineno">   87 </span><span class="spaces">    </span><span class="istickedoff">case Shelley.extendAddress (unsafeMkAddress bytes) (DelegationFromPointer ptr) of</span>
+<span class="lineno">   88 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressStyle msg) -&gt;</span>
+<span class="lineno">   89 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   90 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidAddressType msg) -&gt;</span>
+<span class="lineno">   91 </span><span class="spaces">            </span><span class="istickedoff">fail msg</span>
+<span class="lineno">   92 </span><span class="spaces">        </span><span class="istickedoff">Left (ErrInvalidKeyHashType msg) -&gt;</span>
+<span class="lineno">   93 </span><span class="spaces">            </span><span class="istickedoff"><span class="nottickedoff">fail msg</span></span>
+<span class="lineno">   94 </span><span class="spaces">        </span><span class="istickedoff">Right addr -&gt;</span>
+<span class="lineno">   95 </span><span class="spaces">            </span><span class="istickedoff">B8.hPutStr stdout $ T.encodeUtf8 $ bech32 addr</span>
+<span class="lineno">   96 </span><span class="spaces">  </span><span class="istickedoff">where</span>
+<span class="lineno">   97 </span><span class="spaces">    </span><span class="istickedoff">allowedPrefixes =</span>
+<span class="lineno">   98 </span><span class="spaces">        </span><span class="istickedoff">[ CIP5.addr</span>
+<span class="lineno">   99 </span><span class="spaces">        </span><span class="istickedoff">, CIP5.addr_test</span>
+<span class="lineno">  100 </span><span class="spaces">        </span><span class="istickedoff">]</span>
+<span class="lineno">  101 </span><span class="spaces"></span><span class="istickedoff"></span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">ptr = ChainPointer { slotNum, transactionIndex, outputIndex  }</span></span>
+
+</pre>
+</body>
+</html>

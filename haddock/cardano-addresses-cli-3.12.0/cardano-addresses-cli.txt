@@ -5,6 +5,6 @@
 -- | Utils for constructing a command-line on top of cardano-addresses.
 --   
 --   Please see the README on GitHub at
---   <a>https://github.com/input-output-hk/cardano-addresses</a>
+--   <a>https://github.com/IntersectMBO/cardano-addresses</a>
 @package cardano-addresses-cli
 @version 3.12.0
