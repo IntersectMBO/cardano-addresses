@@ -7,9 +7,6 @@ on:
     branches: [ "master" ]
     tags: [ "*.*.*" ]
 
-permissions:
-  pages: write
-
 jobs:
   build:
     strategy:
