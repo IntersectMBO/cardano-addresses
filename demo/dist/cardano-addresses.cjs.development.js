@@ -811,7 +811,7 @@ try {
 }
 });
 
-/// <reference path="./foreign.d.ts" />
+/// <reference path="../src/foreign.d.ts" />
 
 /**
  * Get information about a Cardano address. Three address formats are
