@@ -16,9 +16,15 @@
       url = "github:input-output-hk/flake-compat";
       flake = false;
     };
+    tullia = {
+      url = "github:input-output-hk/tullia";
+      # XXX uncomment once our version of nixpkgs has this fix:
+      # https://github.com/NixOS/nixpkgs/commit/3fae68b30cfc27a7df5beaf9aaa7cb654edd8403
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, ... }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, tullia, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
@@ -92,6 +98,18 @@
               '';
             };
           };
-        }
+
+          hydraJobs = import ./release.nix {
+            cardano-addresses = self;
+            supportedSystems = [ system ];
+          };
+        } //
+          tullia.fromSimple system (import ./nix/tullia.nix)
       );
+
+  nixConfig = {
+    extra-substituters = [ "https://cache.iog.io" ];
+    extra-trusted-public-keys = [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" ];
+    allow-import-from-derivation = true;
+  };
 }
