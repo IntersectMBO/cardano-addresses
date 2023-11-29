@@ -72,42 +72,6 @@ haskell-nix: haskell-nix.cabalProject' (
         });
       }
       (lib.mkIf stdenv.hostPlatform.isWindows ({ config, ... }: {
-        # Allow reinstallation of Win32
-        nonReinstallablePkgs =
-          [
-            "rts"
-            "ghc-heap"
-            "ghc-prim"
-            "integer-gmp"
-            "integer-simple"
-            "base"
-            "deepseq"
-            "array"
-            "ghc-boot-th"
-            "pretty"
-            "template-haskell"
-            # ghcjs custom packages
-            "ghcjs-prim"
-            "ghcjs-th"
-            "ghc-boot"
-            "ghc"
-            "array"
-            "binary"
-            "bytestring"
-            "containers"
-            "filepath"
-            "ghc-boot"
-            "ghc-compact"
-            "ghc-prim"
-            # "ghci" "haskeline"
-            "hpc"
-            "mtl"
-            "parsec"
-            "text"
-            "transformers"
-            "xhtml"
-            # "stm" "terminfo"
-          ];
         # Windows cross-compilation only works on Linux
         packages = lib.genAttrs projectPackages (_: {
           package.buildable = stdenv.buildPlatform.isLinux;
@@ -188,7 +152,7 @@ haskell-nix: haskell-nix.cabalProject' (
           '';
         in
         if stdenv.hostPlatform.isGhcjs then {
-          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+          packages.digest.components.library.pkgconfig = lib.mkForce [[ pkgs.buildPackages.zlib ]];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;

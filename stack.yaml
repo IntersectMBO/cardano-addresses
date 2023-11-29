@@ -23,14 +23,12 @@ extra-deps:
 - git: https://github.com/input-output-hk/hjsonschema
   commit: 1546af7fc267d5eea805ef223dd2b59ac120b784
 
-- git: https://github.com/haskell-works/hw-aeson
-  commit: d99d2f3e39a287607418ae605b132a3deb2b753f
-
-- string-interpolate-0.3.0.2
 - hspec-golden-0.1.0.3
+- hw-aeson-0.1.8.0
 - pretty-simple-4.0.0.0
 - prettyprinter-1.7.0
 - prettyprinter-ansi-terminal-1.1.2
+- string-interpolate-0.3.0.2
 
 allow-newer: true
 
