@@ -851,7 +851,7 @@ span.spaces    { background: white }
 <span class="lineno">  832 </span>    <span class="decl"><span class="istickedoff">parseJSON = withObject <span class="nottickedoff">&quot;ScriptTemplate&quot;</span> $ \o -&gt; do</span>
 <span class="lineno">  833 </span><span class="spaces">        </span><span class="istickedoff">template' &lt;- parseJSON &lt;$&gt; o .: &quot;template&quot;</span>
 <span class="lineno">  834 </span><span class="spaces">        </span><span class="istickedoff">cosigners' &lt;- parseCosignerPairs &lt;$&gt; o .: &quot;cosigners&quot;</span>
-<span class="lineno">  835 </span><span class="spaces">        </span><span class="istickedoff">ScriptTemplate &lt;$&gt; (Map.fromList &lt;$&gt; cosigners') &lt;*&gt; template'</span>
+<span class="lineno">  835 </span><span class="spaces">        </span><span class="istickedoff">ScriptTemplate . Map.fromList &lt;$&gt; cosigners' &lt;*&gt; template'</span>
 <span class="lineno">  836 </span><span class="spaces">      </span><span class="istickedoff">where</span>
 <span class="lineno">  837 </span><span class="spaces">        </span><span class="istickedoff">parseCosignerPairs = withObject <span class="nottickedoff">&quot;Cosigner pairs&quot;</span> $ \o -&gt;</span>
 <span class="lineno">  838 </span><span class="spaces">            </span><span class="istickedoff">case JM.toList o of</span>

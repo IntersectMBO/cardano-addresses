@@ -20,7 +20,7 @@
 </span><span id="line-20"></span><span>
 </span><span id="line-21"></span><span class="hs-keyword">newtype</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.RecoveryPhrase.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span>
 </span><span id="line-22"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="Generate"><span class="annot"><a href="Command.RecoveryPhrase.html#Generate"><span class="hs-identifier hs-var">Generate</span></a></span></span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Generate.Cmd</span></a></span><span>
-</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679109655"><span id="local-6989586621679109657"><span id="local-6989586621679109659"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-23"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679109220"><span id="local-6989586621679109222"><span id="local-6989586621679109224"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -35,10 +35,10 @@ showsPrec :: Int -&gt; Cmd -&gt; ShowS
 $cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-24"></span><span>
-</span><span id="line-25"></span><span id="local-6989586621679109653"><span class="annot"><a href="Command.RecoveryPhrase.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.RecoveryPhrase.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679109653"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679109653"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-25"></span><span id="local-6989586621679109218"><span class="annot"><a href="Command.RecoveryPhrase.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.RecoveryPhrase.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679109218"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679109218"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-26"></span><span id="mod"><span class="annot"><span class="annottext">mod :: (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.RecoveryPhrase.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679109652"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679109652"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.RecoveryPhrase.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679109217"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679109217"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;recovery-phrase&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -54,8 +54,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679109652"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679109651"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679109217"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679109216"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -68,8 +68,8 @@ forall a. String -&gt; InfoMod a
 </span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;About recovery phrases&quot;</span></span><span>
 </span><span id="line-29"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-30"></span><span>    </span><span id="local-6989586621679109651"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679109651"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mod CommandFields Cmd -&gt; Parser Cmd
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621679109216"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679109216"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mod CommandFields Cmd -&gt; Parser Cmd
 forall a. Mod CommandFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">subparser</span></span><span> </span><span class="annot"><span class="annottext">(Mod CommandFields Cmd -&gt; Parser Cmd)
 -&gt; Mod CommandFields Cmd -&gt; Parser Cmd
@@ -86,8 +86,8 @@ forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
 </span><span id="line-34"></span><span class="annot"><a href="Command.RecoveryPhrase.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-35"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
 </span><a href="Command.RecoveryPhrase.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
-</span><span id="line-36"></span><span>    </span><span class="annot"><a href="Command.RecoveryPhrase.html#Generate"><span class="hs-identifier hs-type">Generate</span></a></span><span> </span><span id="local-6989586621679109649"><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679109649"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><span id="line-36"></span><span>    </span><span class="annot"><a href="Command.RecoveryPhrase.html#Generate"><span class="hs-identifier hs-type">Generate</span></a></span><span> </span><span id="local-6989586621679109214"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679109214"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
 </span><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-var">Generate.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679109649"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><a href="#local-6989586621679109214"><span class="hs-identifier hs-var">sub</span></a></span><span>
 </span><span id="line-37"></span></pre></body></html>
