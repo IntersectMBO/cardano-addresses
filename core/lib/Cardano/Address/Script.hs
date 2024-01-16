@@ -832,7 +832,7 @@ instance FromJSON ScriptTemplate where
     parseJSON = withObject "ScriptTemplate" $ \o -> do
         template' <- parseJSON <$> o .: "template"
         cosigners' <- parseCosignerPairs <$> o .: "cosigners"
-        ScriptTemplate <$> (Map.fromList <$> cosigners') <*> template'
+        ScriptTemplate . Map.fromList <$> cosigners' <*> template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
             case JM.toList o of
