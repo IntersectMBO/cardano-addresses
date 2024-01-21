@@ -1,7 +1,7 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-haskell-nix: haskell-nix.cabalProject' (
+system: haskell-nix: haskell-nix.cabalProject' (
   { pkgs
   , lib
   , config
@@ -36,19 +36,27 @@ haskell-nix: haskell-nix.cabalProject' (
       constraints: Win32 ==2.6.1.0, mintty ==0.1.2
     '';
 
-    compiler-nix-name =
-      let
-        # Look for a with-compiler: field in the cabal.project file
-        withCompiler = lib.lists.concatLists (
-          lib.lists.filter (l: l != null)
-            (builtins.map (l: builtins.match "^with-compiler: *(.*)" l)
-              (lib.splitString "\n" cabalProject)));
-      in
-      lib.lists.head (
-        map (lib.replaceStrings [ "-" "." ] [ "" "" ]) withCompiler);
-
+    compiler-nix-name = "ghc928";
+    flake = {
+      variants = {
+        ghc8107 = {
+          compiler-nix-name = lib.mkForce "ghc8107";
+          crossPlatforms = p: with p; [ghcjs]
+            ++ (lib.optionals (system == "x86_64-linux") [
+              mingwW64
+              musl64
+            ]);
+        };
+        ghc962.compiler-nix-name = lib.mkForce "ghc962";
+      };
+      crossPlatforms = p: with p;
+        lib.optionals (system == "x86_64-linux") [
+          mingwW64
+          musl64
+        ];
+    };
     shell = {
-      crossPlatforms = p: [ p.ghcjs ];
+      crossPlatforms = p: lib.optional (config.compiler-nix-name == "ghc8107") p.ghcjs;
       tools = {
         hpack.version = "latest";
         haskell-language-server.version = "latest";
