@@ -38,3 +38,4 @@ core/test/golden/*/actual
 result*
 .stack-to-nix.cache
 .nix-shell-cabal.project
+.envrc
