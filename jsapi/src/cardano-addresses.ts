@@ -1,4 +1,4 @@
-/// <reference path="./foreign.d.ts" />
+/// <reference path="../src/foreign.d.ts" />
 
 // Copyright © 2021 IOHK
 // License: Apache-2.0
@@ -10,7 +10,7 @@
  */
 
 import { Address, XPub, InspectAddress } from './types';
-import { CardanoAddressesJSModule, CardanoAddressesApi } from './foreign';
+import { CardanoAddressesJSModule, CardanoAddressesApi } from '../src/foreign';
 
 /**
  * Get information about a Cardano address. Three address formats are

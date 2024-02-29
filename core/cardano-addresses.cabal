@@ -1,18 +1,12 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
---
--- see: https://github.com/sol/hpack
---
--- hash: 683d57ce889099c5714810307f69788b00ca3e71f2ccf6dc2060536507726494
-
 name:           cardano-addresses
 version:        3.12.0
 synopsis:       Library utilities for mnemonic generation and address derivation.
-description:    Please see the README on GitHub at <https://github.com/input-output-hk/cardano-addresses>
+description:    Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
 category:       Cardano
-homepage:       https://github.com/input-output-hk/cardano-addresses#readme
-bug-reports:    https://github.com/input-output-hk/cardano-addresses/issues
+homepage:       https://github.com/IntersectMBO/cardano-addresses#readme
+bug-reports:    https://github.com/IntersectMBO/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
 copyright:      2021-2022 IOHK
@@ -21,7 +15,7 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/input-output-hk/cardano-addresses
+  location: https://github.com/IntersectMBO/cardano-addresses
 
 flag release
   description: Compile executables for a release.

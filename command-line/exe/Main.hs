@@ -6,12 +6,12 @@ import Prelude
 
 import Cardano.Address.Compat
     ( ghcjsBuildSupport )
-import Command
-    ( withUtf8Encoding )
+import Main.Utf8
+    ( withUtf8 )
 
 import qualified Command as CLI
 
 main :: IO ()
 main = do
     ghcjsBuildSupport
-    withUtf8Encoding (CLI.setup >> CLI.parse >>= CLI.run)
+    withUtf8 (CLI.setup >> CLI.parse >>= CLI.run)

@@ -1,12 +1,12 @@
 # cardano-addresses TypeScript binding
 
 - 📦 [NPM Package](https://www.npmjs.com/package/cardano-addresses)
-- 📗 [API Documentation](https://input-output-hk.github.io/cardano-addresses/typescript/)
-- 🎇 [Web Demo](https://input-output-hk.github.io/cardano-addresses/demo/)
-- λ [Haskell Library](https://input-output-hk.github.io/cardano-addresses/haddock/)
+- 📗 [API Documentation](https://IntersectMBO.github.io/cardano-addresses/typescript/)
+- 🎇 [Web Demo](https://IntersectMBO.github.io/cardano-addresses/demo/)
+- λ [Haskell Library](https://IntersectMBO.github.io/cardano-addresses/haddock/)
 
 This is a Typescript (or Javascript) version of the
-[`cardano-addresses`](https://github.com/input-output-hk/cardano-addresses)
+[`cardano-addresses`](https://github.com/IntersectMBO/cardano-addresses)
 API.
 
 For the time being, this module is **experimental**, and exposes only

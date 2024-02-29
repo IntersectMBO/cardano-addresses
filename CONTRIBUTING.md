@@ -1,5 +1,5 @@
 If you find a bug or you'd like to propose a feature, please feel free to raise
-an issue on our [issue tracker](https://github.com/input-output-hk/cardano-addresses/issues).
+an issue on our [issue tracker](https://github.com/IntersectMBO/cardano-addresses/issues).
 
 Pull requests are welcome!
 

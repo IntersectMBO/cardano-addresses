@@ -10,9 +10,6 @@ module Command
     , setup
     , parse
     , run
-
-    -- * I/O Fix
-    , withUtf8Encoding
     ) where
 
 import Prelude
@@ -38,17 +35,7 @@ import Options.Applicative.Help.Pretty
 import System.Console.ANSI
     ( hSupportsANSI )
 import System.IO
-    ( BufferMode (..)
-    , Handle
-    , hSetBuffering
-    , hSetEncoding
-    , mkTextEncoding
-    , stderr
-    , stdin
-    , stdout
-    )
-import System.IO.CodePage
-    ( withCP65001 )
+    ( BufferMode (..), Handle, hSetBuffering, stderr, stdin, stdout )
 import System.IO.Extra
     ( prettyIOException, progName )
 
@@ -114,16 +101,3 @@ setup =
     hSetup h = do
       void $ hSupportsANSI h
       hSetBuffering h NoBuffering
-
--- | Force the locale text encoding to UTF-8. This is needed because the CLI
--- prints UTF-8 characters regardless of the @LANG@ environment variable or any
--- other settings.
---
--- On Windows the current console code page is changed to UTF-8.
-withUtf8Encoding :: IO a -> IO a
-withUtf8Encoding action = withCP65001 (setUtf8EncodingHandles >> action)
-  where
-    setUtf8EncodingHandles :: IO ()
-    setUtf8EncodingHandles = do
-        utf8' <- mkTextEncoding "UTF-8//TRANSLIT"
-        mapM_ (`hSetEncoding` utf8') [stdin, stdout, stderr]
