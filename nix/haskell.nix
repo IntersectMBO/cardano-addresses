@@ -53,12 +53,11 @@ haskell-nix.cabalProject' (
         --sha256: sha256-Ywd/TCIcArFB7ovMaO+SzbPaQeMwMtF3ux/Q0b7bXkM=
     '';
 
-    compiler-nix-name = "ghc928";
+    compiler-nix-name = "ghc92";
     flake = {
       variants = {
-        ghc8107.compiler-nix-name = lib.mkForce "ghc8107";
-        ghc962.compiler-nix-name = lib.mkForce "ghc962";
-        ghc99.compiler-nix-name = lib.mkForce "ghc99";
+        ghc810.compiler-nix-name = lib.mkForce "ghc810";
+        ghc96.compiler-nix-name = lib.mkForce "ghc96";
       };
       crossPlatforms = p: with p;
         lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
