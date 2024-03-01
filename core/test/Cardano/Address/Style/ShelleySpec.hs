@@ -115,6 +115,7 @@ import qualified Data.Aeson.Encode.Pretty as Aeson
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Char as Char
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.Lazy as TL
@@ -848,12 +849,17 @@ goldenByteStringLazy name output =
     Golden
     { output = output
     , encodePretty = TL.unpack . TLE.decodeUtf8
-    , writeToFile = BL.writeFile
-    , readFromFile = BL.readFile
+    , writeToFile = \ fp -> BL.writeFile fp . normalizeLBS
+    , readFromFile = fmap normalizeLBS . BL.readFile
     , testName = T.unpack name
     , directory = "test/golden"
     , failFirstTime = False
     }
+
+-- This should be sufficent to convert Windows "\r\n" newlines to UNIX "\n" newlines
+-- as used by both Mac and Linux.
+normalizeLBS :: BL.ByteString -> BL.ByteString
+normalizeLBS = BL.filter (/= fromIntegral (Char.ord '\r'))
 
 {-------------------------------------------------------------------------------
                              Arbitrary Instances

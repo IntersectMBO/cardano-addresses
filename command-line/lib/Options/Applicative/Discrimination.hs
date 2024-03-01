@@ -33,7 +33,7 @@ import Options.Applicative
     , (<|>)
     )
 import Options.Applicative.Help.Pretty
-    ( string, vsep )
+    ( pretty, vsep )
 import Options.Applicative.Style
     ( Style (..) )
 import Text.Read
@@ -61,7 +61,7 @@ networkTagOpt :: Style -> Parser NetworkTag
 networkTagOpt style = option (eitherReader reader) $ mempty
     <> metavar "NETWORK-TAG"
     <> long "network-tag"
-    <> helpDoc  (Just (vsep (string <$> doc style)))
+    <> helpDoc  (Just (vsep (pretty <$> doc style)))
     <> completer (listCompleter $ show <$> tagsFor style)
   where
     doc style' =

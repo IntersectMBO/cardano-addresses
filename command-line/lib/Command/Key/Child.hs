@@ -29,12 +29,14 @@ import Control.Monad
     ( foldM )
 import Data.Functor.Identity
     ( Identity (..) )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Derivation
     ( DerivationPath, castDerivationPath, derivationPathArg )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( Doc, pretty )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -50,12 +52,15 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "child" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Derive child keys from a parent public/private key"
-        <> footerDoc (Just $ string $ mconcat
+        <> footerDoc (Just $ prettyText $ mconcat
             [ "The parent key is read from stdin."
             ])
   where
     parser = Child
         <$> derivationPathArg
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run Child{path} = do

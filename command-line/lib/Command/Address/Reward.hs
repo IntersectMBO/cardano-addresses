@@ -22,6 +22,8 @@ import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet, unsafeFromRight )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields
     , Mod
@@ -36,7 +38,7 @@ import Options.Applicative
 import Options.Applicative.Discrimination
     ( fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
     ( scriptArg )
 import Options.Applicative.Style
@@ -61,24 +63,27 @@ mod liftCmd = command "stake" $
         <> header "Create a stake address \
             \that references a delegation key (1-1)."
         <> footerDoc (Just $ vsep
-            [ string "The public key is read from stdin."
-            , string ""
-            , string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/2/0 > stake.prv"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat stake.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address stake --network-tag testnet"
-            , indent 2 $ string "stake_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35"
+            [ prettyText "The public key is read from stdin."
+            , prettyText ""
+            , prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat root.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key child 1852H/1815H/0H/2/0 > stake.prv"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat stake.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key public --with-chain-code \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" address stake --network-tag testnet"
+            , indent 2 $ prettyText "stake_test1uzp7swuxjx7wmpkkvat8kpgrmjl8ze0dj9lytn25qv2tm4g6n5c35"
             ])
   where
     parser = Cmd
         <$> networkTagOpt Shelley
         <*> optional scriptArg
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,delegationScript} = do

@@ -1,7 +1,8 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-haskell-nix: haskell-nix.cabalProject' (
+{ system, CHaP, haskell-nix }:
+haskell-nix.cabalProject' (
   { pkgs
   , lib
   , config
@@ -20,9 +21,21 @@ haskell-nix: haskell-nix.cabalProject' (
     ];
     isCrossBuild = stdenv.hostPlatform != stdenv.buildPlatform;
     cabalProject = builtins.readFile ../cabal.project;
+    compareGhc = builtins.compareVersions pkgs.buildPackages.haskell-nix.compiler.${config.compiler-nix-name}.version;
   in
   {
     src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
+
+    inputMap = {
+      "https://input-output-hk.github.io/cardano-haskell-packages" = CHaP;
+    };
+
+    # Setting this to builtins.currentSystem allows --impure to be used
+    # to run evaluation on the current system.  For instance
+    #   nix flake show --impure --allow-import-from-derivation
+    # Falling back onto "x86_64-linux" should improve eval performance
+    # on hydra.
+    evalSystem = builtins.currentSystem or "x86_64-linux";
 
     # because src is filtered, (src + "./file") does not yet work with flake without https://github.com/NixOS/nix/pull/5163
     # So we avoid this idiom:
@@ -32,28 +45,33 @@ haskell-nix: haskell-nix.cabalProject' (
       -- Constraints not in `cabal.project.freeze for cross platform support
       packages:
         jsbits/cardano-addresses-jsbits.cabal
-    '' + lib.optionalString stdenv.hostPlatform.isWindows ''
-      constraints: Win32 ==2.6.1.0, mintty ==0.1.2
+    '' + lib.optionalString (stdenv.hostPlatform.isGhcjs && config.compiler-nix-name != "ghc8107") ''
+      source-repository-package
+        type: git
+        location: https://github.com/hsyl20/ghcjs-base.git
+        tag: db50683c8a20f79c04c385f3ec43dc5730d966ce
+        --sha256: sha256-Ywd/TCIcArFB7ovMaO+SzbPaQeMwMtF3ux/Q0b7bXkM=
     '';
 
-    compiler-nix-name =
-      let
-        # Look for a with-compiler: field in the cabal.project file
-        withCompiler = lib.lists.concatLists (
-          lib.lists.filter (l: l != null)
-            (builtins.map (l: builtins.match "^with-compiler: *(.*)" l)
-              (lib.splitString "\n" cabalProject)));
-      in
-      lib.lists.head (
-        map (lib.replaceStrings [ "-" "." ] [ "" "" ]) withCompiler);
-
-    shell = {
-      crossPlatforms = p: [ p.ghcjs ];
-      tools = {
-        hpack.version = "latest";
-        haskell-language-server.version = "latest";
+    compiler-nix-name = "ghc92";
+    flake = {
+      variants = {
+        ghc810.compiler-nix-name = lib.mkForce "ghc810";
+        ghc96.compiler-nix-name = lib.mkForce "ghc96";
       };
-      nativeBuildInputs = with pkgs; [ nodejs nixWrapped cabalWrapped ];
+      crossPlatforms = p: with p;
+        lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
+        lib.optionals (system == "x86_64-linux") [
+          mingwW64
+          musl64
+        ];
+    };
+    shell = {
+      crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
+      tools = lib.optionalAttrs (compareGhc "9.8" < 0) {
+        haskell-language-server.src = haskell-nix.sources."hls-2.2";
+      };
+      nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
       packages = ps:
         let
           projectPackages' = haskellLib.selectProjectPackages ps;
@@ -66,53 +84,6 @@ haskell-nix: haskell-nix.cabalProject' (
     };
 
     modules = [
-      {
-        packages = lib.genAttrs projectPackages (_: {
-          configureFlags = [ "--ghc-option=-Werror" ];
-        });
-      }
-      (lib.mkIf stdenv.hostPlatform.isWindows ({ config, ... }: {
-        # Allow reinstallation of Win32
-        nonReinstallablePkgs =
-          [
-            "rts"
-            "ghc-heap"
-            "ghc-prim"
-            "integer-gmp"
-            "integer-simple"
-            "base"
-            "deepseq"
-            "array"
-            "ghc-boot-th"
-            "pretty"
-            "template-haskell"
-            # ghcjs custom packages
-            "ghcjs-prim"
-            "ghcjs-th"
-            "ghc-boot"
-            "ghc"
-            "array"
-            "binary"
-            "bytestring"
-            "containers"
-            "filepath"
-            "ghc-boot"
-            "ghc-compact"
-            "ghc-prim"
-            # "ghci" "haskeline"
-            "hpc"
-            "mtl"
-            "parsec"
-            "text"
-            "transformers"
-            "xhtml"
-            # "stm" "terminfo"
-          ];
-        # Windows cross-compilation only works on Linux
-        packages = lib.genAttrs projectPackages (_: {
-          package.buildable = stdenv.buildPlatform.isLinux;
-        });
-      }))
       ({ config, ... }: {
         # This works around an issue with `cardano-addresses-cli.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
@@ -187,8 +158,8 @@ haskell-nix: haskell-nix.cabalProject' (
             cp ${jsbits}/* jsbits
           '';
         in
-        if stdenv.hostPlatform.isGhcjs then {
-          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.zlib ];
+        lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.buildPackages.zlib ];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
@@ -199,7 +170,8 @@ haskell-nix: haskell-nix.cabalProject' (
             config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
             pkgs.buildPackages.nodejs
           ];
-        } else {
+        })
+      ({ pkgs, ... }: lib.mkIf (!pkgs.stdenv.hostPlatform.isGhcjs) {
           # Disable jsapi-test on jsaddle/native. It's not working yet.
           packages.cardano-addresses-jsapi.components.tests.jsapi-test.preCheck = ''
             echo "Tests disabled on non-ghcjs"

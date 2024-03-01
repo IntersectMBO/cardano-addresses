@@ -27,7 +27,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
-    ( string )
+    ( pretty )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -47,8 +47,8 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "inspect" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Show information about a key"
-        <> footerDoc (Just $ string $ mconcat
-            [ "The parent key is read from stdin."
+        <> footerDoc (Just $ pretty $ mconcat
+            [ "The parent key is read from stdin." :: Text
             ])
   where
     parser = pure Inspect
