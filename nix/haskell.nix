@@ -27,7 +27,7 @@ haskell-nix.cabalProject' (
     src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
 
     inputMap = {
-      "https://input-output-hk.github.io/cardano-haskell-packages" = CHaP;
+      "https://chap.intersectmbo.org/" = CHaP;
     };
 
     # Setting this to builtins.currentSystem allows --impure to be used

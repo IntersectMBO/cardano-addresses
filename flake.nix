@@ -8,17 +8,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     CHaP = {
-      url = "github:input-output-hk/cardano-haskell-packages?ref=repo";
+      url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
     iohkNix = {
       url = "github:input-output-hk/iohk-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    flake-compat = {
-      url = "github:input-output-hk/flake-compat";
-      flake = false;
     };
   };
 
