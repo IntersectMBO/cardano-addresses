@@ -1,15 +1,6 @@
-repository head.hackage.ghc.haskell.org
-  url: https://ghc.gitlab.haskell.org/head.hackage/
-  secure: True
-  key-threshold: 3
-  root-keys:
-     f76d08be13e9a61a377a85e2fb63f4c5435d40f8feb3e12eb05905edb8cdea89
-     26021a13b401500c8eb2761ca95c61f2d625bfef951b939a8124ed12ecf07329
-     7541f32a4ccca4f97aea3b22f5e593ba2c0267546016b992dfadcd2fe944e55d
-  --sha256: sha256-8HJYIS/ZcPbowC0a4B6GGom+c3vB0ZXBg/ZbDm7A/qk=
-
+-- Custom repository for cardano haskell packages, see CONTRIBUTING for more
 repository cardano-haskell-packages
-  url: https://input-output-hk.github.io/cardano-haskell-packages
+  url: https://chap.intersectmbo.org/
   secure: True
   root-keys:
     3e0cce471cf09815f930210f7827266fd09045445d65923e6d0238a6cd15126f
@@ -18,6 +9,13 @@ repository cardano-haskell-packages
     bcec67e8e99cabfa7764d75ad9b158d72bfacf70ca1d0ec8bc6b4406d1bf8413
     c00aae8461a256275598500ea0e187588c35a5d5d7454fb57eac18d9edb86a56
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
+
+-- See CONTRIBUTING for information about these, including some Nix commands
+-- you need to run if you change them
+index-state:
+  , hackage.haskell.org 2024-03-18T13:14:14Z
+  , cardano-haskell-packages 2024-04-04T10:00:00Z
+
 
 repository ghcjs-overlay
   url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/91f4ce9bea0e7f739b7495647c3f72a308ed1c6f
@@ -54,8 +52,8 @@ else
     active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 index-state:
-  , hackage.haskell.org 2024-02-29T00:00:00Z
-  , cardano-haskell-packages 2024-02-29T00:00:00Z
+  , hackage.haskell.org 2024-03-26T06:28:59Z
+  , cardano-haskell-packages 2024-04-11T09:29:53Z
 
 packages:
   command-line/cardano-addresses-cli.cabal
