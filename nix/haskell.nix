@@ -58,6 +58,7 @@ haskell-nix.cabalProject' (
       variants = {
         ghc810.compiler-nix-name = lib.mkForce "ghc810";
         ghc96.compiler-nix-name = lib.mkForce "ghc96";
+        ghc96.compiler-nix-name = lib.mkForce "ghc98";
       };
       crossPlatforms = p: with p;
         lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
