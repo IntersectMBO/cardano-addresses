@@ -69,8 +69,11 @@ haskell-nix.cabalProject' (
     };
     shell = {
       crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
-      tools = lib.optionalAttrs (compareGhc "9.8" < 0) {
-        haskell-language-server.src = haskell-nix.sources."hls-2.2";
+      tools = {
+        haskell-language-server.src =
+          if compareGhc "9" < 0
+            then haskell-nix.sources."hls-2.2"
+            else haskell-nix.sources."hls-2.7";
       };
       nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
       packages = ps:
