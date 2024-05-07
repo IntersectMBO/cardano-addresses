@@ -44,8 +44,8 @@ else
     active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 index-state:
-  , hackage.haskell.org 2024-02-29T00:00:00Z
-  , cardano-haskell-packages 2024-02-29T00:00:00Z
+  , hackage.haskell.org 2024-05-06T16:48:53Z
+  , cardano-haskell-packages 2024-05-06T16:48:53Z
 
 packages:
   command-line/cardano-addresses-cli.cabal
