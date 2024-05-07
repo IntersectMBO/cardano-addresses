@@ -32,7 +32,7 @@
         {
           cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
           inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
-          inherit (final.cardanoAddressesHaskellProject.projectVariants.ghc8107.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
+          inherit (final.cardanoAddressesHaskellProject.projectVariants.ghc810.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
           inherit (self.packages.${final.system}) cardano-addresses-js cardano-addresses-demo-js;
         };
     in
