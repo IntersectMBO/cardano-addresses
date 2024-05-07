@@ -117,6 +117,8 @@ haskell-nix.cabalProject' (
         }))
 
       (lib.mkIf isCrossBuild ({ pkgs, ... }: {
+        reinstallableLibGhc = false;
+
         # Remove hsc2hs build-tool dependencies (suitable version will
         # be available as part of the ghc derivation)
         packages.Win32.components.library.build-tools = lib.mkForce [ ];
