@@ -165,7 +165,20 @@ haskell-nix.cabalProject' (
         lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
           reinstallableLibGhc = false;
 
-          packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.buildPackages.zlib ];
+          # TODO replace this with `zlib` build with `emcc` if possible.
+          # Replace zlib with a derivation including just the header files
+          packages.digest.components.library.libs = lib.mkForce [(
+            pkgs.pkgsBuildBuild.runCommand "zlib" { nativeBuildInputs = [ pkgs.pkgsBuildBuild.xorg.lndir ]; } ''
+              mkdir -p $out/include
+              lndir ${pkgs.pkgsBuildBuild.lib.getDev pkgs.pkgsBuildBuild.zlib}/include $out/include
+          '')];
+          # Prevent downstream packages from looking for zlib
+          packages.digest.components.library.postInstall = ''
+            sed -i 's/^extra-libraries: *z//g' $out/package.conf.d/digest-*.conf
+          '';
+          # Prevent errors from missing zlib function _adler32
+          packages.cardano-addresses.components.library.configureFlags = [ "--gcc-options=-Wno-undefined" ];
+
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsbits.components.library.preConfigure = addJsbits;
