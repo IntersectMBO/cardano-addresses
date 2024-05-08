@@ -178,7 +178,7 @@ haskell-nix.cabalProject' (
           '';
           # Prevent errors from missing zlib function _adler32
           packages.cardano-addresses.components.library.configureFlags = [ "--gcc-options=-Wno-undefined" ];
-          packages.cardano-addresses-cli.components.library.configureFlags = [ "--gcc-options=-Wno-undefined" ];
+          packages.cardano-addresses-cli.configureFlags = [ "--gcc-options=-Wno-undefined" ];
 
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
