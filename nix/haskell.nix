@@ -117,8 +117,6 @@ haskell-nix.cabalProject' (
         }))
 
       (lib.mkIf isCrossBuild ({ pkgs, ... }: {
-        reinstallableLibGhc = false;
-
         # Remove hsc2hs build-tool dependencies (suitable version will
         # be available as part of the ghc derivation)
         packages.Win32.components.library.build-tools = lib.mkForce [ ];
@@ -165,6 +163,8 @@ haskell-nix.cabalProject' (
           '';
         in
         lib.mkIf pkgs.stdenv.hostPlatform.isGhcjs {
+          reinstallableLibGhc = false;
+
           packages.digest.components.library.libs = lib.mkForce [ pkgs.buildPackages.buildPackages.zlib ];
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
           packages.cardano-addresses-jsapi.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
