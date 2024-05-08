@@ -177,7 +177,7 @@ haskell-nix.cabalProject' (
             sed -i 's/^extra-libraries: *z//g' $out/package.conf.d/digest-*.conf
           '';
           # Prevent errors from missing zlib function _adler32
-          packages.cardano-addresses.components.library.configureFlags = [ "--gcc-options=-Wno-undefined" ];
+          packages.cardano-addresses.configureFlags = [ "--gcc-options=-Wno-undefined" ];
           packages.cardano-addresses-cli.configureFlags = [ "--gcc-options=-Wno-undefined" ];
 
           packages.cardano-addresses-cli.components.library.build-tools = [ pkgs.buildPackages.buildPackages.gitMinimal ];
