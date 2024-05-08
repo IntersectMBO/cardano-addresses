@@ -1,6 +1,15 @@
-# These owners will be the default owners for everything in the repository.
+# Code owners are automatically assigned to review PRs
 #
-# Unless a later match takes precedence, these owners will be requested for
-# review when someone opens a pull request.
-#
-* @paweljakubas @Anviking @HeinrichApfelmus @jonathanknowles @paolino @Unisay
+# Later rules override earlier rules.
+
+# CICD
+.github/          @hamishmack
+nix/              @hamishmack
+
+# Haskell components
+command-line/     @paweljakubas
+core/             @paweljakubas
+
+# JavaScript interface
+jsapi/            @hamishmack
+jsbits/           @hamishmack
