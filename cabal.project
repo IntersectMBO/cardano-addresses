@@ -10,11 +10,11 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 repository ghcjs-overlay
-  url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/c4bf6772f1adaa1f21c394042768088b7ba5aac7
+  url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/86462f614cc86105c599e29f4fff04d1aa617de1
   secure: True
   root-keys:
   key-threshold: 0
-  --sha256: sha256-ZQvR82wOfVq0O84fnbxryfOIj5vIGqtvfxXMfTMRyO0=
+  --sha256: sha256-QtRqEBwJ3YpqzHmPEdKZirRfNQGI2AMhLCX3PGFuHnw=
 
 if os(ghcjs)
   allow-newer:
