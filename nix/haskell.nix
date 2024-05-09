@@ -64,7 +64,7 @@ haskell-nix.cabalProject' (
         lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
         lib.optional (system == "x86_64-linux") musl64 ++
         lib.optional (system == "x86_64-linux" && config.compiler-nix-name == "ghc8107") mingwW64 ++
-        lib.optional (system == "x86_64-linux" && config.compiler-nix-name != "ghc8107") ucrt66;
+        lib.optional (system == "x86_64-linux" && config.compiler-nix-name != "ghc8107") ucrt64;
     };
     shell = {
       crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
