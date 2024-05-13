@@ -72,7 +72,7 @@ haskell-nix.cabalProject' (
         haskell-language-server.src =
           if compareGhc "9" < 0
             then haskell-nix.sources."hls-2.2"
-            else haskell-nix.sources."hls-2.7";
+            else haskell-nix.sources."hls-2.8";
       };
       nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nodejs nixWrapped cabalWrapped ];
       packages = ps:
