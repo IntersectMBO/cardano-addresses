@@ -59,16 +59,17 @@ haskell-nix.cabalProject' (
         ghc810.compiler-nix-name = lib.mkForce "ghc810";
         ghc96.compiler-nix-name = lib.mkForce "ghc96";
         ghc98.compiler-nix-name = lib.mkForce "ghc98";
+        ghc910.compiler-nix-name = lib.mkForce "ghc910";
       };
       crossPlatforms = p: with p;
         lib.optional (!builtins.elem config.compiler-nix-name ["ghc928"]) ghcjs ++
         lib.optional (system == "x86_64-linux") musl64 ++
-        lib.optional (system == "x86_64-linux" && config.compiler-nix-name != "ghc982") mingwW64 ++
-        lib.optional (system == "x86_64-linux" && config.compiler-nix-name == "ghc982") ucrt64;
+        lib.optional (system == "x86_64-linux" && !builtins.elem config.compiler-nix-name ["ghc982" "ghc9101"]) mingwW64 ++
+        lib.optional (system == "x86_64-linux" && builtins.elem config.compiler-nix-name ["ghc982" "ghc9101"]) ucrt64;
     };
     shell = {
       crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
-      tools = {
+      tools = lib.optionalAttrs (compareGhc "9.10" < 0) {
         haskell-language-server.src =
           if compareGhc "9" < 0
             then haskell-nix.sources."hls-2.2"
