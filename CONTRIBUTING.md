@@ -15,7 +15,7 @@ The `cardano-addresses` repository is co-maintained by @intersectmbo and @cardan
 The following people hold key responsibilities:
 
 * @disassembler is responsible for releases
-* @hamishmack is responsible for compilation to JavaScript and CI
+* @Crypto2099 is responsible for compilation to JavaScript and CI
 * @paweljakubas is responsible for the Haskell components
 
 Regular contributors for the Haskell components are
