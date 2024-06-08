@@ -21,6 +21,7 @@ repository ghcjs-overlay
   --sha256: sha256-MtruZt1KSRh8DpoB++aqx5VvHnJ7ySMPaf/8snjXbzg=
 
 if os(ghcjs)
+  extra-packages: ghci
   allow-newer:
     ghcjs-base:*
 
