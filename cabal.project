@@ -39,7 +39,7 @@ if os(ghcjs)
   active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
 else
   if impl(ghc>=9.8)
-    allow-newer: *:template-haskell, *:base, *:deepseq, *:ghc-prim
+    allow-newer: *:template-haskell, *:base, *:deepseq, *:ghc-prim, *:time
 
   active-repositories: hackage.haskell.org, cardano-haskell-packages
 
