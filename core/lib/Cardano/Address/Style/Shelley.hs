@@ -40,6 +40,9 @@ module Cardano.Address.Style.Shelley
     , deriveAccountPrivateKey
     , deriveAddressPrivateKey
     , deriveDelegationPrivateKey
+    , deriveDRepPrivateKey
+    , deriveCCColdPrivateKey
+    , deriveCCHotPrivateKey
     , deriveAddressPublicKey
     , derivePolicyPrivateKey
 
@@ -215,6 +218,9 @@ data Role
     = UTxOExternal
     | UTxOInternal
     | Stake
+    | DRep
+    | CCCold
+    | CCHot
     deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
 
 instance NFData Role
@@ -224,6 +230,9 @@ roleFromIndex ix = case indexToWord32 ix of
     0 -> Just UTxOExternal
     1 -> Just UTxOInternal
     2 -> Just Stake
+    3 -> Just DRep
+    4 -> Just CCCold
+    5 -> Just CCHot
     _ -> Nothing
 
 roleToIndex :: Role -> Index 'Soft depth
@@ -231,6 +240,9 @@ roleToIndex = unsafeMkIndex . \case
     UTxOExternal -> 0
     UTxOInternal -> 1
     Stake -> 2
+    DRep -> 3
+    CCCold -> 4
+    CCHot -> 5
 
 --
 -- Key Derivation
@@ -369,6 +381,60 @@ deriveDelegationPrivateKey accXPrv =
     let (Shelley stakeXPrv) =
             deriveAddressPrivateKey accXPrv Stake (minBound @(Index 'Soft _))
     in Shelley stakeXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derive a DRep key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one delegation key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving DRep keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+--
+deriveDRepPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'DelegationK XPrv
+deriveDRepPrivateKey accXPrv =
+    let (Shelley drepXPrv) =
+            deriveAddressPrivateKey accXPrv DRep (minBound @(Index 'Soft _))
+    in Shelley drepXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derive a CCCold key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one delegation key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving CCCold keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+--
+deriveCCColdPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'DelegationK XPrv
+deriveCCColdPrivateKey accXPrv =
+    let (Shelley ccColdXPrv) =
+            deriveAddressPrivateKey accXPrv CCCold (minBound @(Index 'Soft _))
+    in Shelley ccColdXPrv
+
+-- Re-export from 'Cardano.Address.Derivation' to have it documented specialized in Haddock
+--
+-- | Derive a CCHot key for a corresponding 'AccountK'. Note that wallet
+-- software are by convention only using one delegation key per account, and always
+-- the first account (with index 0').
+--
+-- Deriving CCHot keys for something else than the initial account is not
+-- recommended and can lead to incompatibility with existing wallet softwares
+-- (Daedalus, Yoroi, Adalite...).
+--
+deriveCCHotPrivateKey
+    :: Shelley 'AccountK XPrv
+    -> Shelley 'DelegationK XPrv
+deriveCCHotPrivateKey accXPrv =
+    let (Shelley ccHotXPrv) =
+            deriveAddressPrivateKey accXPrv CCHot (minBound @(Index 'Soft _))
+    in Shelley ccHotXPrv
 
 --
 -- Addresses
