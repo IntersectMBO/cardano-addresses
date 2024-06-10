@@ -61,8 +61,7 @@ haskell-nix.cabalProject' (
       crossPlatforms = p: with p;
         lib.optional (system == "x86_64-linux") ghcjs ++
         lib.optional (system == "x86_64-linux") musl64 ++
-        lib.optional (system == "x86_64-linux") mingwW64 ++
-        lib.optional (system == "x86_64-linux") ucrt64;
+        lib.optional (system == "x86_64-linux") mingwW64;
     };
     shell = {
       crossPlatforms = p: lib.optional (compareGhc "9.0" < 0) p.ghcjs;
