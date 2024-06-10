@@ -7,8 +7,8 @@ let
   });
   pkgs = import
     (builtins.fetchTarball {
-      url = "https://github.com/NixOS/nixpkgs/archive/${lock.nodes.nixpkgs-2105.locked.rev}.tar.gz";
-      sha256 = lock.nodes.nixpkgs-2105.locked.narHash;
+      url = "https://github.com/NixOS/nixpkgs/archive/${lock.nodes.nixpkgs-2311.locked.rev}.tar.gz";
+      sha256 = lock.nodes.nixpkgs-2311.locked.narHash;
     })
     { };
 in
