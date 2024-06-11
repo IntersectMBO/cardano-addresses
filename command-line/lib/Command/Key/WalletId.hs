@@ -60,7 +60,7 @@ mod liftCmd = command "walletid" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Shows the cardano-wallet wallet ID for a given key"
         <> footerDoc (Just $ pretty $ mconcat
-            [ "A wallet ID is a 40-digit hexadecimal pretty derived " :: Text
+            [ "A wallet ID is a 40-digit hexadecimal string derived " :: Text
             , "from the wallet’s key. It is used by the cardano-wallet "
             , "server to refer to specific wallets.\n\n"
             , "For shelley wallets the key can be either an extended root key "
