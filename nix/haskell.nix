@@ -53,6 +53,7 @@ haskell-nix.cabalProject' (
         ghc810.compiler-nix-name = lib.mkForce "ghc810";
       };
       crossPlatforms = p: with p;
+        lib.optional (builtins.elem config.compiler-nix-name ["ghc8107"]) ghcjs ++
         lib.optional (system == "x86_64-linux") musl64;
     };
     shell = {
