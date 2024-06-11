@@ -171,10 +171,7 @@ jobs:
       shell: bash
       run: |
         cabal test cardano-addresses
-        if [ "${{ runner.os }}" != "Windows" ] && [ "${{ matrix.ghc }}" !=  "9.6.2" ]; then
-          # This test is currently broken on windows (unhandled PEi386 relocation type 14) so disable it.
-          cabal test cardano-addresses-cli
-        fi
+        cabal test cardano-addresses-cli
 
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v1
