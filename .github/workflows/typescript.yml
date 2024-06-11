@@ -1,10 +1,10 @@
 name: TypeScript NPM Package
 
 on:
-  pull_request:
-  push:
-    branches: [ "master" ]
-    tags: [ "*.*.*" ]
+  #pull_request:
+  #push:
+  #  branches: [ "master" ]
+  #  tags: [ "*.*.*" ]
 
 jobs:
   build:

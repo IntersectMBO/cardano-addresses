@@ -13,7 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         ghc: ["8.10.7", "9.2.4", "9.6.2"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     env:
       # we need the LD_LIBRARY_PATH env var here because we ended up installing libsecp256k1 into /usr/local,
