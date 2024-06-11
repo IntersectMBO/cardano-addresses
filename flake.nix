@@ -65,6 +65,7 @@
           flake = haskellProject.flake {};
         in
         lib.recursiveUpdate flake {
+          hydraJobs.devShells = flake.devShells;
 
           legacyPackages = haskellProject;
 
