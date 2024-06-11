@@ -63,7 +63,14 @@ import Data.Text
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec, describe, expectationFailure, it, shouldBe, shouldContain, shouldStartWith )
+    ( Spec
+    , describe
+    , expectationFailure
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldStartWith
+    )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
