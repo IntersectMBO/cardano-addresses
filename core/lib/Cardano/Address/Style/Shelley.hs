@@ -16,6 +16,7 @@
 {-# LANGUAGE ViewPatterns #-}
 
 {-# OPTIONS_HADDOCK prune #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 -- |
 -- Copyright: © 2018-2021 IOHK

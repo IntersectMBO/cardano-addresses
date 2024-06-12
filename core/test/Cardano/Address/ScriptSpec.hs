@@ -8,6 +8,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 module Cardano.Address.ScriptSpec
     ( spec
@@ -63,14 +64,7 @@ import Data.Text
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec
-    , describe
-    , expectationFailure
-    , it
-    , shouldBe
-    , shouldContain
-    , shouldStartWith
-    )
+    ( Spec, describe, expectationFailure, it, shouldBe, shouldContain )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
