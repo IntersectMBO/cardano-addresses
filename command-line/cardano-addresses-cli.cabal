@@ -161,6 +161,9 @@ test-suite unit
     , temporary
     , text
     , with-utf8
+  if os(windows)
+    build-depends:
+        Win32
   if flag(release)
     ghc-options: -Werror
   if !(impl(ghcjs) || os(ghcjs))
