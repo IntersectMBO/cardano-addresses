@@ -19,9 +19,9 @@ import System.IO (hSetEncoding, utf8, hPutStrLn, stderr, stdin, stdout)
 import System.Win32.Console (setConsoleCP, setConsoleOutputCP, getConsoleCP, getConsoleOutputCP)
 #endif
 
+#ifdef mingw32_HOST_OS
 initialize :: IO ()
 initialize = do
-#ifdef mingw32_HOST_OS
     query getConsoleOutputCP (\e -> setConsoleOutputCP e >> hSetEncoding stdout utf8 >> hSetEncoding stderr utf8) utf8Code
     query getConsoleCP (\e -> setConsoleCP e >> hSetEncoding stdin utf8) utf8Code
   where
@@ -29,12 +29,12 @@ initialize = do
     query get set expected = do
         v <- get
         if v == expected then pure () else set expected
-#else
-    pure ()
 #endif
 
 main :: IO ()
 main = do
     ghcjsBuildSupport
+#ifdef mingw32_HOST_OS
     initialize
+#endif
     withUtf8 $ hspecWith defaultConfig AutoDiscover.spec
