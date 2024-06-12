@@ -38,7 +38,7 @@ jobs:
         du -cBM --max-depth=1 /usr 2> >(grep -v 'Permission denied') | sort -n
         nix develop ..#cardano-addresses-js-shell --command npm run typedoc
     - name: 'Demo'
-      run: 'nix-build -A demo -o result-demo'
+      run: |
        git add -f dist
        nix build ..#cardano-addresses-demo-js -o result-demo
     - name: 'Prepare Documentation'
