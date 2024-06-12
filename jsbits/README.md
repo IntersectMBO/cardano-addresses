@@ -8,14 +8,15 @@ ghcjs.
 Build and run CLI:
 
 ```terminal
-$ nix-build release.nix -A ghcjs.cardano-address.x86_64-linux
-$ node ./result/bin/cardano-address.jsexe/all.js --help
-$ node ./result/bin/cardano-address.jsexe/all.js recovery-phrase generate
+$ nix build .#ghc810-javascript-unknown-ghcjs:cardano-addresses-cli:exe:cardano-address
+$ ./result/bin/cardano-address --help
+$ ./result/bin/cardano-address recovery-phrase generate
 ```
 
 Execute library unit tests:
 ```terminal
-$ nix-build release.nix -A ghcjs.checks.cardano-addresses.unit.x86_64-linux
+$ nix build .#checks.x86_64-linux.ghc810-javascript-unknown-ghcjs:cardano-addresses:test:unit
+$ cat result/test-stdout
 ```
 
 ## With Cabal in nix-shell
@@ -26,16 +27,16 @@ The `nix-shell` development environment provides
 Build and run CLI:
 
 ```terminal
-$ nix-shell
-[nix-shell:~/iohk/cardano-addresses]$ js-unknown-ghcjs-cabal --builddir=dist-ghcjs build all
+$ nix develop
+$ js-unknown-ghcjs-cabal --builddir=dist-ghcjs build all
 ...
 
-[nix-shell:~/iohk/cardano-addresses]$ js-unknown-ghcjs-cabal --builddir=dist-ghcjs run cardano-addresses-cli:exe:cardano-address
+$ js-unknown-ghcjs-cabal --builddir=dist-ghcjs run cardano-addresses-cli:exe:cardano-address
 ...
 /home/rodney/iohk/cardano-addresses/dist-ghcjs/build/wasm32-none/ghcjs-8.6.5/cardano-addresses-cli-3.3.0/x/cardano-address/build/cardano-address/cardano-address: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
 cardano-address: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
 
-[nix-shell:~/iohk/cardano-addresses]$ node dist-ghcjs/build/wasm32-none/ghcjs-8.6.5/cardano-addresses-cli-3.3.0/x/cardano-address/build/cardano-address/cardano-address.jsexe/all.js recovery-phrase generate
+$ node dist-ghcjs/build/wasm32-none/ghcjs-8.6.5/cardano-addresses-cli-3.3.0/x/cardano-address/build/cardano-address/cardano-address.jsexe/all.js recovery-phrase generate
 culture fringe exercise stumble gold current balance ....
 ```
 

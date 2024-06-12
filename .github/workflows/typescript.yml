@@ -39,6 +39,8 @@ jobs:
         nix develop ..#cardano-addresses-js-shell --command npm run typedoc
     - name: 'Demo'
       run: 'nix-build -A demo -o result-demo'
+       git add -f dist
+       nix build ..#cardano-addresses-demo-js -o result-demo
     - name: 'Prepare Documentation'
       run: |
         mkdir ../_build

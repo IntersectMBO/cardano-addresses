@@ -38,37 +38,39 @@ This package comprises of four parts:
 
 ### NodeJS module: Building and testing
 
-Start a `nix-shell` in *this directory* (not the top-level) and run:
+Start a `nix develop .#cardano-addresses-js-shell` in the repo top-level directory and run:
 
 ```shell
+$ nix develop .#cardano-addresses-js-shell
 $ cd jsapi
-$ nix-shell
-[nix-shell:~/iohk/cardano-addresses/jsapi]$ npm install && npm run build
+$ npm install && npm run build
 ...
-[nix-shell:~/iohk/cardano-addresses/jsapi]$ npm run test
+$ npm run test
 ```
 
 Behind the scenes, this will use Nix to make the `ghcjs` build of the `cardano-addresses` library. The path to this Javascript file is stored in the `$CARDANO_ADDRESSES_JS` environment variable.
 
 ### Haskell module: Building and testing
 
-To try it out run `nix-shell` from the repo top-level directory:
+To try it out run `nix develop .#` from the repo top-level directory:
 
 ```shell
-$ nix-shell
-[nix-shell:~/iohk/cardano-addresses]$ js-unknown-ghcjs-cabal build cardano-addresses-jsapi:jsapi-test
-[nix-shell:~/iohk/cardano-addresses]$ node dist-newstyle/build/js-ghcjs/ghcjs-8.10.4/cardano-addresses-jsapi-3.5.0/t/jsapi-test/build/jsapi-test/jsapi-test.jsexe/all.js
+$ nix develop .#
+$ cd jsapi
+$ js-unknown-ghcjs-cabal build cardano-addresses-jsapi:jsapi-test
+$ node dist-newstyle/build/js-ghcjs/ghcjs-8.10.4/cardano-addresses-jsapi-3.5.0/t/jsapi-test/build/jsapi-test/jsapi-test.jsexe/all.js
 ```
 
 That test initializes the api from a JS function that is called from `Main.hs`. To build `.js` file that might be easier to use from a JS app run:
 
 ```shell
-$ nix-build jsapi/default.nix -A cardano-addresses-js
-/nix/store/dw0xwvjvwac68i2a4dkkpx4mw8yji9z8-cardano-addresses-js-3.5.0
+$ nix build .#cardano-addresses-js
 $ tree ./result
-./result
+result
 ├── cardano-addresses-jsapi.cjs.js
-└── cardano-addresses-jsapi.js
+├── cardano-addresses-jsapi.esm.js
+├── cardano-addresses-jsapi.js
+└── cardano-addresses-jsapi.mjs
 ```
 
 This replaces the regular `runmain.js` with `jsapi/glue/runmain.js`. That exposes a single function you can call and pass in a continuation.
