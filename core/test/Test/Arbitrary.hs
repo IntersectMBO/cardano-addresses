@@ -228,6 +228,9 @@ instance Arbitrary Shelley.Role where
         [ Shelley.UTxOExternal
         , Shelley.UTxOInternal
         , Shelley.Stake
+        , Shelley.DRep
+        , Shelley.CCCold
+        , Shelley.CCHot
         ]
 
 instance Arbitrary Icarus.Role where
