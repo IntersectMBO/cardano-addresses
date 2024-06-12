@@ -20,6 +20,8 @@ import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields
     , Mod
@@ -31,7 +33,7 @@ import Options.Applicative
     , progDesc
     )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Style
     ( Passphrase (..)
     , PassphraseInfo (..)
@@ -70,33 +72,33 @@ mod liftCmd = command "from-recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Convert a recovery phrase to an extended private key"
         <> footerDoc (Just $ vsep
-            [ string "The recovery phrase without passphrase is read from stdin."
-            , string ""
-            , string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
-            , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Icarus"
-            , string ""
-            , string "The recovery phrase with passphrase can be entered interactively or from file."
-            , string "In both cases passhrase can take form of mnemonic, base16, base64, utf8 or octet array."
-            , string "In interactive case one can select explicit, sensitive or silent mode."
-            , string ""
-            , string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --sensitive"
-            , indent 2 $ bold $ string "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
-            , indent 2 $ bold $ string "**********************************************************************************************************"
-            , indent 2 $ bold $ string "Please enter a 9–12 word second factor:"
-            , indent 2 $ bold $ string "*************************************************************"
-            , string ""
-            , string "In case of passphrase reading from file the recovery phrase is read from stdin."
-            , string ""
-            , string "Example:"
-            , indent 2 $ bold $ string "$ echo \"Secret Secondary Phrase\" > sndfactor.prv"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
-            , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley --from-file \"./sndfactor.prv\""
-            , string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 12 > sndfactor.prv"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate \\"
-            , indent 2 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --from-file \"./sndfactor.prv\""
+            [ prettyText "The recovery phrase without passphrase is read from stdin."
+            , prettyText ""
+            , prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate \\"
+            , indent 2 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Icarus"
+            , prettyText ""
+            , prettyText "The recovery phrase with passphrase can be entered interactively or from file."
+            , prettyText "In both cases passhrase can take form of mnemonic, base16, base64, utf8 or octet array."
+            , prettyText "In interactive case one can select explicit, sensitive or silent mode."
+            , prettyText ""
+            , prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --sensitive"
+            , indent 2 $ annotate bold $ prettyText "Please enter a [9, 12, 15, 18, 21, 24] word mnemonic:"
+            , indent 2 $ annotate bold $ prettyText "**********************************************************************************************************"
+            , indent 2 $ annotate bold $ prettyText "Please enter a 9–12 word second factor:"
+            , indent 2 $ annotate bold $ prettyText "*************************************************************"
+            , prettyText ""
+            , prettyText "In case of passphrase reading from file the recovery phrase is read from stdin."
+            , prettyText ""
+            , prettyText "Example:"
+            , indent 2 $ annotate bold $ prettyText "$ echo \"Secret Secondary Phrase\" > sndfactor.prv"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate \\"
+            , indent 2 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shelley --from-file \"./sndfactor.prv\""
+            , prettyText ""
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 12 > sndfactor.prv"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate \\"
+            , indent 2 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shelley --passphrase from-mnemonic --from-file \"./sndfactor.prv\""
             ])
   where
     parser = FromRecoveryPhrase
@@ -104,6 +106,9 @@ mod liftCmd = command "from-recovery-phrase" $
         <*> optional passphraseInfoOpt
         <*> passphraseInputModeOpt
         <*> optional fileOpt
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run FromRecoveryPhrase{style,passphraseInfo, passphraseInputMode,passphraseFromFile} = do

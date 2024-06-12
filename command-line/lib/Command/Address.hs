@@ -20,7 +20,7 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( bold, hsep, string, vsep )
+    ( annotate, bold, hsep, pretty, vsep )
 import Prelude hiding
     ( mod )
 
@@ -46,11 +46,11 @@ mod liftCmd = command "address" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "About addresses"
         <> footerDoc (Just $ vsep
-            [ string "Integrating with Byron?"
-            , hsep [ string "  ↳ Look at", bold $ string "'bootstrap'", string "." ]
-            , string ""
-            , string "Integrating with Shelley?"
-            , hsep [ string "  ↳ Look at", bold $ string "'payment'", string "&", bold $ string "'delegation'", string "." ]
+            [ pretty "Integrating with Byron?"
+            , hsep [ pretty "  ↳ Look at", annotate bold $ pretty "'bootstrap'", pretty "." ]
+            , pretty ""
+            , pretty "Integrating with Shelley?"
+            , hsep [ pretty "  ↳ Look at", annotate bold $ pretty "'payment'", pretty "&", annotate bold $ pretty "'delegation'", pretty "." ]
             ])
   where
     parser = subparser $ mconcat

@@ -24,6 +24,8 @@ import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
+import Data.Text
+    ( Text )
 import Options.Applicative
     ( CommandFields
     , Mod
@@ -38,7 +40,7 @@ import Options.Applicative
 import Options.Applicative.Discrimination
     ( NetworkTag (..), fromNetworkTag, networkTagOpt )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
     ( scriptArg )
 import Options.Applicative.Style
@@ -62,22 +64,25 @@ mod liftCmd = command "payment" $
         <> progDesc "Create a payment address"
         <> header "Payment addresses carry no delegation rights whatsoever."
         <> footerDoc (Just $ vsep
-            [ string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H/0/0 > addr.prv"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat addr.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" address payment --network-tag testnet"
-            , indent 2 $ string "addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek"
+            [ prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat root.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key child 1852H/1815H/0H/0/0 > addr.prv"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat addr.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key public --with-chain-code \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" address payment --network-tag testnet"
+            , indent 2 $ prettyText "addr_test1vqrlltfahghjxl5sy5h5mvfrrlt6me5fqphhwjqvj5jd88cccqcek"
             ])
   where
     parser = Cmd
         <$> networkTagOpt Shelley
         <*> optional scriptArg
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,paymentScript} = do

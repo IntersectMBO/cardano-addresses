@@ -28,8 +28,8 @@ library
       NoImplicitPrelude
   build-depends:
       base >=4.7 && <5
-  if impl(ghcjs) || os(ghcjs)
+  js-sources:
+    jsbits/cardano-crypto.js
+  if impl(ghcjs)
     ghc-options: jsbits/cardano-crypto.js
-    js-sources:
-        jsbits/cardano-crypto.js
   default-language: Haskell2010

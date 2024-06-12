@@ -458,3 +458,9 @@ if(typeof __dirname == 'undefined') {
 function h$foundation_sysrandom_linux(buf_d, buf_o, size) {
   cryptoObj.getRandomValues(typedArray);
 }
+
+function h$getMonotonicNSec() {
+  var t = BigInt((new Date()).getTime())*1000n;
+  h$ret1 = Number(t&0xffffffffn);
+  return Number((t>>32n)&0xffffffffn);
+}

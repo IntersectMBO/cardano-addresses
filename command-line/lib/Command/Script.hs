@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -8,6 +9,9 @@ module Command.Script
     , mod
     , run
     ) where
+
+import Data.Text
+    ( Text )
 
 import Prelude hiding
     ( mod )
@@ -23,7 +27,7 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( Doc, annotate, bold, indent, pretty, vsep )
 import System.IO.Extra
     ( progName )
 
@@ -42,27 +46,27 @@ mod liftCmd = command "script" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "About scripts"
         <> footerDoc (Just $ vsep
-            [ string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shared > root_shared.xsk"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root_shared.xsk \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1854H/1815H/0H/0/0 > signingKey1.xsk"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat signingKey1.xsk \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public --without-chain-code \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key hash > verKey1.vkh"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root_shared.xsk \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1854H/1815H/0H/0/1 > signingKey2.xsk"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat signingKey2.xsk \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public --without-chain-code \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key hash > verKey2.vkh"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" script hash \"all [$(cat verKey1.vkh),$(cat verKey2.vkh)]\""
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" script preimage \"all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq, active_from 100, active_until 150]\""
+            [ prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shared > root_shared.xsk"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat root_shared.xsk \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key child 1854H/1815H/0H/0/0 > signingKey1.xsk"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat signingKey1.xsk \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key public --without-chain-code \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key hash > verKey1.vkh"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat root_shared.xsk \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key child 1854H/1815H/0H/0/1 > signingKey2.xsk"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat signingKey2.xsk \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key public --without-chain-code \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key hash > verKey2.vkh"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" script hash \"all [$(cat verKey1.vkh),$(cat verKey2.vkh)]\""
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" script preimage \"all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq, active_from 100, active_until 150]\""
             ])
   where
     parser = subparser $ mconcat
@@ -70,6 +74,9 @@ mod liftCmd = command "script" $
         , Validation.mod Validation
         , Preimage.mod Preimage
         ]
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run = \case

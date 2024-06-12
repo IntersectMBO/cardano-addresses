@@ -31,9 +31,9 @@ import Options.Applicative
     , (<|>)
     )
 import Options.Applicative.Help.Pretty
-    ( bold, hsep, string, vsep )
+    ( annotate, bold, hsep, pretty, vsep )
 import System.Console.ANSI
-    ( hSupportsANSIWithoutEmulation )
+    ( hSupportsANSI )
 import System.IO
     ( BufferMode (..), Handle, hSetBuffering, stderr, stdin, stdout )
 import System.IO.Extra
@@ -57,19 +57,19 @@ cli :: ParserInfo CLI
 cli = info (helper <*> parser) $ mempty
     <> progDesc "Command-line for address and key manipulation in Cardano."
     <> footerDoc (Just $ vsep
-        [ string "💡 Need auto-completion?"
-        , string ""
+        [ pretty "💡 Need auto-completion?"
+        , pretty ""
         , hsep
-            [ string "  ↳"
-            , bold $ string "source <("
-            , bold $ string progName
-            , bold $ string $ "--bash-completion-script `which "<>progName<>"`)"
+            [ pretty "  ↳"
+            , annotate bold $ pretty "source <("
+            , annotate bold $ pretty progName
+            , annotate bold $ pretty $ "--bash-completion-script `which "<>progName<>"`)"
             ]
-        , string ""
-        , string "Or alternatively --fish-completion-script / --zsh-completion-script."
-        , string "For a long-term solution, you may want to put this script in the relevant place. e.g.:"
-        , string ""
-        , hsep [string "  ↳", bold $ string "/etc/bash_completion.d"]
+        , pretty ""
+        , pretty "Or alternatively --fish-completion-script / --zsh-completion-script."
+        , pretty "For a long-term solution, you may want to put this script in the relevant place. e.g.:"
+        , pretty ""
+        , hsep [pretty "  ↳", annotate bold $ pretty "/etc/bash_completion.d"]
         ])
   where
     parser = Version.opt Version <|> subparser (mconcat
@@ -99,5 +99,5 @@ setup =
   where
     hSetup :: Handle -> IO ()
     hSetup h = do
-      void $ hSupportsANSIWithoutEmulation h
+      void $ hSupportsANSI h
       hSetBuffering h NoBuffering

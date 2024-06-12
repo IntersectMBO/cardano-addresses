@@ -7,18 +7,18 @@
       url = "github:input-output-hk/haskell.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    CHaP = {
+      url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
+      flake = false;
+    };
     flake-utils.url = "github:numtide/flake-utils";
     iohkNix = {
       url = "github:input-output-hk/iohk-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-compat = {
-      url = "github:input-output-hk/flake-compat";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, ... }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
@@ -28,7 +28,7 @@
         {
           cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
           inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
-          inherit (final.cardanoAddressesHaskellProject.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
+          inherit (final.cardanoAddressesHaskellProject.projectVariants.ghc810.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
           inherit (self.packages.${final.system}) cardano-addresses-js cardano-addresses-demo-js;
         };
     in
@@ -53,22 +53,19 @@
             ];
           };
 
-          haskellProject = (import ./nix/haskell.nix pkgs.haskell-nix);
+          haskellProject = (import ./nix/haskell.nix {
+            inherit system CHaP;
+            inherit (pkgs) haskell-nix;
+          });
 
           cardano-addresses-js = pkgs.callPackage ./nix/cardano-addresses-js.nix { };
           cardano-addresses-demo-js = pkgs.callPackage ./nix/cardano-addresses-demo-js.nix { };
           cardano-addresses-js-shell = pkgs.callPackage ./nix/cardano-addresses-js-shell.nix { };
 
-          flake = haskellProject.flake {
-            crossPlatforms = p: with p; [ ghcjs ]
-            ++ (lib.optionals (system == "x86_64-linux") [
-              mingwW64
-              musl64
-            ]);
-          };
-
+          flake = haskellProject.flake {};
         in
         lib.recursiveUpdate flake {
+          hydraJobs.devShells = flake.devShells;
 
           legacyPackages = haskellProject;
 

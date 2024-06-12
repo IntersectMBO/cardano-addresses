@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -8,6 +9,9 @@ module Command.Key
     , mod
     , run
     ) where
+
+import Data.Text
+    ( Text )
 
 import Prelude hiding
     ( mod )
@@ -23,7 +27,7 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( Doc, annotate, bold, indent, pretty, vsep )
 import System.IO.Extra
     ( progName )
 
@@ -48,28 +52,28 @@ mod liftCmd = command "key" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "About public/private keys"
         <> footerDoc (Just $ vsep
-            [ string "Example:"
-            , indent 2 $ bold $ string $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string "$ cat root.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key child 1852H/1815H/0H \\"
-            , indent 4 $ bold $ string "| tee acct.prv \\"
-            , indent 4 $ bold $ string $ "| "<>progName<>" key public --with-chain-code > acct.pub"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" key inspect <<< $(cat acct.prv)"
-            , indent 2 $ string "{"
-            , indent 2 $ string "    \"key_type\": \"private\","
-            , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
-            , indent 2 $ string "    \"extended_key\": \"90ead3efad7aacac242705ede323665387f49ed847bed025eb333708ccf6aa54403482a867daeb18f38c57d6cddd7e6fd6aed4a3209f7425a3d1c5d9987a9c5f\""
-            , indent 2 $ string "}"
-            , indent 2 $ string ""
-            , indent 2 $ bold $ string $ "$ "<>progName<>" key inspect <<< $(cat acct.pub)"
-            , indent 2 $ string "{"
-            , indent 2 $ string "    \"key_type\": \"public\","
-            , indent 2 $ string "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
-            , indent 2 $ string "    \"extended_key\": \"d306350ee88f51fb710252e27f0c40006c58e994761b383e02d400e2be59b3cc\""
-            , indent 2 $ string "}"
+            [ prettyText "Example:"
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key from-recovery-phrase Shelley > root.prv"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ prettyText "$ cat root.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key child 1852H/1815H/0H \\"
+            , indent 4 $ annotate bold $ prettyText "| tee acct.prv \\"
+            , indent 4 $ annotate bold $ pretty $ "| "<>progName<>" key public --with-chain-code > acct.pub"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" key inspect <<< $(cat acct.prv)"
+            , indent 2 $ prettyText "{"
+            , indent 2 $ prettyText "    \"key_type\": \"private\","
+            , indent 2 $ prettyText "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
+            , indent 2 $ prettyText "    \"extended_key\": \"90ead3efad7aacac242705ede323665387f49ed847bed025eb333708ccf6aa54403482a867daeb18f38c57d6cddd7e6fd6aed4a3209f7425a3d1c5d9987a9c5f\""
+            , indent 2 $ prettyText "}"
+            , indent 2 $ prettyText ""
+            , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" key inspect <<< $(cat acct.pub)"
+            , indent 2 $ prettyText "{"
+            , indent 2 $ prettyText "    \"key_type\": \"public\","
+            , indent 2 $ prettyText "    \"chain_code\": \"67bef6f80df02c7452e20e76ffb4bb57cae8aac2adf042b21a6b19e4f7b1f511\","
+            , indent 2 $ prettyText "    \"extended_key\": \"d306350ee88f51fb710252e27f0c40006c58e994761b383e02d400e2be59b3cc\""
+            , indent 2 $ prettyText "}"
             ])
   where
     parser = subparser $ mconcat
@@ -80,6 +84,9 @@ mod liftCmd = command "key" $
         , Hash.mod Hash
         , WalletId.mod WalletId
         ]
+
+    prettyText :: Text -> Doc
+    prettyText = pretty
 
 run :: Cmd -> IO ()
 run = \case
