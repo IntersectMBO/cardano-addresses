@@ -28,9 +28,9 @@ jobs:
     - name: 'Install dependencies'
       run: 'nix develop ..#cardano-addresses-js-shell --command npm install'
     - name: 'Build'
-      run: 'nix develop ..#cardano-addresses-js-shell --command npm build'
+      run: 'nix develop ..#cardano-addresses-js-shell --command npm run build'
     - name: 'Test'
-      run: 'nix develop ..#cardano-addresses-js-shell --command npm test'
+      run: 'nix develop ..#cardano-addresses-js-shell --command npm run test'
     - name: 'Typedoc'
       run: |
         du -cBM --max-depth=1 /opt 2> >(grep -v 'Permission denied') | sort -n
