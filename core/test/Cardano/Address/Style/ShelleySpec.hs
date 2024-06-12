@@ -597,6 +597,54 @@ goldenTestBaseAddressBothFromPub GoldenTestBaseAddress{..} =
                 (DelegationFromKey stakePub)
         baseAddrBothFromKey `shouldBe` baseAddrBothFromPub
 
+--TO_DO add script golden
+data KeysHashes = KeysHashes
+    {  -- | CIP-1852’s DRep extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'drep_xsk'
+      drepXsk :: Text
+
+       -- | CIP-1852’s DRep extended verification key (Ed25519 public key with chain code), bech32 encoded prefixed with 'drep_xvk'
+    , drepXvk :: Text
+
+       -- | CIP-1852’s DRep verification key (Ed25519 public key), bech32 encoded prefixed with 'drep_vk'
+    , drepVk :: Text
+
+       -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), , bech32 encoded prefixed with 'drep'
+    , drep :: Text
+
+       -- | CIP-1852’s constitutional committee cold extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'cc_cold_xsk'
+    , ccColdXsk :: Text
+
+       -- | CIP-1852’s constitutional committee extended cold verification signing key (Ed25519 public key with chain code), bech32 encoded prefixed with 'cc_cold_xvk'
+    , ccColdXvk :: Text
+
+       -- | CIP-1852’s constitutional committee cold verification signing key (Ed25519 private key), bech32 encoded prefixed with 'cc_cold_vk'
+    , ccColdVk :: Text
+
+       -- | Constitutional committee cold verification key hash (cold credential) (blake2b_224 digest of a consitutional committee cold verification key), bech32 encoded prefixed with 'cc_cold'
+    , cc_cold :: Text
+
+       -- | CIP-1852’s constitutional committee hot extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'cc_hot_xsk'
+    , ccHotXsk :: Text
+
+       -- | CIP-1852’s constitutional committee extended hot verification signing key (Ed25519 public key with chain code), bech32 encoded prefixed with 'cc_hot_xvk'
+    , ccHotXvk :: Text
+
+       -- | CIP-1852’s constitutional committee hot verification signing key (Ed25519 private key), bech32 encoded prefixed with 'cc_hot_vk'
+    , ccHotVk :: Text
+
+       -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
+    , cc_hot :: Text
+    }
+
+data GoldenTestGovernance = GoldenTestGovernance
+    {
+      -- | Mnemonic
+       mnemonic :: [Text]
+
+      -- | Expected Keys and Hashes
+    ,  expectedKeysHashes :: KeysHashes
+    }
+
 
 data TestVector = TestVector
     {
