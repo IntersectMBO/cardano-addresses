@@ -16,7 +16,7 @@ jobs:
       matrix:
         platform: [ x86_64-linux, x86_64-darwin ]
         compiler-nix-name: [ ghc810, ghc96 ]
-        target-platform: [ "", "-windows" "-js" ]
+        target-platform: [ "", "-windows", "-js" ]
         exclude:
           - platform: x86_64-darwin
             target-platform: "-windows"
