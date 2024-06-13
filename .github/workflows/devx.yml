@@ -1,0 +1,52 @@
+name: DevX/Haskell
+on:
+  push:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: devx {0}
+ 
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ x86_64-linux, x86_64-darwin ]
+        compiler-nix-name: [ ghc810, ghc96 ]
+        target-platform: [ "" ] # , "-windows" ]
+
+    runs-on: ${{ matrix.platform == 'x86_64-linux' && 'ubuntu-latest' || 'macos-latest' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install GHC and Cabal
+        uses: input-output-hk/actions/devx@latest
+        with:
+          platform: ${{ matrix.platform }}
+          target-platform: ${{ matrix.target-platform }}
+          compiler-nix-name: ${{ matrix.compiler-nix-name }}
+          # for now we'll set minimal to false, as minimal-iog images don't exist.
+          minimal: false
+          iog: true
+      - name: add patched cabal
+        run: |
+          mkdir ~/bin
+          curl -L https://ci.zw3rk.com/job/input-output-hk-haskell-nix-example/pullrequest-2/x86_64-linux.cabal-install-static/latest/download/1 | gunzip > ~/bin/cabal
+          curl -L https://ci.zw3rk.com/job/input-output-hk-haskell-nix-example/pullrequest-2/x86_64-linux.cabal-install-hooks/latest/download/1 | tar xzf - -C ~/bin
+          chmod +x ~/bin/cabal
+          chmod +x ~/bin/*Hook*
+      - name: cabal update
+        run: PATH=$HOME/bin:$PATH cabal update
+      - name: cabal build dependencies
+        env:
+          CABAL_AWS_ACCESS_KEY_ID: ${{ secrets.CABAL_AWS_ACCESS_KEY_ID }}
+          CABAL_AWS_SECRET_ACCESS_KEY: ${{ secrets.CABAL_AWS_SECRET_ACCESS_KEY }}
+        run: PATH=$HOME/bin:$PATH cabal build all -j --enable-tests --only-dependencies
+      - name: cabal build
+        env:
+          CABAL_AWS_ACCESS_KEY_ID: ${{ secrets.CABAL_AWS_ACCESS_KEY_ID }}
+          CABAL_AWS_SECRET_ACCESS_KEY: ${{ secrets.CABAL_AWS_SECRET_ACCESS_KEY }}
+        run: PATH=$HOME/bin:$PATH cabal build all -j --enable-tests
+      - name: cabal test
+        run: PATH=$HOME/bin:$PATH cabal test all -j --enable-tests --test-show-details=direct
