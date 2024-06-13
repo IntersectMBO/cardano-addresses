@@ -313,6 +313,25 @@ spec = do
                    , cc_hot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
                    }
             }
+        goldenTestGovernance GoldenTestGovernance
+            {  mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
+                            "entry", "language", "right", "filter", "choice" ]
+            ,  accountIx = 0x80000100
+            ,  expectedKeysHashes = KeysHashes
+                   { drepXsk = "drep_xsk1zracgd4mqt32f5cj0ps0wudf78u6lumz7gprgm3j8zec5ahp530weq4z9ayj6jzj33lpj86jkk2gnt0ns0d5sywteexxehvva7gugz99ydmpemzpsfnj49vjvw88q9a2s2hxc9ggxal5q6xsqz5vaat2xqsha72w"
+                   , drepXvk = "drep_xvk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9m22gmkrnkyrqn8922eycuwwqt64q4wds2ssdmlgp5dqq9gem6k5vq23ph3c"
+                   , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
+                   , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
+                   , ccColdXsk = "cc_cold_xsk1dppxrjspxrjj5e5xrmh6yaw6w30arsl5lqcsp09ynyzwwulp530q4tlvug79xx6ja3u32fu9jyy84p6erjmza6twrackm9kfsdpc3ap7uxpempqjftx74qwxnmn7d6pg8pl9zpnc0rese26pfmzl9cmtgg8xsxvu"
+                   , ccColdXvk = "cc_cold_xvk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gnacvrnkzpyjkda2qud8h8um5zswr72yr8s78npj45znk97t3kkssryhkyv"
+                   , ccColdVk = "cc_cold_vk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gs3qg4hr"
+                   , cc_cold = "cc_cold1aymnf7h8rr53h069ephcekq707tg0ek0lexfzrw35npkq02wke0"
+                   , ccHotXsk = "cc_hot_xsk15pt89wppyhr9eqgm5nnu7tna3dfmqxa2u45e4g7krzp9u78p530pez36k8k9n0gw08hn6drxlwxxsgc4jsejv6hvcnkd7gd3zxhstpe3vzde6e98zql6n2cmekklm63dydnt80szdr0h768dexeklrfspc5lznuz"
+                   , ccHotXvk = "cc_hot_xvk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phrzcymn4j2wypl4x43hnddlh4z6gmxkwlqy6xl0a5wmjdnd7xnqrsvak8ry"
+                   , ccHotVk = "cc_hot_vk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phqx538xn"
+                   , cc_hot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
+                   }
+            }
 
     describe "Test vectors" $ do
         testVectors
