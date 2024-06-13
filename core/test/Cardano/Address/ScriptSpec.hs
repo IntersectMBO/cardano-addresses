@@ -776,8 +776,8 @@ instance Arbitrary KeyHash where
         payload' <- BS.pack <$> vectorOf 28 arbitrary
         flip KeyHash payload' <$>
             oneof [ pure Payment, pure Delegation, pure Policy
-                  , pure Representative, pure CommiteeCold
-                  , pure CommiteeHot,  pure Unknown]
+                  , pure Representative, pure CommitteeCold
+                  , pure CommitteeHot,  pure Unknown]
 
 instance Arbitrary Cosigner where
     arbitrary = Cosigner <$> arbitrary

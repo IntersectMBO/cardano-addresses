@@ -54,7 +54,7 @@ import Cardano.Address.Derivation
     , xpubToPub
     )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole (..) )
+    ( KeyHash (..), KeyRole (..), keyHashToText )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
@@ -797,19 +797,19 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepXPrvTxt = bech32With CIP5.drep_xsk  $ getExtendedKeyAddr drepXPrv
         let drepXPubTxt = bech32With CIP5.drep_xvk $ getPublicKeyAddr $ toXPub <$> drepXPrv
         let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
-        let drepTxt = bech32With CIP5.drep $ getKeyHash $ toXPub <$> drepXPrv
+        let drepTxt = toKeyHash Representative $ toXPub <$> drepXPrv
 
         let coldXPrv = deriveCCColdPrivateKey acctXPrv
         let coldXPrvTxt = bech32With CIP5.cc_cold_xsk  $ getExtendedKeyAddr coldXPrv
         let coldXPubTxt = bech32With CIP5.cc_cold_xvk $ getPublicKeyAddr $ toXPub <$> coldXPrv
         let coldPubTxt = bech32With CIP5.cc_cold_vk $ getVerKey $ toXPub <$> coldXPrv
-        let coldTxt = bech32With CIP5.cc_cold $ getKeyHash $ toXPub <$> coldXPrv
+        let coldTxt = toKeyHash CommitteeCold $ toXPub <$> coldXPrv
 
         let hotXPrv = deriveCCHotPrivateKey acctXPrv
         let hotXPrvTxt = bech32With CIP5.cc_hot_xsk  $ getExtendedKeyAddr hotXPrv
         let hotXPubTxt = bech32With CIP5.cc_hot_xvk $ getPublicKeyAddr $ toXPub <$> hotXPrv
         let hotPubTxt = bech32With CIP5.cc_hot_vk $ getVerKey $ toXPub <$> hotXPrv
-        let hotTxt = bech32With CIP5.cc_hot $ getKeyHash $ toXPub <$> hotXPrv
+        let hotTxt = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
 
         let derivedKeysHashes = KeysHashes
                 { drepXsk = drepXPrvTxt
@@ -834,7 +834,13 @@ goldenTestGovernance GoldenTestGovernance{..} =
         derivedKeysHashes `shouldBe` expectedKeysHashes
   where
     getVerKey = unsafeMkAddress . pubToBytes . xpubToPub . getKey
-    getKeyHash = unsafeMkAddress . hashCredential . pubToBytes . xpubToPub . getKey
+    toKeyHash role =
+          keyHashToText
+        . KeyHash role
+        . hashCredential
+        . pubToBytes
+        . xpubToPub
+        . getKey
 
 data TestVector = TestVector
     {

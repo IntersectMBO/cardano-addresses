@@ -227,8 +227,8 @@ data KeyRole =
     | Delegation
     | Policy
     | Representative
-    | CommiteeCold
-    | CommiteeHot
+    | CommitteeCold
+    | CommitteeHot
     | Unknown
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyRole
@@ -264,9 +264,9 @@ keyHashToText (KeyHash cred keyHash) = case cred of
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
         T.decodeUtf8 $ encode (EBech32 CIP5.drep) keyHash
-    CommiteeCold ->
+    CommitteeCold ->
         T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) keyHash
-    CommiteeHot ->
+    CommitteeHot ->
         T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) keyHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
@@ -335,9 +335,9 @@ keyHashFromText txt =
         | hrp == CIP5.drep && checkBSLength bytes 28 =
               Just (Representative, bytes)
         | hrp == CIP5.cc_cold && checkBSLength bytes 28 =
-              Just (CommiteeCold, bytes)
+              Just (CommitteeCold, bytes)
         | hrp == CIP5.cc_hot && checkBSLength bytes 28 =
-              Just (CommiteeHot, bytes)
+              Just (CommitteeHot, bytes)
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_vk && checkBSLength bytes 32 =
@@ -363,13 +363,13 @@ keyHashFromText txt =
         | hrp == CIP5.drep_xvk && checkBSLength bytes 64 =
               Just (Representative, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.cc_cold_vk && checkBSLength bytes 32 =
-              Just (CommiteeCold, hashCredential bytes)
+              Just (CommitteeCold, hashCredential bytes)
         | hrp == CIP5.cc_cold_xvk && checkBSLength bytes 64 =
-              Just (CommiteeCold, hashCredential $ BS.take 32 bytes)
+              Just (CommitteeCold, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.cc_hot_vk && checkBSLength bytes 32 =
-              Just (CommiteeHot, hashCredential bytes)
+              Just (CommitteeHot, hashCredential bytes)
         | hrp == CIP5.cc_hot_xvk && checkBSLength bytes 64 =
-              Just (CommiteeHot, hashCredential $ BS.take 32 bytes)
+              Just (CommitteeHot, hashCredential $ BS.take 32 bytes)
         | otherwise = Nothing
     checkBSLength bytes expLength =
         BS.length bytes == expLength
