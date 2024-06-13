@@ -16,10 +16,14 @@ jobs:
       matrix:
         platform: [ x86_64-linux, x86_64-darwin ]
         compiler-nix-name: [ ghc810, ghc96 ]
-        target-platform: [ "", "-windows" ]
+        target-platform: [ "", "-windows" "-js" ]
         exclude:
           - platform: x86_64-darwin
             target-platform: "-windows"
+          - platform: x86_64-darwin
+            target-platform: "-js"
+          - compiler-nix-name: ghc96
+            target-platform: "-js"
 
     runs-on: ${{ matrix.platform == 'x86_64-linux' && 'ubuntu-latest' || 'macos-latest' }}
     steps:
