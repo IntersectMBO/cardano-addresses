@@ -17,6 +17,9 @@ jobs:
         platform: [ x86_64-linux, x86_64-darwin ]
         compiler-nix-name: [ ghc810, ghc96 ]
         target-platform: [ "", "-windows" ]
+        exclude:
+          - platform: x86_64-darwin
+            target-platform: "-windows"
 
     runs-on: ${{ matrix.platform == 'x86_64-linux' && 'ubuntu-latest' || 'macos-latest' }}
     steps:
@@ -42,7 +45,8 @@ jobs:
         id: cabal-store
         shell: bash
         run: |
-          cabal_config_file="$(PATH=$HOME/bin:$PATH cabal help user-config | tail -n 1 | xargs)"
+          export PATH=$HOME/bin:$PATH
+          cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
           echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
 
       - name: "Check cabal-store"
