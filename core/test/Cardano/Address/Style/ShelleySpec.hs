@@ -45,11 +45,13 @@ import Cardano.Address.Derivation
     , hashCredential
     , indexFromWord32
     , pubFromBytes
+    , pubToBytes
     , toXPub
     , unsafeMkIndex
     , xprvToBytes
     , xpubFromBytes
     , xpubToBytes
+    , xpubToPub
     )
 import Cardano.Address.Script
     ( KeyHash (..), KeyRole (..) )
@@ -58,6 +60,9 @@ import Cardano.Address.Style.Shelley
     , Role (..)
     , Shelley (..)
     , delegationAddress
+    , deriveCCColdPrivateKey
+    , deriveCCHotPrivateKey
+    , deriveDRepPrivateKey
     , deriveDelegationPrivateKey
     , liftPub
     , liftXPub
@@ -87,6 +92,8 @@ import Data.Maybe
     ( fromMaybe, isNothing )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word32 )
 import GHC.Generics
     ( Generic )
 import Test.Arbitrary
@@ -286,6 +293,25 @@ spec = do
             ,  netTag = 1
             ,  expectedAddr =
                     "018a4d111f71a79169c50bcbc27e1e20b6e13e87ff8f33edc3cab419d408b2d658668c2e341ee5bda4477b63c5aca7ec7ae4e3d196163556a4"
+            }
+        goldenTestGovernance GoldenTestGovernance
+            {  mnemonic = [ "test", "walk", "nut", "penalty", "hip", "pave", "soap",
+                            "entry", "language", "right", "filter", "choice" ]
+            ,  accountIx = 0x80000000
+            ,  expectedKeysHashes = KeysHashes
+                   { drepXsk = "drep_xsk14rjh4rs2dzm6k5xxe5f73cypzuv02pknfl9xwnsjws8a7ulp530xztarpdlyh05csw2cmnekths7dstq0se3wtza84m4fueffezsjfgassgs9xtfzgehrn0fn7c82uc0rkj06s0w0t80hflzz8cwyry3eg9066uj"
+                   , drepXvk = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
+                   , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
+                   , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+                   , ccColdXsk = "cc_cold_xsk1dp84kjq9qa647wr70e2yedzt8e27kwugh8mfw675re0hgm8p530z3d9230cjjzyyzlq04hn94x9q2m9um2tvp2y8fn7tau9l2wfj5ykxqxtgua0lxpf0lfn44md2afyl7dktyvpkmug9u28p6v452flxeuca0v7w"
+                   , ccColdXvk = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
+                   , ccColdVk = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
+                   , cc_cold = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+                   , ccHotXsk = "cc_hot_xsk1mpt30ys7v2ykqms4c83wuednh4hvy3lr27yfhgtp0rhdka8p5300j4d2z77sq2t3kp082qzgkanwkm05mp2u2nwja3ad3pgw9l34a0j5sl5yd6d8pze8dqwksd069kkfdqggk0yytcmet96fre45w64qkgyxl0dt"
+                   , ccHotXvk = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
+                   , ccHotVk = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
+                   , cc_hot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+                   }
             }
 
     describe "Test vectors" $ do
@@ -634,17 +660,66 @@ data KeysHashes = KeysHashes
 
        -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
     , cc_hot :: Text
-    }
+    } deriving (Eq, Show)
 
 data GoldenTestGovernance = GoldenTestGovernance
     {
       -- | Mnemonic
-       mnemonic :: [Text]
+      mnemonic :: [Text]
+
+      -- | Account ix
+    , accountIx :: Word32
 
       -- | Expected Keys and Hashes
-    ,  expectedKeysHashes :: KeysHashes
+    , expectedKeysHashes :: KeysHashes
     }
 
+goldenTestGovernance :: GoldenTestGovernance -> SpecWith ()
+goldenTestGovernance GoldenTestGovernance{..} =
+    it ("governance keys/hashes for " <> show mnemonic <> " and accIx="<>show accountIx) $ do
+        let (Right mw) = mkSomeMnemonic @'[9,12,15,18,21,24] mnemonic
+        let sndFactor = mempty
+        let rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+
+        let Just accIx = indexFromWord32 @(Index 'Hardened _) accountIx
+        let acctXPrv = deriveAccountPrivateKey rootXPrv accIx
+
+        let drepXPrv = deriveDRepPrivateKey acctXPrv
+        let drepXPrvTxt = bech32With CIP5.drep_xsk  $ getExtendedKeyAddr drepXPrv
+        let drepXPubTxt = bech32With CIP5.drep_xvk $ getPublicKeyAddr $ toXPub <$> drepXPrv
+        let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
+        let drepTxt = bech32With CIP5.drep $ getKeyHash $ toXPub <$> drepXPrv
+
+        let coldXPrv = deriveCCColdPrivateKey acctXPrv
+        let coldXPrvTxt = bech32With CIP5.cc_cold_xsk  $ getExtendedKeyAddr coldXPrv
+        let coldXPubTxt = bech32With CIP5.cc_cold_xvk $ getPublicKeyAddr $ toXPub <$> coldXPrv
+        let coldPubTxt = bech32With CIP5.cc_cold_vk $ getVerKey $ toXPub <$> coldXPrv
+        let coldTxt = bech32With CIP5.cc_cold $ getKeyHash $ toXPub <$> coldXPrv
+
+        let hotXPrv = deriveCCHotPrivateKey acctXPrv
+        let hotXPrvTxt = bech32With CIP5.cc_hot_xsk  $ getExtendedKeyAddr hotXPrv
+        let hotXPubTxt = bech32With CIP5.cc_hot_xvk $ getPublicKeyAddr $ toXPub <$> hotXPrv
+        let hotPubTxt = bech32With CIP5.cc_hot_vk $ getVerKey $ toXPub <$> hotXPrv
+        let hotTxt = bech32With CIP5.cc_hot $ getKeyHash $ toXPub <$> hotXPrv
+
+        let derivedKeysHashes = KeysHashes
+                { drepXsk = drepXPrvTxt
+                , drepXvk = drepXPubTxt
+                , drepVk = drepPubTxt
+                , drep = drepTxt
+                , ccColdXsk = coldXPrvTxt
+                , ccColdXvk = coldXPubTxt
+                , ccColdVk = coldPubTxt
+                , cc_cold = coldTxt
+                , ccHotXsk = hotXPrvTxt
+                , ccHotXvk = hotXPubTxt
+                , ccHotVk = hotPubTxt
+                , cc_hot = hotTxt
+                }
+        derivedKeysHashes `shouldBe` expectedKeysHashes
+  where
+    getVerKey = unsafeMkAddress . pubToBytes . xpubToPub . getKey
+    getKeyHash = unsafeMkAddress . hashCredential . pubToBytes . xpubToPub . getKey
 
 data TestVector = TestVector
     {
@@ -799,8 +874,6 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
         goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic) $
             goldenEncodeJSON $ toInspect <$> inspectVec
   where
-    getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
-    getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv))
     getPointerAddr addrKPrv ptr net =  bech32 $ pointerAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv)) ptr
     getDelegationAddr addrKPrv stakeKPub net =
@@ -808,6 +881,12 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     toInspect :: Text -> Value
     toInspect = fromMaybe (String "couldn't inspect") .
         (Shelley.inspectAddress Nothing <=< fromBech32)
+
+getExtendedKeyAddr :: Shelley depth XPrv -> Address
+getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
+
+getPublicKeyAddr :: Shelley depth XPub -> Address
+getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
 
 goldenEncodeJSON :: ToJSON a => a -> BL.ByteString
 goldenEncodeJSON = Aeson.encodePretty' cfg
