@@ -1,6 +1,8 @@
 name: DevX/Haskell
 on:
   push:
+    branches: [ "master" ]
+  pull_request:
   workflow_dispatch:
 
 defaults:
@@ -14,7 +16,7 @@ jobs:
       matrix:
         platform: [ x86_64-linux, x86_64-darwin ]
         compiler-nix-name: [ ghc810, ghc96 ]
-        target-platform: [ "" ] # , "-windows" ]
+        target-platform: [ "", "-windows" ]
 
     runs-on: ${{ matrix.platform == 'x86_64-linux' && 'ubuntu-latest' || 'macos-latest' }}
     steps:
@@ -29,24 +31,73 @@ jobs:
           # for now we'll set minimal to false, as minimal-iog images don't exist.
           minimal: false
           iog: true
-      - name: add patched cabal
-        run: |
-          mkdir ~/bin
-          curl -L https://ci.zw3rk.com/job/input-output-hk-haskell-nix-example/pullrequest-2/${{ matrix.platform }}.cabal-install-static/latest/download/1 | gunzip > ~/bin/cabal
-          curl -L https://ci.zw3rk.com/job/input-output-hk-haskell-nix-example/pullrequest-2/${{ matrix.platform }}.cabal-install-hooks/latest/download/1 | tar xzf - -C ~/bin
-          chmod +x ~/bin/cabal
-          chmod +x ~/bin/*Hook*
-      - name: cabal update
+
+      - name: Set cache version
+        run: echo "CACHE_VERSION=devxcache0" >> $GITHUB_ENV
+
+      - name: Cabal update
         run: PATH=$HOME/bin:$PATH cabal update
-      - name: cabal build dependencies
-        env:
-          CABAL_AWS_ACCESS_KEY_ID: ${{ secrets.CABAL_AWS_ACCESS_KEY_ID }}
-          CABAL_AWS_SECRET_ACCESS_KEY: ${{ secrets.CABAL_AWS_SECRET_ACCESS_KEY }}
-        run: PATH=$HOME/bin:$PATH cabal build all -j --enable-tests --only-dependencies
-      - name: cabal build
-        env:
-          CABAL_AWS_ACCESS_KEY_ID: ${{ secrets.CABAL_AWS_ACCESS_KEY_ID }}
-          CABAL_AWS_SECRET_ACCESS_KEY: ${{ secrets.CABAL_AWS_SECRET_ACCESS_KEY }}
-        run: PATH=$HOME/bin:$PATH cabal build all -j --enable-tests
-      - name: cabal test
-        run: PATH=$HOME/bin:$PATH cabal test all -j --enable-tests --test-show-details=direct
+
+      - name: "Setup cabal-store"
+        id: cabal-store
+        shell: bash
+        run: |
+          cabal_config_file="$(PATH=$HOME/bin:$PATH cabal help user-config | tail -n 1 | xargs)"
+          echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
+
+      - name: "Check cabal-store"
+        shell: bash
+        run: echo '${{ steps.cabal-store.outputs.cabal-store }}'
+
+      - name: Configure build
+        shell: bash
+        run: |
+          if [ "${{github.event.inputs.tests}}" == "all" ]; then
+            echo "Reconfigure cabal projects to run tests for all dependencies"
+            sed -i 's|tests: False|tests: True|g' cabal.project
+          fi
+
+          cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
+
+          echo "# cabal.project.local"
+          cat cabal.project.local
+
+      - name: Record dependencies
+        id: record-deps
+        run: |
+          PATH=$HOME/bin:$PATH cabal build all --dry-run
+          cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
+
+      - name: "OUTPUT Record weeknum"
+        shell: bash
+        run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
+
+      - name: Cache Cabal store
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.cabal-store.outputs.cabal-store }}
+          key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ hashFiles('dependencies.txt') }}
+          restore-keys: |
+            cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ hashFiles('dependencies.txt') }}
+            cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}
+
+      - uses: actions/cache@v2
+        name: "Cache `dist-newstyle`"
+        with:
+          path: |
+            dist-newstyle
+            !dist-newstyle/**/.git
+          key: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ steps.record-deps.outputs.weeknum }}
+          restore-keys: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}
+
+      - name: Install dependencies
+        run: PATH=$HOME/bin:$PATH cabal build all --only-dependencies
+
+      - name: Build
+        run: PATH=$HOME/bin:$PATH cabal build all
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          PATH=$HOME/bin:$PATH cabal test cardano-addresses --test-show-details=direct
+          PATH=$HOME/bin:$PATH cabal test cardano-addresses-cli --test-show-details=direct
