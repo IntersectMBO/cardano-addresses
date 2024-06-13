@@ -43,17 +43,14 @@ jobs:
 
       - name: "Setup cabal-store"
         id: cabal-store
-        shell: bash
         run: |
           cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
           echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
 
       - name: "Check cabal-store"
-        shell: bash
         run: echo '${{ steps.cabal-store.outputs.cabal-store }}'
 
       - name: Configure build
-        shell: bash
         run: |
           if [ "${{github.event.inputs.tests}}" == "all" ]; then
             echo "Reconfigure cabal projects to run tests for all dependencies"
@@ -72,7 +69,6 @@ jobs:
           cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
 
       - name: "OUTPUT Record weeknum"
-        shell: bash
         run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
 
       - name: Cache Cabal store
@@ -100,7 +96,6 @@ jobs:
         run: cabal build all
 
       - name: Run unit tests
-        shell: bash
         run: |
           cabal test cardano-addresses --test-show-details=direct
           cabal test cardano-addresses-cli --test-show-details=direct
