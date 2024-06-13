@@ -39,13 +39,13 @@ jobs:
         run: echo "CACHE_VERSION=devxcache0" >> $GITHUB_ENV
 
       - name: Cabal update
-        run: $HOME/bin/cabalcabal update
+        run: cabal update
 
       - name: "Setup cabal-store"
         id: cabal-store
         shell: bash
         run: |
-          cabal_config_file="$($HOME/bin/cabal help user-config | tail -n 1 | xargs)"
+          cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
           echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
 
       - name: "Check cabal-store"
@@ -68,7 +68,7 @@ jobs:
       - name: Record dependencies
         id: record-deps
         run: |
-          $HOME/bin/cabal build all --dry-run
+          cabal build all --dry-run
           cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
 
       - name: "OUTPUT Record weeknum"
@@ -94,13 +94,13 @@ jobs:
           restore-keys: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}
 
       - name: Install dependencies
-        run: $HOME/bin/cabal build all --only-dependencies
+        run: cabal build all --only-dependencies
 
       - name: Build
-        run: $HOME/bin/cabal build all
+        run: cabal build all
 
       - name: Run unit tests
         shell: bash
         run: |
-          $HOME/bin/cabal test cardano-addresses --test-show-details=direct
-          $HOME/bin/cabal test cardano-addresses-cli --test-show-details=direct
+          cabal test cardano-addresses --test-show-details=direct
+          cabal test cardano-addresses-cli --test-show-details=direct
