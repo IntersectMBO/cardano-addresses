@@ -54,7 +54,13 @@ import Cardano.Address.Derivation
     , xpubToPub
     )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole (..), keyHashToText )
+    ( KeyHash (..)
+    , KeyRole (..)
+    , Script (..)
+    , ScriptHash (..)
+    , keyHashToText
+    , toScriptHash
+    )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
@@ -303,20 +309,20 @@ spec = do
                    , drepXvk = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
                    , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
                    , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
-                   , drepScript1 = ""
-                   , drepScript2 = ""
+                   , drepScript1 = "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+                   , drepScript2 = "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
                    , ccColdXsk = "cc_cold_xsk1dp84kjq9qa647wr70e2yedzt8e27kwugh8mfw675re0hgm8p530z3d9230cjjzyyzlq04hn94x9q2m9um2tvp2y8fn7tau9l2wfj5ykxqxtgua0lxpf0lfn44md2afyl7dktyvpkmug9u28p6v452flxeuca0v7w"
                    , ccColdXvk = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
                    , ccColdVk = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
                    , ccCold = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
-                   , ccColdScript1 = ""
-                   , ccColdScript2 = ""
+                   , ccColdScript1 = "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+                   , ccColdScript2 = "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
                    , ccHotXsk = "cc_hot_xsk1mpt30ys7v2ykqms4c83wuednh4hvy3lr27yfhgtp0rhdka8p5300j4d2z77sq2t3kp082qzgkanwkm05mp2u2nwja3ad3pgw9l34a0j5sl5yd6d8pze8dqwksd069kkfdqggk0yytcmet96fre45w64qkgyxl0dt"
                    , ccHotXvk = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
                    , ccHotVk = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
                    , ccHot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
-                   , ccHotScript1 = ""
-                   , ccHotScript2 = ""
+                   , ccHotScript1 = "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
+                   , ccHotScript2 = "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -328,20 +334,20 @@ spec = do
                    , drepXvk = "drep_xvk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9m22gmkrnkyrqn8922eycuwwqt64q4wds2ssdmlgp5dqq9gem6k5vq23ph3c"
                    , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
                    , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
-                   , drepScript1 = ""
-                   , drepScript2 = ""
+                   , drepScript1 = "drep_script18cgl8kdnjculhww4n3h0a3ahc85ahjcsg53u0f93jnz9c0339av"
+                   , drepScript2 = "drep_script1hwj9yuvzxc623w5lmwvp44md7qkdywz2fcd583qmyu62jvjnz69"
                    , ccColdXsk = "cc_cold_xsk1dppxrjspxrjj5e5xrmh6yaw6w30arsl5lqcsp09ynyzwwulp530q4tlvug79xx6ja3u32fu9jyy84p6erjmza6twrackm9kfsdpc3ap7uxpempqjftx74qwxnmn7d6pg8pl9zpnc0rese26pfmzl9cmtgg8xsxvu"
                    , ccColdXvk = "cc_cold_xvk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gnacvrnkzpyjkda2qud8h8um5zswr72yr8s78npj45znk97t3kkssryhkyv"
                    , ccColdVk = "cc_cold_vk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gs3qg4hr"
                    , ccCold = "cc_cold1aymnf7h8rr53h069ephcekq707tg0ek0lexfzrw35npkq02wke0"
-                   , ccColdScript1 = ""
-                   , ccColdScript2 = ""
+                   , ccColdScript1 = "cc_cold_script1prtcxdlu75dz48lf8hh86gt8ng7z39yvmyqcg92sgze7g6m8dtq"
+                   , ccColdScript2 = "cc_cold_script1969h0m92nuqrj7x74pj3tnhxh97lfhl4y2vwvqvc6kecwdshr6f"
                    , ccHotXsk = "cc_hot_xsk15pt89wppyhr9eqgm5nnu7tna3dfmqxa2u45e4g7krzp9u78p530pez36k8k9n0gw08hn6drxlwxxsgc4jsejv6hvcnkd7gd3zxhstpe3vzde6e98zql6n2cmekklm63dydnt80szdr0h768dexeklrfspc5lznuz"
                    , ccHotXvk = "cc_hot_xvk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phrzcymn4j2wypl4x43hnddlh4z6gmxkwlqy6xl0a5wmjdnd7xnqrsvak8ry"
                    , ccHotVk = "cc_hot_vk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phqx538xn"
                    , ccHot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
-                   , ccHotScript1 = ""
-                   , ccHotScript2 = ""
+                   , ccHotScript1 = "cc_hot_script1hheftszv4jw83f5megrvhrevl7lwwmtnjav7srkqngr92gna52t"
+                   , ccHotScript2 = "cc_hot_script1dg9jdwlsxzakctywv2cw7a7ggj2dwu0gz5tueu2rf40zvkj8dwc"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -355,20 +361,20 @@ spec = do
                    , drepXvk = "drep_xvk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnht9l4s7m9tad59jmltv3c38nclt942n3feen6ggmhcj6xmmlj6td2qu4ce82"
                    , drepVk = "drep_vk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnhtqvs6j8t"
                    , drep = "drep1x0jc06clgnj37sc8amkhahnpjqytcnguxtqcpxwkxeejj4y6sqm"
-                   , drepScript1 = ""
-                   , drepScript2 = ""
+                   , drepScript1 = "drep_script17fql6ztxyk63taryk2e4mh47jw3wdchv9e7u4jxg4edrx89ym9g"
+                   , drepScript2 = "drep_script10qp23w0gppuvc7chc3g7saudlmhj9jmm9ssrrzzm3qwksv3gsq7"
                    , ccColdXsk = "cc_cold_xsk1hqtevrzlhtcglwvt5pmgct8ssqx37vjjf3wuydpd6flyqrg33azacap5w5mclacmuycx3xgrtstxgrpzcncf6l840t0klmywc69ryd9zf95taaaseka98yakuj2048slnuekw22qm58majt8alhs438eecehquu0"
                    , ccColdXvk = "cc_cold_xvk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxt6yjtghmmmpnd62wfmdey5l20pl8envu55phg0hmyk0ml0ptz0nns9cqjlk"
                    , ccColdVk = "cc_cold_vk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxtsfpa2qu"
                    , ccCold = "cc_cold17z4s83htmrgmg5268hx68j4vqumk38wrc5x9cr0mc7glyntw6cl"
-                   , ccColdScript1 = ""
-                   , ccColdScript2 = ""
+                   , ccColdScript1 = "cc_cold_script15z7ynn7fuqu55hh850962vrrg7tcdncl8spnjtrxjjm06y3avt9"
+                   , ccColdScript2 = "cc_cold_script1ahw3qh3ledhxp0frga9aawfkxpu0qstte9nmem0phqqegeeg6zv"
                    , ccHotXsk = "cc_hot_xsk1wzamzchtj7m79mjfpg3c02m534ugej5ac0p3s2sresr7vys33azktmjva6flctprqu6m4k4w459x9qkfsz2ahgy5ganjn23djhhkg5e5eyhu7fjxl6tpxtmzh7e2ftuj4qgmawsmcl7sqesn8e0pmh97zs3c3fqj"
                    , ccHotXvk = "cc_hot_xvk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4nfjf0eunydl5kzvhk90aj5jhe92q3h6aph3laqpnpx0j7rhwtu9qe7dhsc"
                    , ccHotVk = "cc_hot_vk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4swmuygc"
                    , ccHot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
-                   , ccHotScript1 = ""
-                   , ccHotScript2 = ""
+                   , ccHotScript1 = "cc_hot_script1tmwlec0twwvl29h6pgvew5mf4recsxtktev9g07xm37fv46mta9"
+                   , ccHotScript2 = "cc_hot_script1c77thg5lrahy0he4q6glsk8vgsp45gt75k3pq09d02u8g4s30yx"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -382,20 +388,20 @@ spec = do
                    , drepXvk = "drep_xvk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wq4wxstfkf8waakk8pwv8fkrde2cwd47rklfx9xxpn9ulc7nl7sndcvdjh2m"
                    , drepVk = "drep_vk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wqskrq5yn"
                    , drep = "drep1cx359uxlhq4e8j3wddqxht9sfqp004t2n8v0jk5q4zmv27sh0h5"
-                   , drepScript1 = ""
-                   , drepScript2 = ""
+                   , drepScript1 = "drep_script1ckr4x9293myuyz5379wndh4ag00c787htnzwzxxmpfnfzjzk4cq"
+                   , drepScript2 = "drep_script1wgly5zd539aam7yxr7trxy48dhupswmwusutm4q40dwkcquwecx"
                    , ccColdXsk = "cc_cold_xsk1hqe5kcsq59mx4t9nxrctmth0ppz9gda0gnppyll3h9rxcyq33az4uy3u6qhzuhjsstzca9awgsx27j07hxhrkrk6487nvywp0ag669m4v6lj3knq7e6pxaujy98akn5exhgk44ftruepkte0hdm74dd8zceqnk2h"
                    , ccColdXvk = "cc_cold_xvk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp2482e4l9rdxpan5zdmeyg20md8fjdw3dt2jk8ejrvhjlwmha266w9syf55nr"
                    , ccColdVk = "cc_cold_vk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp24q6lw08l"
                    , ccCold = "cc_cold1fjej4ec9lvam509vjapr26yqeyf2x6j20n98f4y4d3l5zygwxt4"
-                   , ccColdScript1 = ""
-                   , ccColdScript2 = ""
+                   , ccColdScript1 = "cc_cold_script1qlk7rgkd5n6ga8enwk08vwtmlklhzfnmjtjlzlwed62tuycmmh5"
+                   , ccColdScript2 = "cc_cold_script1a4qmd5d3dqppxtq5wcuuaa3xfe868vyn46afvktz5ucxzxvflg4"
                    , ccHotXsk = "cc_hot_xsk14rzh5lvtdhvum6vjfvkwp73mz9gl426cj04xfavnjgmdxrq33azugz0k9sekf2eg70lr34rg5aclr54v30za77xn945kncdm0le6lutxlr5ar355u5awqt2hkmdurv4qv64cmpg39zq2ahjxqken8vk62qunx4hl"
                    , ccHotXvk = "cc_hot_xvk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fkd78f68rffef6uqk40dkmcxe2qe4t3kz3z2yq4m0yvpdnxwed55q798msd"
                    , ccHotVk = "cc_hot_vk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fs0zjxf8"
                    , ccHot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
-                   , ccHotScript1 = ""
-                   , ccHotScript2 = ""
+                   , ccHotScript1 = "cc_hot_script1n42mr24e22eyspa7m0y6lq5rk8tesq35xt6gfgkezcxluqysk4n"
+                   , ccHotScript2 = "cc_hot_script1gfqmx4g0czk2nz2m2rfawg4me283jl7wz4wfssup03av2yzf2kd"
                    }
             }
     describe "Test vectors" $ do
@@ -797,50 +803,73 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepXPrvTxt = bech32With CIP5.drep_xsk  $ getExtendedKeyAddr drepXPrv
         let drepXPubTxt = bech32With CIP5.drep_xvk $ getPublicKeyAddr $ toXPub <$> drepXPrv
         let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
-        let drepTxt = toKeyHash Representative $ toXPub <$> drepXPrv
+        let drepKeyHash = toKeyHash Representative $ toXPub <$> drepXPrv
+        let drepTxt = keyHashToText drepKeyHash
+        let drepScriptHash1 = toScriptHash (script1 drepKeyHash)
+        let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep_script
+        let drepScriptHash2 = toScriptHash (script2 drepKeyHash)
+        let drepScript2Txt = toScriptTxt drepScriptHash2 CIP5.drep_script
 
         let coldXPrv = deriveCCColdPrivateKey acctXPrv
         let coldXPrvTxt = bech32With CIP5.cc_cold_xsk  $ getExtendedKeyAddr coldXPrv
         let coldXPubTxt = bech32With CIP5.cc_cold_xvk $ getPublicKeyAddr $ toXPub <$> coldXPrv
         let coldPubTxt = bech32With CIP5.cc_cold_vk $ getVerKey $ toXPub <$> coldXPrv
-        let coldTxt = toKeyHash CommitteeCold $ toXPub <$> coldXPrv
+        let coldKeyHash = toKeyHash CommitteeCold $ toXPub <$> coldXPrv
+        let coldTxt = keyHashToText coldKeyHash
+        let coldScriptHash1 = toScriptHash (script1 coldKeyHash)
+        let coldScript1Txt = toScriptTxt coldScriptHash1 CIP5.cc_cold_script
+        let coldScriptHash2 = toScriptHash (script2 coldKeyHash)
+        let coldScript2Txt = toScriptTxt coldScriptHash2 CIP5.cc_cold_script
 
         let hotXPrv = deriveCCHotPrivateKey acctXPrv
         let hotXPrvTxt = bech32With CIP5.cc_hot_xsk  $ getExtendedKeyAddr hotXPrv
         let hotXPubTxt = bech32With CIP5.cc_hot_xvk $ getPublicKeyAddr $ toXPub <$> hotXPrv
         let hotPubTxt = bech32With CIP5.cc_hot_vk $ getVerKey $ toXPub <$> hotXPrv
-        let hotTxt = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
+        let hotKeyHash = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
+        let hotTxt = keyHashToText hotKeyHash
+        let hotScriptHash1 = toScriptHash (script1 hotKeyHash)
+        let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot_script
+        let hotScriptHash2 = toScriptHash (script2 hotKeyHash)
+        let hotScript2Txt = toScriptTxt hotScriptHash2 CIP5.cc_hot_script
 
         let derivedKeysHashes = KeysHashes
                 { drepXsk = drepXPrvTxt
                 , drepXvk = drepXPubTxt
                 , drepVk = drepPubTxt
                 , drep = drepTxt
-                , drepScript1 = ""
-                , drepScript2 = ""
+                , drepScript1 = drepScript1Txt
+                , drepScript2 = drepScript2Txt
                 , ccColdXsk = coldXPrvTxt
                 , ccColdXvk = coldXPubTxt
                 , ccColdVk = coldPubTxt
                 , ccCold = coldTxt
-                , ccColdScript1 = ""
-                , ccColdScript2 = ""
+                , ccColdScript1 = coldScript1Txt
+                , ccColdScript2 = coldScript2Txt
                 , ccHotXsk = hotXPrvTxt
                 , ccHotXvk = hotXPubTxt
                 , ccHotVk = hotPubTxt
                 , ccHot = hotTxt
-                , ccHotScript1 = ""
-                , ccHotScript2 = ""
+                , ccHotScript1 = hotScript1Txt
+                , ccHotScript2 = hotScript2Txt
                 }
         derivedKeysHashes `shouldBe` expectedKeysHashes
   where
     getVerKey = unsafeMkAddress . pubToBytes . xpubToPub . getKey
     toKeyHash role =
-          keyHashToText
-        . KeyHash role
+          KeyHash role
         . hashCredential
         . pubToBytes
         . xpubToPub
         . getKey
+    script1 keyhash =
+        RequireAllOf [RequireSignatureOf keyhash, ActiveFromSlot 5001]
+    script2 keyhash =
+        RequireAnyOf [ RequireSignatureOf keyhash
+                     , RequireAllOf [ ActiveFromSlot 5001, ActiveUntilSlot 6001]
+                     ]
+    toScriptTxt (ScriptHash bytes) hrp =
+        bech32With hrp $
+        unsafeMkAddress bytes
 
 data TestVector = TestVector
     {
