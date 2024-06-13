@@ -7,6 +7,7 @@
 -- | List common bech32 prefixes used for objects in the Cardano eco-systems.
 --
 -- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)
+-- and in [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)
 module Cardano.Codec.Bech32.Prefixes
     ( -- * Addresses
       addr
