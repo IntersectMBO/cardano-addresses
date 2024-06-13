@@ -303,14 +303,20 @@ spec = do
                    , drepXvk = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
                    , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
                    , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+                   , drepScript1 = ""
+                   , drepScript2 = ""
                    , ccColdXsk = "cc_cold_xsk1dp84kjq9qa647wr70e2yedzt8e27kwugh8mfw675re0hgm8p530z3d9230cjjzyyzlq04hn94x9q2m9um2tvp2y8fn7tau9l2wfj5ykxqxtgua0lxpf0lfn44md2afyl7dktyvpkmug9u28p6v452flxeuca0v7w"
                    , ccColdXvk = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
                    , ccColdVk = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
-                   , cc_cold = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+                   , ccCold = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+                   , ccColdScript1 = ""
+                   , ccColdScript2 = ""
                    , ccHotXsk = "cc_hot_xsk1mpt30ys7v2ykqms4c83wuednh4hvy3lr27yfhgtp0rhdka8p5300j4d2z77sq2t3kp082qzgkanwkm05mp2u2nwja3ad3pgw9l34a0j5sl5yd6d8pze8dqwksd069kkfdqggk0yytcmet96fre45w64qkgyxl0dt"
                    , ccHotXvk = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
                    , ccHotVk = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
-                   , cc_hot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+                   , ccHot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+                   , ccHotScript1 = ""
+                   , ccHotScript2 = ""
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -322,14 +328,20 @@ spec = do
                    , drepXvk = "drep_xvk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9m22gmkrnkyrqn8922eycuwwqt64q4wds2ssdmlgp5dqq9gem6k5vq23ph3c"
                    , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
                    , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
+                   , drepScript1 = ""
+                   , drepScript2 = ""
                    , ccColdXsk = "cc_cold_xsk1dppxrjspxrjj5e5xrmh6yaw6w30arsl5lqcsp09ynyzwwulp530q4tlvug79xx6ja3u32fu9jyy84p6erjmza6twrackm9kfsdpc3ap7uxpempqjftx74qwxnmn7d6pg8pl9zpnc0rese26pfmzl9cmtgg8xsxvu"
                    , ccColdXvk = "cc_cold_xvk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gnacvrnkzpyjkda2qud8h8um5zswr72yr8s78npj45znk97t3kkssryhkyv"
                    , ccColdVk = "cc_cold_vk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gs3qg4hr"
-                   , cc_cold = "cc_cold1aymnf7h8rr53h069ephcekq707tg0ek0lexfzrw35npkq02wke0"
+                   , ccCold = "cc_cold1aymnf7h8rr53h069ephcekq707tg0ek0lexfzrw35npkq02wke0"
+                   , ccColdScript1 = ""
+                   , ccColdScript2 = ""
                    , ccHotXsk = "cc_hot_xsk15pt89wppyhr9eqgm5nnu7tna3dfmqxa2u45e4g7krzp9u78p530pez36k8k9n0gw08hn6drxlwxxsgc4jsejv6hvcnkd7gd3zxhstpe3vzde6e98zql6n2cmekklm63dydnt80szdr0h768dexeklrfspc5lznuz"
                    , ccHotXvk = "cc_hot_xvk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phrzcymn4j2wypl4x43hnddlh4z6gmxkwlqy6xl0a5wmjdnd7xnqrsvak8ry"
                    , ccHotVk = "cc_hot_vk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phqx538xn"
-                   , cc_hot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
+                   , ccHot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
+                   , ccHotScript1 = ""
+                   , ccHotScript2 = ""
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -343,14 +355,20 @@ spec = do
                    , drepXvk = "drep_xvk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnht9l4s7m9tad59jmltv3c38nclt942n3feen6ggmhcj6xmmlj6td2qu4ce82"
                    , drepVk = "drep_vk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnhtqvs6j8t"
                    , drep = "drep1x0jc06clgnj37sc8amkhahnpjqytcnguxtqcpxwkxeejj4y6sqm"
+                   , drepScript1 = ""
+                   , drepScript2 = ""
                    , ccColdXsk = "cc_cold_xsk1hqtevrzlhtcglwvt5pmgct8ssqx37vjjf3wuydpd6flyqrg33azacap5w5mclacmuycx3xgrtstxgrpzcncf6l840t0klmywc69ryd9zf95taaaseka98yakuj2048slnuekw22qm58majt8alhs438eecehquu0"
                    , ccColdXvk = "cc_cold_xvk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxt6yjtghmmmpnd62wfmdey5l20pl8envu55phg0hmyk0ml0ptz0nns9cqjlk"
                    , ccColdVk = "cc_cold_vk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxtsfpa2qu"
-                   , cc_cold = "cc_cold17z4s83htmrgmg5268hx68j4vqumk38wrc5x9cr0mc7glyntw6cl"
+                   , ccCold = "cc_cold17z4s83htmrgmg5268hx68j4vqumk38wrc5x9cr0mc7glyntw6cl"
+                   , ccColdScript1 = ""
+                   , ccColdScript2 = ""
                    , ccHotXsk = "cc_hot_xsk1wzamzchtj7m79mjfpg3c02m534ugej5ac0p3s2sresr7vys33azktmjva6flctprqu6m4k4w459x9qkfsz2ahgy5ganjn23djhhkg5e5eyhu7fjxl6tpxtmzh7e2ftuj4qgmawsmcl7sqesn8e0pmh97zs3c3fqj"
                    , ccHotXvk = "cc_hot_xvk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4nfjf0eunydl5kzvhk90aj5jhe92q3h6aph3laqpnpx0j7rhwtu9qe7dhsc"
                    , ccHotVk = "cc_hot_vk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4swmuygc"
-                   , cc_hot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
+                   , ccHot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
+                   , ccHotScript1 = ""
+                   , ccHotScript2 = ""
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -364,14 +382,20 @@ spec = do
                    , drepXvk = "drep_xvk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wq4wxstfkf8waakk8pwv8fkrde2cwd47rklfx9xxpn9ulc7nl7sndcvdjh2m"
                    , drepVk = "drep_vk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wqskrq5yn"
                    , drep = "drep1cx359uxlhq4e8j3wddqxht9sfqp004t2n8v0jk5q4zmv27sh0h5"
+                   , drepScript1 = ""
+                   , drepScript2 = ""
                    , ccColdXsk = "cc_cold_xsk1hqe5kcsq59mx4t9nxrctmth0ppz9gda0gnppyll3h9rxcyq33az4uy3u6qhzuhjsstzca9awgsx27j07hxhrkrk6487nvywp0ag669m4v6lj3knq7e6pxaujy98akn5exhgk44ftruepkte0hdm74dd8zceqnk2h"
                    , ccColdXvk = "cc_cold_xvk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp2482e4l9rdxpan5zdmeyg20md8fjdw3dt2jk8ejrvhjlwmha266w9syf55nr"
                    , ccColdVk = "cc_cold_vk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp24q6lw08l"
-                   , cc_cold = "cc_cold1fjej4ec9lvam509vjapr26yqeyf2x6j20n98f4y4d3l5zygwxt4"
+                   , ccCold = "cc_cold1fjej4ec9lvam509vjapr26yqeyf2x6j20n98f4y4d3l5zygwxt4"
+                   , ccColdScript1 = ""
+                   , ccColdScript2 = ""
                    , ccHotXsk = "cc_hot_xsk14rzh5lvtdhvum6vjfvkwp73mz9gl426cj04xfavnjgmdxrq33azugz0k9sekf2eg70lr34rg5aclr54v30za77xn945kncdm0le6lutxlr5ar355u5awqt2hkmdurv4qv64cmpg39zq2ahjxqken8vk62qunx4hl"
                    , ccHotXvk = "cc_hot_xvk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fkd78f68rffef6uqk40dkmcxe2qe4t3kz3z2yq4m0yvpdnxwed55q798msd"
                    , ccHotVk = "cc_hot_vk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fs0zjxf8"
-                   , cc_hot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
+                   , ccHot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
+                   , ccHotScript1 = ""
+                   , ccHotScript2 = ""
                    }
             }
     describe "Test vectors" $ do
@@ -694,8 +718,16 @@ data KeysHashes = KeysHashes
        -- | CIP-1852’s DRep verification key (Ed25519 public key), bech32 encoded prefixed with 'drep_vk'
     , drepVk :: Text
 
-       -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), , bech32 encoded prefixed with 'drep'
+       -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), bech32 encoded prefixed with 'drep'
     , drep :: Text
+
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
+       -- script: all [drep, active_from 5001]
+    , drepScript1 :: Text
+
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
+       -- script: any [drep, all [active_from 5001, active_until 6001]]
+    , drepScript2 :: Text
 
        -- | CIP-1852’s constitutional committee cold extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'cc_cold_xsk'
     , ccColdXsk :: Text
@@ -707,7 +739,15 @@ data KeysHashes = KeysHashes
     , ccColdVk :: Text
 
        -- | Constitutional committee cold verification key hash (cold credential) (blake2b_224 digest of a consitutional committee cold verification key), bech32 encoded prefixed with 'cc_cold'
-    , cc_cold :: Text
+    , ccCold :: Text
+
+       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script), bech32 encoded prefixed with 'cc_cold_script'
+       -- script: all [ccCold, active_from 5001]
+    , ccColdScript1 :: Text
+
+       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script), bech32 encoded prefixed with 'cc_cold_script'
+       -- script: any [ccCold, all [active_from 5001, active_until 6001]]
+    , ccColdScript2 :: Text
 
        -- | CIP-1852’s constitutional committee hot extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'cc_hot_xsk'
     , ccHotXsk :: Text
@@ -719,7 +759,16 @@ data KeysHashes = KeysHashes
     , ccHotVk :: Text
 
        -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
-    , cc_hot :: Text
+    , ccHot :: Text
+
+       -- | Constitutional committee hot script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- script: all [ccHot, active_from 5001]
+    , ccHotScript1 :: Text
+
+       -- | Constitutional committee hot script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- script: any [ccHot, all [active_from 5001, active_until 6001]]
+    , ccHotScript2 :: Text
+
     } deriving (Eq, Show)
 
 data GoldenTestGovernance = GoldenTestGovernance
@@ -767,14 +816,20 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , drepXvk = drepXPubTxt
                 , drepVk = drepPubTxt
                 , drep = drepTxt
+                , drepScript1 = ""
+                , drepScript2 = ""
                 , ccColdXsk = coldXPrvTxt
                 , ccColdXvk = coldXPubTxt
                 , ccColdVk = coldPubTxt
-                , cc_cold = coldTxt
+                , ccCold = coldTxt
+                , ccColdScript1 = ""
+                , ccColdScript2 = ""
                 , ccHotXsk = hotXPrvTxt
                 , ccHotXvk = hotXPubTxt
                 , ccHotVk = hotPubTxt
-                , cc_hot = hotTxt
+                , ccHot = hotTxt
+                , ccHotScript1 = ""
+                , ccHotScript2 = ""
                 }
         derivedKeysHashes `shouldBe` expectedKeysHashes
   where
