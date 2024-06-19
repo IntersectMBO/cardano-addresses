@@ -222,7 +222,14 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
-data KeyRole = Payment | Delegation | Policy | Unknown
+data KeyRole =
+      Payment
+    | Delegation
+    | Policy
+    | Representative
+    | CommitteeCold
+    | CommitteeHot
+    | Unknown
     deriving (Generic, Show, Ord, Eq)
 instance NFData KeyRole
 
@@ -255,6 +262,12 @@ keyHashToText (KeyHash cred keyHash) = case cred of
         T.decodeUtf8 $ encode (EBech32 CIP5.stake_shared_vkh) keyHash
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
+    Representative ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.drep) keyHash
+    CommitteeCold ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) keyHash
+    CommitteeHot ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) keyHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
 
@@ -265,16 +278,24 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 -- - `addr_vkh`
 -- - `stake_vkh`
 -- - `policy_vkh`
+-- - `drep`
+-- - `cc_cold`
+-- - `cc_hot`
 -- - `addr_shared_vk`
 -- - `stake_shared_vk`
 -- - `addr_vk`
 -- - `stake_vk`
+-- - `policy_vk`
+-- - `cc_cold_vk`
+-- - `cc_hot_vk`
 -- - `addr_shared_xvk`
 -- - `stake_shared_xvk`
 -- - `addr_xvk`
 -- - `stake_xvk`
--- - `policy_vk`
 -- - `policy_xvk`
+-- - `drep_xvk`
+-- - `cc_cold_xvk`
+-- - `cc_hot_xvk`
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 -- If if hex is encountered Unknown policy key is assumed
@@ -311,6 +332,12 @@ keyHashFromText txt =
               Just (Delegation, bytes)
         | hrp == CIP5.policy_vkh && checkBSLength bytes 28 =
               Just (Policy, bytes)
+        | hrp == CIP5.drep && checkBSLength bytes 28 =
+              Just (Representative, bytes)
+        | hrp == CIP5.cc_cold && checkBSLength bytes 28 =
+              Just (CommitteeCold, bytes)
+        | hrp == CIP5.cc_hot && checkBSLength bytes 28 =
+              Just (CommitteeHot, bytes)
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_vk && checkBSLength bytes 32 =
@@ -331,6 +358,18 @@ keyHashFromText txt =
               Just (Policy, hashCredential bytes)
         | hrp == CIP5.policy_xvk && checkBSLength bytes 64 =
               Just (Policy, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.drep_vk && checkBSLength bytes 32 =
+              Just (Representative, hashCredential bytes)
+        | hrp == CIP5.drep_xvk && checkBSLength bytes 64 =
+              Just (Representative, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.cc_cold_vk && checkBSLength bytes 32 =
+              Just (CommitteeCold, hashCredential bytes)
+        | hrp == CIP5.cc_cold_xvk && checkBSLength bytes 64 =
+              Just (CommitteeCold, hashCredential $ BS.take 32 bytes)
+        | hrp == CIP5.cc_hot_vk && checkBSLength bytes 32 =
+              Just (CommitteeHot, hashCredential bytes)
+        | hrp == CIP5.cc_hot_xvk && checkBSLength bytes 64 =
+              Just (CommitteeHot, hashCredential $ BS.take 32 bytes)
         | otherwise = Nothing
     checkBSLength bytes expLength =
         BS.length bytes == expLength

@@ -7,6 +7,7 @@
 -- | List common bech32 prefixes used for objects in the Cardano eco-systems.
 --
 -- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)
+-- and in [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)
 module Cardano.Codec.Bech32.Prefixes
     ( -- * Addresses
       addr
@@ -62,6 +63,28 @@ module Cardano.Codec.Bech32.Prefixes
     , policy_xvk
     , policy_vkh
     , policy_xsk
+
+      -- * Keys/hashes for CIP-0105
+    , drep_vk
+    , drep_sk
+    , drep_xvk
+    , drep_xsk
+    , drep
+    , drep_script
+
+    , cc_cold_vk
+    , cc_cold_sk
+    , cc_cold_xvk
+    , cc_cold_xsk
+    , cc_cold
+    , cc_cold_script
+
+    , cc_hot_vk
+    , cc_hot_sk
+    , cc_hot_xvk
+    , cc_hot_xsk
+    , cc_hot
+    , cc_hot_script
     ) where
 
 import Codec.Binary.Bech32
@@ -212,3 +235,58 @@ policy_vkh = [humanReadablePart|policy_vkh|]
 
 policy_xsk :: HumanReadablePart
 policy_xsk = [humanReadablePart|policy_xsk|]
+
+-- Keys/hashes for CIP-0105
+drep_vk :: HumanReadablePart
+drep_vk = [humanReadablePart|drep_vk|]
+
+drep_sk :: HumanReadablePart
+drep_sk = [humanReadablePart|drep_sk|]
+
+drep_xvk :: HumanReadablePart
+drep_xvk = [humanReadablePart|drep_xvk|]
+
+drep_xsk :: HumanReadablePart
+drep_xsk = [humanReadablePart|drep_xsk|]
+
+drep :: HumanReadablePart
+drep = [humanReadablePart|drep|]
+
+drep_script :: HumanReadablePart
+drep_script = [humanReadablePart|drep_script|]
+
+cc_cold_vk :: HumanReadablePart
+cc_cold_vk = [humanReadablePart|cc_cold_vk|]
+
+cc_cold_sk :: HumanReadablePart
+cc_cold_sk = [humanReadablePart|cc_cold_sk|]
+
+cc_cold_xvk :: HumanReadablePart
+cc_cold_xvk = [humanReadablePart|cc_cold_xvk|]
+
+cc_cold_xsk :: HumanReadablePart
+cc_cold_xsk = [humanReadablePart|cc_cold_xsk|]
+
+cc_cold :: HumanReadablePart
+cc_cold = [humanReadablePart|cc_cold|]
+
+cc_cold_script :: HumanReadablePart
+cc_cold_script = [humanReadablePart|cc_cold_script|]
+
+cc_hot_vk :: HumanReadablePart
+cc_hot_vk = [humanReadablePart|cc_hot_vk|]
+
+cc_hot_sk :: HumanReadablePart
+cc_hot_sk = [humanReadablePart|cc_hot_sk|]
+
+cc_hot_xvk :: HumanReadablePart
+cc_hot_xvk = [humanReadablePart|cc_hot_xvk|]
+
+cc_hot_xsk :: HumanReadablePart
+cc_hot_xsk = [humanReadablePart|cc_hot_xsk|]
+
+cc_hot :: HumanReadablePart
+cc_hot = [humanReadablePart|cc_hot|]
+
+cc_hot_script :: HumanReadablePart
+cc_hot_script = [humanReadablePart|cc_hot_script|]
