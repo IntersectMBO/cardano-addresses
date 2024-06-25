@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -15,7 +16,13 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Script
-    ( KeyHash, Script (..), ScriptHash (..), toScriptHash )
+    ( KeyHash (..)
+    , KeyRole (..)
+    , Script (..)
+    , ScriptHash (..)
+    , foldScript
+    , toScriptHash
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Data.Text
@@ -27,11 +34,12 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Script
     ( scriptArg )
 import System.IO
-    ( stdout )
+    ( stderr, stdout )
 import System.IO.Extra
-    ( hPutBytes, progName )
+    ( hPutBytes, hPutString, progName )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.List as L
 
 newtype Cmd = Cmd
     { script :: Script KeyHash
@@ -41,7 +49,7 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "hash" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Create a script hash"
-        <> header "Create a script hash that can be used in stake or payment address."
+        <> header "Create a script hash that can be used in stake or payment credential in address and act as a governance credential."
         <> footerDoc (Just $ vsep
             [ prettyText "The script is taken as argument."
             , prettyText ""
@@ -62,4 +70,23 @@ mod liftCmd = command "hash" $
 run :: Cmd -> IO ()
 run Cmd{script} = do
     let (ScriptHash bytes) = toScriptHash script
-    hPutBytes stdout bytes (EBech32 CIP5.script)
+    case checkRoles of
+        Just role ->
+            hPutBytes stdout bytes (EBech32 $ pickCIP5 role)
+        Nothing -> do
+            let err = "Script needs to be constructed using the keys of the same role."
+            hPutString stderr err
+  where
+    allKeyHashes = foldScript (:) [] script
+    getRole (KeyHash r _) = r
+    allRoles = map getRole allKeyHashes
+    checkRoles =
+        if length (L.nub allRoles) == 1 then
+            Just $ head allRoles
+        else
+            Nothing
+    pickCIP5 = \case
+        Representative -> CIP5.drep
+        CommitteeCold -> CIP5.cc_cold
+        CommitteeHot -> CIP5.cc_hot
+        _ -> CIP5.script
