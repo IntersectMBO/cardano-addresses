@@ -87,7 +87,7 @@ run Cmd{script} = do
         else
             Nothing
     pickCIP5 = \case
-        Representative -> CIP5.drep
-        CommitteeCold -> CIP5.cc_cold
-        CommitteeHot -> CIP5.cc_hot
+        Representative -> CIP5.drep_script
+        CommitteeCold -> CIP5.cc_cold_script
+        CommitteeHot -> CIP5.cc_hot_script
         _ -> CIP5.script
