@@ -16,11 +16,13 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.Script
-    ( KeyHash (..)
+    ( ErrValidateScript (..)
+    , KeyHash (..)
     , KeyRole (..)
     , Script (..)
     , ScriptHash (..)
     , foldScript
+    , prettyErrValidateScript
     , toScriptHash
     )
 import Codec.Binary.Encoding
@@ -73,9 +75,8 @@ run Cmd{script} = do
     case checkRoles of
         Just role ->
             hPutBytes stdout bytes (EBech32 $ pickCIP5 role)
-        Nothing -> do
-            let err = "Script needs to be constructed using the keys of the same role."
-            hPutString stderr err
+        Nothing ->
+            hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
     allKeyHashes = foldScript (:) [] script
     getRole (KeyHash r _) = r

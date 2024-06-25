@@ -630,12 +630,14 @@ prettyErrValidateScript = \case
         "The hash of verification key is expected to have "
         <> show credentialHashSize <> " bytes."
     NotUniformKeyType ->
-        "All keys of a script must have the same role: either payment or delegation."
+        "All keys of a script must have the same role: payment, delegation, policy, \
+        \representative, committee cold or committee hot."
     Malformed ->
         "Parsing of the script failed. The script should be composed of nested \
         \lists, the verification keys should be bech32-encoded with prefix \
-        \'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy' and\
-        \timelocks must use non-negative numbers as slots."
+        \'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared', 'policy', \
+        \'drep', 'cc_cold' or 'cc_hot' and timelocks must use non-negative \
+        \numbers as slots."
     NotRecommended EmptyList ->
         "The list inside a script is empty or only contains timelocks \
         \(which is not recommended)."
