@@ -1,3 +1,10 @@
+## [3.14.0] - N/A
+
+### Added
+
+ - `hashKey` for Shelley style
+ - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://cips.cardano.org/cips/cip0105/). Also supported in CLI.
+
 ## [3.13.0] - N/A
 
 ### Added
