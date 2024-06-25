@@ -634,7 +634,7 @@ cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
 </details>
 
 <details>
-  <summary>How to generate script and script hash from drep (<strong>drep_script</strong>)</summary>
+  <summary>How to generate script validation, preimage and script hash from script composed of drep (<strong>drep_script</strong>)</summary>
 
 ```console
 $ cat drep

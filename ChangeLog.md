@@ -3,7 +3,7 @@
 ### Added
 
  - `hashKey` for Shelley style
- - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://cips.cardano.org/cips/cip0105/). Also supported in CLI.
+ - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 
 ## [3.13.0] - N/A
 
@@ -34,7 +34,7 @@
 
 ### Added
 
-- Support for policy key derivation and hashing according to [CIP-1855](https://cips.cardano.org/cips/cip1855/).
+- Support for policy key derivation and hashing according to [CIP-1855](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1855).
 
 ## [3.8.0] - 2022-02-11
 
