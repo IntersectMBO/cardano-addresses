@@ -77,6 +77,12 @@ run Inspect = do
         , CIP5.addr_shared_xsk
         , CIP5.stake_shared_xvk
         , CIP5.stake_shared_xsk
+        , CIP5.drep_xvk
+        , CIP5.drep_xsk
+        , CIP5.cc_cold_xvk
+        , CIP5.cc_cold_xsk
+        , CIP5.cc_hot_xvk
+        , CIP5.cc_hot_xsk
         ]
 
     base16 :: ByteString -> Text

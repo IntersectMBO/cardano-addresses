@@ -46,9 +46,9 @@ import Cardano.Address.Script
 import Cardano.Address.Script.Parser
     ( requireCosignerOfParser, scriptFromString, scriptToText )
 import Cardano.Address.Style.Shared
-    ( Shared (..), hashKey )
+    ( Shared (..) )
 import Cardano.Address.Style.Shelley
-    ( Role (..) )
+    ( Role (..), Shelley (..) )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
 import Codec.Binary.Encoding
@@ -83,6 +83,7 @@ import Test.QuickCheck
     )
 
 import qualified Cardano.Address.Style.Shared as Shared
+import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
 import qualified Data.List as L
@@ -99,26 +100,41 @@ spec = do
     let rootK = Shared.genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
     let accXPrv = Shared.deriveAccountPrivateKey rootK minBound
 
-    let role' = UTxOExternal
+    let roleExt = UTxOExternal
 
     let index1 = minBound
-    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index1
-    let verKeyHash1 = RequireSignatureOf $ hashKey Payment multisigXPub1
+    let multisigXPub1 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv roleExt index1
+    let verKeyHash1 = RequireSignatureOf $ Shared.hashKey Payment multisigXPub1
 
     let Just index2 = indexFromWord32 @(Index 'Soft _) 0x00000001
-    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index2
-    let verKeyHash2 = RequireSignatureOf $ hashKey Payment multisigXPub2
+    let multisigXPub2 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv roleExt index2
+    let verKeyHash2 = RequireSignatureOf $ Shared.hashKey Payment multisigXPub2
 
     let Just index3 = indexFromWord32 @(Index 'Soft _) 0x00000002
-    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index3
-    let verKeyHash3 = RequireSignatureOf $ hashKey Payment multisigXPub3
+    let multisigXPub3 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv roleExt index3
+    let verKeyHash3 = RequireSignatureOf $ Shared.hashKey Payment multisigXPub3
 
     let Just index4 = indexFromWord32 @(Index 'Soft _) 0x00000003
-    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv role' index4
-    let verKeyHash4 = RequireSignatureOf $ hashKey Payment multisigXPub4
+    let multisigXPub4 = toXPub <$> Shared.deriveAddressPrivateKey accXPrv roleExt index4
+    let verKeyHash4 = RequireSignatureOf $ Shared.hashKey Payment multisigXPub4
 
     let multisigXPub5 = toXPub <$> Shared.deriveDelegationPrivateKey accXPrv index4
-    let verKeyHash5 = RequireSignatureOf $ hashKey Delegation multisigXPub5
+    let verKeyHash5 = RequireSignatureOf $ Shared.hashKey Delegation multisigXPub5
+
+    let rootK' = Shelley.genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+    let accXPrv' = Shelley.deriveAccountPrivateKey rootK' minBound
+
+    let roleRep = Representative
+    let repXPub5 = toXPub <$> Shelley.deriveDRepPrivateKey accXPrv'
+    let verKeyHash6 = RequireSignatureOf $ Shelley.hashKey roleRep repXPub5
+
+    let roleCCCold = CommitteeCold
+    let cccoldXPub5 = toXPub <$> Shelley.deriveCCColdPrivateKey accXPrv'
+    let verKeyHash7 = RequireSignatureOf $ Shelley.hashKey roleCCCold cccoldXPub5
+
+    let roleCCHot = CommitteeHot
+    let cchotXPub5 = toXPub <$> Shelley.deriveCCHotPrivateKey accXPrv'
+    let verKeyHash8 = RequireSignatureOf $ Shelley.hashKey roleCCHot cchotXPub5
 
     describe "Multisig CBOR and hashes - golden tests" $ do
         let checkCBORandScriptHash script cbor hash = do
@@ -141,6 +157,19 @@ spec = do
             checkCBORandScriptHash verKeyHash4
                 "008200581c1eb1bcd2ebea2641d31e2be9b3db5fd9bd2c54a5d11c2a5f1d08c85b"
                 "547794e90ad105ea6dc75d0bac54c1473c663b7396dfc82fc34c5a9d"
+
+        it "RequireSignatureOf drep" $
+            checkCBORandScriptHash verKeyHash6
+                "008200581cb247280d6a0308ee718b19ff5f46046821d7b70c7222484e828f1134"
+                "c8f06e7f7392b361908aa245fbef6445f038387ac92783bf1c6b951d"
+        it "RequireSignatureOf cc cold" $
+            checkCBORandScriptHash verKeyHash7
+                "008200581c18bea75ea27fd18ff6172f73a5e9308f7058dc6bf0c7a9c86529097a"
+                "27428f9b61dbf6b01247af8df78fa3521e33a806667f5868cf5444cf"
+        it "RequireSignatureOf cc hot" $
+            checkCBORandScriptHash verKeyHash8
+                "008200581c052f7b12e4009db952a49f39e6661ba10c95687787c146a4306b7f02"
+                "a383a4d73664501059f8ac8862829ab65b8ae0bb76eac86cc76ab4c8"
 
         it "RequireAllOf for index=0 and index=1 keys" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2]
@@ -233,6 +262,38 @@ spec = do
             checkCBORandScriptHash script
                 "008201838200581c87ae348a59e3559f84984cc9f85ede71b9f2227825ecab0986ce33d28204187882051896"
                 "37a5c4fe748ae7f01b9f029c875cbb2b407c559fd497786022a57019"
+
+        it "ActivateFromSlot drep" $ do
+            let script = RequireAllOf [verKeyHash6, ActiveFromSlot 5001]
+            checkCBORandScriptHash script
+                "008201828200581cb247280d6a0308ee718b19ff5f46046821d7b70c7222484e828f11348204191389"
+                "0cedcaa5d50d7987c7fb2ace9c15d28a779fbd1b1d5b9a0625f20534"
+        it "ActivateFromSlot cc cold" $ do
+            let script = RequireAllOf [verKeyHash7, ActiveFromSlot 5001]
+            checkCBORandScriptHash script
+                "008201828200581c18bea75ea27fd18ff6172f73a5e9308f7058dc6bf0c7a9c86529097a8204191389"
+                "4e3dcb55be145c1138bf231ca55c512be30b94e307b4b06d19bc9305"
+        it "ActivateFromSlot cc hot" $ do
+            let script = RequireAllOf [verKeyHash8, ActiveFromSlot 5001]
+            checkCBORandScriptHash script
+                "008201828200581c052f7b12e4009db952a49f39e6661ba10c95687787c146a4306b7f028204191389"
+                "e65f9c606223071ab07b08ca0733bdc8a69671737b05c04c481e082a"
+
+        it "ActivateFromSlot drep complex" $ do
+            let script = RequireAnyOf [verKeyHash6, RequireAllOf [ActiveFromSlot 5001, ActiveUntilSlot 6001] ]
+            checkCBORandScriptHash script
+                "008202828200581cb247280d6a0308ee718b19ff5f46046821d7b70c7222484e828f113482018282041913898205191771"
+                "7a94e934c1bed5fbf82579b59eac33c687a09ed4b5947f62365cdf65"
+        it "ActivateFromSlot cc cold complex" $ do
+            let script = RequireAnyOf [verKeyHash7, RequireAllOf [ActiveFromSlot 5001, ActiveUntilSlot 6001] ]
+            checkCBORandScriptHash script
+                "008202828200581c18bea75ea27fd18ff6172f73a5e9308f7058dc6bf0c7a9c86529097a82018282041913898205191771"
+                "89d52b7b0dc5ff707721ad926a296c30eb553d7009e9b2a1fd78e11a"
+        it "ActivateFromSlot cc hot complex" $ do
+            let script = RequireAnyOf [verKeyHash8, RequireAllOf [ActiveFromSlot 5001, ActiveUntilSlot 6001] ]
+            checkCBORandScriptHash script
+                "008202828200581c052f7b12e4009db952a49f39e6661ba10c95687787c146a4306b7f0282018282041913898205191771"
+                "8b3cafc36a32bffd3d3c62c502957d69609a8c4a2f42ba68034253a2"
 
     describe "validateScript - expectations for RequiredValidation" $ do
         it "incorrect RequireSignatureOf" $ do

@@ -114,7 +114,7 @@ Please enter base64-encoded passphrase:
 root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
 
 $ echo "3BQ087RygQ1WQJ+F" > base64.prv
-[pawel@arch testingCardanoAddresses]$ cardano-address key from-recovery-phrase Shelley --passphrase from-base64 --from-file "./base64.prv" < phrase.prv
+$ cardano-address key from-recovery-phrase Shelley --passphrase from-base64 --from-file "./base64.prv" < phrase.prv
 root_xsk1jqx0xpke7de69ceyk20tdl9rq7nsava7cfnyeu42yqum8usnpppwmsxn2qsfj0nn2ur2kuq0kmrll67ryvkdhd6pgpsls6s6qx7hlyv6uqt0907t73eflkpw3xz45lcg5fsh6dunfk56j08jslh6x6rttspfny8c
 
 $ cardano-address key from-recovery-phrase Shelley --passphrase from-octets
@@ -577,6 +577,83 @@ $ cardano-address address stake --network-tag testnet "all [$(cat addr_shared.1.
 stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
 ```
 </details>
+
+<details>
+  <summary>How to generate drep keys (<strong>drep</strong>)</summary>
+
+```console
+$ cat ../tests/root.xsk
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+
+$ cardano-address key child 1852H/1815H/0H/3/0 < root.xsk > drep.xsk
+drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqaj26rh6d7en9tf9fu52hmysjzuacaxfmfya65h8jmddrclwf3kxl8snfs3eg
+
+$ cardano-address key public --with-chain-code < drep.xsk > drep.xvk
+drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf
+
+$ cardano-address key hash < drep.xvk > drep
+drep1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va538nup0
+```
+</details>
+
+
+<details>
+  <summary>How to generate cold committee keys (<strong>cc_cold</strong>)</summary>
+
+```console
+$ cat root.xsk
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+
+$ cardano-address key child 1852H/1815H/0H/4/0 < root.xsk > cold.xsk
+cc_cold_xsk1fp4megtpn4vu4cug2lmsyhg4xvnnar55q6k8wp5e6f2h8jz849ph8v8jhm0qffw8v6ut7x8wqvr07m9ccaspezrkexcafu284w6gpqexspqujj8glw0d70rwuemk0924zjhscgcfnevy29zr0fc57tvjmg7jvvqh
+
+$ cardano-address key public --with-chain-code < cold.xsk > cold.xvk
+cc_cold_xvk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzzdqzpe9yw37u7mu7xaenhv7242990ps3sn8jcg52yx7n3fuke9kst5t2py
+
+$ cardano-address key hash < cold.xvk > cold
+cc_cold1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddccyzfjm
+```
+</details>
+
+<details>
+  <summary>How to generate hot committee keys (<strong>cc_hot</strong>)</summary>
+
+```console
+$ cat root.xsk
+root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
+
+$ cardano-address key child 1852H/1815H/0H/5/0 < root.xsk > hot.xsk
+cc_hot_xsk14z9ktfggpsm8sqd5ecepv9f4estxkukfualezuxrfry0mjj849puxsq7ch3tw67d7rfr4smvaa2u3tkfu675mxw85zlpafp6llfex7re88wh22s8f83ehn6uejgfrm74x8y98xlwdmgy64ufctwernp64umnr5uk
+
+$ cardano-address key public --with-chain-code < hot.xsk > hot.xvk
+cc_hot_xvk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3hjwwaw54qwj0rn084enysj8ha2vwg2wd7umksf4tcnskaj8xr4tcempwly
+
+$ cardano-address key hash < hot.xvk > hot
+cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
+```
+</details>
+
+<details>
+  <summary>How to generate script validation, preimage and script hash from script composed of drep (<strong>drep_script</strong>)</summary>
+
+```console
+$ cat drep
+drep1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va538nup0
+
+$ cardano-address script validate "all [$(cat drep),active_from 5001]"
+Validated.
+
+$ cardano-address script validate "all [$(cat drep),$(cat hot)]"
+Not validated: All keys of a script must have the same role: payment, delegation, policy, representative, committee cold or committee hot.
+
+$ cardano-address script preimage "all [$(cat drep),active_from 5001]"
+008201828200581c80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da8204191389
+
+$ cardano-address script hash "all [$(cat drep),active_from 5001]"
+drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt
+```
+</details>
+
 
 <details>
   <summary>Correspondence between keys in cardano-addresses and cardano-cli (<strong>key.xsk key.xvk key.vk key.hash</strong>)</summary>
