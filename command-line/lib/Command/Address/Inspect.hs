@@ -5,7 +5,6 @@
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK hide #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Command.Address.Inspect
@@ -25,8 +24,6 @@ import Control.Applicative
     ( optional )
 import Control.Exception
     ( SomeException, displayException )
-import Control.Monad.Error.Class
-    ( Error )
 import Fmt
     ( format )
 import Options.Applicative
@@ -81,9 +78,6 @@ mod liftCmd = command "inspect" $
         "A root public key. If specified, tries to decrypt the derivation path \
         \of Byron addresses."
 
--- used for 'inspect'
-instance Error SomeException
-
 run :: Cmd -> IO ()
 run Inspect{rootPublicKey} = do
     bytes <- hGetBytes stdin
@@ -91,10 +85,5 @@ run Inspect{rootPublicKey} = do
       Right json -> BL8.hPutStrLn stdout (Json.encodePretty json)
       Left  e    -> die $ format "Error: {}" (displayException e)
   where
-    -- We can't use IO here, because (<|>) in IO only catches IOException type,
-    -- but MonadThrow in IO doesn't specialize to IOException.
-    --
-    -- Luckily, there's an existing instance for:
-    --   instance (Error e) => Alternative (Either e)
-    inspect :: (e ~ SomeException) => Address -> Either e Json.Value
+    inspect :: Address -> Either SomeException Json.Value
     inspect = Shelley.inspectAddress rootPublicKey
