@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 3.6
 
 -- This file has been generated from package.yaml by hpack version 0.34.6.
 --
@@ -58,6 +58,7 @@ library
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
       Options.Applicative.Format
+      Options.Applicative.Help.Pretty.Compat
       Options.Applicative.MnemonicSize
       Options.Applicative.Public
       Options.Applicative.Script
@@ -85,7 +86,8 @@ library
     , fmt
     , memory
     , mtl >=2.2.2 && <2.3
-    , optparse-applicative
+    , optparse-applicative >= 0.18.1
+    , prettyprinter-ansi-terminal
     , process
     , safe
     , template-haskell
@@ -145,10 +147,9 @@ test-suite unit
   default-extensions:
       NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-tools:
-      cardano-address
   build-tool-depends:
       hspec-discover:hspec-discover
+    , cardano-addresses-cli:cardano-address
   build-depends:
       QuickCheck >=2.14.2
     , aeson

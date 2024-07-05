@@ -19,7 +19,7 @@ import Options.Applicative
     , progDesc
     , subparser
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, hsep, string, vsep )
 import Prelude hiding
     ( mod )

@@ -72,7 +72,7 @@ library
     , extra
     , fmt
     , hashable
-    , hw-aeson
+    , hw-aeson >=  0.1.9.0
     , memory
     , text
     , unordered-containers

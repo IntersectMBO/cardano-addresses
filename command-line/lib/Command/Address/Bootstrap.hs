@@ -34,7 +34,7 @@ import Options.Applicative.Derivation
     ( DerivationPath, castDerivationPath, derivationPathArg, xpubOpt )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), networkTagOpt )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
     ( Style (..) )

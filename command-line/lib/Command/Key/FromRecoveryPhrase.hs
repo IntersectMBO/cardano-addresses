@@ -30,7 +30,7 @@ import Options.Applicative
     , optional
     , progDesc
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import Options.Applicative.Style
     ( Passphrase (..)

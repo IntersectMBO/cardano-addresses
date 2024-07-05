@@ -25,7 +25,7 @@ import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Format
     ( FormatType (..), formatOpt )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( string )
 import System.IO
     ( stdin, stdout )

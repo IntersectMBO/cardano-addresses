@@ -37,7 +37,7 @@ import Options.Applicative
     )
 import Options.Applicative.Discrimination
     ( NetworkTag (..), fromNetworkTag, networkTagOpt )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import Options.Applicative.Script
     ( scriptArg )

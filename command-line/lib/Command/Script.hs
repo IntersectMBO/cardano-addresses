@@ -22,7 +22,7 @@ import Options.Applicative
     , progDesc
     , subparser
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import System.IO.Extra
     ( progName )

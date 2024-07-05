@@ -33,7 +33,7 @@ import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Derivation
     ( DerivationPath, castDerivationPath, derivationPathArg )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( string )
 import System.IO
     ( stdin, stdout )

@@ -33,10 +33,10 @@ import Options.Applicative
     , subparser
     , (<|>)
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, hsep, string, vsep )
 import System.Console.ANSI
-    ( hSupportsANSIWithoutEmulation )
+    ( hNowSupportsANSI )
 import System.IO
     ( BufferMode (..)
     , Handle
@@ -112,7 +112,7 @@ setup =
   where
     hSetup :: Handle -> IO ()
     hSetup h = do
-      void $ hSupportsANSIWithoutEmulation h
+      void $ hNowSupportsANSI h
       hSetBuffering h NoBuffering
 
 -- | Force the locale text encoding to UTF-8. This is needed because the CLI

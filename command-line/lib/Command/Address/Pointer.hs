@@ -35,7 +35,7 @@ import Options.Applicative
     , metavar
     , progDesc
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import System.IO
     ( stdin, stdout )

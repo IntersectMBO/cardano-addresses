@@ -20,7 +20,7 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( bold, indent, string, vsep )
 import Options.Applicative.Script
     ( scriptArg )

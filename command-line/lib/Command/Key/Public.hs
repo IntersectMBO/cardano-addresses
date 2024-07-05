@@ -21,7 +21,7 @@ import Data.Maybe
     ( fromJust )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( string )
 import Options.Applicative.Public
     ( PublicType (..), publicOpt )

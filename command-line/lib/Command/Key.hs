@@ -23,7 +23,9 @@ import Options.Applicative
     , subparser
     )
 import Options.Applicative.Help.Pretty
-    ( bold, indent, string, vsep )
+    ( indent, vsep )
+import Options.Applicative.Help.Pretty.Compat
+    ( bold, string )
 import System.IO.Extra
     ( progName )
 

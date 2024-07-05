@@ -32,7 +32,7 @@ import Options.Applicative
     , option
     , (<|>)
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( string, vsep )
 import Options.Applicative.Style
     ( Style (..) )

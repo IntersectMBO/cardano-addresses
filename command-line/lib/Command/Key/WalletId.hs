@@ -36,7 +36,7 @@ import Options.Applicative
     , optional
     , progDesc
     )
-import Options.Applicative.Help.Pretty
+import Options.Applicative.Help.Pretty.Compat
     ( string )
 import Options.Applicative.Script
     ( scriptTemplateSpendingArg, scriptTemplateStakingArg )
