@@ -14,11 +14,11 @@ repository cardano-haskell-packages
 -- you need to run if you change them
 
 repository ghcjs-overlay
-  url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/e2b9e88c2aa57b0e33dfb57515be470b520dd621
+  url: https://raw.githubusercontent.com/input-output-hk/hackage-overlay-ghcjs/b91c23d847a5ecedc3eca2e054afd1e8c4155256
   secure: True
   root-keys:
   key-threshold: 0
-  --sha256: sha256-vzK5NqphLXM+WEn73LfwQDN6Frbhqvy/7TeSRajQL0c=
+  --sha256: sha256-d+GumypPpDWxt4PtareJBHkIiWb09l/GskWnWcgDOQE=
 
 -- Avoid conflict in `hjsonschema`
 -- src/Import.hs:2:16: error: [GHC-69158]

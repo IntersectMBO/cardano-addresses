@@ -713,7 +713,6 @@ goldenTestBaseAddressBothFromPub GoldenTestBaseAddress{..} =
                 (DelegationFromKey stakePub)
         baseAddrBothFromKey `shouldBe` baseAddrBothFromPub
 
---TO_DO add script golden
 data KeysHashes = KeysHashes
     {  -- | CIP-1852’s DRep extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'drep_xsk'
       drepXsk :: Text

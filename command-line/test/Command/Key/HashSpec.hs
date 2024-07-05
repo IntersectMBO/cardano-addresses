@@ -29,6 +29,14 @@ spec = describeCmd [ "key", "hash" ] $ do
     specKeyPublic "shelley" "policy_vkh"   "1855H/1815H/0H" "--with-chain-code"
     specKeyPublic "shelley" "policy_vkh"   "1855H/1815H/0H" "--without-chain-code"
 
+    specKeyPublic "shelley" "drep"   "1852H/1815H/0H/3/0" "--with-chain-code"
+    specKeyPublic "shelley" "drep"   "1852H/1815H/0H/3/0" "--without-chain-code"
+    specKeyPublic "shelley" "cc_cold"   "1852H/1815H/0H/4/0" "--with-chain-code"
+    specKeyPublic "shelley" "cc_cold"   "1852H/1815H/0H/4/0" "--without-chain-code"
+    specKeyPublic "shelley" "cc_hot"   "1852H/1815H/0H/5/0" "--with-chain-code"
+    specKeyPublic "shelley" "cc_hot"   "1852H/1815H/0H/5/0" "--without-chain-code"
+
+
 specKeyNotPublic :: SpecWith ()
 specKeyNotPublic = it "fail if key isn't public" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""

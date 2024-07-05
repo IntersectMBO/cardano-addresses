@@ -105,6 +105,8 @@ run Child{path} = do
     --
     --     m / purpose' / coin_type' / account' / role / index
     --
+    -- purpose' = 1852H for shelley wallet addresses.
+    --
     -- We do not allow derivations to anywhere in the path to avoid people
     -- shooting themselves in the foot.
     -- Hence We only allow the following transformations:
@@ -117,9 +119,6 @@ run Child{path} = do
     --
     -- root_xsk => acct_xsk: (hard derivation from root to address)
     --     m => m / purpose' / coin_type' / account' / role / index
-    --
-    -- purpose' = 1852H for shelley wallet addresses.
-    -- purpose' = 1854H for shelley wallet addresses that expose shared account.
     --
     -- acct_xsk => addr_xsk: (hard derivation from account to address)
     --     m / purpose' / coin_type' / account' => m / purpose' / coin_type' / account' / role / index
@@ -157,6 +156,15 @@ run Child{path} = do
         | hrp == CIP5.root_xsk = pure CIP5.stake_xsk
         | hrp == CIP5.root_shared_xsk = pure CIP5.stake_shared_xsk
 
+    childHrpFor [_,_,_,3,0] hrp
+        | hrp == CIP5.root_xsk = pure CIP5.drep_xsk
+
+    childHrpFor [_,_,_,4,0] hrp
+        | hrp == CIP5.root_xsk = pure CIP5.cc_cold_xsk
+
+    childHrpFor [_,_,_,5,0] hrp
+        | hrp == CIP5.root_xsk = pure CIP5.cc_hot_xsk
+
     childHrpFor [p,_,_,_,_] hrp
         | hrp == CIP5.root_xsk =
               -- 2147485502 stands for 1854H
@@ -183,6 +191,18 @@ run Child{path} = do
         | hrp == CIP5.acct_xvk = pure CIP5.stake_xvk
         | hrp == CIP5.acct_shared_xsk = pure CIP5.stake_shared_xsk
         | hrp == CIP5.acct_shared_xvk = pure CIP5.stake_shared_xvk
+
+    childHrpFor [3,0] hrp
+        | hrp == CIP5.acct_xsk = pure CIP5.drep_xsk
+        | hrp == CIP5.acct_xvk = pure CIP5.drep_xvk
+
+    childHrpFor [4,0] hrp
+        | hrp == CIP5.acct_xsk = pure CIP5.cc_cold_xsk
+        | hrp == CIP5.acct_xvk = pure CIP5.cc_cold_xvk
+
+    childHrpFor [5,0] hrp
+        | hrp == CIP5.acct_xsk = pure CIP5.cc_hot_xsk
+        | hrp == CIP5.acct_xvk = pure CIP5.cc_hot_xvk
 
     childHrpFor [_,_] hrp
         | hrp == CIP5.root_xsk = pure CIP5.addr_xsk

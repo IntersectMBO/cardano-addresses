@@ -33,6 +33,7 @@ module Cardano.Address.Style.Shelley
     , roleToIndex
     , Credential (..)
     , CredentialType (..)
+    , hashKey
 
       -- * Key Derivation
       -- $keyDerivation
@@ -1296,3 +1297,13 @@ deriveAddressPublicKeyShelley accXPub role addrIx =
           \index for soft path derivation ( " ++ show addrIx ++ "). This is \
           \either a programmer error, or, we may have reached the maximum \
           \number of addresses for a given wallet."
+
+--
+-- Internal
+--
+
+--- | Computes a 28-byte Blake2b224 digest of a Shelley 'XPub'.
+---
+--- @since 3.13.0
+hashKey :: KeyRole -> Shelley key XPub -> KeyHash
+hashKey cred = KeyHash cred . hashCredential . xpubPublicKey . getKey
