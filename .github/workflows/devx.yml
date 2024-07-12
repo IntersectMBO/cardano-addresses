@@ -1,0 +1,105 @@
+name: DevX/Haskell
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: devx {0}
+ 
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ x86_64-linux, x86_64-darwin ]
+        compiler-nix-name: [ ghc810, ghc96 ]
+        target-platform: [ "", "-windows", "-js" ]
+        exclude:
+          - platform: x86_64-darwin
+            target-platform: "-windows"
+          - platform: x86_64-darwin
+            target-platform: "-js"
+          - compiler-nix-name: ghc96
+            target-platform: "-js"
+
+    runs-on: ${{ matrix.platform == 'x86_64-linux' && 'ubuntu-latest' || 'macos-latest' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install GHC and Cabal
+        uses: input-output-hk/actions/devx@latest
+        with:
+          platform: ${{ matrix.platform }}
+          target-platform: ${{ matrix.target-platform }}
+          compiler-nix-name: ${{ matrix.compiler-nix-name }}
+          # for now we'll set minimal to false, as minimal-iog images don't exist.
+          minimal: false
+          iog: true
+
+      - name: Set cache version
+        run: echo "CACHE_VERSION=devxcache0" >> $GITHUB_ENV
+
+      - name: Cabal update
+        run: cabal update
+
+      - name: "Setup cabal-store"
+        id: cabal-store
+        run: |
+          cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
+          echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
+
+      - name: "Check cabal-store"
+        run: echo '${{ steps.cabal-store.outputs.cabal-store }}'
+
+      - name: Configure build
+        run: |
+          if [ "${{github.event.inputs.tests}}" == "all" ]; then
+            echo "Reconfigure cabal projects to run tests for all dependencies"
+            sed -i 's|tests: False|tests: True|g' cabal.project
+          fi
+
+          cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
+
+          echo "# cabal.project.local"
+          cat cabal.project.local
+
+      - name: Record dependencies
+        id: record-deps
+        run: |
+          cabal build all --dry-run
+          cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
+
+      - name: "OUTPUT Record weeknum"
+        run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
+
+      - name: Cache Cabal store
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.cabal-store.outputs.cabal-store }}
+          key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ hashFiles('dependencies.txt') }}
+          restore-keys: |
+            cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ hashFiles('dependencies.txt') }}
+            cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}
+
+      - uses: actions/cache@v2
+        name: "Cache `dist-newstyle`"
+        with:
+          path: |
+            dist-newstyle
+            !dist-newstyle/**/.git
+          key: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}-${{ steps.record-deps.outputs.weeknum }}
+          restore-keys: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.compiler-nix-name }}${{matrix.target-platform}}
+
+      - name: Install dependencies
+        run: cabal build all --only-dependencies
+
+      - name: Build
+        run: cabal build all
+
+      - name: Run unit tests
+        run: |
+          cabal test cardano-addresses --test-show-details=direct
+          cabal test cardano-addresses-cli --test-show-details=direct
