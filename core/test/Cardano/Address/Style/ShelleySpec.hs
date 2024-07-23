@@ -338,6 +338,7 @@ spec = do
                    , ccHotXsk = "cc_hot_xsk1mpt30ys7v2ykqms4c83wuednh4hvy3lr27yfhgtp0rhdka8p5300j4d2z77sq2t3kp082qzgkanwkm05mp2u2nwja3ad3pgw9l34a0j5sl5yd6d8pze8dqwksd069kkfdqggk0yytcmet96fre45w64qkgyxl0dt"
                    , ccHotXskHex = "d85717921e6289606e15c1e2ee65b3bd6ec247e357889ba16178eedb74e1a45ef955aa17bd002971b05e750048b766eb6df4d855c54dd2ec7ad8850e2fe35ebe5487e846e9a708b27681d6835fa2dac968108b3c845e379597491e6b476aa0b2"
                    , ccHotXvk = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
+                   , ccHotXvkHex = "792a7f83cab90261f72ef57ee94a65ca9b0c71c1be2c8fdd5318c3643b20b52f5487e846e9a708b27681d6835fa2dac968108b3c845e379597491e6b476aa0b2"
                    , ccHotVk = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
                    , ccHot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
                    , ccHotScript1 = "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
@@ -376,6 +377,7 @@ spec = do
                    , ccHotXsk = "cc_hot_xsk15pt89wppyhr9eqgm5nnu7tna3dfmqxa2u45e4g7krzp9u78p530pez36k8k9n0gw08hn6drxlwxxsgc4jsejv6hvcnkd7gd3zxhstpe3vzde6e98zql6n2cmekklm63dydnt80szdr0h768dexeklrfspc5lznuz"
                    , ccHotXskHex = "a05672b82125c65c811ba4e7cf2e7d8b53b01baae5699aa3d618825e78e1a45e1c8a3ab1ec59bd0e79ef3d3466fb8c6823159433266aecc4ecdf21b111af058731609b9d64a7103fa9ab1bcdadfdea2d2366b3be0268df7f68edc9b36f8d300e"
                    , ccHotXvk = "cc_hot_xvk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phrzcymn4j2wypl4x43hnddlh4z6gmxkwlqy6xl0a5wmjdnd7xnqrsvak8ry"
+                   , ccHotXvkHex = "783ae09be2f648b59483a9bee5cace8d68c7e6e2819bfb5a1a00fbf204bea06e31609b9d64a7103fa9ab1bcdadfdea2d2366b3be0268df7f68edc9b36f8d300e"
                    , ccHotVk = "cc_hot_vk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phqx538xn"
                    , ccHot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
                    , ccHotScript1 = "cc_hot_script1hheftszv4jw83f5megrvhrevl7lwwmtnjav7srkqngr92gna52t"
@@ -416,6 +418,7 @@ spec = do
                    , ccHotXsk = "cc_hot_xsk1wzamzchtj7m79mjfpg3c02m534ugej5ac0p3s2sresr7vys33azktmjva6flctprqu6m4k4w459x9qkfsz2ahgy5ganjn23djhhkg5e5eyhu7fjxl6tpxtmzh7e2ftuj4qgmawsmcl7sqesn8e0pmh97zs3c3fqj"
                    , ccHotXskHex = "70bbb162eb97b7e2ee490a2387ab748d788cca9dc3c3182a03cc07e612118f4565ee4cee93fc2c230735badaaead0a6282c98095dba094476729aa2d95ef645334c92fcf2646fe96132f62bfb2a4af92a811beba1bc7fd0066133e5e1ddcbe14"
                    , ccHotXvk = "cc_hot_xvk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4nfjf0eunydl5kzvhk90aj5jhe92q3h6aph3laqpnpx0j7rhwtu9qe7dhsc"
+                   , ccHotXvkHex = "5f44dd7d934ab0591f743df462535ce12f6ce68ad49069289fee4cbfbcdddb6b34c92fcf2646fe96132f62bfb2a4af92a811beba1bc7fd0066133e5e1ddcbe14"
                    , ccHotVk = "cc_hot_vk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4swmuygc"
                    , ccHot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
                    , ccHotScript1 = "cc_hot_script1tmwlec0twwvl29h6pgvew5mf4recsxtktev9g07xm37fv46mta9"
@@ -456,6 +459,7 @@ spec = do
                    , ccHotXsk = "cc_hot_xsk14rzh5lvtdhvum6vjfvkwp73mz9gl426cj04xfavnjgmdxrq33azugz0k9sekf2eg70lr34rg5aclr54v30za77xn945kncdm0le6lutxlr5ar355u5awqt2hkmdurv4qv64cmpg39zq2ahjxqken8vk62qunx4hl"
                    , ccHotXskHex = "a8c57a7d8b6dd9cde9924b2ce0fa3b1151faab5893ea64f5939236d30c118f45c409f62c3364ab28f3fe38d468a771f1d2ac8bc5df78d32d6969e1bb7ff3aff166f8e9d1c694e53ae02d57b6dbc1b2a066ab8d85112880aede4605b333b2da50"
                    , ccHotXvk = "cc_hot_xvk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fkd78f68rffef6uqk40dkmcxe2qe4t3kz3z2yq4m0yvpdnxwed55q798msd"
+                   , ccHotXvkHex = "428aaa4d7c9ed7776b5019d7e64419f27f0ad3d47078b8963ac2382b7b7a755366f8e9d1c694e53ae02d57b6dbc1b2a066ab8d85112880aede4605b333b2da50"
                    , ccHotVk = "cc_hot_vk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fs0zjxf8"
                    , ccHot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
                    , ccHotScript1 = "cc_hot_script1n42mr24e22eyspa7m0y6lq5rk8tesq35xt6gfgkezcxluqysk4n"
@@ -861,6 +865,9 @@ data KeysHashes = KeysHashes
        -- | CIP-1852’s constitutional committee extended hot verification signing key (Ed25519 public key with chain code), bech32 encoded prefixed with 'cc_hot_xvk'
     , ccHotXvk :: Text
 
+       -- | CIP-1852’s constitutional committee extended hot verification signing key (Ed25519 public key with chain code), base16 encoded
+    , ccHotXvkHex :: Text
+
        -- | CIP-1852’s constitutional committee hot verification signing key (Ed25519 private key), bech32 encoded prefixed with 'cc_hot_vk'
     , ccHotVk :: Text
 
@@ -937,6 +944,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let hotXPrvTxt = bech32With CIP5.cc_hot_xsk  $ getExtendedKeyAddr hotXPrv
         let hotXPrvTxtHex = tob16text . unAddress $ getExtendedKeyAddr hotXPrv
         let hotXPubTxt = bech32With CIP5.cc_hot_xvk $ getPublicKeyAddr $ toXPub <$> hotXPrv
+        let hotXPubTxtHex = tob16text . unAddress  $ getPublicKeyAddr $ toXPub <$> hotXPrv
         let hotPubTxt = bech32With CIP5.cc_hot_vk $ getVerKey $ toXPub <$> hotXPrv
         let hotKeyHash = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
         let hotTxt = keyHashToText hotKeyHash
@@ -973,6 +981,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , ccHotXsk = hotXPrvTxt
                 , ccHotXskHex = hotXPrvTxtHex
                 , ccHotXvk = hotXPubTxt
+                , ccHotXvkHex = hotXPubTxtHex
                 , ccHotVk = hotPubTxt
                 , ccHot = hotTxt
                 , ccHotScript1 = hotScript1Txt
