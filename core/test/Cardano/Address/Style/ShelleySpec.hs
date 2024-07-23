@@ -344,7 +344,9 @@ spec = do
                    , ccHot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
                    , ccHotHex = "f6d29c0f7164d37610cbf67b126a993beb24a076d0653f1fa069588f"
                    , ccHotScript1 = "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
+                   , ccHotScript1Hex = "d27a4229c92ec8961b6bfd32a87380dcee4a08c77b0d6c8b33f180e8"
                    , ccHotScript2 = "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+                   , ccHotScript2Hex = "62e0798c7036ff35862cf42f4e7ada06f7fb5b6465390082a691be14"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -385,7 +387,9 @@ spec = do
                    , ccHot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
                    , ccHotHex = "d1d4ebdb19689e95e097919bd8712441e89b41ec36de47bf40344f85"
                    , ccHotScript1 = "cc_hot_script1hheftszv4jw83f5megrvhrevl7lwwmtnjav7srkqngr92gna52t"
+                   , ccHotScript1Hex = "bdf295c04cac9c78a69bca06cb8f2cffbee76d739759e80ec09a0655"
                    , ccHotScript2 = "cc_hot_script1dg9jdwlsxzakctywv2cw7a7ggj2dwu0gz5tueu2rf40zvkj8dwc"
+                   , ccHotScript2Hex = "6a0b26bbf030bb6c2c8e62b0ef77c84494d771e81517ccf1434d5e26"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -428,7 +432,9 @@ spec = do
                    , ccHot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
                    , ccHotHex = "c2a74e9bca6240d947f29beb7ded9604974016da2d48e3a7c3644cc4"
                    , ccHotScript1 = "cc_hot_script1tmwlec0twwvl29h6pgvew5mf4recsxtktev9g07xm37fv46mta9"
+                   , ccHotScript1Hex = "5eddfce1eb7399f516fa0a19975369a8f38819765e58543fc6dc7c96"
                    , ccHotScript2 = "cc_hot_script1c77thg5lrahy0he4q6glsk8vgsp45gt75k3pq09d02u8g4s30yx"
+                   , ccHotScript2Hex = "c7bcbba29f1f6e47df350691f858ec44035a217ea5a2103cad7ab874"
                    }
             }
         goldenTestGovernance GoldenTestGovernance
@@ -471,7 +477,9 @@ spec = do
                    , ccHot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
                    , ccHotHex = "a9eb44d0aa1ce5559b7c22270ac23d1e61bf2e114dd8e5a44ed3a529"
                    , ccHotScript1 = "cc_hot_script1n42mr24e22eyspa7m0y6lq5rk8tesq35xt6gfgkezcxluqysk4n"
+                   , ccHotScript1Hex = "9d55b1aab952b24807bedbc9af8283b1d798023432f484a2d9160dfe"
                    , ccHotScript2 = "cc_hot_script1gfqmx4g0czk2nz2m2rfawg4me283jl7wz4wfssup03av2yzf2kd"
+                   , ccHotScript2Hex = "4241b3550fc0aca9895b50d3d722bbca8f197fce155c9843817c7ac5"
                    }
             }
     describe "Test vectors" $ do
@@ -882,19 +890,27 @@ data KeysHashes = KeysHashes
        -- | CIP-1852’s constitutional committee hot verification signing key (Ed25519 private key), base16 encoded
     , ccHotVkHex :: Text
 
-       -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
+       -- | Constitutional committee hot verification key hash (hot credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
     , ccHot :: Text
 
-       -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), base16 encoded
+       -- | Constitutional committee hot verification key hash (hot credential) (blake2b_224 digest of a consitutional committee hot verification key), base16 encoded
     , ccHotHex :: Text
 
-       -- | Constitutional committee hot script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
        -- script: all [ccHot, active_from 5001]
     , ccHotScript1 :: Text
 
-       -- | Constitutional committee hot script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), base16 encoded
+       -- script: all [ccHot, active_from 5001]
+    , ccHotScript1Hex :: Text
+
+       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
        -- script: any [ccHot, all [active_from 5001, active_until 6001]]
     , ccHotScript2 :: Text
+
+           -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), base16 encoded
+       -- script: any [ccHot, all [active_from 5001, active_until 6001]]
+    , ccHotScript2Hex :: Text
 
     } deriving (Eq, Show)
 
@@ -966,8 +982,10 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let hotTxtHex = tob16text . digest $ hotKeyHash
         let hotScriptHash1 = toScriptHash (script1 hotKeyHash)
         let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot_script
+        let hotScript1TxtHex = tob16text . unScriptHash $ hotScriptHash1
         let hotScriptHash2 = toScriptHash (script2 hotKeyHash)
         let hotScript2Txt = toScriptTxt hotScriptHash2 CIP5.cc_hot_script
+        let hotScript2TxtHex = tob16text . unScriptHash $ hotScriptHash2
 
         let derivedKeysHashes = KeysHashes
                 { drepXsk = drepXPrvTxt
@@ -1003,7 +1021,9 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , ccHot = hotTxt
                 , ccHotHex = hotTxtHex
                 , ccHotScript1 = hotScript1Txt
+                , ccHotScript1Hex = hotScript1TxtHex
                 , ccHotScript2 = hotScript2Txt
+                , ccHotScript2Hex = hotScript2TxtHex
                 }
         derivedKeysHashes `shouldBe` expectedKeysHashes
   where
