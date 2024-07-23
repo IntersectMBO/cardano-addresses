@@ -342,6 +342,7 @@ spec = do
                    , ccHotVk = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
                    , ccHotVkHex = "792a7f83cab90261f72ef57ee94a65ca9b0c71c1be2c8fdd5318c3643b20b52f"
                    , ccHot = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+                   , ccHotHex = "f6d29c0f7164d37610cbf67b126a993beb24a076d0653f1fa069588f"
                    , ccHotScript1 = "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
                    , ccHotScript2 = "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
                    }
@@ -382,6 +383,7 @@ spec = do
                    , ccHotVk = "cc_hot_vk10qawpxlz7eytt9yr4xlwtjkw345v0ehzsxdlkks6qralyp975phqx538xn"
                    , ccHotVkHex = "783ae09be2f648b59483a9bee5cace8d68c7e6e2819bfb5a1a00fbf204bea06e"
                    , ccHot = "cc_hot1682whkcedz0ftcyhjxdasufyg85fks0vxm0y006qx38c2jz0ae0"
+                   , ccHotHex = "d1d4ebdb19689e95e097919bd8712441e89b41ec36de47bf40344f85"
                    , ccHotScript1 = "cc_hot_script1hheftszv4jw83f5megrvhrevl7lwwmtnjav7srkqngr92gna52t"
                    , ccHotScript2 = "cc_hot_script1dg9jdwlsxzakctywv2cw7a7ggj2dwu0gz5tueu2rf40zvkj8dwc"
                    }
@@ -424,6 +426,7 @@ spec = do
                    , ccHotVk = "cc_hot_vk1tazd6lvnf2c9j8m58h6xy56uuyhkee526jgxj2ylaextl0xamd4swmuygc"
                    , ccHotVkHex = "5f44dd7d934ab0591f743df462535ce12f6ce68ad49069289fee4cbfbcdddb6b"
                    , ccHot = "cc_hot1c2n5ax72vfqdj3ljn04hmmvkqjt5q9k694yw8f7rv3xvgxas90x"
+                   , ccHotHex = "c2a74e9bca6240d947f29beb7ded9604974016da2d48e3a7c3644cc4"
                    , ccHotScript1 = "cc_hot_script1tmwlec0twwvl29h6pgvew5mf4recsxtktev9g07xm37fv46mta9"
                    , ccHotScript2 = "cc_hot_script1c77thg5lrahy0he4q6glsk8vgsp45gt75k3pq09d02u8g4s30yx"
                    }
@@ -466,6 +469,7 @@ spec = do
                    , ccHotVk = "cc_hot_vk1g2925ntunmthw66sr8t7v3qe7fls4575wput3936cguzk7m6w4fs0zjxf8"
                    , ccHotVkHex = "428aaa4d7c9ed7776b5019d7e64419f27f0ad3d47078b8963ac2382b7b7a7553"
                    , ccHot = "cc_hot14845f592rnj4txmuygns4s3aresm7ts3fhvwtfzw6wjjj3l0520"
+                   , ccHotHex = "a9eb44d0aa1ce5559b7c22270ac23d1e61bf2e114dd8e5a44ed3a529"
                    , ccHotScript1 = "cc_hot_script1n42mr24e22eyspa7m0y6lq5rk8tesq35xt6gfgkezcxluqysk4n"
                    , ccHotScript2 = "cc_hot_script1gfqmx4g0czk2nz2m2rfawg4me283jl7wz4wfssup03av2yzf2kd"
                    }
@@ -881,6 +885,9 @@ data KeysHashes = KeysHashes
        -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), bech32 encoded prefixed with 'cc_hot'
     , ccHot :: Text
 
+       -- | Constitutional committee hot verification key hash (cold credential) (blake2b_224 digest of a consitutional committee hot verification key), base16 encoded
+    , ccHotHex :: Text
+
        -- | Constitutional committee hot script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
        -- script: all [ccHot, active_from 5001]
     , ccHotScript1 :: Text
@@ -956,6 +963,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let hotPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> hotXPrv
         let hotKeyHash = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
         let hotTxt = keyHashToText hotKeyHash
+        let hotTxtHex = tob16text . digest $ hotKeyHash
         let hotScriptHash1 = toScriptHash (script1 hotKeyHash)
         let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot_script
         let hotScriptHash2 = toScriptHash (script2 hotKeyHash)
@@ -993,6 +1001,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , ccHotVk = hotPubTxt
                 , ccHotVkHex = hotPubTxtHex
                 , ccHot = hotTxt
+                , ccHotHex = hotTxtHex
                 , ccHotScript1 = hotScript1Txt
                 , ccHotScript2 = hotScript2Txt
                 }
