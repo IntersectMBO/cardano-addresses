@@ -30,6 +30,7 @@ import Cardano.Address
     , bech32
     , bech32With
     , fromBech32
+    , unAddress
     , unsafeMkAddress
     )
 import Cardano.Address.Derivation
@@ -311,6 +312,7 @@ spec = do
             ,  accountIx = 0x80000000
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk14rjh4rs2dzm6k5xxe5f73cypzuv02pknfl9xwnsjws8a7ulp530xztarpdlyh05csw2cmnekths7dstq0se3wtza84m4fueffezsjfgassgs9xtfzgehrn0fn7c82uc0rkj06s0w0t80hflzz8cwyry3eg9066uj"
+                   , drepXskhex = "a8e57a8e0a68b7ab50c6cd13e8e0811718f506d34fca674e12740fdf73e1a45e612fa30b7e4bbe9883958dcf365de1e6c1607c33172c5d3d7754f3294e4509251d8411029969123371cde99fb075730f1da4fd41ee7acefba7e211f0e20c91ca"
                    , drepXvk = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
                    , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
                    , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
@@ -336,6 +338,7 @@ spec = do
             ,  accountIx = 0x80000100
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk1zracgd4mqt32f5cj0ps0wudf78u6lumz7gprgm3j8zec5ahp530weq4z9ayj6jzj33lpj86jkk2gnt0ns0d5sywteexxehvva7gugz99ydmpemzpsfnj49vjvw88q9a2s2hxc9ggxal5q6xsqz5vaat2xqsha72w"
+                   , drepXskhex = "10fb8436bb02e2a4d3127860f771a9f1f9aff362f202346e3238b38a76e1a45eec82a22f492d48528c7e191f52b59489adf383db4811cbce4c6cdd8cef91c408a523761cec4182672a9592638e7017aa82ae6c1508377f4068d000a8cef56a30"
                    , drepXvk = "drep_xvk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9m22gmkrnkyrqn8922eycuwwqt64q4wds2ssdmlgp5dqq9gem6k5vq23ph3c"
                    , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
                    , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
@@ -363,6 +366,7 @@ spec = do
             ,  accountIx = 0x80000000
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk17pwn6d7pu0d6sfzysyk5taux99f5tdqsct7zzthgljyd5zs33azej0tm5ny7ksunthqu84tqg832md6vs3hm392agwx3auhvyjtzxr2l6c0dj47k6zedl4kgugneu04j64fc5uueayydmufdrdaled9k4qllaka6"
+                   , drepXskhex = "f05d3d37c1e3dba82444812d45f786295345b410c2fc212ee8fc88da0a118f45993d7ba4c9eb43935dc1c3d56041e2adb74c846fb8955d438d1ef2ec2496230d5fd61ed957d6d0b2dfd6c8e2279e3eb2d5538a7399e908ddf12d1b7bfcb4b6a8"
                    , drepXvk = "drep_xvk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnht9l4s7m9tad59jmltv3c38nclt942n3feen6ggmhcj6xmmlj6td2qu4ce82"
                    , drepVk = "drep_vk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnhtqvs6j8t"
                    , drep = "drep1x0jc06clgnj37sc8amkhahnpjqytcnguxtqcpxwkxeejj4y6sqm"
@@ -390,6 +394,7 @@ spec = do
             ,  accountIx = 0x80000100
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk14z6a7nd2q5r03s4gxsrujc59sg757vqqcwxeuc5s874c2rq33az37lwkxpxvh5s4a94sncxp6y7m73pxsuknt7gvethhue5jk5vc5n2hrg95mynhw7mtrshxr5mpku4v8x6lpm05nznrqej70u0fllgfkusexdkv"
+                   , drepXskhex = "a8b5df4daa0506f8c2a83407c96285823d4f3000c38d9e62903fab850c118f451f7dd6304ccbd215e96b09e0c1d13dbf4426872d35f90ccaef7e6692b5198a4d571a0b4d927777b6b1c2e61d361b72ac39b5f0edf498a630665e7f1e9ffd09b7"
                    , drepXvk = "drep_xvk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wq4wxstfkf8waakk8pwv8fkrde2cwd47rklfx9xxpn9ulc7nl7sndcvdjh2m"
                    , drepVk = "drep_vk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wqskrq5yn"
                    , drep = "drep1cx359uxlhq4e8j3wddqxht9sfqp004t2n8v0jk5q4zmv27sh0h5"
@@ -722,6 +727,9 @@ data KeysHashes = KeysHashes
     {  -- | CIP-1852’s DRep extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'drep_xsk'
       drepXsk :: Text
 
+        -- | CIP-1852’s DRep extended signing key (Ed25519-bip32 extended private key), base16 encoded
+    , drepXskhex :: Text
+
        -- | CIP-1852’s DRep extended verification key (Ed25519 public key with chain code), bech32 encoded prefixed with 'drep_xvk'
     , drepXvk :: Text
 
@@ -805,6 +813,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
 
         let drepXPrv = deriveDRepPrivateKey acctXPrv
         let drepXPrvTxt = bech32With CIP5.drep_xsk  $ getExtendedKeyAddr drepXPrv
+        let drepXPrvTxtHex = tob16text . unAddress $ getExtendedKeyAddr drepXPrv
         let drepXPubTxt = bech32With CIP5.drep_xvk $ getPublicKeyAddr $ toXPub <$> drepXPrv
         let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
         let drepKeyHash = toKeyHash Representative $ toXPub <$> drepXPrv
@@ -838,6 +847,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
 
         let derivedKeysHashes = KeysHashes
                 { drepXsk = drepXPrvTxt
+                , drepXskhex = drepXPrvTxtHex
                 , drepXvk = drepXPubTxt
                 , drepVk = drepPubTxt
                 , drep = drepTxt
