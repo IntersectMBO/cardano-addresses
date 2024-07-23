@@ -318,6 +318,7 @@ spec = do
                    , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
                    , drepVkHex = "f74d7ac30513ac1825715fd0196769761fca6e7f69de33d04ef09a0c417a752b"
                    , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+                   , drepHex = "a5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa"
                    , drepScript1 = "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
                    , drepScript2 = "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
                    , ccColdXsk = "cc_cold_xsk1dp84kjq9qa647wr70e2yedzt8e27kwugh8mfw675re0hgm8p530z3d9230cjjzyyzlq04hn94x9q2m9um2tvp2y8fn7tau9l2wfj5ykxqxtgua0lxpf0lfn44md2afyl7dktyvpkmug9u28p6v452flxeuca0v7w"
@@ -346,6 +347,7 @@ spec = do
                    , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
                    , drepVkHex = "70344fe0329bbacbb33921e945daed181bd66889333eb73f3bb10ad8e4669976"
                    , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
+                   , drepHex = "1ed314af7d3ff8fcd320c73eb58524d774ca38733ee00ebca81bd63a"
                    , drepScript1 = "drep_script18cgl8kdnjculhww4n3h0a3ahc85ahjcsg53u0f93jnz9c0339av"
                    , drepScript2 = "drep_script1hwj9yuvzxc623w5lmwvp44md7qkdywz2fcd583qmyu62jvjnz69"
                    , ccColdXsk = "cc_cold_xsk1dppxrjspxrjj5e5xrmh6yaw6w30arsl5lqcsp09ynyzwwulp530q4tlvug79xx6ja3u32fu9jyy84p6erjmza6twrackm9kfsdpc3ap7uxpempqjftx74qwxnmn7d6pg8pl9zpnc0rese26pfmzl9cmtgg8xsxvu"
@@ -376,6 +378,7 @@ spec = do
                    , drepVk = "drep_vk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnhtqvs6j8t"
                    , drepVkHex = "a4a2f459fcc98e7fe0acbea096f4b1fb342cb73aa6c41f62d4d6ca1464179dd6"
                    , drep = "drep1x0jc06clgnj37sc8amkhahnpjqytcnguxtqcpxwkxeejj4y6sqm"
+                   , drepHex = "33e587eb1f44e51f4307eeed7ede619008bc4d1c32c18099d6367329"
                    , drepScript1 = "drep_script17fql6ztxyk63taryk2e4mh47jw3wdchv9e7u4jxg4edrx89ym9g"
                    , drepScript2 = "drep_script10qp23w0gppuvc7chc3g7saudlmhj9jmm9ssrrzzm3qwksv3gsq7"
                    , ccColdXsk = "cc_cold_xsk1hqtevrzlhtcglwvt5pmgct8ssqx37vjjf3wuydpd6flyqrg33azacap5w5mclacmuycx3xgrtstxgrpzcncf6l840t0klmywc69ryd9zf95taaaseka98yakuj2048slnuekw22qm58majt8alhs438eecehquu0"
@@ -406,6 +409,7 @@ spec = do
                    , drepVk = "drep_vk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wqskrq5yn"
                    , drepVkHex = "ab5d2187f2f4419421b0457f7ac8ab0d4b4ec0802af5de21dde64f603248a381"
                    , drep = "drep1cx359uxlhq4e8j3wddqxht9sfqp004t2n8v0jk5q4zmv27sh0h5"
+                   , drepHex = "c1a342f0dfb82b93ca2e6b406bacb04802f7d56a99d8f95a80a8b6c5"
                    , drepScript1 = "drep_script1ckr4x9293myuyz5379wndh4ag00c787htnzwzxxmpfnfzjzk4cq"
                    , drepScript2 = "drep_script1wgly5zd539aam7yxr7trxy48dhupswmwusutm4q40dwkcquwecx"
                    , ccColdXsk = "cc_cold_xsk1hqe5kcsq59mx4t9nxrctmth0ppz9gda0gnppyll3h9rxcyq33az4uy3u6qhzuhjsstzca9awgsx27j07hxhrkrk6487nvywp0ag669m4v6lj3knq7e6pxaujy98akn5exhgk44ftruepkte0hdm74dd8zceqnk2h"
@@ -753,6 +757,9 @@ data KeysHashes = KeysHashes
        -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), bech32 encoded prefixed with 'drep'
     , drep :: Text
 
+       -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), base16 encoded
+    , drepHex :: Text
+
        -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
        -- script: all [drep, active_from 5001]
     , drepScript1 :: Text
@@ -834,6 +841,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> drepXPrv
         let drepKeyHash = toKeyHash Representative $ toXPub <$> drepXPrv
         let drepTxt = keyHashToText drepKeyHash
+        let drepTxtHex = tob16text . digest $ drepKeyHash
         let drepScriptHash1 = toScriptHash (script1 drepKeyHash)
         let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep_script
         let drepScriptHash2 = toScriptHash (script2 drepKeyHash)
@@ -869,6 +877,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , drepVk = drepPubTxt
                 , drepVkHex = drepPubTxtHex
                 , drep = drepTxt
+                , drepHex = drepTxtHex
                 , drepScript1 = drepScript1Txt
                 , drepScript2 = drepScript2Txt
                 , ccColdXsk = coldXPrvTxt
