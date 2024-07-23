@@ -1164,6 +1164,9 @@ instance Arbitrary SndFactor where
         bytes <- BS.pack <$> vector n
         return $ SndFactor $ BA.convert bytes
 
+tob16text :: ByteString -> Text
+tob16text =  T.decodeUtf8 . encode EBase16
+
 b16encode :: Text -> ByteString
 b16encode = encode EBase16 . T.encodeUtf8
 
