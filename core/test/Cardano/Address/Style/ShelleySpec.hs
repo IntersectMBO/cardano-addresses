@@ -328,6 +328,7 @@ spec = do
                    , ccColdXvk = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
                    , ccColdXvkHex = "a9781abfc1604a18ebff6fc35062c000a7a66fdca1323710ed38c1dfc3315beac601968e75ff3052ffa675aedaaea49ff36cb23036df105e28e1d32b4527e6cf"
                    , ccColdVk = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
+                   , ccColdVkHex = "a9781abfc1604a18ebff6fc35062c000a7a66fdca1323710ed38c1dfc3315bea"
                    , ccCold = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
                    , ccColdScript1 = "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
                    , ccColdScript2 = "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
@@ -361,6 +362,7 @@ spec = do
                    , ccColdXvk = "cc_cold_xvk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gnacvrnkzpyjkda2qud8h8um5zswr72yr8s78npj45znk97t3kkssryhkyv"
                    , ccColdXvkHex = "cab60e3b880ba64b252b942bb645d5e58ef4d6f243542fc28ce4051170171f913ee1839d84124acdea81c69ee7e6e828387e51067878f30cab414ec5f2e36b42"
                    , ccColdVk = "cc_cold_vk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gs3qg4hr"
+                   , ccColdVkHex = "cab60e3b880ba64b252b942bb645d5e58ef4d6f243542fc28ce4051170171f91"
                    , ccCold = "cc_cold1aymnf7h8rr53h069ephcekq707tg0ek0lexfzrw35npkq02wke0"
                    , ccColdScript1 = "cc_cold_script1prtcxdlu75dz48lf8hh86gt8ng7z39yvmyqcg92sgze7g6m8dtq"
                    , ccColdScript2 = "cc_cold_script1969h0m92nuqrj7x74pj3tnhxh97lfhl4y2vwvqvc6kecwdshr6f"
@@ -396,6 +398,7 @@ spec = do
                    , ccColdXvk = "cc_cold_xvk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxt6yjtghmmmpnd62wfmdey5l20pl8envu55phg0hmyk0ml0ptz0nns9cqjlk"
                    , ccColdXvkHex = "8bb15c318356b4ba8cdb2b899fd5b9c80c427d92149b6a3bd5fb3aa36dedb997a24968bef7b0cdba5393b6e494fa9e1f9f33672940dd0fbec967efef0ac4f9ce"
                    , ccColdVk = "cc_cold_vk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxtsfpa2qu"
+                   , ccColdVkHex = "8bb15c318356b4ba8cdb2b899fd5b9c80c427d92149b6a3bd5fb3aa36dedb997"
                    , ccCold = "cc_cold17z4s83htmrgmg5268hx68j4vqumk38wrc5x9cr0mc7glyntw6cl"
                    , ccColdScript1 = "cc_cold_script15z7ynn7fuqu55hh850962vrrg7tcdncl8spnjtrxjjm06y3avt9"
                    , ccColdScript2 = "cc_cold_script1ahw3qh3ledhxp0frga9aawfkxpu0qstte9nmem0phqqegeeg6zv"
@@ -431,6 +434,7 @@ spec = do
                    , ccColdXvk = "cc_cold_xvk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp2482e4l9rdxpan5zdmeyg20md8fjdw3dt2jk8ejrvhjlwmha266w9syf55nr"
                    , ccColdXvkHex = "fec199631209a0d2e3f5e758693e4324be9b5067767637b4f0ef7f52fd6b0aaa7566bf28da60f674137792214fdb4e9935d16ad52b1f321b2f2fbb77eab5a716"
                    , ccColdVk = "cc_cold_vk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp24q6lw08l"
+                   , ccColdVkHex = "fec199631209a0d2e3f5e758693e4324be9b5067767637b4f0ef7f52fd6b0aaa"
                    , ccCold = "cc_cold1fjej4ec9lvam509vjapr26yqeyf2x6j20n98f4y4d3l5zygwxt4"
                    , ccColdScript1 = "cc_cold_script1qlk7rgkd5n6ga8enwk08vwtmlklhzfnmjtjlzlwed62tuycmmh5"
                    , ccColdScript2 = "cc_cold_script1a4qmd5d3dqppxtq5wcuuaa3xfe868vyn46afvktz5ucxzxvflg4"
@@ -807,6 +811,9 @@ data KeysHashes = KeysHashes
        -- | CIP-1852’s constitutional committee cold verification signing key (Ed25519 private key), bech32 encoded prefixed with 'cc_cold_vk'
     , ccColdVk :: Text
 
+       -- | CIP-1852’s constitutional committee cold verification signing key (Ed25519 private key), base16 encoded
+    , ccColdVkHex :: Text
+
        -- | Constitutional committee cold verification key hash (cold credential) (blake2b_224 digest of a consitutional committee cold verification key), bech32 encoded prefixed with 'cc_cold'
     , ccCold :: Text
 
@@ -885,6 +892,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let coldXPubTxt = bech32With CIP5.cc_cold_xvk $ getPublicKeyAddr $ toXPub <$> coldXPrv
         let coldXPubTxtHex = tob16text . unAddress  $ getPublicKeyAddr $ toXPub <$> coldXPrv
         let coldPubTxt = bech32With CIP5.cc_cold_vk $ getVerKey $ toXPub <$> coldXPrv
+        let coldPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> coldXPrv
         let coldKeyHash = toKeyHash CommitteeCold $ toXPub <$> coldXPrv
         let coldTxt = keyHashToText coldKeyHash
         let coldScriptHash1 = toScriptHash (script1 coldKeyHash)
@@ -921,6 +929,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , ccColdXvk = coldXPubTxt
                 , ccColdXvkHex = coldXPubTxtHex
                 , ccColdVk = coldPubTxt
+                , ccColdVkHex = coldPubTxtHex
                 , ccCold = coldTxt
                 , ccColdScript1 = coldScript1Txt
                 , ccColdScript2 = coldScript2Txt
