@@ -320,7 +320,9 @@ spec = do
                    , drep = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
                    , drepHex = "a5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa"
                    , drepScript1 = "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+                   , drepScript1Hex = "d0657126dbf0c135a7224d91ca068f5bf769af6d1f1df0bce5170ec5"
                    , drepScript2 = "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+                   , drepScript2Hex = "ae5acf0511255d647c84b3184a2d522bf5f6c5b76b989f49bd383bdd"
                    , ccColdXsk = "cc_cold_xsk1dp84kjq9qa647wr70e2yedzt8e27kwugh8mfw675re0hgm8p530z3d9230cjjzyyzlq04hn94x9q2m9um2tvp2y8fn7tau9l2wfj5ykxqxtgua0lxpf0lfn44md2afyl7dktyvpkmug9u28p6v452flxeuca0v7w"
                    , ccColdXvk = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
                    , ccColdVk = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
@@ -349,7 +351,9 @@ spec = do
                    , drep = "drep1rmf3ftma8lu0e5eqculttpfy6a6v5wrn8msqa09gr0tr5rgcuy9"
                    , drepHex = "1ed314af7d3ff8fcd320c73eb58524d774ca38733ee00ebca81bd63a"
                    , drepScript1 = "drep_script18cgl8kdnjculhww4n3h0a3ahc85ahjcsg53u0f93jnz9c0339av"
+                   , drepScript1Hex = "3e11f3d9b39639fbb9d59c6efec7b7c1e9dbcb104523c7a4b194c45c"
                    , drepScript2 = "drep_script1hwj9yuvzxc623w5lmwvp44md7qkdywz2fcd583qmyu62jvjnz69"
+                   , drepScript2Hex = "bba45271823634a8ba9fdb981ad76df02cd2384a4e1b43c41b2734a9"
                    , ccColdXsk = "cc_cold_xsk1dppxrjspxrjj5e5xrmh6yaw6w30arsl5lqcsp09ynyzwwulp530q4tlvug79xx6ja3u32fu9jyy84p6erjmza6twrackm9kfsdpc3ap7uxpempqjftx74qwxnmn7d6pg8pl9zpnc0rese26pfmzl9cmtgg8xsxvu"
                    , ccColdXvk = "cc_cold_xvk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gnacvrnkzpyjkda2qud8h8um5zswr72yr8s78npj45znk97t3kkssryhkyv"
                    , ccColdVk = "cc_cold_vk1e2mquwugpwnykfftjs4mv3w4uk80f4hjgd2zls5vusz3zuqhr7gs3qg4hr"
@@ -380,7 +384,9 @@ spec = do
                    , drep = "drep1x0jc06clgnj37sc8amkhahnpjqytcnguxtqcpxwkxeejj4y6sqm"
                    , drepHex = "33e587eb1f44e51f4307eeed7ede619008bc4d1c32c18099d6367329"
                    , drepScript1 = "drep_script17fql6ztxyk63taryk2e4mh47jw3wdchv9e7u4jxg4edrx89ym9g"
+                   , drepScript1Hex = "f241fd096625b515f464b2b35ddebe93a2e6e2ec2e7dcac8c8ae5a33"
                    , drepScript2 = "drep_script10qp23w0gppuvc7chc3g7saudlmhj9jmm9ssrrzzm3qwksv3gsq7"
+                   , drepScript2Hex = "7802a8b9e80878cc7b17c451e8778dfeef22cb7b2c2031885b881d68"
                    , ccColdXsk = "cc_cold_xsk1hqtevrzlhtcglwvt5pmgct8ssqx37vjjf3wuydpd6flyqrg33azacap5w5mclacmuycx3xgrtstxgrpzcncf6l840t0klmywc69ryd9zf95taaaseka98yakuj2048slnuekw22qm58majt8alhs438eecehquu0"
                    , ccColdXvk = "cc_cold_xvk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxt6yjtghmmmpnd62wfmdey5l20pl8envu55phg0hmyk0ml0ptz0nns9cqjlk"
                    , ccColdVk = "cc_cold_vk13wc4cvvr266t4rxm9wyel4deeqxyylvjzjdk5w74lva2xm0dhxtsfpa2qu"
@@ -411,7 +417,9 @@ spec = do
                    , drep = "drep1cx359uxlhq4e8j3wddqxht9sfqp004t2n8v0jk5q4zmv27sh0h5"
                    , drepHex = "c1a342f0dfb82b93ca2e6b406bacb04802f7d56a99d8f95a80a8b6c5"
                    , drepScript1 = "drep_script1ckr4x9293myuyz5379wndh4ag00c787htnzwzxxmpfnfzjzk4cq"
+                   , drepScript1Hex = "c5875315458ec9c20a91f15d36debd43df8f1fd75cc4e118db0a6691"
                    , drepScript2 = "drep_script1wgly5zd539aam7yxr7trxy48dhupswmwusutm4q40dwkcquwecx"
+                   , drepScript2Hex = "723e4a09b4897bddf8861f963312a76df8183b6ee438bdd4157b5d6c"
                    , ccColdXsk = "cc_cold_xsk1hqe5kcsq59mx4t9nxrctmth0ppz9gda0gnppyll3h9rxcyq33az4uy3u6qhzuhjsstzca9awgsx27j07hxhrkrk6487nvywp0ag669m4v6lj3knq7e6pxaujy98akn5exhgk44ftruepkte0hdm74dd8zceqnk2h"
                    , ccColdXvk = "cc_cold_xvk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp2482e4l9rdxpan5zdmeyg20md8fjdw3dt2jk8ejrvhjlwmha266w9syf55nr"
                    , ccColdVk = "cc_cold_vk1lmqejccjpxsd9cl4uavxj0jryjlfk5r8wemr0d8saal49lttp24q6lw08l"
@@ -764,9 +772,17 @@ data KeysHashes = KeysHashes
        -- script: all [drep, active_from 5001]
     , drepScript1 :: Text
 
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), base16 encoded
+       -- script: all [drep, active_from 5001]
+    , drepScript1Hex :: Text
+
        -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
        -- script: any [drep, all [active_from 5001, active_until 6001]]
     , drepScript2 :: Text
+
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), base16 encoded
+       -- script: any [drep, all [active_from 5001, active_until 6001]]
+    , drepScript2Hex :: Text
 
        -- | CIP-1852’s constitutional committee cold extended signing key (Ed25519-bip32 extended private key), bech32 encoded prefixed with 'cc_cold_xsk'
     , ccColdXsk :: Text
@@ -844,8 +860,10 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepTxtHex = tob16text . digest $ drepKeyHash
         let drepScriptHash1 = toScriptHash (script1 drepKeyHash)
         let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep_script
+        let drepScript1TxtHex = tob16text . unScriptHash $ drepScriptHash1
         let drepScriptHash2 = toScriptHash (script2 drepKeyHash)
         let drepScript2Txt = toScriptTxt drepScriptHash2 CIP5.drep_script
+        let drepScript2TxtHex = tob16text . unScriptHash $ drepScriptHash2
 
         let coldXPrv = deriveCCColdPrivateKey acctXPrv
         let coldXPrvTxt = bech32With CIP5.cc_cold_xsk  $ getExtendedKeyAddr coldXPrv
@@ -879,7 +897,9 @@ goldenTestGovernance GoldenTestGovernance{..} =
                 , drep = drepTxt
                 , drepHex = drepTxtHex
                 , drepScript1 = drepScript1Txt
+                , drepScript1Hex = drepScript1TxtHex
                 , drepScript2 = drepScript2Txt
+                , drepScript2Hex = drepScript2TxtHex
                 , ccColdXsk = coldXPrvTxt
                 , ccColdXvk = coldXPubTxt
                 , ccColdVk = coldPubTxt
