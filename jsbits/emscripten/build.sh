@@ -44,4 +44,5 @@ emcc -o crypto-cbits.js -s WASM=0 \
 
 closure-compiler --js=crypto-cbits.js --js_output_file=crypto-cbits.min.js
 
-cat crc32.js crypto-cbits.pre.js crypto-cbits.js crypto-cbits.post.js crypto-wrappers.js > cardano-crypto.js
+cat crypto-cbits.pre.js crypto-cbits.js crypto-cbits.post.js > cardano-crypto.js
+#cat crc32.js crypto-cbits.pre.js crypto-cbits.js crypto-cbits.post.js crypto-wrappers.js > cardano-crypto.js
