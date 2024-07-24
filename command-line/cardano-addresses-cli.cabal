@@ -40,6 +40,7 @@ library
       Command.Key.Hash
       Command.Key.Inspect
       Command.Key.Public
+      Command.Key.Private
       Command.Key.WalletId
       Command.RecoveryPhrase
       Command.RecoveryPhrase.Generate
@@ -55,6 +56,7 @@ library
       Options.Applicative.MnemonicSize
       Options.Applicative.Public
       Options.Applicative.Script
+      Options.Applicative.Private
       Options.Applicative.Style
       System.Git.TH
       System.IO.Extra
@@ -122,6 +124,7 @@ test-suite unit
       Command.Key.FromRecoveryPhraseSpec
       Command.Key.HashSpec
       Command.Key.InspectSpec
+      Command.Key.PrivateSpec
       Command.Key.PublicSpec
       Command.Key.WalletIdSpec
       Command.KeySpec
