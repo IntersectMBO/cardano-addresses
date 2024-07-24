@@ -49,6 +49,7 @@ import Cardano.Address.Derivation
     , pubToBytes
     , toXPub
     , unsafeMkIndex
+    , xprvPrivateKey
     , xprvToBytes
     , xpubFromBytes
     , xpubToBytes
@@ -313,6 +314,8 @@ spec = do
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk14rjh4rs2dzm6k5xxe5f73cypzuv02pknfl9xwnsjws8a7ulp530xztarpdlyh05csw2cmnekths7dstq0se3wtza84m4fueffezsjfgassgs9xtfzgehrn0fn7c82uc0rkj06s0w0t80hflzz8cwyry3eg9066uj"
                    , drepXskHex = "a8e57a8e0a68b7ab50c6cd13e8e0811718f506d34fca674e12740fdf73e1a45e612fa30b7e4bbe9883958dcf365de1e6c1607c33172c5d3d7754f3294e4509251d8411029969123371cde99fb075730f1da4fd41ee7acefba7e211f0e20c91ca"
+                   , drepSk = "drep_sk14rjh4rs2dzm6k5xxe5f73cypzuv02pknfl9xwnsjws8a7ulp530xztarpdlyh05csw2cmnekths7dstq0se3wtza84m4fueffezsjfglsqmad"
+                   , drepSkHex = "a8e57a8e0a68b7ab50c6cd13e8e0811718f506d34fca674e12740fdf73e1a45e612fa30b7e4bbe9883958dcf365de1e6c1607c33172c5d3d7754f3294e450925"
                    , drepXvk = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
                    , drepXvkHex = "f74d7ac30513ac1825715fd0196769761fca6e7f69de33d04ef09a0c417a752b1d8411029969123371cde99fb075730f1da4fd41ee7acefba7e211f0e20c91ca"
                    , drepVk = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
@@ -356,6 +359,8 @@ spec = do
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk1zracgd4mqt32f5cj0ps0wudf78u6lumz7gprgm3j8zec5ahp530weq4z9ayj6jzj33lpj86jkk2gnt0ns0d5sywteexxehvva7gugz99ydmpemzpsfnj49vjvw88q9a2s2hxc9ggxal5q6xsqz5vaat2xqsha72w"
                    , drepXskHex = "10fb8436bb02e2a4d3127860f771a9f1f9aff362f202346e3238b38a76e1a45eec82a22f492d48528c7e191f52b59489adf383db4811cbce4c6cdd8cef91c408a523761cec4182672a9592638e7017aa82ae6c1508377f4068d000a8cef56a30"
+                   , drepSk = "drep_sk1zracgd4mqt32f5cj0ps0wudf78u6lumz7gprgm3j8zec5ahp530weq4z9ayj6jzj33lpj86jkk2gnt0ns0d5sywteexxehvva7gugzqjur0zk"
+                   , drepSkHex = "10fb8436bb02e2a4d3127860f771a9f1f9aff362f202346e3238b38a76e1a45eec82a22f492d48528c7e191f52b59489adf383db4811cbce4c6cdd8cef91c408"
                    , drepXvk = "drep_xvk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9m22gmkrnkyrqn8922eycuwwqt64q4wds2ssdmlgp5dqq9gem6k5vq23ph3c"
                    , drepXvkHex = "70344fe0329bbacbb33921e945daed181bd66889333eb73f3bb10ad8e4669976a523761cec4182672a9592638e7017aa82ae6c1508377f4068d000a8cef56a30"
                    , drepVk = "drep_vk1wq6ylcpjnwavhveey855tkhdrqdav6yfxvltw0emky9d3erxn9mqdrlerg"
@@ -401,6 +406,8 @@ spec = do
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk17pwn6d7pu0d6sfzysyk5taux99f5tdqsct7zzthgljyd5zs33azej0tm5ny7ksunthqu84tqg832md6vs3hm392agwx3auhvyjtzxr2l6c0dj47k6zedl4kgugneu04j64fc5uueayydmufdrdaled9k4qllaka6"
                    , drepXskHex = "f05d3d37c1e3dba82444812d45f786295345b410c2fc212ee8fc88da0a118f45993d7ba4c9eb43935dc1c3d56041e2adb74c846fb8955d438d1ef2ec2496230d5fd61ed957d6d0b2dfd6c8e2279e3eb2d5538a7399e908ddf12d1b7bfcb4b6a8"
+                   , drepSk = "drep_sk17pwn6d7pu0d6sfzysyk5taux99f5tdqsct7zzthgljyd5zs33azej0tm5ny7ksunthqu84tqg832md6vs3hm392agwx3auhvyjtzxrgwyexuy"
+                   , drepSkHex = "f05d3d37c1e3dba82444812d45f786295345b410c2fc212ee8fc88da0a118f45993d7ba4c9eb43935dc1c3d56041e2adb74c846fb8955d438d1ef2ec2496230d"
                    , drepXvk = "drep_xvk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnht9l4s7m9tad59jmltv3c38nclt942n3feen6ggmhcj6xmmlj6td2qu4ce82"
                    , drepXvkHex = "a4a2f459fcc98e7fe0acbea096f4b1fb342cb73aa6c41f62d4d6ca1464179dd65fd61ed957d6d0b2dfd6c8e2279e3eb2d5538a7399e908ddf12d1b7bfcb4b6a8"
                    , drepVk = "drep_vk15j30gk0uex88lc9vh6sfda93lv6zede65mzp7ck56m9pgeqhnhtqvs6j8t"
@@ -446,6 +453,8 @@ spec = do
             ,  expectedKeysHashes = KeysHashes
                    { drepXsk = "drep_xsk14z6a7nd2q5r03s4gxsrujc59sg757vqqcwxeuc5s874c2rq33az37lwkxpxvh5s4a94sncxp6y7m73pxsuknt7gvethhue5jk5vc5n2hrg95mynhw7mtrshxr5mpku4v8x6lpm05nznrqej70u0fllgfkusexdkv"
                    , drepXskHex = "a8b5df4daa0506f8c2a83407c96285823d4f3000c38d9e62903fab850c118f451f7dd6304ccbd215e96b09e0c1d13dbf4426872d35f90ccaef7e6692b5198a4d571a0b4d927777b6b1c2e61d361b72ac39b5f0edf498a630665e7f1e9ffd09b7"
+                   , drepSk = "drep_sk14z6a7nd2q5r03s4gxsrujc59sg757vqqcwxeuc5s874c2rq33az37lwkxpxvh5s4a94sncxp6y7m73pxsuknt7gvethhue5jk5vc5ngl9zhrx"
+                   , drepSkHex = "a8b5df4daa0506f8c2a83407c96285823d4f3000c38d9e62903fab850c118f451f7dd6304ccbd215e96b09e0c1d13dbf4426872d35f90ccaef7e6692b5198a4d"
                    , drepXvk = "drep_xvk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wq4wxstfkf8waakk8pwv8fkrde2cwd47rklfx9xxpn9ulc7nl7sndcvdjh2m"
                    , drepXvkHex = "ab5d2187f2f4419421b0457f7ac8ab0d4b4ec0802af5de21dde64f603248a381571a0b4d927777b6b1c2e61d361b72ac39b5f0edf498a630665e7f1e9ffd09b7"
                    , drepVk = "drep_vk14dwjrplj73qeggdsg4lh4j9tp495asyq9t6augwaue8kqvjg5wqskrq5yn"
@@ -798,6 +807,12 @@ data KeysHashes = KeysHashes
         -- | CIP-1852’s DRep extended signing key (Ed25519-bip32 extended private key), base16 encoded
     , drepXskHex :: Text
 
+       -- | CIP-1852’s DRep signing key (Ed25519-bip32 non-extended private key), bech32 encoded prefixed with 'drep_sk'
+    , drepSk :: Text
+
+       -- | CIP-1852’s DRep signing key (Ed25519-bip32 non-extended private key), base16 encoded
+    , drepSkHex :: Text
+
        -- | CIP-1852’s DRep extended verification key (Ed25519 public key with chain code), bech32 encoded prefixed with 'drep_xvk'
     , drepXvk :: Text
 
@@ -939,6 +954,8 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepXPrv = deriveDRepPrivateKey acctXPrv
         let drepXPrvTxt = bech32With CIP5.drep_xsk  $ getExtendedKeyAddr drepXPrv
         let drepXPrvTxtHex = tob16text . unAddress $ getExtendedKeyAddr drepXPrv
+        let drepPrvTxt = bech32With CIP5.drep_sk  $ getPrivateKeyAddr drepXPrv
+        let drepPrvTxtHex = T.decodeUtf8 $ encode EBase16 $ unAddress $ getPrivateKeyAddr drepXPrv
         let drepXPubTxt = bech32With CIP5.drep_xvk $ getPublicKeyAddr $ toXPub <$> drepXPrv
         let drepXPubTxtHex = tob16text . unAddress $ getPublicKeyAddr $ toXPub <$> drepXPrv
         let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
@@ -990,6 +1007,8 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let derivedKeysHashes = KeysHashes
                 { drepXsk = drepXPrvTxt
                 , drepXskHex = drepXPrvTxtHex
+                , drepSk = drepPrvTxt
+                , drepSkHex = drepPrvTxtHex
                 , drepXvk = drepXPubTxt
                 , drepXvkHex = drepXPubTxtHex
                 , drepVk = drepPubTxt
@@ -1214,6 +1233,9 @@ shortHex = T.take 8 . T.decodeUtf8 . BAE.convertToBase BAE.Base16 . hashByteStri
 
 getExtendedKeyAddr :: Shelley depth XPrv -> Address
 getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
+
+getPrivateKeyAddr :: Shelley depth XPrv -> Address
+getPrivateKeyAddr = unsafeMkAddress . xprvPrivateKey . getKey
 
 getPublicKeyAddr :: Shelley depth XPub -> Address
 getPublicKeyAddr = unsafeMkAddress . xpubToBytes . getKey
