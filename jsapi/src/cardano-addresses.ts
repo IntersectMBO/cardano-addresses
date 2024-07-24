@@ -26,7 +26,7 @@ import { CardanoAddressesJSModule, CardanoAddressesApi } from '../src/foreign';
  * @returns The fields parsed from the address.
  */
 export async function inspectAddress(address: Address, rootXPub?: XPub): Promise<InspectAddress> {
-  const api = await init();
+  var api = await init();
   return new Promise((resolve, reject) =>
     api.inspectAddress(rootXPub || null, address, resolve, reject));
 }
@@ -35,7 +35,7 @@ export async function inspectAddress(address: Address, rootXPub?: XPub): Promise
  * @returns The Cabal package version string and git revision.
  */
 export async function version(): Promise<string> {
-  const api = await init();
+  var api = await init();
   return new Promise(done => api.version(done));
 }
 
@@ -53,7 +53,7 @@ var apiDestroy: undefined|(() => void) = () => {};
 export function init(): Promise<CardanoAddressesApi> {
   if (!apiCreate) {
     apiCreate = loadJSAPI().then(mod => {
-      const run = mod.runCardanoAddressesApi;
+      var run = mod.runCardanoAddressesApi;
       return new Promise(resolve => run((api, cleanup) => {
         apiDestroy = cleanup;
         resolve(api);
@@ -64,13 +64,14 @@ export function init(): Promise<CardanoAddressesApi> {
 }
 
 async function loadJSAPI(): Promise<CardanoAddressesJSModule> {
-  const haveProcess = typeof process != 'undefined';
-  const nixPath = haveProcess && process.env?.CARDANO_ADDRESSES_JS;
-  const isNode = haveProcess && process.versions?.node !== 'undefined';
-  const mod = isNode ? 'cjs' : 'esm';
-  const dir = nixPath || '.';
-  const file = `${dir}/cardano-addresses-jsapi.${mod}.js`;
+  var haveProcess = typeof process != 'undefined';
+  var nixPath = haveProcess && process.env?.CARDANO_ADDRESSES_JS;
+  var isNode = haveProcess && process.versions?.node !== 'undefined';
+  var mod = isNode ? 'cjs' : 'esm';
+  var dir = nixPath || '.';
+  var file = `${dir}/cardano-addresses-jsapi.${mod}.js`;
   try {
+    console.log(`Importing File: ${file}`);
     return await import(file);
   } catch (err) {
     console.warn(`${file}: ES module loading failed!`, err);

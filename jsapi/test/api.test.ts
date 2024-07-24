@@ -1,8 +1,8 @@
 // Copyright © 2021 IOHK
 // License: Apache-2.0
 
-import { version, inspectAddress } from '../src';
-import * as library from '../src/cardano-addresses';
+import { version, inspectAddress, init, cleanup } from '../src';
+// import * as library from '../src/cardano-addresses';
 
 import { LIB_VERSION } from './version';
 
@@ -13,7 +13,7 @@ beforeAll(() => {
   process.stdin.destroy();
   // This is not strictly necessary because the wrapper functions
   // already call init().
-  library.init();
+  init();
   console.debug("... Done.");
 });
 
@@ -21,7 +21,7 @@ afterAll(() => {
   console.debug("Stopping ghcjs RTS...");
   // This is also not strictly necessary, if the program or web page
   // is going to exit anyway.
-  library.cleanup();
+  cleanup();
   console.debug("... Done.");
 });
 
