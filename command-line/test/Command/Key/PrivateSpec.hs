@@ -14,7 +14,14 @@ import Test.Utils
 spec :: Spec
 spec = describeCmd [ "key", "private" ] $ do
     specKeyNotPrivate
+
+    specKeyPrivate "icarus" "acct_sk" "1852H/1815H/0H" "--signing-key"
     specKeyPrivate "icarus" "addr_sk" "1852H/1815H/0H/0/0" "--signing-key"
+
+    specKeyPrivate "shelley" "acct_sk" "1852H/1815H/0H" "--signing-key"
+    specKeyPrivate "shelley" "addr_sk" "1852H/1815H/0H/0/0" "--signing-key"
+    specKeyPrivate "shelley" "stake_sk" "1852H/1815H/0H/2/0" "--signing-key"
+    specKeyPrivate "shelley" "policy_sk" "1855H/1815H/0H" "--signing-key"
 
 specKeyNotPrivate :: SpecWith ()
 specKeyNotPrivate = it "fail if key isn't private" $ do
