@@ -27,6 +27,10 @@ spec = describeCmd [ "key", "private" ] $ do
     specKeyPrivate "shared" "addr_shared_sk" "1854H/1815H/0H/0/0" "--signing-key"
     specKeyPrivate "shared" "stake_shared_sk" "1854H/1815H/0H/2/0" "--signing-key"
 
+    specKeyPrivate "shelley" "drep_sk" "1852H/1815H/0H/3/0" "--signing-key"
+    specKeyPrivate "shelley" "cc_cold_sk" "1852H/1815H/0H/4/0" "--signing-key"
+    specKeyPrivate "shelley" "cc_hot_sk" "1852H/1815H/0H/5/0" "--signing-key"
+
 specKeyNotPrivate :: SpecWith ()
 specKeyNotPrivate = it "fail if key isn't private" $ do
     (out, err) <- cli [ "recovery-phrase", "generate" ] ""
