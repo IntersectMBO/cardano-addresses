@@ -26,7 +26,7 @@ function usage(): void {
  * @hidden
  */
 export function cli(argv: Process['argv']): void {
-  var args = argv;
+  const args = argv;
 
   args.shift(); // /usr/bin/node
   args.shift(); // js-inspect-address
@@ -35,9 +35,9 @@ export function cli(argv: Process['argv']): void {
     usage();
   }
 
-  var address = args.shift() as string;
+  const address = args.shift() as string;
 
-  var waitForExit = setInterval(() => undefined, 3600000);
+  const waitForExit = setInterval(() => undefined, 3600000);
 
   inspectAddress(address)
     .then(res => {
