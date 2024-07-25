@@ -666,7 +666,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
     0b11110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
-            , infoScriptHash = Just addrHash1
+            , infoStakeScriptHash = Just addrHash1
             }
     unknown -> Left (UnknownType unknown)
 
