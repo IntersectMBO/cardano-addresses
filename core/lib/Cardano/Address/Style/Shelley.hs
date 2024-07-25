@@ -467,10 +467,10 @@ deriveCCHotPrivateKey accXPrv =
 -- > let verKey2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
 -- > let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
 -- > let (Right script) = scriptFromString scriptStr
--- > let infoScriptHash@(ScriptHash bytes) = toScriptHash script
+-- > let infoSpendingScriptHash@(ScriptHash bytes) = toScriptHash script
 -- > decodeUtf8 (encode EBase16 bytes)
 -- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (PaymentFromScriptHash infoScriptHash)
+-- > bech32 $ paymentAddress tag (PaymentFromScriptHash infoSpendingScriptHash)
 -- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
 -- === Generating a 'DelegationAddress'
@@ -492,7 +492,7 @@ deriveCCHotPrivateKey accXPrv =
 -- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
 --
 -- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
--- > bech32 $ delegationAddress tag (PaymentFromScriptHash infoScriptHash) (DelegationFromScript infoScriptHash)
+-- > bech32 $ delegationAddress tag (PaymentFromScriptHash infoSpendingScriptHash) (DelegationFromScript infoSpendingScriptHash)
 -- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
 
 -- | Possible errors from inspecting a Shelley, Icarus, or Byron address.
@@ -613,7 +613,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
     0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
-            , infoScriptHash = Just addrHash1
+            , infoSpendingScriptHash = Just addrHash1
             , infoStakeKeyHash = Just addrHash2
             }
     -- 0010: base address: keyhash28,scripthash28
@@ -627,7 +627,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
     0b00110000 | addrRestLength == 2 * credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Just ByValue
-            , infoScriptHash = Just addrHash1
+            , infoSpendingScriptHash = Just addrHash1
             , infoStakeScriptHash = Just addrHash2
             }
     -- 0100: pointer address: keyhash28, 3 variable length uint
@@ -642,7 +642,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         ptr <- getPtr addrHash2
         pure addressInfo
             { infoStakeReference = Just $ ByPointer ptr
-            , infoScriptHash = Just addrHash1
+            , infoSpendingScriptHash = Just addrHash1
             }
     -- 0110: enterprise address: keyhash28
     0b01100000 | addrRestLength == credentialHashSize ->
@@ -654,7 +654,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
     0b01110000 | addrRestLength == credentialHashSize ->
         Right addressInfo
             { infoStakeReference = Nothing
-            , infoScriptHash = Just addrHash1
+            , infoSpendingScriptHash = Just addrHash1
             }
     -- 1110: reward account: keyhash28
     0b11100000 | addrRestLength == credentialHashSize ->
@@ -676,7 +676,7 @@ parseAddressInfoShelley AddressParts{..} = case addrType of
         , infoStakeReference = Nothing
         , infoSpendingKeyHash = Nothing
         , infoStakeKeyHash = Nothing
-        , infoScriptHash = Nothing
+        , infoSpendingScriptHash = Nothing
         , infoStakeScriptHash = Nothing
         , infoAddressType = shiftR (addrType .&. 0b11110000) 4
         }
@@ -729,13 +729,13 @@ instance ToJSON InspectAddress where
 --
 -- @since 3.4.0
 data AddressInfo = AddressInfo
-    { infoStakeReference  :: !(Maybe ReferenceInfo)
-    , infoSpendingKeyHash :: !(Maybe ByteString)
-    , infoStakeKeyHash    :: !(Maybe ByteString)
-    , infoScriptHash      :: !(Maybe ByteString)
-    , infoStakeScriptHash :: !(Maybe ByteString)
-    , infoNetworkTag      :: !NetworkTag
-    , infoAddressType     :: !Word8
+    { infoStakeReference     :: !(Maybe ReferenceInfo)
+    , infoSpendingKeyHash    :: !(Maybe ByteString)
+    , infoStakeKeyHash       :: !(Maybe ByteString)
+    , infoSpendingScriptHash :: !(Maybe ByteString)
+    , infoStakeScriptHash    :: !(Maybe ByteString)
+    , infoNetworkTag         :: !NetworkTag
+    , infoAddressType        :: !Word8
     } deriving (Generic, Show, Eq)
 
 -- | Info from 'Address' about how delegation keys are located.
@@ -755,8 +755,8 @@ instance ToJSON AddressInfo where
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
         ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
-        ++ jsonHash "spending_shared_hash" CIP5.addr_shared_vkh infoScriptHash
-        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoScriptHash
+        ++ jsonHash "spending_shared_hash" CIP5.addr_shared_vkh infoSpendingScriptHash
+        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoSpendingScriptHash
         ++ jsonHash "stake_script_hash" CIP5.stake_vkh infoStakeScriptHash
       where
         getPointer ByValue = Nothing
