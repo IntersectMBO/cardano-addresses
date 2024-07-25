@@ -5,6 +5,7 @@
  - `hashKey` for Shelley style
  - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
  - Fix field for staking scripts in AddressInfo.
+ - Rename infoScriptHash field in AddressInfo to infoSpendingScriptHash.
 
 ## [3.13.0] - N/A
 
