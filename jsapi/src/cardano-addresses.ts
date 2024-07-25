@@ -71,7 +71,6 @@ async function loadJSAPI(): Promise<CardanoAddressesJSModule> {
   const dir = nixPath || '.';
   const file = `${dir}/cardano-addresses-jsapi.${mod}.js`;
   try {
-    console.log(`Importing File: ${file}`);
     return await import(file);
   } catch (err) {
     console.warn(`${file}: ES module loading failed!`, err);
