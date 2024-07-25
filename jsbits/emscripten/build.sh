@@ -8,7 +8,6 @@ set -euo pipefail
 #  ln -s ../cryptonite/cbits cryptonite
 #  ln -s ../cardano-crypto/cbits cardano-crypto
 
-
 emcc -o crypto-cbits.js -s WASM=0 \
   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['printErr']" \
   -s "EXPORTED_FUNCTIONS=['_malloc', '_free'\
@@ -25,7 +24,7 @@ emcc -o crypto-cbits.js -s WASM=0 \
                          ,'_cryptonite_ed25519_point_base_scalarmul'\
                          ,'_cryptonite_ed25519_point_encode'\
                          ,'_cryptonite_ed25519_scalar_decode_long'\
-                         ,'_wallet_encrypted_derive_public', '_wallet_encrypted_derive_private', '_wallet_encrypted_derive_public'\
+                         ,'_wallet_encrypted_derive_public', '_wallet_encrypted_derive_private'\
                          ,'_wallet_encrypted_sign', '_wallet_encrypted_from_secret', '_wallet_encrypted_change_pass'\
                          ,'_wallet_encrypted_new_from_mkg']" \
   -I. -Icryptonite -Icryptonite/decaf/include -Icryptonite/decaf/include/arch_32 -Icryptonite/blake2/ref -Idecaf/p448 -Idecaf/p448/arch_32 -Icardano-crypto -Icardano-crypto/ed25519 \
@@ -42,7 +41,17 @@ emcc -o crypto-cbits.js -s WASM=0 \
   ./cryptonite/cryptonite_chacha.c \
   ./cryptonite/cryptonite_poly1305.c
 
-closure-compiler --js=crypto-cbits.js --js_output_file=crypto-cbits.min.js
+# The outputs of closure-compiler are not being used, seems like it's overly
+# aggressive, might as well remove it and save some time on the build process
+
+# closure-compiler --js=crypto-cbits.js --js_output_file=crypto-cbits.min.js
+
+
+# Originally we were including some polyfills for crc32 and crypto-wrappers.js
+# These do not seem to be necessary as the current build process seems to be
+# including them as expected and these were some of the ones causing duplication
+# errors.
 
 cat crypto-cbits.pre.js crypto-cbits.js crypto-cbits.post.js > cardano-crypto.js
+
 #cat crc32.js crypto-cbits.pre.js crypto-cbits.js crypto-cbits.post.js crypto-wrappers.js > cardano-crypto.js
