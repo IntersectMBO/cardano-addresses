@@ -756,7 +756,7 @@ instance ToJSON AddressInfo where
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
         ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
         ++ jsonHash "spending_shared_hash" CIP5.addr_shared_vkh infoSpendingScriptHash
-        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoSpendingScriptHash
+        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoStakeScriptHash
         ++ jsonHash "stake_script_hash" CIP5.stake_vkh infoStakeScriptHash
       where
         getPointer ByValue = Nothing
