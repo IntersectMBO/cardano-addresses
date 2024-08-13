@@ -31,8 +31,8 @@ foreign import javascript interruptible "testStart($1, $c);" initComplete
 #else
 initComplete :: Object -> JSM ()
 initComplete api =
-  void $ api ^. js1 "version" (fun $ \ _ _ [ver] ->
-    fromJSValUnchecked ver >>= (liftIO . putStrLn))
+  void $ api ^. js1 "version" (fun $ \ _ _ xs ->
+    fromJSValUnchecked (head xs) >>= (liftIO . putStrLn))
 #endif
 
 -- When runing the native version, point a browser at http://localhost:3757/
