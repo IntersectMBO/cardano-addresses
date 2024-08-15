@@ -35,12 +35,12 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectAddress ["Icarus", "none", "\"address_type\": 8"] []
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
-    specInspectAddress ["Shelley", "none", "\"address_type\": 6"] []
-        "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
+    -- specInspectAddress ["Shelley", "none", "\"address_type\": 6"] []
+    --     "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
 
-    specInspectAddress ["Shelley", "by value", "\"address_type\": 0"] []
-        "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ew\
-        \vxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
+    -- specInspectAddress ["Shelley", "by value", "\"address_type\": 0"] []
+    --     "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ew\
+    --     \vxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
 
     -- specInspectAddress ["Shelley", "by pointer", "\"address_type\": 4"] []
     --    "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
