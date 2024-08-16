@@ -68,4 +68,3 @@ constraints:
   , optparse-applicative >= 0.18.1.0
 
 tests: True
-test-show-details: direct
