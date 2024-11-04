@@ -28,7 +28,7 @@ jobs:
       run: |
          # ghcup should be installed on current GHA Windows runners. Let's use ghcup to run
          # pacman, to install the necessary dependencies, ...
-         ghcup run -- pacman --noconfirm -S `
+         ghcup run --mingw-path -- pacman --noconfirm -S `
             mingw-w64-x86_64-pkg-config `
             mingw-w64-x86_64-pcre `
             mingw-w64-x86_64-libsodium `
