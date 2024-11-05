@@ -63,6 +63,7 @@ module Cardano.Codec.Bech32.Prefixes
     , policy_xvk
     , policy_vkh
     , policy_xsk
+    , policy_sk
 
       -- * Keys/hashes for CIP-0105
     , drep_vk
@@ -235,6 +236,9 @@ policy_vkh = [humanReadablePart|policy_vkh|]
 
 policy_xsk :: HumanReadablePart
 policy_xsk = [humanReadablePart|policy_xsk|]
+
+policy_sk :: HumanReadablePart
+policy_sk = [humanReadablePart|policy_sk|]
 
 -- Keys/hashes for CIP-0105
 drep_vk :: HumanReadablePart

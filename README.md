@@ -250,6 +250,7 @@ addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3
 > :information_source: The last segment in the path is the key index and can be incremented up to `2^31-1` to derive more keys.
 </details>
 
+
 <details>
   <summary>How to generate an extended stake verification key (<strong>stake.xvk</strong>)</summary>
 
@@ -632,6 +633,33 @@ $ cardano-address key hash < hot.xvk > hot
 cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
 ```
 </details>
+
+<details>
+  <summary>How to get signing key and chain code from an extended signing key (<strong>drep.sk</strong>)</summary>
+
+```console
+$ cat drep.xsk
+drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqaj26rh6d7en9tf9fu52hmysjzuacaxfmfya65h8jmddrclwf3kxl8snfs3eg
+
+$ cardano-address key private --signing-key < drep.xsk
+drep_sk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqajg5xmwma
+
+$ cardano-address key private --signing-key --hex < drep.xsk
+605b0dd4b0d8b6d75db5b4b7b56da4fca4486fd5d0fa990fc33d909ece47a943071c29dc5f4450ae9a1fdb3a201043b4df56a0bc836b5753021e3d4add720ec9
+
+$ cardano-address key private --chain-code < drep.xsk
+5a1df4df66655a4a9e5157d9212173b8e993b493baa5cf2db5a3c7dc98d8df3c
+
+$ echo drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqaj26rh6d7en9tf9fu52hmysjzuacaxfmfya65h8jmddrclwf3kxl8snfs3eg | cardano-address key inspect
+{
+    "chain_code": "5a1df4df66655a4a9e5157d9212173b8e993b493baa5cf2db5a3c7dc98d8df3c",
+    "extended_key": "605b0dd4b0d8b6d75db5b4b7b56da4fca4486fd5d0fa990fc33d909ece47a943071c29dc5f4450ae9a1fdb3a201043b4df56a0bc836b5753021e3d4add720ec9",
+    "key_type": "private"
+}
+```
+
+</details>
+
 
 <details>
   <summary>How to generate script validation, preimage and script hash from script composed of drep (<strong>drep_script</strong>)</summary>
