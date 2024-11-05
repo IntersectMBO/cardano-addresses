@@ -6,7 +6,7 @@
 - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 - Fix field for staking scripts in AddressInfo.
 - Rename infoScriptHash field in AddressInfo to infoSpendingScriptHash.
-- signing key and chain code from extended signing key via `cardano-address key private`
+- Get signing key and chain code from extended signing key via `cardano-address key private`
 - Support for new environments `preview` and `preprod`.
 - Supported derivation of root private key using second factor mnemonic or its base16/base64/plain text equivalent
 
