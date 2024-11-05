@@ -28,7 +28,7 @@ jobs:
       run: |
          # ghcup should be installed on current GHA Windows runners. Let's use ghcup to run
          # pacman, to install the necessary dependencies, ...
-         ghcup run -- pacman --noconfirm -S `
+         ghcup run --mingw-path -- pacman --noconfirm -S `
             mingw-w64-x86_64-pkg-config `
             mingw-w64-x86_64-pcre `
             mingw-w64-x86_64-libsodium `
@@ -180,7 +180,7 @@ jobs:
         fi
 
     - name: Upload Windows Artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       if: runner.os == 'Windows'
       with:
         name: ${{ matrix.os }}-exe

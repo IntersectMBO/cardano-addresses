@@ -112,6 +112,7 @@ test-suite unit
     , bytestring
     , cardano-addresses
     , cardano-crypto
+    , cryptonite
     , containers
     , hspec
     , hspec-golden >=0.1.0.3 && <0.2

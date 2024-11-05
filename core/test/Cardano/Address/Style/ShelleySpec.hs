@@ -84,6 +84,10 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Control.Monad
     ( (<=<) )
+import Crypto.Hash
+    ( hashWith )
+import Crypto.Hash.Algorithms
+    ( SHA3_256 (SHA3_256) )
 import Data.Aeson
     ( ToJSON, Value (..) )
 import Data.ByteArray
@@ -127,6 +131,7 @@ import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.Aeson.Encode.Pretty as Aeson
 import qualified Data.ByteArray as BA
+import qualified Data.ByteArray.Encoding as BAE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Char as Char
@@ -1017,10 +1022,10 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     let vec = TestVector {..}
     let inspectVec = InspectVector {..}
     it "should generate correct addresses" $ do
-        goldenTextLazy ("addresses_" <> T.intercalate "_" mnemonic)
+        goldenTextLazy ("addresses_" <> shortHex (T.intercalate "_" mnemonic))
             (pShowOpt defaultOutputOptionsNoColor vec)
     it "should inspect correctly" $ do
-        goldenByteStringLazy ("inspects" <> T.intercalate "_" mnemonic) $
+        goldenByteStringLazy ("inspects_" <> shortHex (T.intercalate "_" mnemonic)) $
             goldenEncodeJSON $ toInspect <$> inspectVec
   where
     getPaymentAddr addrKPrv net =  bech32 $ paymentAddress net (PaymentFromExtendedKey (toXPub <$> addrKPrv))
@@ -1030,6 +1035,13 @@ testVectors mnemonic = describe (show $ T.unpack <$> mnemonic) $ do
     toInspect :: Text -> Value
     toInspect = fromMaybe (String "couldn't inspect") .
         (Shelley.inspectAddress Nothing <=< fromBech32)
+
+-- | Make a short name for a mnemonic by hashing it and taking the first 8 characters
+shortHex :: Text -> Text
+shortHex = T.take 8 . T.decodeUtf8 . BAE.convertToBase BAE.Base16 . hashByteString . T.encodeUtf8
+  where
+    hashByteString :: ByteString -> ByteString
+    hashByteString = BA.convert . hashWith SHA3_256
 
 getExtendedKeyAddr :: Shelley depth XPrv -> Address
 getExtendedKeyAddr = unsafeMkAddress . xprvToBytes . getKey
