@@ -215,9 +215,9 @@ describe('inspectAddress', () => {
       "address_style": "Shelley",
       "address_type": 15,
       "network_tag": 0,
-      "spending_shared_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
-      "spending_shared_hash_bech32": "addr_shared_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcuuhu9r",
       "stake_reference": "by value",
+      "stake_script_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
+      "stake_script_hash_bech32": "stake_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcjpqtv8",
       "stake_shared_hash": "61766572796e69636561646472726573736c6f6c6f6c6f6c6f6c6f6c",
       "stake_shared_hash_bech32": "stake_shared_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcjta3en",
     }));
