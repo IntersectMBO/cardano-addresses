@@ -1001,7 +1001,6 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let coldXPrv = deriveCCColdPrivateKey acctXPrv
         let coldXPrvTxt = bech32With CIP5.cc_cold_xsk $ getExtendedKeyAddr coldXPrv
         let coldXPrvTxtHex = tob16text . unAddress $ getExtendedKeyAddr coldXPrv
-        let coldXPrvTxt = bech32With CIP5.cc_cold_xsk  $ getExtendedKeyAddr coldXPrv
         let coldPrvTxt = bech32With CIP5.cc_cold_sk  $ getPrivateKeyAddr coldXPrv
         let coldPrvTxtHex = T.decodeUtf8 $ encode EBase16 $ unAddress $ getPrivateKeyAddr coldXPrv
         let coldXPubTxt = bech32With CIP5.cc_cold_xvk $ getPublicKeyAddr $ toXPub <$> coldXPrv
