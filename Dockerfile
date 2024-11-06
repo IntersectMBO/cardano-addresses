@@ -1,35 +1,16 @@
-#                                                                              #
-# --------------------------------- BUILD ------------------------------------ #
-#                                                                              #
+# # Final image is based on scratch. We copy a bunch of Nix dependencies
+# # but they're fully self-contained so we don't need Nix anymore.
+FROM alpine:latest
 
-FROM haskell:8.6.5 as build
-WORKDIR /build
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  build-essential=12.3 \
-  git=1:2.11.*
-RUN stack upgrade --binary-version 2.1.3
+WORKDIR /app
 
-# Leverage Docker cache, build in three steps: 1) snapshot, 2) deps, 3) app
-COPY stack.yaml .
-RUN mkdir -p command-line core
-COPY core/package.yaml core/package.yaml
-COPY command-line/package.yaml command-line/package.yaml
-ADD jsbits /build/jsbits
-RUN stack setup
-RUN stack build --only-snapshot
-RUN stack build --only-dependencies
-COPY . .
-RUN stack install --flag cardano-addresses:release
+# Copy /nix/store
+COPY ./tmp /nix/store
+COPY ./tmp/cardano-address /app
 
-#                                                                              #
-# ---------------------------------- RUN ------------------------------------- #
-#                                                                              #
-
-FROM frolvlad/alpine-glibc:alpine-3.11_glibc-2.30
-RUN apk add --no-cache gmp=6.1.2-r1 bash=5.0.11-r1 bash-completion=2.9-r0 libstdc++=9.3.0-r0
-COPY --from=build /root/.local/bin /bin
 RUN mkdir /etc/bash_completion.d
-RUN cardano-address --bash-completion-script `which cardano-address` > /etc/bash_completion.d/cardano-address
+RUN /app/cardano-address --bash-completion-script `which /app/cardano-address` > /etc/bash_completion.d/cardano-address
 RUN echo "source /etc/bash_completion.d/cardano-address" >> ~/.bashrc
-RUN echo "cardano-address --help" >> ~/.bashrc
-ENTRYPOINT ["cardano-address"]
+RUN echo "/app/cardano-address --help" >> ~/.bashrc
+
+ENTRYPOINT ["/app/cardano-address"]

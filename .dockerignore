@@ -7,8 +7,6 @@ Dockerfile
 .gitignore
 
 # haskell
-dist
-dist-*
 cabal-dev
 *.o
 *.hi
