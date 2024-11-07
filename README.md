@@ -765,10 +765,12 @@ $ cardano-address key public --without-chain-code < key.xsk | cardano-address ke
 
 ## Docker Image
 
+Please make sure you have [just](https://github.com/casey/just) installed as `justfile` is used for building Docker image
+
 ### Build
 
 ```console
-$ docker build -t cardano-address .
+$ just clean-build-docker
 ```
 
 ### Run
