@@ -222,6 +222,23 @@
         "type": "github"
       }
     },
+    "hackageGHCJS": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1730758237,
+        "narHash": "sha256-eVQEqwLrCjR/fauNjlHwry9+CVqkC5G0cDJTiQxcbcg=",
+        "owner": "input-output-hk",
+        "repo": "hackage-overlay-ghcjs",
+        "rev": "7ed50a3159d95499981b1c384ddc05639032789e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "input-output-hk",
+        "ref": "gh-pages",
+        "repo": "hackage-overlay-ghcjs",
+        "type": "github"
+      }
+    },
     "haskellNix": {
       "inputs": {
         "HTTP": "HTTP",
@@ -724,6 +741,7 @@
       "inputs": {
         "CHaP": "CHaP",
         "flake-utils": "flake-utils",
+        "hackageGHCJS": "hackageGHCJS",
         "haskellNix": "haskellNix",
         "iohkNix": "iohkNix",
         "nixpkgs": [

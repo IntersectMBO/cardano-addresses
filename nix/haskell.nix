@@ -1,7 +1,7 @@
 ############################################################################
 # Builds Haskell packages with Haskell.nix
 ############################################################################
-{ system, CHaP, haskell-nix }:
+{ system, CHaP, hackageGHCJS, haskell-nix }:
 haskell-nix.cabalProject' (
   { pkgs
   , lib
@@ -28,6 +28,7 @@ haskell-nix.cabalProject' (
 
     inputMap = {
       "https://chap.intersectmbo.org/" = CHaP;
+      "https://input-output-hk.github.io/hackage-overlay-ghcjs/" = hackageGHCJS;
     };
 
     # Setting this to builtins.currentSystem allows --impure to be used
