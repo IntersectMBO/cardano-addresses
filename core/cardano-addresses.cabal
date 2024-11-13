@@ -1,7 +1,7 @@
 cabal-version: 1.12
 
 name:           cardano-addresses
-version:        3.12.0
+version:        4.0.0
 synopsis:       Library utilities for mnemonic generation and address derivation.
 description:    Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
 category:       Cardano

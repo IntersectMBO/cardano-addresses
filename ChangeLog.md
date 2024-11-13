@@ -1,4 +1,4 @@
-## [4.0.0] - N/A
+## [4.0.0] - 2025-01-29
 
 ### Added
 
@@ -6,8 +6,9 @@
 - CIP-0129 support added, affecting `cardano-address key hash` and `cardano-address script hash`
 - CIP-0129 support with backward compatibility added, affecting `cardano-address key hash` and `cardano-address script hash`
 - `scriptHashToText`, `scriptHashFromText` and `prettyErrScriptHashFromText` added to `Cardano.Address.Script`
+- Simplify filenames by using a hashed prefix instead of the full mnemonic, enhancing portability).
 - `hashKey` for Shelley style
-- Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
+- Key derivation support for DRep, CCCold and CCHot in accordance to [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 - Fix field for staking scripts in AddressInfo.
 - Rename infoScriptHash field in AddressInfo to infoSpendingScriptHash.
 - Get signing key and chain code from extended signing key via `cardano-address key private`
