@@ -12,7 +12,7 @@
       flake = false;
     };
     hackageGHCJS = {
-      url = "github:input-output-hk/hackage-overlay-ghcjs?ref=gh-pages";
+      url = "github:input-output-hk/hackage-overlay-ghcjs?ref=repo";
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
