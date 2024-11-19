@@ -122,3 +122,4 @@ test-suite unit
   if flag(release)
     ghc-options: -Werror
   default-language: Haskell2010
+

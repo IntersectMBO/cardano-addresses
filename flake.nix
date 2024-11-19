@@ -11,6 +11,10 @@
       url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
       flake = false;
     };
+    hackageGHCJS = {
+      url = "github:input-output-hk/hackage-overlay-ghcjs?ref=repo";
+      flake = false;
+    };
     flake-utils.url = "github:numtide/flake-utils";
     iohkNix = {
       url = "github:input-output-hk/iohk-nix";
@@ -18,7 +22,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, ... }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, hackageGHCJS, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
@@ -54,7 +58,7 @@
           };
 
           haskellProject = (import ./nix/haskell.nix {
-            inherit system CHaP;
+            inherit system CHaP hackageGHCJS;
             inherit (pkgs) haskell-nix;
           });
 
