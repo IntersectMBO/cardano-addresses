@@ -169,20 +169,41 @@
         "type": "github"
       }
     },
-    "hackage": {
+    "ghc910X": {
       "flake": false,
       "locked": {
-        "lastModified": 1732494631,
-        "narHash": "sha256-NrHUkkhz7PTKV/yciWezL+qG4IRX8CsVz4ZcxYbOIso=",
-        "owner": "input-output-hk",
-        "repo": "hackage.nix",
-        "rev": "ed487dd9c78992176b1d39ee8268b192e848a7b5",
-        "type": "github"
+        "lastModified": 1717140678,
+        "narHash": "sha256-4CYDaOITF7fmKBK/ujkQ8oblII191b6K3W/c9JxI6/4=",
+        "ref": "ghc-9.10",
+        "rev": "934a8bb930390d5db1e5613ddfeafc8c80dd9b96",
+        "revCount": 62700,
+        "submodules": true,
+        "type": "git",
+        "url": "https://gitlab.haskell.org/ghc/ghc"
       },
       "original": {
-        "owner": "input-output-hk",
-        "repo": "hackage.nix",
-        "type": "github"
+        "ref": "ghc-9.10",
+        "submodules": true,
+        "type": "git",
+        "url": "https://gitlab.haskell.org/ghc/ghc"
+      }
+    },
+    "ghc911": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1732336551,
+        "narHash": "sha256-J8HQ5AloMee/0h5w6O0L/r+5WdmRXREmljhQwE6Twso=",
+        "ref": "refs/heads/master",
+        "rev": "a021a4934dd6792a0d3ac614416a2db4ce265350",
+        "revCount": 67594,
+        "submodules": true,
+        "type": "git",
+        "url": "https://gitlab.haskell.org/ghc/ghc"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://gitlab.haskell.org/ghc/ghc"
       }
     },
     "hackageGHCJS": {
@@ -202,6 +223,22 @@
         "type": "github"
       }
     },
+    "hackageNix": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1732494631,
+        "narHash": "sha256-NrHUkkhz7PTKV/yciWezL+qG4IRX8CsVz4ZcxYbOIso=",
+        "owner": "input-output-hk",
+        "repo": "hackage.nix",
+        "rev": "ed487dd9c78992176b1d39ee8268b192e848a7b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "input-output-hk",
+        "repo": "hackage.nix",
+        "type": "github"
+      }
+    },
     "haskellNix": {
       "inputs": {
         "HTTP": "HTTP",
@@ -211,7 +248,11 @@
         "cardano-shell": "cardano-shell",
         "flake-compat": "flake-compat",
         "ghc-8.6.5-iohk": "ghc-8.6.5-iohk",
-        "hackage": "hackage",
+        "ghc910X": "ghc910X",
+        "ghc911": "ghc911",
+        "hackage": [
+          "hackageNix"
+        ],
         "hls-1.10": "hls-1.10",
         "hls-2.0": "hls-2.0",
         "hls-2.2": "hls-2.2",
@@ -221,7 +262,6 @@
         "hls-2.6": "hls-2.6",
         "hls-2.7": "hls-2.7",
         "hls-2.8": "hls-2.8",
-        "hls-2.9": "hls-2.9",
         "hpc-coveralls": "hpc-coveralls",
         "hydra": "hydra",
         "iserv-proxy": "iserv-proxy",
@@ -235,22 +275,22 @@
         "nixpkgs-2211": "nixpkgs-2211",
         "nixpkgs-2305": "nixpkgs-2305",
         "nixpkgs-2311": "nixpkgs-2311",
-        "nixpkgs-2405": "nixpkgs-2405",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "old-ghc-nix": "old-ghc-nix",
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1732495912,
-        "narHash": "sha256-XI66gTnALcJeYd6P9sQsqLoxrenTjo5zCJruaAnx7Ro=",
+        "lastModified": 1718797200,
+        "narHash": "sha256-ueFxTuZrQ3ZT/Fj5sSeUWlqKa4+OkUU1xW0E+q/XTfw=",
         "owner": "input-output-hk",
         "repo": "haskell.nix",
-        "rev": "ed2574bb336db42f69c822f9d94ed14205250c05",
+        "rev": "cb139fa956158397aa398186bb32dd26f7318784",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
         "repo": "haskell.nix",
+        "rev": "cb139fa956158397aa398186bb32dd26f7318784",
         "type": "github"
       }
     },
@@ -403,23 +443,6 @@
       "original": {
         "owner": "haskell",
         "ref": "2.8.0.0",
-        "repo": "haskell-language-server",
-        "type": "github"
-      }
-    },
-    "hls-2.9": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1720003792,
-        "narHash": "sha256-qnDx8Pk0UxtoPr7BimEsAZh9g2WuTuMB/kGqnmdryKs=",
-        "owner": "haskell",
-        "repo": "haskell-language-server",
-        "rev": "0c1817cb2babef0765e4e72dd297c013e8e3d12b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "haskell",
-        "ref": "2.9.0.1",
         "repo": "haskell-language-server",
         "type": "github"
       }
@@ -668,22 +691,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-2405": {
-      "locked": {
-        "lastModified": 1729242558,
-        "narHash": "sha256-VgcLDu4igNT0eYua6OAl9pWCI0cYXhDbR+pWP44tte0=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "4a3f2d3195b60d07530574988df92e049372c10e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-24.05-darwin",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -702,17 +709,17 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1729980323,
-        "narHash": "sha256-eWPRZAlhf446bKSmzw6x7RWEE4IuZgAp8NW3eXZwRAY=",
+        "lastModified": 1694822471,
+        "narHash": "sha256-6fSDCj++lZVMZlyqOe9SIOL8tYSBz1bI8acwovRwoX8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "86e78d3d2084ff87688da662cf78c2af085d8e73",
+        "rev": "47585496bcb13fb72e4a90daeea2f434e2501998",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
+        "rev": "47585496bcb13fb72e4a90daeea2f434e2501998",
         "type": "github"
       }
     },
@@ -738,11 +745,15 @@
         "CHaP": "CHaP",
         "flake-utils": "flake-utils",
         "hackageGHCJS": "hackageGHCJS",
+        "hackageNix": "hackageNix",
         "haskellNix": "haskellNix",
+        "hostNixpkgs": [
+          "nixpkgs"
+        ],
         "iohkNix": "iohkNix",
         "nixpkgs": [
           "haskellNix",
-          "nixpkgs-2305"
+          "nixpkgs-unstable"
         ]
       }
     },
