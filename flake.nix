@@ -2,10 +2,18 @@
   description = "Cardano Addresses";
 
   inputs = {
-    nixpkgs.follows = "haskellNix/nixpkgs-2305";
+    nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+    hostNixpkgs.follows = "nixpkgs";
+    hackageNix = {
+      url = "github:input-output-hk/hackage.nix";
+      flake = false;
+    };
     haskellNix = {
-      url = "github:input-output-hk/haskell.nix";
+      # GHC 8.10.7 cross compilation for windows is broken in newer versions of haskell.nix.
+      # Unpin this once we no longer need GHC 8.10.7.
+      url = "github:input-output-hk/haskell.nix/cb139fa956158397aa398186bb32dd26f7318784";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.hackage.follows = "hackageNix";
     };
     CHaP = {
       url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
