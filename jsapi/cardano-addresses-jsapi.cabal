@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:           cardano-addresses-jsapi
-version:        3.12.0
+version:        4.0.0
 synopsis:       Javascript FFI for cardano-addresses.
 description:    This package provides functions callable from Javascript on top of
                 which a TypeScript API can be built. It uses the cardano-addresses-ghcjs
@@ -11,7 +11,7 @@ homepage:       https://github.com/IntersectMBO/cardano-addresses#readme
 bug-reports:    https://github.com/IntersectMBO/cardano-addresses/issues
 author:         IOHK
 maintainer:     operations@iohk.io
-copyright:      2021 IOHK
+copyright:      2021 Input Output Global Inc (IOG), 2023-2024 Intersect
 license:        Apache-2.0
 build-type:     Simple
 

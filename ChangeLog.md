@@ -1,9 +1,12 @@
-## [3.13.0] - N/A
+
+
+## [4.0.0] - 2024-11-13
 
 ### Added
 
+- Simplify filenames by using a hashed prefix instead of the full mnemonic, enhancing portability).
 - `hashKey` for Shelley style
-- Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
+- Key derivation support for DRep, CCCold and CCHot in accordance with [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 - Fix field for staking scripts in AddressInfo.
 - Rename infoScriptHash field in AddressInfo to infoSpendingScriptHash.
 - Get signing key and chain code from extended signing key via `cardano-address key private`
