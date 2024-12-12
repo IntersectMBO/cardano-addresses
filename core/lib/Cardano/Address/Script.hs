@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -263,13 +264,35 @@ keyHashToText (KeyHash cred keyHash) = case cred of
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.drep) keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte keyHash
     CommitteeCold ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte keyHash
     CommitteeHot ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte keyHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
+  where
+-- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
+--   one byte is prepended to vkh only in governance context. The rules how to contruct it are summarized
+--   below
+--
+--   drep       0010....
+--   hot        0000....    key type
+--   cold       0001....
+--
+--   keyhash    ....0010
+--   scripthash ....0011    credential type
+    appendByte payload = case cred of
+        Representative ->
+            let firstByte = 0b00100010 :: Word8
+            in BS.cons fstByte payload
+        CommitteeCold ->
+            let firstByte = 0b00010010 :: Word8
+            in BS.cons fstByte payload
+        CommitteeHot ->
+            let firstByte = 0b00000010 :: Word8
+            in BS.cons fstByte payload
+        _ -> payload
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
@@ -332,12 +355,30 @@ keyHashFromText txt =
               Just (Delegation, bytes)
         | hrp == CIP5.policy_vkh && checkBSLength bytes 28 =
               Just (Policy, bytes)
-        | hrp == CIP5.drep && checkBSLength bytes 28 =
-              Just (Representative, bytes)
-        | hrp == CIP5.cc_cold && checkBSLength bytes 28 =
-              Just (CommitteeCold, bytes)
-        | hrp == CIP5.cc_hot && checkBSLength bytes 28 =
-              Just (CommitteeHot, bytes)
+        | hrp == CIP5.drep && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   drep       0010....
+              --   keyhash    ....0010
+              in if fstByte == 0b00100010 then
+                  Just (Representative, payload)
+                 else
+                  Nothing
+        | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   cold       0001....
+              --   keyhash    ....0010
+              in if fstByte == 0b00010010 then
+                  Just (CommitteeCold, payload)
+                 else
+                  Nothing
+        | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   hot        0000....
+              --   keyhash    ....0010
+              in if fstByte == 0b00010010 then
+                  Just (CommitteeHot, payload)
+                 else
+                  Nothing
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_vk && checkBSLength bytes 32 =

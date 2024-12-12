@@ -83,7 +83,6 @@ module Cardano.Codec.Bech32.Prefixes
     , cc_hot_xvk
     , cc_hot_xsk
     , cc_hot
-    , cc_hot_script
     ) where
 
 import Codec.Binary.Bech32
