@@ -18,15 +18,12 @@ import Prelude hiding
 import Cardano.Address.Script
     ( ErrValidateScript (..)
     , KeyHash (..)
-    , KeyRole (..)
     , Script (..)
-    , ScriptHash (..)
     , foldScript
     , prettyErrValidateScript
+    , scriptHashToText
     , toScriptHash
     )
-import Codec.Binary.Encoding
-    ( AbstractEncoding (..) )
 import Data.Text
     ( Text )
 import Options.Applicative
@@ -38,10 +35,10 @@ import Options.Applicative.Script
 import System.IO
     ( stderr, stdout )
 import System.IO.Extra
-    ( hPutBytes, hPutString, progName )
+    ( hPutString, progName )
 
-import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.List as L
+import qualified Data.Text as T
 
 newtype Cmd = Cmd
     { script :: Script KeyHash
@@ -71,10 +68,10 @@ mod liftCmd = command "hash" $
 
 run :: Cmd -> IO ()
 run Cmd{script} = do
-    let (ScriptHash bytes) = toScriptHash script
+    let scriptHash = toScriptHash script
     case checkRoles of
         Just role ->
-            hPutBytes stdout bytes (EBech32 $ pickCIP5 role)
+            hPutString stdout $ T.unpack $ scriptHashToText scriptHash role
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -86,8 +83,3 @@ run Cmd{script} = do
             Just $ head allRoles
         else
             Nothing
-    pickCIP5 = \case
-        Representative -> CIP5.drep_script
-        CommitteeCold -> CIP5.cc_cold_script
-        CommitteeHot -> CIP5.cc_hot_script
-        _ -> CIP5.script
