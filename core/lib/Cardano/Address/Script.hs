@@ -41,6 +41,7 @@ module Cardano.Address.Script
     , ScriptHash (..)
     , toScriptHash
     , scriptHashFromBytes
+    , scriptHashToText
 
     , KeyHash (..)
     , KeyRole (..)
@@ -223,6 +224,43 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
+-- | Encode a 'ScriptHash' to bech32 'Text' or hex is key role unknown.
+--
+-- @since 4.0.0
+scriptHashToText :: ScriptHash -> KeyRole -> Text
+scriptHashToText (ScriptHash scriptHash) cred = case cred of
+    Representative ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
+    CommitteeCold ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
+    CommitteeHot ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
+    Unknown ->
+        T.decodeUtf8 $ encode EBase16 scriptHash
+    _ ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.script) scriptHash
+  where
+-- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
+--   one byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
+--   below
+--
+--   drep       0010....
+--   hot        0000....    key type
+--   cold       0001....
+--
+--   scripthash ....0011    credential type
+    appendByte payload = case cred of
+        Representative ->
+            let fstByte = 0b00100011 :: Word8
+            in BS.cons fstByte payload
+        CommitteeCold ->
+            let fstByte = 0b00010011 :: Word8
+            in BS.cons fstByte payload
+        CommitteeHot ->
+            let fstByte = 0b00000011 :: Word8
+            in BS.cons fstByte payload
+        _ -> payload
+
 data KeyRole =
       Payment
     | Delegation
@@ -281,16 +319,15 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 --   cold       0001....
 --
 --   keyhash    ....0010
---   scripthash ....0011    credential type
     appendByte payload = case cred of
         Representative ->
-            let firstByte = 0b00100010 :: Word8
+            let fstByte = 0b00100010 :: Word8
             in BS.cons fstByte payload
         CommitteeCold ->
-            let firstByte = 0b00010010 :: Word8
+            let fstByte = 0b00010010 :: Word8
             in BS.cons fstByte payload
         CommitteeHot ->
-            let firstByte = 0b00000010 :: Word8
+            let fstByte = 0b00000010 :: Word8
             in BS.cons fstByte payload
         _ -> payload
 
