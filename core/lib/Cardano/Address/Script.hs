@@ -313,6 +313,8 @@ scriptHashFromText txt =
                   Just payload
                  else
                   Nothing
+        | hrp == CIP5.script && checkBSLength bytes 28 =
+              Just bytes
         | otherwise = Nothing
 
 checkBSLength :: ByteString -> Int -> Bool
