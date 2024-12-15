@@ -847,7 +847,7 @@ data KeysHashes = KeysHashes
        -- | Delegate representative verification key hash (DRep ID) (blake2b_224 digest of a delegate representative verification key), base16 encoded
     , drepHex :: Text
 
-       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script prepended with 00100011 byte), bech32 encoded prefixed with 'drep'
        -- script: all [drep, active_from 5001]
     , drepScript1 :: Text
 
@@ -855,7 +855,7 @@ data KeysHashes = KeysHashes
        -- script: all [drep, active_from 5001]
     , drepScript1Hex :: Text
 
-       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script), bech32 encoded prefixed with 'drep_script'
+       -- | Delegate representative script hash (DRep ID) (blake2b_224 digest of a serialized delegate representative script prepended with 00100011 byte), bech32 encoded prefixed with 'drep'
        -- script: any [drep, all [active_from 5001, active_until 6001]]
     , drepScript2 :: Text
 
@@ -893,7 +893,7 @@ data KeysHashes = KeysHashes
        -- | Constitutional committee cold verification key hash (cold credential) (blake2b_224 digest of a consitutional committee cold verification key), base16 encoded
     , ccColdHex :: Text
 
-       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script), bech32 encoded prefixed with 'cc_cold_script'
+       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script prepended with 00010011 byte), bech32 encoded prefixed with 'cc_cold'
        -- script: all [ccCold, active_from 5001]
     , ccColdScript1 :: Text
 
@@ -901,7 +901,7 @@ data KeysHashes = KeysHashes
        -- script: all [ccCold, active_from 5001]
     , ccColdScript1Hex :: Text
 
-       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script), bech32 encoded prefixed with 'cc_cold_script'
+       -- | Constitutional committee cold script hash (cold credential) (blake2b_224 digest of a serialized constitutional committee cold script prepended with 00010011 byte), bech32 encoded prefixed with 'cc_cold'
        -- script: any [ccCold, all [active_from 5001, active_until 6001]]
     , ccColdScript2 :: Text
 
@@ -939,7 +939,7 @@ data KeysHashes = KeysHashes
        -- | Constitutional committee hot verification key hash (hot credential) (blake2b_224 digest of a consitutional committee hot verification key), base16 encoded
     , ccHotHex :: Text
 
-       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script prepended with 00000011 byte), bech32 encoded prefixed with 'cc_hot'
        -- script: all [ccHot, active_from 5001]
     , ccHotScript1 :: Text
 
@@ -947,7 +947,7 @@ data KeysHashes = KeysHashes
        -- script: all [ccHot, active_from 5001]
     , ccHotScript1Hex :: Text
 
-       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script), bech32 encoded prefixed with 'cc_hot_script'
+       -- | Constitutional committee hot script hash (hot credential) (blake2b_224 digest of a serialized constitutional committee hot script prepended with 00000011 byte), bech32 encoded prefixed with 'cc_hot'
        -- script: any [ccHot, all [active_from 5001, active_until 6001]]
     , ccHotScript2 :: Text
 
@@ -992,10 +992,10 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepTxt = keyHashToText drepKeyHash
         let drepTxtHex = tob16text . digest $ drepKeyHash
         let drepScriptHash1 = toScriptHash (script1 drepKeyHash)
-        let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep_script
+        let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep
         let drepScript1TxtHex = tob16text . unScriptHash $ drepScriptHash1
         let drepScriptHash2 = toScriptHash (script2 drepKeyHash)
-        let drepScript2Txt = toScriptTxt drepScriptHash2 CIP5.drep_script
+        let drepScript2Txt = toScriptTxt drepScriptHash2 CIP5.drep
         let drepScript2TxtHex = tob16text . unScriptHash $ drepScriptHash2
 
         let coldXPrv = deriveCCColdPrivateKey acctXPrv
@@ -1011,10 +1011,10 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let coldTxt = keyHashToText coldKeyHash
         let coldTxtHex = tob16text . digest $ coldKeyHash
         let coldScriptHash1 = toScriptHash (script1 coldKeyHash)
-        let coldScript1Txt = toScriptTxt coldScriptHash1 CIP5.cc_cold_script
+        let coldScript1Txt = toScriptTxt coldScriptHash1 CIP5.cc_cold
         let coldScript1TxtHex = tob16text . unScriptHash $ coldScriptHash1
         let coldScriptHash2 = toScriptHash (script2 coldKeyHash)
-        let coldScript2Txt = toScriptTxt coldScriptHash2 CIP5.cc_cold_script
+        let coldScript2Txt = toScriptTxt coldScriptHash2 CIP5.cc_cold
         let coldScript2TxtHex = tob16text . unScriptHash $ coldScriptHash2
 
         let hotXPrv = deriveCCHotPrivateKey acctXPrv
@@ -1030,10 +1030,10 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let hotTxt = keyHashToText hotKeyHash
         let hotTxtHex = tob16text . digest $ hotKeyHash
         let hotScriptHash1 = toScriptHash (script1 hotKeyHash)
-        let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot_script
+        let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot
         let hotScript1TxtHex = tob16text . unScriptHash $ hotScriptHash1
         let hotScriptHash2 = toScriptHash (script2 hotKeyHash)
-        let hotScript2Txt = toScriptTxt hotScriptHash2 CIP5.cc_hot_script
+        let hotScript2Txt = toScriptTxt hotScriptHash2 CIP5.cc_hot
         let hotScript2TxtHex = tob16text . unScriptHash $ hotScriptHash2
 
         let derivedKeysHashes = KeysHashes

@@ -22,6 +22,7 @@ module System.IO.Extra
     -- ** Write
     , hPutBytes
     , hPutString
+    , hPutStringNoNewLn
 
     -- * I/O Helpers
     , prettyIOException
@@ -351,10 +352,15 @@ hPutBytes :: Handle -> ByteString -> Encoding -> IO ()
 hPutBytes h bytes =
     B8.hPutStr h . flip encode bytes
 
--- | Print string to the console.
+-- | Print string to the console with newline appended.
 hPutString :: Handle -> String -> IO ()
 hPutString h =
     B8.hPutStrLn h . T.encodeUtf8 . T.pack
+
+-- | Print string to the console without newline appended.
+hPutStringNoNewLn :: Handle -> String -> IO ()
+hPutStringNoNewLn h =
+    B8.hPutStr h . T.encodeUtf8 . T.pack
 
 --
 -- Helpers
