@@ -43,6 +43,7 @@ module Cardano.Address.Script
     , scriptHashFromBytes
     , scriptHashToText
     , scriptHashFromText
+    , prettyErrScriptHashFromText
 
     , KeyHash (..)
     , KeyRole (..)
@@ -268,7 +269,7 @@ scriptHashToText (ScriptHash scriptHash) cred = case cred of
 -- - `drep`
 -- - `cc_cold`
 -- - `cc_hot`
--- If if hex is encountered Unknown policy key is assumed
+-- If if hex is encountered it is converted in rawly fashion
 --
 -- @since 4.0.0
 scriptHashFromText :: Text -> Either ErrScriptHashFromText ScriptHash
@@ -527,17 +528,6 @@ data ErrKeyHashFromText
     | ErrKeyHashFromTextInvalidHex
     deriving (Show, Eq)
 
--- Possible errors when deserializing a script hash from text.
---
--- @since 4.0.0
-data ErrScriptHashFromText
-    = ErrScriptHashFromTextInvalidString
-    | ErrScriptHashFromTextWrongPayload
-    | ErrScriptHashFromTextWrongHrp
-    | ErrScriptHashFromTextWrongDataPart
-    | ErrScriptHashFromTextInvalidHex
-    deriving (Show, Eq)
-
 -- Possible errors when deserializing a key hash from text.
 --
 -- @since 3.0.0
@@ -552,7 +542,34 @@ prettyErrKeyHashFromText = \case
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
     ErrKeyHashFromTextInvalidHex ->
-        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes"
+        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
+
+-- Possible errors when deserializing a script hash from text.
+--
+-- @since 4.0.0
+data ErrScriptHashFromText
+    = ErrScriptHashFromTextInvalidString
+    | ErrScriptHashFromTextWrongPayload
+    | ErrScriptHashFromTextWrongHrp
+    | ErrScriptHashFromTextWrongDataPart
+    | ErrScriptHashFromTextInvalidHex
+    deriving (Show, Eq)
+
+-- Possible errors when deserializing a script hash from text.
+--
+-- @since 4.0.0
+prettyErrScriptHashFromText :: ErrScriptHashFromText -> String
+prettyErrScriptHashFromText = \case
+    ErrScriptHashFromTextInvalidString ->
+        "Invalid encoded string: must be either bech32 or hex-encoded."
+    ErrScriptHashFromTextWrongPayload ->
+        "Script hash must contain exactly 28-byte payload and one specific prepended byte."
+    ErrScriptHashFromTextWrongHrp ->
+        "Invalid human-readable prefix: must be 'drep', 'cc_hot' or 'cc_cold'."
+    ErrScriptHashFromTextWrongDataPart ->
+        "Script hash is Bech32-encoded but has an invalid data part."
+    ErrScriptHashFromTextInvalidHex ->
+        "Invalid hex-encoded string: must be 28 bytes."
 
 --
 -- Script folding
