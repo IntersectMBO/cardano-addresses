@@ -44,13 +44,13 @@ spec = do
         specScriptHashProper "script1w8469gq5ed7xtyf2tqdng5yn7ykgckkfcl38xre8hk3ejk2lcwt"
             [iii|#{verKeyH4}|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{verKeyH5} ]|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{verKey5} ]|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{xVerKey5} ]|]
 
         specScriptHashProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
@@ -62,22 +62,22 @@ spec = do
         specScriptHashProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
             [iii|all [ #{verKeyH5}, active_from 5001 ]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
             [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
             [iii|any [ #{verKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
             [iii|any [ #{xVerKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{verKeyH6} ]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{verKey6} ]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{xVerKey6} ]|]
 
         specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
@@ -89,22 +89,22 @@ spec = do
         specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{verKeyH7} ]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{verKey7} ]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{xVerKey7} ]|]
 
         specScriptHashProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
@@ -116,13 +116,13 @@ spec = do
         specScriptHashProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
             [iii|all [ #{verKeyH7}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptInvalid Malformed

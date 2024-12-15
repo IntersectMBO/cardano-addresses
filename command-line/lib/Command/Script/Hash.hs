@@ -35,7 +35,7 @@ import Options.Applicative.Script
 import System.IO
     ( stderr, stdout )
 import System.IO.Extra
-    ( hPutString, progName )
+    ( hPutString, hPutStringNoNewLn, progName )
 
 import qualified Data.List as L
 import qualified Data.Text as T
@@ -71,7 +71,7 @@ run Cmd{script} = do
     let scriptHash = toScriptHash script
     case checkRoles of
         Just role ->
-            hPutString stdout $ T.unpack $ scriptHashToText scriptHash role
+            hPutStringNoNewLn stdout $ T.unpack $ scriptHashToText scriptHash role
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
