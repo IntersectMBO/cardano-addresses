@@ -42,6 +42,7 @@ module Cardano.Address.Script
     , toScriptHash
     , scriptHashFromBytes
     , scriptHashToText
+    , scriptHashFromText
 
     , KeyHash (..)
     , KeyRole (..)
@@ -261,6 +262,62 @@ scriptHashToText (ScriptHash scriptHash) cred = case cred of
             in BS.cons fstByte payload
         _ -> payload
 
+-- | Construct a 'ScriptHash' from 'Text'. It should be
+-- Bech32 encoded text with one of following hrp:
+-- - `script`
+-- - `drep`
+-- - `cc_cold`
+-- - `cc_hot`
+-- If if hex is encountered Unknown policy key is assumed
+--
+-- @since 4.0.0
+scriptHashFromText :: Text -> Either ErrScriptHashFromText ScriptHash
+scriptHashFromText txt =
+    case (fromBase16 $ T.encodeUtf8 txt) of
+        Right bs ->
+            if checkBSLength bs 28 then
+                pure $ ScriptHash bs
+            else
+                Left ErrScriptHashFromTextInvalidHex
+        Left _ -> do
+            (hrp, dp) <- first (const ErrScriptHashFromTextInvalidString) $
+                Bech32.decodeLenient txt
+
+            maybeToRight ErrScriptHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
+                >>= maybeToRight ErrScriptHashFromTextWrongHrp . convertBytes hrp
+                >>= maybeToRight ErrScriptHashFromTextWrongPayload . scriptHashFromBytes
+ where
+    convertBytes hrp bytes
+        | hrp == CIP5.drep && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   drep          0010....
+              --   scripthash    ....0011
+              in if fstByte == 0b00100011 then
+                  Just payload
+                 else
+                  Nothing
+        | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   cold          0001....
+              --   scripthash    ....0011
+              in if fstByte == 0b00010011 then
+                  Just payload
+                 else
+                  Nothing
+        | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   hot           0000....
+              --   scripthash    ....0011
+              in if fstByte == 0b00010011 then
+                  Just payload
+                 else
+                  Nothing
+        | otherwise = Nothing
+
+checkBSLength :: ByteString -> Int -> Bool
+checkBSLength bytes expLength =
+    BS.length bytes == expLength
+
 data KeyRole =
       Payment
     | Delegation
@@ -449,8 +506,6 @@ keyHashFromText txt =
         | hrp == CIP5.cc_hot_xvk && checkBSLength bytes 64 =
               Just (CommitteeHot, hashCredential $ BS.take 32 bytes)
         | otherwise = Nothing
-    checkBSLength bytes expLength =
-        BS.length bytes == expLength
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
@@ -470,6 +525,17 @@ data ErrKeyHashFromText
     | ErrKeyHashFromTextWrongHrp
     | ErrKeyHashFromTextWrongDataPart
     | ErrKeyHashFromTextInvalidHex
+    deriving (Show, Eq)
+
+-- Possible errors when deserializing a script hash from text.
+--
+-- @since 4.0.0
+data ErrScriptHashFromText
+    = ErrScriptHashFromTextInvalidString
+    | ErrScriptHashFromTextWrongPayload
+    | ErrScriptHashFromTextWrongHrp
+    | ErrScriptHashFromTextWrongDataPart
+    | ErrScriptHashFromTextInvalidHex
     deriving (Show, Eq)
 
 -- Possible errors when deserializing a key hash from text.
