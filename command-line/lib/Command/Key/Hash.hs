@@ -15,6 +15,8 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( hashCredential )
+import Cardano.Address.Script
+    ( KeyRole (..), keyHashAppendByteCIP0129 )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
@@ -61,7 +63,7 @@ run Hash{outputFormat} = do
     let encoding = case outputFormat of
             Hex -> EBase16
             Bech32 -> EBech32 $ prefixFor hrp
-    hPutBytes stdout (hashCredential $ BS.take 32 bytes) encoding
+    hPutBytes stdout (afterHashing hrp $ hashCredential $ BS.take 32 bytes) encoding
   where
     -- Mapping of input HRP to output HRP
     prefixes =
@@ -84,6 +86,22 @@ run Hash{outputFormat} = do
         ]
     allowedPrefixes = map fst prefixes
     prefixFor = fromJust . flip lookup prefixes
+
+    afterHashing hrp hashed
+        | hrp == CIP5.drep_vk =
+            keyHashAppendByteCIP0129 hashed Representative
+        | hrp == CIP5.drep_xvk =
+            keyHashAppendByteCIP0129 hashed Representative
+        | hrp == CIP5.cc_cold_vk =
+            keyHashAppendByteCIP0129 hashed CommitteeCold
+        | hrp == CIP5.cc_cold_xvk =
+            keyHashAppendByteCIP0129 hashed CommitteeCold
+        | hrp == CIP5.cc_hot_vk =
+            keyHashAppendByteCIP0129 hashed CommitteeHot
+        | hrp == CIP5.cc_hot_xvk =
+            keyHashAppendByteCIP0129 hashed CommitteeHot
+        | otherwise =
+            hashed
 
     extendedPrefixes =
         [ CIP5.addr_xvk
