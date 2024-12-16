@@ -3,6 +3,8 @@
 ### Added
 
 - Drop JavaScript support and get rid of JavaScript codebase
+- CIP-0129 support added, affecting `cardano-address key hash` and `cardano-address script hash`
+- `scriptHashToText`, `scriptHashFromText` and `prettyErrScriptHashFromText` added to `Cardano.Address.Script`
 - `hashKey` for Shelley style
 - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 - Fix field for staking scripts in AddressInfo.
