@@ -17,6 +17,8 @@ import Test.Hspec
 import Test.Utils
     ( cli, describeCmd )
 
+import qualified Debug.Trace as TR
+
 spec :: Spec
 spec = do
     describeCmd [ "script", "hash" ] $ do
@@ -80,22 +82,22 @@ spec = do
         specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{xVerKey6} ]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1z0dnhem5shnestg4lj59k4845vtnugav0h27w6t42fcqh2q24vdtr"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1z0dnhem5shnestg4lj59k4845vtnugav0h27w6t42fcqh2q24vdtr"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1z0dnhem5shnestg4lj59k4845vtnugav0h27w6t42fcqh2q24vdtr"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
+        specScriptHashProper "cc_cold1z0ngc02z5q289dekhkggcmzfk3v0tsega8mmual530z0d0c48j4kl"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
+        specScriptHashProper "cc_cold1z0ngc02z5q289dekhkggcmzfk3v0tsega8mmual530z0d0c48j4kl"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
+        specScriptHashProper "cc_cold1z0ngc02z5q289dekhkggcmzfk3v0tsega8mmual530z0d0c48j4kl"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
@@ -161,7 +163,7 @@ spec = do
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper expected script = it (script <> " => " <> expected) $ do
     out <- cli ["script", "hash", script] ""
-    out `shouldBe` expected
+    TR.trace("out: "<> show out) $ out `shouldBe` expected
 
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()
 specScriptInvalid errMsg script = it (script <> " => " <> show errMsg) $ do
@@ -182,7 +184,7 @@ verKeyH4 :: String
 verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"
 
 verKeyH5 :: String
-verKeyH5 = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+verKeyH5 = "drep1y0je8qacjy4yua6esh86rdjqpdactf8wph05gdd72u46axca7nz6m"
 
 verKey5 :: String
 verKey5 = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
@@ -191,7 +193,7 @@ xVerKey5 :: String
 xVerKey5 = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
 
 verKeyH6 :: String
-verKeyH6 = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+verKeyH6 = "cc_cold1ztje8qacjy4yua6esh86rdjqpdactf8wph05gdd72u46axcey99nc"
 
 verKey6 :: String
 verKey6 = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
@@ -200,7 +202,7 @@ xVerKey6 :: String
 xVerKey6 = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
 
 verKeyH7 :: String
-verKeyH7 = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+verKeyH7 = "cc_hot1qtje8qacjy4yua6esh86rdjqpdactf8wph05gdd72u46axc0c3ef3"
 
 verKey7 :: String
 verKey7 = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"

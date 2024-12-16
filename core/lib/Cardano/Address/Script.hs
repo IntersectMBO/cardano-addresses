@@ -50,6 +50,7 @@ module Cardano.Address.Script
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
+    , keyHashAppendByteCIP0129
     , ErrKeyHashFromText
     , prettyErrKeyHashFromText
     ) where
@@ -362,14 +363,14 @@ keyHashToText (KeyHash cred keyHash) = case cred of
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
     CommitteeCold ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
     CommitteeHot ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte keyHash
+        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
-  where
+
 -- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
 --   one byte is prepended to vkh only in governance context. The rules how to contruct it are summarized
 --   below
@@ -379,17 +380,18 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 --   cold       0001....
 --
 --   keyhash    ....0010
-    appendByte payload = case cred of
-        Representative ->
-            let fstByte = 0b00100010 :: Word8
-            in BS.cons fstByte payload
-        CommitteeCold ->
-            let fstByte = 0b00010010 :: Word8
-            in BS.cons fstByte payload
-        CommitteeHot ->
-            let fstByte = 0b00000010 :: Word8
-            in BS.cons fstByte payload
-        _ -> payload
+keyHashAppendByteCIP0129 :: ByteString -> KeyRole -> ByteString
+keyHashAppendByteCIP0129 payload = \case
+    Representative ->
+        let fstByte = 0b00100010 :: Word8
+        in BS.cons fstByte payload
+    CommitteeCold ->
+        let fstByte = 0b00010010 :: Word8
+        in BS.cons fstByte payload
+    CommitteeHot ->
+        let fstByte = 0b00000010 :: Word8
+        in BS.cons fstByte payload
+    _ -> payload
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:

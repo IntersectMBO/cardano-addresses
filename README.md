@@ -583,7 +583,7 @@ stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
   <summary>How to generate drep keys (<strong>drep</strong>)</summary>
 
 ```console
-$ cat ../tests/root.xsk
+$ cat root.xsk
 root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
 
 $ cardano-address key child 1852H/1815H/0H/3/0 < root.xsk > drep.xsk
@@ -593,7 +593,12 @@ $ cardano-address key public --with-chain-code < drep.xsk > drep.xvk
 drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf
 
 $ cardano-address key hash < drep.xvk > drep
-drep1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va538nup0
+drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm
+
+$ cardano-address key hash < drep.xvk | bech32
+2280686bb3727f602581309117d8e1cc07a410e14376d3882101d299da
+
+(we have expected 22 prepended byte as it is drep key hash in accordance to CIP-0129. Key hash credential is '80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da').
 ```
 </details>
 
@@ -612,7 +617,12 @@ $ cardano-address key public --with-chain-code < cold.xsk > cold.xvk
 cc_cold_xvk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzzdqzpe9yw37u7mu7xaenhv7242990ps3sn8jcg52yx7n3fuke9kst5t2py
 
 $ cardano-address key hash < cold.xvk > cold
-cc_cold1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddccyzfjm
+cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx
+
+$ cardano-address key hash < cold.xvk | bech32
+126f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc
+
+(we have expected 12 prepended byte as it is cc cold key hash in accordance to CIP-0129. Key hash credential is '6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc').
 ```
 </details>
 
@@ -630,7 +640,12 @@ $ cardano-address key public --with-chain-code < hot.xsk > hot.xvk
 cc_hot_xvk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3hjwwaw54qwj0rn084enysj8ha2vwg2wd7umksf4tcnskaj8xr4tcempwly
 
 $ cardano-address key hash < hot.xvk > hot
-cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
+cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d
+
+$ cardano-address key hash < hot.xvk | bech32
+02358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991
+
+(we have expected 02 prepended byte as it is cc cold key hash in accordance to CIP-0129. Key hash credential is '358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991').
 ```
 </details>
 
