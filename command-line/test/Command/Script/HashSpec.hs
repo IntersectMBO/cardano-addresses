@@ -17,8 +17,6 @@ import Test.Hspec
 import Test.Utils
     ( cli, describeCmd )
 
-import qualified Debug.Trace as TR
-
 spec :: Spec
 spec = do
     describeCmd [ "script", "hash" ] $ do
@@ -163,7 +161,7 @@ spec = do
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper expected script = it (script <> " => " <> expected) $ do
     out <- cli ["script", "hash", script] ""
-    TR.trace("out: "<> show out) $ out `shouldBe` expected
+    out `shouldBe` expected
 
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()
 specScriptInvalid errMsg script = it (script <> " => " <> show errMsg) $ do
