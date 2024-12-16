@@ -310,7 +310,7 @@ scriptHashFromText txt =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
               --   hot           0000....
               --   scripthash    ....0011
-              in if fstByte == 0b00010011 then
+              in if fstByte == 0b00000011 then
                   Just payload
                  else
                   Nothing
@@ -456,25 +456,25 @@ keyHashFromText txt =
               Just (Policy, bytes)
         | hrp == CIP5.drep && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
-              --   drep       0010....
-              --   keyhash    ....0010
+              --   drep          0010....
+              --   keyhash       ....0010
               in if fstByte == 0b00100010 then
                   Just (Representative, payload)
                  else
                   Nothing
         | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
-              --   cold       0001....
-              --   keyhash    ....0010
+              --   cold          0001....
+              --   keyhash       ....0010
               in if fstByte == 0b00010010 then
                   Just (CommitteeCold, payload)
                  else
                   Nothing
         | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
-              --   hot        0000....
-              --   keyhash    ....0010
-              in if fstByte == 0b00010010 then
+              --   hot           0000....
+              --   keyhash       ....0010
+              in if fstByte == 0b00000010 then
                   Just (CommitteeHot, payload)
                  else
                   Nothing
