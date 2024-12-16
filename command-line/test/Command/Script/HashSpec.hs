@@ -44,85 +44,85 @@ spec = do
         specScriptHashProper "script1w8469gq5ed7xtyf2tqdng5yn7ykgckkfcl38xre8hk3ejk2lcwt"
             [iii|#{verKeyH4}|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
             [iii|all [ #{verKeyH5} ]|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
             [iii|all [ #{verKey5} ]|]
 
-        specScriptHashProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
             [iii|all [ #{xVerKey5} ]|]
 
-        specScriptHashProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
             [iii|all [ #{verKeyH5}, active_from 5001]|]
 
-        specScriptHashProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
-            [iii|all [ #{verKeyH5}, active_from 5001 ]|]
+        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
+            [iii|all [ #{verKey5}, active_from 5001 ]|]
 
-        specScriptHashProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
-            [iii|all [ #{verKeyH5}, active_from 5001 ]|]
+        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
+            [iii|all [ #{xVerKey5}, active_from 5001 ]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
             [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
             [iii|any [ #{verKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
             [iii|any [ #{xVerKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
             [iii|all [ #{verKeyH6} ]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
             [iii|all [ #{verKey6} ]|]
 
-        specScriptHashProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
+        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
             [iii|all [ #{xVerKey6} ]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
             [iii|all [ #{verKeyH7} ]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
             [iii|all [ #{verKey7} ]|]
 
-        specScriptHashProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
             [iii|all [ #{xVerKey7} ]|]
 
-        specScriptHashProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
+        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
-        specScriptHashProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
-            [iii|all [ #{verKeyH7}, active_from 5001 ]|]
+        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+            [iii|all [ #{verKey7}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
-            [iii|all [ #{verKeyH7}, active_from 5001 ]|]
+        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+            [iii|all [ #{xVerKey7}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
             [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
             [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptInvalid Malformed
@@ -182,28 +182,28 @@ verKeyH4 :: String
 verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"
 
 verKeyH5 :: String
-verKeyH5 = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+verKeyH5 = "drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm"
 
 verKey5 :: String
-verKey5 = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
+verKey5 = "drep_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yysra6588"
 
 xVerKey5 :: String
-xVerKey5 = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
+xVerKey5 = "drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf"
 
 verKeyH6 :: String
-verKeyH6 = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+verKeyH6 = "cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx"
 
 verKey6 :: String
-verKey6 = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
+verKey6 = "cc_cold_vk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzqmwj2x5"
 
 xVerKey6 :: String
-xVerKey6 = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
+xVerKey6 = "cc_cold_xvk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzzdqzpe9yw37u7mu7xaenhv7242990ps3sn8jcg52yx7n3fuke9kst5t2py"
 
 verKeyH7 :: String
-verKeyH7 = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+verKeyH7 = "cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d"
 
 verKey7 :: String
-verKey7 = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
+verKey7 = "cc_hot_vk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3s3fzqkv"
 
 xVerKey7 :: String
-xVerKey7 = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
+xVerKey7 = "cc_hot_xvk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3hjwwaw54qwj0rn084enysj8ha2vwg2wd7umksf4tcnskaj8xr4tcempwly"
