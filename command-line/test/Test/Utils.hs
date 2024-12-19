@@ -93,15 +93,4 @@ newtype SchemaRef = SchemaRef
     } deriving (Show, IsString)
 
 validateJSON :: SchemaRef -> Json.Value -> IO [String]
-#ifdef HJSONSCHEMA
-validateJSON (SchemaRef ref) value = do
-    let schema = SchemaWithURI (emptySchema { _schemaRef = Just ref }) Nothing
-    refs <- unsafeIO =<< referencesViaFilesystem schema
-    validate <- unsafeIO (checkSchema refs schema)
-    pure $ map show $ validate value
-  where
-    unsafeIO :: Show e => Either e a -> IO a
-    unsafeIO = either (fail . show) pure
-#else
 validateJSON _ _ = pure []
-#endif
