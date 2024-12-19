@@ -13,7 +13,7 @@ repository cardano-haskell-packages
 index-state:
   , hackage.haskell.org 2024-11-14T09:17:39Z
   , cardano-haskell-packages 2024-11-20T20:05:41Z
-  
+
 -- See CONTRIBUTING for information about these, including some Nix commands
 -- you need to run if you change them
 
@@ -25,19 +25,6 @@ repository ghcjs-overlay
     92e8a83a0df4f99ff0372b6dcdb008c52971d1d53b1df621630f5a650fbf1f0a
     d5f108840fa2addca04caa82bc4c60ce41df7c0d3133baf6716b05a4dce11b6c
   key-threshold: 3
-
--- Avoid conflict in `hjsonschema`
--- src/Import.hs:2:16: error: [GHC-69158]
---     Conflicting exports for ‘witness’:
---        ‘module Export’ exports ‘Export.witness’
---          imported from ‘Protolude’ at src/Import.hs:4:1-36
---          (and originally defined in ‘Protolude.Debug’)
---        ‘module Export’ exports ‘Export.witness’
---          imported from ‘Test.QuickCheck’ at src/Import.hs:(9,1)-(10,50)
---          (and originally defined in ‘Test.QuickCheck.Property’)
--- TODO update https://github.com/input-output-hk/hjsonschema to
--- hide `witness` when importing from `Test.QuickCheck`
-constraints: QuickCheck <2.15
 
 if os(ghcjs)
   extra-packages: ghci
