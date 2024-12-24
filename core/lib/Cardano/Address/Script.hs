@@ -228,27 +228,27 @@ scriptHashFromBytes bytes
     | otherwise = Just $ ScriptHash bytes
 
 -- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
---   If one wants to include, valid in governance roles only, additional byte
---   as specified in CIP-0129, the function needs to be called with isCred=true.
+--  If one wants to include, valid in governance roles only, additional byte
+--  as specified in CIP-0129, the function needs to be called with withByte=true.
 --
 -- @since 4.0.0
 scriptHashToText :: ScriptHash -> KeyRole -> Bool -> Text
-scriptHashToText (ScriptHash scriptHash) role' isCred = case role' of
+scriptHashToText (ScriptHash scriptHash) cred withByte = case cred of
     Representative ->
-        if isCred then
+        if withByte then
             T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
         else
-            T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) scriptHash
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep_script) scriptHash
     CommitteeCold ->
-        if isCred then
+        if withByte then
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
         else
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) scriptHash
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_script) scriptHash
     CommitteeHot ->
-        if isCred then
+        if withByte then
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
         else
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) scriptHash
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_script) scriptHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 scriptHash
     _ ->
@@ -264,11 +264,12 @@ scriptHashToText (ScriptHash scriptHash) role' isCred = case role' of
 --
 --   scripthash ....0011    credential type
 --
---   This is on top of X_vkh which lacks the additional byte. In `scriptHashFromText` we additionally
---   support reading legacy X_script which also lacks the additional byte, and has the same payload as
---   as the corresponding X_vkh.
+--   This is on top of X_script, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+--   In `scriptHashFromText` we additionally
+--   support reading legacy X which also lacks the additional byte, and has the same payload as
+--   as the corresponding X_script.
     appendByte payload =  maybe payload (`BS.cons` payload) bytePrefix
-    bytePrefix = case role' of
+    bytePrefix = case cred of
         Representative -> Just 0b00100011
         CommitteeCold -> Just 0b00010011
         CommitteeHot -> Just 0b00000011
@@ -362,10 +363,12 @@ keyHashFromBytes (cred, bytes)
     | otherwise = Just $ KeyHash cred bytes
 
 -- | Encode a 'KeyHash' to bech32 'Text' or hex is key role unknown.
+--  If one wants to include, valid in governance roles only, additional byte
+--  as specified in CIP-0129, the function needs to be called with withByte=true.
 --
 -- @since 3.0.0
-keyHashToText :: KeyHash -> Text
-keyHashToText (KeyHash cred keyHash) = case cred of
+keyHashToText :: KeyHash -> Bool -> Text
+keyHashToText (KeyHash cred keyHash) withByte = case cred of
     Payment ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
     Delegation ->
@@ -373,11 +376,20 @@ keyHashToText (KeyHash cred keyHash) = case cred of
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) keyHash
     CommitteeCold ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) keyHash
     CommitteeHot ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) keyHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
 
@@ -390,18 +402,19 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 --   cold       0001....
 --
 --   keyhash    ....0010
+--   This is on top of X_vkh, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+--   In `keyHashFromText` we additionally
+--   support reading legacy X which also lacks the additional byte, and has the same payload as
+--   as the corresponding X_vkh.
 keyHashAppendByteCIP0129 :: ByteString -> KeyRole -> ByteString
-keyHashAppendByteCIP0129 payload = \case
-    Representative ->
-        let fstByte = 0b00100010 :: Word8
-        in BS.cons fstByte payload
-    CommitteeCold ->
-        let fstByte = 0b00010010 :: Word8
-        in BS.cons fstByte payload
-    CommitteeHot ->
-        let fstByte = 0b00000010 :: Word8
-        in BS.cons fstByte payload
-    _ -> payload
+keyHashAppendByteCIP0129 payload cred =
+    maybe payload (`BS.cons` payload) bytePrefix
+  where
+    bytePrefix = case cred of
+        Representative -> Just 0b00100010
+        CommitteeCold -> Just 0b00010010
+        CommitteeHot -> Just 0b00000010
+        _ -> Nothing
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
@@ -897,7 +910,7 @@ instance ToJSON elem => ToJSON (Script elem) where
         object ["active_until" .= slot]
 
 instance ToJSON KeyHash where
-    toJSON = String . keyHashToText
+    toJSON = String . flip keyHashToText True
 
 instance FromJSON (Script KeyHash) where
     parseJSON v =
