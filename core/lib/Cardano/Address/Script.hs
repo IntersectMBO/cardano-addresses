@@ -227,17 +227,28 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
--- | Encode a 'ScriptHash' to bech32 'Text' or hex is key role unknown.
+-- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
+--   If one wants to include, valid in governance roles only, additional byte
+--   as specified in CIP-0129, the function needs to be called with isCred=true.
 --
 -- @since 4.0.0
-scriptHashToText :: ScriptHash -> KeyRole -> Text
-scriptHashToText (ScriptHash scriptHash) cred = case cred of
+scriptHashToText :: ScriptHash -> KeyRole -> Bool -> Text
+scriptHashToText (ScriptHash scriptHash) role' isCred = case role' of
     Representative ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
+        if isCred then
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) scriptHash
     CommitteeCold ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
+        if isCred then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) scriptHash
     CommitteeHot ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
+        if isCred then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) scriptHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 scriptHash
     _ ->
@@ -252,17 +263,16 @@ scriptHashToText (ScriptHash scriptHash) cred = case cred of
 --   cold       0001....
 --
 --   scripthash ....0011    credential type
-    appendByte payload = case cred of
-        Representative ->
-            let fstByte = 0b00100011 :: Word8
-            in BS.cons fstByte payload
-        CommitteeCold ->
-            let fstByte = 0b00010011 :: Word8
-            in BS.cons fstByte payload
-        CommitteeHot ->
-            let fstByte = 0b00000011 :: Word8
-            in BS.cons fstByte payload
-        _ -> payload
+--
+--   This is on top of X_vkh which lacks the additional byte. In `scriptHashFromText` we additionally
+--   support reading legacy X_script which also lacks the additional byte, and has the same payload as
+--   as the corresponding X_vkh.
+    appendByte payload =  maybe payload (`BS.cons` payload) bytePrefix
+    bytePrefix = case role' of
+        Representative -> Just 0b00100011
+        CommitteeCold -> Just 0b00010011
+        CommitteeHot -> Just 0b00000011
+        _ -> Nothing
 
 -- | Construct a 'ScriptHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
