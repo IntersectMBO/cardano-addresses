@@ -160,7 +160,7 @@ spec = do
 
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper expected script = it (script <> " => " <> expected) $ do
-    out <- cli ["script", "hash", script] ""
+    out <- cli ["script", "hash", script, "--with-byte"] ""
     out `shouldBe` expected
 
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()
