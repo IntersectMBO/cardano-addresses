@@ -27,6 +27,8 @@ import Data.Text
     ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+import Options.Applicative.Governance
+    ( GovernanceType (..), governanceOpt )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
@@ -39,8 +41,9 @@ import System.IO.Extra
 import qualified Data.List as L
 import qualified Data.Text as T
 
-newtype Cmd = Cmd
+data Cmd = Cmd
     { script :: Script KeyHash
+    , withByte :: GovernanceType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -61,16 +64,18 @@ mod liftCmd = command "hash" $
   where
     parser = Cmd
         <$> scriptArg
+        <*> governanceOpt
 
     prettyText :: Text -> Doc
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script} = do
+run Cmd{script,withByte} = do
     let scriptHash = toScriptHash script
     case checkRoles of
         Just role ->
-            hPutStringNoNewLn stdout $ T.unpack $ scriptHashToText scriptHash role
+            hPutStringNoNewLn stdout $ T.unpack $
+            scriptHashToText scriptHash role (govToBool withByte)
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -82,3 +87,5 @@ run Cmd{script} = do
             Just $ head allRoles
         else
             Nothing
+    govToBool WithByte = True
+    govToBool WithoutByte = False
