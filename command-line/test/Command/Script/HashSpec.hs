@@ -44,85 +44,211 @@ spec = do
         specScriptHashProper "script1w8469gq5ed7xtyf2tqdng5yn7ykgckkfcl38xre8hk3ejk2lcwt"
             [iii|#{verKeyH4}|]
 
-        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{verKeyH5} ]|]
 
-        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
+        specScriptHashWithoutByteProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+            [iii|all [ #{verKeyH5} ]|]
+
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{verKey5} ]|]
 
-        specScriptHashProper "drep1ydv8xcdxwpy7zrf805yenpz7cdnap4c87v7zewvmdjyyygq44jy4j"
+        specScriptHashWithoutByteProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+            [iii|all [ #{verKey5} ]|]
+
+        specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{xVerKey5} ]|]
 
-        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
+            [iii|all [ #{xVerKey5} ]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-1-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1y0gx2ufxm0cvzdd8yfxerjsx3adlw6d0d503mu9uu5tsa3gtkvwpe"
             [iii|all [ #{verKeyH5}, active_from 5001]|]
 
-        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-1-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1y0gx2ufxm0cvzdd8yfxerjsx3adlw6d0d503mu9uu5tsa3gtkvwpe"
+            [iii|all [ #{verKeyH5Depr}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-1-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1y0gx2ufxm0cvzdd8yfxerjsx3adlw6d0d503mu9uu5tsa3gtkvwpe"
+            [iii|all [ #{verKeyH5Cred}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+            [iii|all [ #{verKeyH5}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+            [iii|all [ #{verKeyH5Depr}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+            [iii|all [ #{verKeyH5Cred}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-1-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1y0gx2ufxm0cvzdd8yfxerjsx3adlw6d0d503mu9uu5tsa3gtkvwpe"
             [iii|all [ #{verKey5}, active_from 5001 ]|]
 
-        specScriptHashProper "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+            [iii|all [ #{verKey5}, active_from 5001 ]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-1-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1y0gx2ufxm0cvzdd8yfxerjsx3adlw6d0d503mu9uu5tsa3gtkvwpe"
             [iii|all [ #{xVerKey5}, active_from 5001 ]|]
 
-        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script16pjhzfkm7rqntfezfkgu5p50t0mkntmdruwlp089zu8v29l95rg"
+            [iii|all [ #{xVerKey5}, active_from 5001 ]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-2-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
             [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-2-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
+            [iii|any [ #{verKeyH5Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-2-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
+            [iii|any [ #{verKeyH5Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-2-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+            [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-2-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+            [iii|any [ #{verKeyH5Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-2-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+            [iii|any [ #{verKeyH5Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-2-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
             [iii|any [ #{verKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "drep1y07mghw6eaqmut4gxxd2q8cy0eukdhyc0jwu3yrr4lfrzcs2em3aw"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-2-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
+            [iii|any [ #{verKey5}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-script-2-hash-appended-with-23-hex-encoded-byte-drep-script-hash-credential
+        specScriptHashProper "drep1ywh94nc9zyj46erusje3sj3d2g4ltak9ka4e386fh5urhhga37qxs"
+            [iii|any [ #{xVerKey5}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-2-hash-drep-script-hash
+        specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
             [iii|any [ #{xVerKey5}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
             [iii|all [ #{verKeyH6} ]|]
 
+        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
+            [iii|all [ #{verKeyH6} ]|]
+
         specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
+            [iii|all [ #{verKey6} ]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
             [iii|all [ #{verKey6} ]|]
 
         specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
             [iii|all [ #{xVerKey6} ]|]
 
+        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
+            [iii|all [ #{xVerKey6} ]|]
+
         specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
+            [iii|all [ #{verKeyH6}, active_from 5001]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
         specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
+        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
+            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+
         specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
+            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
             [iii|all [ #{verKeyH6}, active_from 5001 ]|]
 
         specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
+        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
+            [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
+
         specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
+            [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
+        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
+            [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
+
         specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
+            [iii|all [ #{verKeyH7} ]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
             [iii|all [ #{verKeyH7} ]|]
 
         specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
             [iii|all [ #{verKey7} ]|]
 
+        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
+            [iii|all [ #{verKey7} ]|]
+
         specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
+            [iii|all [ #{xVerKey7} ]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
             [iii|all [ #{xVerKey7} ]|]
 
         specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
+        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
+            [iii|all [ #{verKeyH7}, active_from 5001]|]
+
         specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+            [iii|all [ #{verKey7}, active_from 5001 ]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
             [iii|all [ #{verKey7}, active_from 5001 ]|]
 
         specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
             [iii|all [ #{xVerKey7}, active_from 5001 ]|]
 
+        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
+            [iii|all [ #{xVerKey7}, active_from 5001 ]|]
+
         specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
+            [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
             [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
 
+        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
+            [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
+
         specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
+            [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
             [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptInvalid Malformed
@@ -163,6 +289,11 @@ specScriptHashProper expected script = it (script <> " => " <> expected) $ do
     out <- cli ["script", "hash", script, "--with-byte"] ""
     out `shouldBe` expected
 
+specScriptHashWithoutByteProper :: String -> String -> SpecWith ()
+specScriptHashWithoutByteProper expected script = it (script <> " => " <> expected) $ do
+    out <- cli ["script", "hash", script] ""
+    out `shouldBe` expected
+
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()
 specScriptInvalid errMsg script = it (script <> " => " <> show errMsg) $ do
     (out, err) <- cli ["script", "hash", script] ""
@@ -181,14 +312,32 @@ verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 verKeyH4 :: String
 verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"
 
+-- In accordance to https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#verification-key-hash-drep-vkh
+-- Verification key hash (DRep VKH)
 verKeyH5 :: String
-verKeyH5 = "drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm"
+verKeyH5 = "drep_vkh15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe254czjh2"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#deprecated-verification-key-hash-drep-id
+-- [DEPRECATED] Verification key hash (DRep ID)
+verKeyH5Depr :: String
+verKeyH5Depr = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-compliant-verification-key-hash-appended-with--22-hex-encoded-byte-drep-key-hash-credential
+-- [CIP-0129 compliant] Verification key hash appended with '22' hex-encoded byte (DRep key hash credential)
+verKeyH5Cred :: String
+verKeyH5Cred = "drep1y2jmg4g450lced7q9n34rq6d5vjwkm0ugx6h0894u6ur92s9txn3a"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#drep-verification-key
+-- DRep verification key
 verKey5 :: String
-verKey5 = "drep_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yysra6588"
+verKey5 = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#drep-extended-verification-key
+-- DRep extended verification key
 xVerKey5 :: String
-xVerKey5 = "drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf"
+xVerKey5 = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
 
 verKeyH6 :: String
 verKeyH6 = "cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx"
