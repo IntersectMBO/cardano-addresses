@@ -281,6 +281,9 @@ scriptHashToText (ScriptHash scriptHash) cred withByte = case cred of
 -- - `drep`
 -- - `cc_cold`
 -- - `cc_hot`
+-- - `drep_script`
+-- - `cc_cold_script`
+-- - `cc_hot_script`
 -- If if hex is encountered it is converted in rawly fashion
 --
 -- @since 4.0.0
@@ -309,6 +312,8 @@ scriptHashFromText txt =
                   Just payload
                  else
                   Nothing
+        | hrp == CIP5.drep_script && checkBSLength bytes 28 =
+              Just bytes
         | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
               --   cold          0001....
@@ -317,6 +322,8 @@ scriptHashFromText txt =
                   Just payload
                  else
                   Nothing
+        | hrp == CIP5.cc_cold_script && checkBSLength bytes 28 =
+              Just bytes
         | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
               --   hot           0000....
@@ -325,6 +332,8 @@ scriptHashFromText txt =
                   Just payload
                  else
                   Nothing
+        | hrp == CIP5.cc_hot_script && checkBSLength bytes 28 =
+              Just bytes
         | hrp == CIP5.script && checkBSLength bytes 28 =
               Just bytes
         | otherwise = Nothing
@@ -426,6 +435,9 @@ keyHashAppendByteCIP0129 payload cred =
 -- - `drep`
 -- - `cc_cold`
 -- - `cc_hot`
+-- - `drep_vkh`
+-- - `cc_cold_vkh`
+-- - `cc_hot_vkh`
 -- - `addr_shared_vk`
 -- - `stake_shared_vk`
 -- - `addr_vk`
