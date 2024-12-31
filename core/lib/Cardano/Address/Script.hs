@@ -485,6 +485,10 @@ keyHashFromText txt =
                   Just (Representative, payload)
                  else
                   Nothing
+        | hrp == CIP5.drep && checkBSLength bytes 28 =
+              Just (Representative, bytes)
+        | hrp == CIP5.drep_vkh && checkBSLength bytes 28 =
+              Just (Representative, bytes)
         | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
               --   cold          0001....
@@ -493,6 +497,10 @@ keyHashFromText txt =
                   Just (CommitteeCold, payload)
                  else
                   Nothing
+        | hrp == CIP5.cc_cold && checkBSLength bytes 28 =
+              Just (CommitteeCold, bytes)
+        | hrp == CIP5.cc_cold_vkh && checkBSLength bytes 28 =
+              Just (CommitteeCold, bytes)
         | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
               let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
               --   hot           0000....
@@ -501,6 +509,10 @@ keyHashFromText txt =
                   Just (CommitteeHot, payload)
                  else
                   Nothing
+        | hrp == CIP5.cc_hot && checkBSLength bytes 28 =
+              Just (CommitteeHot, bytes)
+        | hrp == CIP5.cc_hot_vkh && checkBSLength bytes 28 =
+              Just (CommitteeHot, bytes)
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_vk && checkBSLength bytes 32 =
