@@ -59,7 +59,6 @@ spec = do
         specScriptHashProper "drep1ywxlnmh29f0jdv0uj2m5gtqgvgf0e5mtyajy0p2jf55tppszrkgvs"
             [iii|all [ #{xVerKey5} ]|]
 
-        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#script-1-hash-drep-script-hash
         specScriptHashWithoutByteProper "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
             [iii|all [ #{xVerKey5} ]|]
 
@@ -161,118 +160,194 @@ spec = do
         specScriptHashWithoutByteProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
             [iii|all [ #{xVerKey6} ]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-1-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-1-hash
         specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-1-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{verKeyH6Depr}, active_from 5001 ]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-1-hash
         specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKeyH6Depr}, active_from 5001 ]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-1-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{verKeyH6Cred}, active_from 5001 ]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-1-hash
         specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKeyH6Cred}, active_from 5001 ]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-1-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{verKey6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-1-hash
         specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKey6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-1-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{xVerKey6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-1-hash
         specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{xVerKey6}, active_from 5001]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-2-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-2-hash
         specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-2-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKeyH6Depr}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-2-hash
         specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKeyH6Depr}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-2-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKeyH6Cred}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-2-hash
         specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKeyH6Cred}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-2-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-2-hash
         specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-cold-script-2-hash-appended-with-13-hex-encoded-byte-constitutional-committee-cold-script-hash-credential
         specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-script-2-hash
         specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{verKeyH7} ]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
+        specScriptHashWithoutByteProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
             [iii|all [ #{verKeyH7} ]|]
 
-        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
+            [iii|all [ #{verKeyH7Depr} ]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+            [iii|all [ #{verKeyH7Depr} ]|]
+
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
+            [iii|all [ #{verKeyH7Cred} ]|]
+
+        specScriptHashWithoutByteProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
+            [iii|all [ #{verKeyH7Cred} ]|]
+
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{verKey7} ]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
+        specScriptHashWithoutByteProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
             [iii|all [ #{verKey7} ]|]
 
-        specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
+        specScriptHashProper "cc_hot1qday89cxvm00rceu70zsny95n485l50rh3pxy8k8m7yrwdgrehyfq"
             [iii|all [ #{xVerKey7} ]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script1n2663h4ky5h8v9p346rq4a9dzhsv4kcvruce3eh9rgku6xg0666"
+        specScriptHashWithoutByteProper "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3c"
             [iii|all [ #{xVerKey7} ]|]
 
-        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-1-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1q0f85s3feyhv39smd07n92rnsrwwujsgcaas6mytx0ccp6q7ak53g"
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-1-hash
+        specScriptHashWithoutByteProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
-        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-1-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1q0f85s3feyhv39smd07n92rnsrwwujsgcaas6mytx0ccp6q7ak53g"
+            [iii|all [ #{verKeyH7Depr}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-1-hash
+        specScriptHashWithoutByteProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
+            [iii|all [ #{verKeyH7Depr}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-1-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1q0f85s3feyhv39smd07n92rnsrwwujsgcaas6mytx0ccp6q7ak53g"
+            [iii|all [ #{verKeyH7Cred}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-1-hash
+        specScriptHashWithoutByteProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
+            [iii|all [ #{verKeyH7Cred}, active_from 5001]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-1-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1q0f85s3feyhv39smd07n92rnsrwwujsgcaas6mytx0ccp6q7ak53g"
             [iii|all [ #{verKey7}, active_from 5001 ]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-1-hash
+        specScriptHashWithoutByteProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
             [iii|all [ #{verKey7}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_hot1qvljt8yyl4r0fzaxkyqkd9q3qwchxcra0mh8tec4rrnpqhg7d25xr"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-1-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1q0f85s3feyhv39smd07n92rnsrwwujsgcaas6mytx0ccp6q7ak53g"
             [iii|all [ #{xVerKey7}, active_from 5001 ]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script18ujeep8agm6ghf43q9nfgygrk9ekqlt7ae67w9gcucg968m2g5a"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-1-hash
+        specScriptHashWithoutByteProper "cc_hot_script16fayy2wf9myfvxmtl5e2suuqmnhy5zx80vxkezen7xqwskncf40"
             [iii|all [ #{xVerKey7}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-2-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-2-hash
+        specScriptHashWithoutByteProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-2-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
+            [iii|any [ #{verKeyH7Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-2-hash
+        specScriptHashWithoutByteProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+            [iii|any [ #{verKeyH7Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-2-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
+            [iii|any [ #{verKeyH7Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-2-hash
+        specScriptHashWithoutByteProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
+            [iii|any [ #{verKeyH7Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-2-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-2-hash
+        specScriptHashWithoutByteProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
             [iii|any [ #{verKey7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_hot1qw4u9l6jvl26g09844ny3hev7dpqvuxv6ney5q33zwu0qpquwapzf"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-constitutional-committee-hot-script-2-hash-appended-with-03-hex-encoded-byte-constitutional-committee-hot-script-hash-credential
+        specScriptHashProper "cc_hot1qd3wq7vvwqm07dvx9n6z7nn6mgr0076mv3jnjqyz56gmu9qaj7nrc"
             [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_hot_script140p075n86kjrefadveyd7t8nggr8pnx57f9qyvgnhrcqg6ekh2c"
+        -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-script-2-hash
+        specScriptHashWithoutByteProper "cc_hot_script1vts8nrrsxmlntp3v7sh5u7k6qmmlkkmyv5uspq4xjxlpg6u229p"
             [iii|any [ #{xVerKey7}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptInvalid Malformed
@@ -388,11 +463,27 @@ verKey6 = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl
 xVerKey6 :: String
 xVerKey6 = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-verification-key-hash-constitutional-committee-hot-vkh
+-- Constitutional Committee Hot Verification key hash (Constitutional Committee Hot VKH)
 verKeyH7 :: String
-verKeyH7 = "cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d"
+verKeyH7 = "cc_hot_vkh17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7vk5akz"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#deprecated-constitutional-committee-hot-verification-key-hash
+-- [DEPRECATED] Constitutional Committee Hot Verification Key Hash
+verKeyH7Depr :: String
+verKeyH7Depr = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-compliant-constitutional-committee-hot-verification-key-hash-appended-with--02-hex-encoded-byte-constitutional-committee-hot-key-hash-credential
+-- [CIP-0129 compliant] Constitutional Committee Hot Verification key hash appended with '02' hex-encoded byte (Constitutional Committee Hot key hash credential)
+verKeyH7Cred :: String
+verKeyH7Cred = "cc_hot1qtmd98q0w9jdxasse0m8kyn2nya7kf9qwmgx20cl5p543rcdtr4dz"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-verification-key
+-- Constitutional Committee Hot Verification Key
 verKey7 :: String
-verKey7 = "cc_hot_vk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3s3fzqkv"
+verKey7 = "cc_hot_vk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5hschnzv5"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-hot-extended-verification-key
+-- Constitutional Committee Hot Extended Verification Key
 xVerKey7 :: String
-xVerKey7 = "cc_hot_xvk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3hjwwaw54qwj0rn084enysj8ha2vwg2wd7umksf4tcnskaj8xr4tcempwly"
+xVerKey7 = "cc_hot_xvk10y48lq72hypxraew74lwjjn9e2dscuwphckglh2nrrpkgweqk5h4fplggm56wz9jw6qadq6l5tdvj6qs3v7ggh3hjkt5j8ntga42pvs5rvh0a"
