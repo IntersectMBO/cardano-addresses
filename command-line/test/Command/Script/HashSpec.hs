@@ -143,58 +143,82 @@ spec = do
         specScriptHashWithoutByteProper "drep_script14edv7pg3y4wkglyykvvy5t2j906ld3dhdwvf7jda8qaa63d5kf4"
             [iii|any [ #{xVerKey5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{verKeyH6} ]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
+        specScriptHashWithoutByteProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
             [iii|all [ #{verKeyH6} ]|]
 
-        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{verKey6} ]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
+        specScriptHashWithoutByteProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
             [iii|all [ #{verKey6} ]|]
 
-        specScriptHashProper "cc_cold1zw95xrvvk7kzhkjf77k7sxya4kkjxpx8mgmcnvm9tgqeswcmdjf5r"
+        specScriptHashProper "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"
             [iii|all [ #{xVerKey6} ]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script13dpsmr9h4s4a5j0h4h5p38dd453sf376x7ymxe26qxvrkqku7ux"
+        specScriptHashWithoutByteProper "cc_cold_script16e9ypar36jqppdpff86u578w5lvpuf55htkk5cryvj54wd8s4jn"
             [iii|all [ #{xVerKey6} ]|]
 
-        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
+        specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
+        specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
-        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
-            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+        specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
+            [iii|all [ #{verKeyH6Depr}, active_from 5001 ]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
-            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+        specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+            [iii|all [ #{verKeyH6Depr}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold1zddamn0j6gs6h228yuag0ld40aqwfa7zr2vk9y43ptpj2xse44ze0"
-            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+        specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
+            [iii|all [ #{verKeyH6Cred}, active_from 5001 ]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1t0wumukjyx46j3e882rlmdtlgrj00ss6n93f9vg2cvj3503nwen"
-            [iii|all [ #{verKeyH6}, active_from 5001 ]|]
+        specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+            [iii|all [ #{verKeyH6Cred}, active_from 5001 ]|]
 
-        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
+        specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
+            [iii|all [ #{verKey6}, active_from 5001]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+            [iii|all [ #{verKey6}, active_from 5001]|]
+
+        specScriptHashProper "cc_cold1zwhx723824x4u6t3aulfx0j0p0n767htvrm0j00ms8xku8q30p2xd"
+            [iii|all [ #{xVerKey6}, active_from 5001]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script14ehj5f64f40xju0086fnunctulkh46mq7munm7upe4hpcwpcatv"
+            [iii|all [ #{xVerKey6}, active_from 5001]|]
+
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
+        specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
+            [iii|any [ #{verKeyH6Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+            [iii|any [ #{verKeyH6Depr}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
+            [iii|any [ #{verKeyH6Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
+            [iii|any [ #{verKeyH6Cred}, all [ active_from 5001, active_until 6001]]|]
+
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
+        specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{verKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashProper "cc_cold1z0jnmwavkmnzyszp9gp7qalsu3t0za3ydasv9ajf7xl4vyqzccwty"
+        specScriptHashProper "cc_cold1zvgecgxwelklmws9w2f0w6a3zzh6826897wrt2za4ayjx9swtgkr6"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptHashWithoutByteProper "cc_cold_script1u57mht9kuc3yqsf2q0s80u8y2mchvfr0vrp0vj03hatpqrrhna5"
+        specScriptHashWithoutByteProper "cc_cold_script1zxwzpnk0ah7m5ptjjtmkhvgs4736k3e0ns66shd0fy33vdauq3j"
             [iii|any [ #{xVerKey6}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptHashProper "cc_hot1qwdtt2x7kcjjuas5xxhgvzh54527pjkmps0nrx8xu5dzmngyy6q5g"
@@ -312,7 +336,7 @@ verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9"
 verKeyH4 :: String
 verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"
 
--- In accordance to https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md
+-- Keys in accordance to https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md
 
 -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#verification-key-hash-drep-vkh
 -- Verification key hash (DRep VKH)
@@ -339,14 +363,30 @@ verKey5 = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
 xVerKey5 :: String
 xVerKey5 = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-verification-key-hash-constitutional-committee-cold-vkh
+-- Constitutional Committee Cold Verification key hash (Constitutional Committee Cold VKH)
 verKeyH6 :: String
-verKeyH6 = "cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx"
+verKeyH6 = "cc_cold_vkh1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw0243cw47"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#deprecated-constitutional-committee-cold-verification-key-hash
+-- [DEPRECATED] Constitutional Committee Cold Verification Key Hash
+verKeyH6Depr :: String
+verKeyH6Depr = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#cip-0129-compliant-constitutional-committee-cold-verification-key-hash-appended-with--12-hex-encoded-byte-constitutional-committee-cold-key-hash-credential
+-- [CIP-0129 compliant] Constitutional Committee Cold Verification key hash appended with '12' hex-encoded byte (Constitutional Committee Cold key hash credential)
+verKeyH6Cred :: String
+verKeyH6Cred = "cc_cold1ztl0h9vka4ns45kfj7xh3ljwkd46yn9m5znzlfxd6rpdeagw6p59q"
+
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-verification-key
+-- Constitutional Committee Cold Verification Key
 verKey6 :: String
-verKey6 = "cc_cold_vk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzqmwj2x5"
+verKey6 = "cc_cold_vk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04q7qsvwl"
 
+-- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md#constitutional-committee-cold-extended-verification-key
+-- Constitutional Committee Cold Extended Verification Key
 xVerKey6 :: String
-xVerKey6 = "cc_cold_xvk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzzdqzpe9yw37u7mu7xaenhv7242990ps3sn8jcg52yx7n3fuke9kst5t2py"
+xVerKey6 = "cc_cold_xvk149up407pvp9p36lldlp4qckqqzn6vm7u5yerwy8d8rqalse3t04vvqvk3e6l7vzjl7n8ttk646jflumvkgcrdhcstc5wr5etg5n7dnc8nqv5d"
 
 verKeyH7 :: String
 verKeyH7 = "cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d"
