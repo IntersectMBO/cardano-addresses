@@ -644,7 +644,7 @@ drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3
 $ cardano-address key private --signing-key < drep.xsk
 drep_sk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqajg5xmwma
 
-$ cardano-address key private --signing-key --hex < drep.xsk
+$ cardano-address key private --signing-key < drep.xsk | bech32
 605b0dd4b0d8b6d75db5b4b7b56da4fca4486fd5d0fa990fc33d909ece47a943071c29dc5f4450ae9a1fdb3a201043b4df56a0bc836b5753021e3d4add720ec9
 
 $ cardano-address key private --chain-code < drep.xsk
