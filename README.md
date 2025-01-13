@@ -231,7 +231,7 @@ $ cardano-address key hash < policy.xvk
 policy_vkh1qpc9xly4lc7yt98gcf59kdcqcss6dda4u9g72e775yxpxeypamc
 $ cardano-address key hash < policy.vk
 policy_vkh1qpc9xly4lc7yt98gcf59kdcqcss6dda4u9g72e775yxpxeypamc
-$ cardano-address key hash --hex < policy.vk
+$ cardano-address key hash < policy.vk | bech32
 0070537c95fe3c4594e8c2685b3700c421a6b7b5e151e567dea10c13
 ```
 
@@ -281,11 +281,11 @@ $ cardano-address key child 1852H/1815H/0H/0/0 < root.xsk | cardano-address key 
 addr_xvk1grvg8qzmkmw2n0dm4pd0h3j4dv6yglyammyp733eyj629dc3z28v6wk22nfmru6xz0vl2s3y5xndyd57fu70hrt84c6zkvlwx6fdl7ct9j7yc
 $ cardano-address key hash < addr.xvk
 addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v
-$ cardano-address key hash --hex < addr.xvk
+$ cardano-address key hash < addr.xvk | bech32
 54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9
 ```
 
-> :information_source: The hashing is available for both stake and payment verification keys. Additional flag '--hex' can be used.
+> :information_source: The hashing is available for both stake and payment verification keys. Hex encoding can be achieved by redirecting to `bech32` tool.
 </details>
 
 
