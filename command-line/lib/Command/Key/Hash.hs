@@ -25,8 +25,6 @@ import Data.Text
     ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
-import Options.Applicative.Format
-    ( FormatType (..), formatOpt )
 import Options.Applicative.Help.Pretty
     ( pretty )
 import System.IO
@@ -37,30 +35,26 @@ import System.IO.Extra
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
-newtype Cmd = Hash
-    { outputFormat :: FormatType
-    } deriving (Show)
+data Cmd = Hash
+    deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "hash" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the hash of a public key"
         <> footerDoc (Just $ pretty $ mconcat
-            [ "The public key is read from stdin." :: Text
-            , "To get hex-encoded output pass '--hex'."
-            , "Otherwise bech32-encoded hash is returned."
+            [ "The public key is read from stdin and" :: Text
+            , "bech32-encoded hash is returned."
+            , "To get hex-encoded output pass it to stdin of `bech32`."
             ])
   where
-    parser = Hash
-        <$> formatOpt
+    parser = pure Hash
 
 run :: Cmd -> IO ()
-run Hash{outputFormat} = do
+run Hash = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    let encoding = case outputFormat of
-            Hex -> EBase16
-            Bech32 -> EBech32 $ prefixFor hrp
+    let encoding = EBech32 $ prefixFor hrp
     hPutBytes stdout (hashCredential $ BS.take 32 bytes) encoding
   where
     -- Mapping of input HRP to output HRP
