@@ -9,6 +9,3 @@ nix/              @Crypto2099
 # Haskell components
 command-line/     @paweljakubas
 core/             @paweljakubas
-
-# JavaScript interface
-jsbits/           @Crypto2099
