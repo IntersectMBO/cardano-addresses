@@ -19,10 +19,6 @@
       url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
       flake = false;
     };
-    hackageGHCJS = {
-      url = "github:input-output-hk/hackage-overlay-ghcjs?ref=repo";
-      flake = false;
-    };
     flake-utils.url = "github:numtide/flake-utils";
     iohkNix = {
       url = "github:input-output-hk/iohk-nix";
@@ -30,7 +26,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, hackageGHCJS, ... }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
@@ -40,8 +36,6 @@
         {
           cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
           inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
-          inherit (final.cardanoAddressesHaskellProject.projectVariants.ghc810.projectCross.ghcjs.hsPkgs) cardano-addresses-jsapi;
-          inherit (self.packages.${final.system}) cardano-addresses-js cardano-addresses-demo-js;
         };
     in
     {
@@ -66,13 +60,9 @@
           };
 
           haskellProject = (import ./nix/haskell.nix {
-            inherit system CHaP hackageGHCJS;
+            inherit system CHaP;
             inherit (pkgs) haskell-nix;
           });
-
-          cardano-addresses-js = pkgs.callPackage ./nix/cardano-addresses-js.nix { };
-          cardano-addresses-demo-js = pkgs.callPackage ./nix/cardano-addresses-demo-js.nix { };
-          cardano-addresses-js-shell = pkgs.callPackage ./nix/cardano-addresses-js-shell.nix { };
 
           flake = haskellProject.flake {};
         in
@@ -86,10 +76,6 @@
 
           # Run by `nix run .`
           defaultApp = flake.apps."cardano-addresses-cli:exe:cardano-address";
-
-          packages = {
-            inherit cardano-addresses-js cardano-addresses-demo-js cardano-addresses-js-shell;
-          };
 
           apps = {
             repl = mkApp {

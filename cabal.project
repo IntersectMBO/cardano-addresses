@@ -17,43 +17,16 @@ index-state:
 -- See CONTRIBUTING for information about these, including some Nix commands
 -- you need to run if you change them
 
-repository ghcjs-overlay
-  url: https://input-output-hk.github.io/hackage-overlay-ghcjs/
-  secure: True
-  root-keys:
-    3838d0dfa046bb3d16de9ae0823dab1dd937ee336f9bcaa87c85b36443aee7f6
-    92e8a83a0df4f99ff0372b6dcdb008c52971d1d53b1df621630f5a650fbf1f0a
-    d5f108840fa2addca04caa82bc4c60ce41df7c0d3133baf6716b05a4dce11b6c
-  key-threshold: 3
+if impl(ghc>=9.8)
+  allow-newer: *:template-haskell, *:base, *:deepseq, *:ghc-prim, *:time
 
-if os(ghcjs)
-  extra-packages: ghci
-
-  constraints:
-      digest == 0.0.1.2
-    , entropy == 0.4.1.7
-
-  if impl(ghc<9)
-    constraints:
-        text < 2.0
-      , filepath == 1.4.2.1
-  else
-    allow-newer: *:*
-
-  active-repositories: hackage.haskell.org, cardano-haskell-packages, ghcjs-overlay:override
-else
-  if impl(ghc>=9.8)
-    allow-newer: *:template-haskell, *:base, *:deepseq, *:ghc-prim, *:time
-
-  active-repositories: hackage.haskell.org, cardano-haskell-packages
+active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
-  jsapi/cardano-addresses-jsapi.cabal
 
 constraints:
-    ghcjs-base >=0.2.0.3
   , optparse-applicative >= 0.18.1.0
 
 tests: True

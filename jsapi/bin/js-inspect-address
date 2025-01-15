@@ -1,6 +1,0 @@
-#!/usr/bin/env node
-
-// Copyright © 2021 IOHK
-// License: Apache-2.0
-
-require('../dist/index').cli(process.argv);

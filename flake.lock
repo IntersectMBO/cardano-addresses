@@ -206,23 +206,6 @@
         "url": "https://gitlab.haskell.org/ghc/ghc"
       }
     },
-    "hackageGHCJS": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1731576249,
-        "narHash": "sha256-yHw9Bscx2iG9IE0W7LhLlkuTVA7uduSn9bjvLFChevE=",
-        "owner": "input-output-hk",
-        "repo": "hackage-overlay-ghcjs",
-        "rev": "bbf51663dfedb5cfc0497cabe4157d2e495db775",
-        "type": "github"
-      },
-      "original": {
-        "owner": "input-output-hk",
-        "ref": "repo",
-        "repo": "hackage-overlay-ghcjs",
-        "type": "github"
-      }
-    },
     "hackageNix": {
       "flake": false,
       "locked": {
@@ -744,7 +727,6 @@
       "inputs": {
         "CHaP": "CHaP",
         "flake-utils": "flake-utils",
-        "hackageGHCJS": "hackageGHCJS",
         "hackageNix": "hackageNix",
         "haskellNix": "haskellNix",
         "hostNixpkgs": [

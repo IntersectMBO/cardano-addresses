@@ -3,13 +3,12 @@
 # Later rules override earlier rules.
 
 # CICD
-.github/          @Crypto2099 
-nix/              @Crypto2099 
+.github/          @Crypto2099
+nix/              @Crypto2099
 
 # Haskell components
 command-line/     @paweljakubas
 core/             @paweljakubas
 
 # JavaScript interface
-jsapi/            @Crypto2099
 jsbits/           @Crypto2099
