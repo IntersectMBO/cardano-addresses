@@ -26,6 +26,12 @@ packages:
   command-line/cardano-addresses-cli.cabal
   core/cardano-addresses.cabal
 
+-- Make sure `hsc2hs` is available for building the `zlib` package
+-- when cross compiling for windows.  The conditional dependency on
+-- `zlib` in `digest` means `zlib` and its dependencies (like `hsc2hs`)
+-- are not needed for building the linux.
+extra-packages: hsc2hs
+
 constraints:
   , optparse-applicative >= 0.18.1.0
 
