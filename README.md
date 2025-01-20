@@ -799,25 +799,15 @@ $ echo "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u" | d
 }
 ```
 
-## NPM Package
+## Javascript support
 
-There is an experimental NPM module for JavaScript and TypeScript
-available, which works in both NodeJS and the browser.
+Javascript support was dicontinued and dropped. One could look at the following now:
 
-Here is a code sample showing how it can be used:
+1. [MeshJS](https://github.com/MeshJS/mesh)
+2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
 
-```javascript
-var cardanoAddresses = require('cardano-addresses')
-var addr = 'addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u'
-
-cardanoAddresses.inspectAddress(addr)
-  .then(info => console.log(info)
-```
-
-- [NPM Package](https://www.npmjs.com/package/cardano-addresses)
-- [API Documentation](https://IntersectMBO.github.io/cardano-addresses/typescript/)
-- [Web Demo](https://IntersectMBO.github.io/cardano-addresses/demo/)
-- [Development Info](./jsapi/README.md)
+Alternatively one could lean back on release [3.12.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.12.0)
+where Javascript was still present.
 
 ## Contributing
 

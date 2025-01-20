@@ -1,7 +1,8 @@
-## [3.13.0] - N/A
+## [4.0.0] - N/A
 
 ### Added
 
+- Drop JavaScript support and get rid of JavaScript codebase
 - `hashKey` for Shelley style
 - Key derivation support for DRep, CCCold and CCHot in accordance to [CIP--105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105). Also supported in CLI.
 - Fix field for staking scripts in AddressInfo.

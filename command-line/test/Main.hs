@@ -3,8 +3,6 @@ module Main where
 
 import Prelude
 
-import Cardano.Address.Compat
-    ( ghcjsBuildSupport )
 import Main.Utf8
     ( withUtf8 )
 import Test.Hspec.Runner
@@ -35,7 +33,6 @@ initialize = do
 
 main :: IO ()
 main = do
-    ghcjsBuildSupport
 #ifdef mingw32_HOST_OS
     initialize
 #endif
