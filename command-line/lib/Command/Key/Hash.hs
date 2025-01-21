@@ -39,7 +39,7 @@ import System.IO.Extra
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
-data Cmd = Hash
+newtype Cmd = Hash
     { withByte :: GovernanceType
     } deriving (Show)
 
