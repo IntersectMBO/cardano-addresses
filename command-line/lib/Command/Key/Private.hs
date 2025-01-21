@@ -22,17 +22,7 @@ import Data.Maybe
 import Data.Text
     ( Text )
 import Options.Applicative
-    ( CommandFields
-    , Mod
-    , command
-    , footerDoc
-    , helper
-    , info
-    , optional
-    , progDesc
-    )
-import Options.Applicative.Format
-    ( FormatType (..), formatOpt )
+    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
     ( pretty )
 import Options.Applicative.Private
@@ -44,9 +34,8 @@ import System.IO.Extra
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 
-data Cmd = Private
+newtype Cmd = Private
     { keyPart :: PrivateType
-    , outputFormat :: Maybe FormatType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -57,16 +46,15 @@ mod liftCmd = command "private" $
             [ "The private key is read from stdin." :: Text
             , "To get a signing key pass '--signing-key'."
             , "To get a chain code pass '--chain-code'."
-            , "In order to have the signing key hex encoded pass '--hex'."
-            , "When omitted bech32 encoding will be used."
+            , "Bech32 encoding will be used."
+            , "In order to have the signing key hex encoded pass the result to the stdin of bech32 tool."
             ])
   where
     parser = Private
         <$> privateOpt
-        <*> optional formatOpt
 
 run :: Cmd -> IO ()
-run Private{keyPart,outputFormat} = do
+run Private{keyPart} = do
     (hrp, xprv) <- hGetXPrv stdin allowedPrefixes
     let bytes = case keyPart of
             ChainCode -> xprvChainCode xprv
@@ -89,6 +77,5 @@ run Private{keyPart,outputFormat} = do
         ]
     allowedPrefixes = map fst prefixes
     getFormat ChainCode _ = EBase16
-    getFormat SigningKey hrp = case outputFormat of
-        Just Hex -> EBase16
-        _ -> EBech32 $ fromJust $ lookup hrp prefixes
+    getFormat SigningKey hrp =
+        EBech32 $ fromJust $ lookup hrp prefixes
