@@ -58,7 +58,7 @@ specKeyPublic style hrp path cc = it "succeeds if key is public" $ do
        >>= cli [ "key", "from-recovery-phrase", style ]
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", cc ]
-       >>= cli [ "key", "hash" ]
+       >>= cli [ "key", "hash", "--cip-0105" ]
     out `shouldStartWith` hrp
 
 specKeyPublicCred :: String -> String -> String -> String -> SpecWith ()
@@ -67,5 +67,5 @@ specKeyPublicCred style hrp path cc = it "succeeds if key is public" $ do
        >>= cli [ "key", "from-recovery-phrase", style ]
        >>= cli [ "key", "child", path ]
        >>= cli [ "key", "public", cc ]
-       >>= cli [ "key", "hash", "--with-byte" ]
+       >>= cli [ "key", "hash" ]
     out `shouldStartWith` hrp
