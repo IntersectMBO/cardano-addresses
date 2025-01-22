@@ -108,35 +108,35 @@ spec = do
             [iii|any [ #{verKeyH1}, #{verKeyH2}, active_from a]|]
 
         specScriptPreimageProper
-            "008201828200581ca5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa8204191389"
+            "008201828200581c80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da8204191389"
             [iii|all [ #{verKeyH5}, active_from 5001]|]
 
         specScriptPreimageProper
-            "008201828200581ca5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa8204191389"
+            "008201828200581c80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da8204191389"
             [iii|all [ #{verKey5}, active_from 5001]|]
 
         specScriptPreimageProper
-            "008201828200581ca5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa8204191389"
+            "008201828200581c80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da8204191389"
             [iii|all [ #{xVerKey5}, active_from 5001]|]
 
         specScriptPreimageProper
-            "008201828200581cfefb9596ed670ad2c9978d78fe4eb36ba24cbba0a62fa4cdd0c2dcf58204191389"
+            "008201828200581c6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc8204191389"
             [iii|all [ #{verKeyH6}, active_from 5001]|]
 
         specScriptPreimageProper
-            "008201828200581cf6d29c0f7164d37610cbf67b126a993beb24a076d0653f1fa069588f8204191389"
+            "008201828200581c358b52181c48f748492ca4697fcec43e12548914b30311d4022b69918204191389"
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
         specScriptPreimageProper
-            "008202828200581ca5b45515a3ff8cb7c02ce351834da324eb6dfc41b5779cb5e6b832aa82018282041913898205191771"
+            "008202828200581c80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da82018282041913898205191771"
             [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptPreimageProper
-            "008202828200581cfefb9596ed670ad2c9978d78fe4eb36ba24cbba0a62fa4cdd0c2dcf582018282041913898205191771"
+            "008202828200581c6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc82018282041913898205191771"
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
         specScriptPreimageProper
-            "008202828200581cf6d29c0f7164d37610cbf67b126a993beb24a076d0653f1fa069588f82018282041913898205191771"
+            "008202828200581c358b52181c48f748492ca4697fcec43e12548914b30311d4022b699182018282041913898205191771"
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
 specScriptPreimageProper :: String -> String -> SpecWith ()
@@ -163,16 +163,16 @@ verKeyH4 :: String
 verKeyH4 = "addr_shared_vkh1fee6yrlnczhfp77ftunc6snjrv0hv0s92qj2pe47dt4hz8ajp6a"
 
 verKeyH5 :: String
-verKeyH5 = "drep15k6929drl7xt0spvudgcxndryn4kmlzpk4meed0xhqe25nle07s"
+verKeyH5 = "drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm"
 
 verKey5 :: String
-verKey5 = "drep_vk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w54sdv4a4e"
+verKey5 = "drep_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yysra6588"
 
 xVerKey5 :: String
-xVerKey5 = "drep_xvk17axh4sc9zwkpsft3tlgpjemfwc0u5mnld80r85zw7zdqcst6w543mpq3q2vkjy3nw8x7n8asw4es78dyl4q7u7kwlwn7yy0sugxfrjs6z25qe"
+xVerKey5 = "drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf"
 
 verKeyH6 :: String
-verKeyH6 = "cc_cold1lmaet9hdvu9d9jvh34u0un4ndw3yewaq5ch6fnwsctw02xxwylj"
+verKeyH6 = "cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx"
 
 verKeyH7 :: String
-verKeyH7 = "cc_hot17mffcrm3vnfhvyxt7ea3y65e804jfgrk6pjn78aqd9vg7xpq8dv"
+verKeyH7 = "cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d"

@@ -52,6 +52,7 @@ library
       Options.Applicative.Credential
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
+      Options.Applicative.Governance
       Options.Applicative.MnemonicSize
       Options.Applicative.Public
       Options.Applicative.Script

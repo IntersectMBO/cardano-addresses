@@ -23,8 +23,9 @@ import Cardano.Address.Script
     , Script (..)
     , ScriptHash
     , ValidationLevel (..)
+    , prettyErrScriptHashFromText
     , prettyErrValidateScript
-    , scriptHashFromBytes
+    , scriptHashFromText
     )
 import Cardano.Address.Script.Parser
     ( requireCosignerOfParser, requireSignatureOfParser, scriptFromString )
@@ -32,13 +33,12 @@ import Control.Applicative
     ( (<|>) )
 import Control.Arrow
     ( left )
+import Data.Bifunctor
+    ( first )
 import Options.Applicative
     ( Parser, argument, eitherReader, flag', help, long, metavar, option )
-import Options.Applicative.Derivation
-    ( bech32Reader )
 
-
-import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.Text as T
 
 --
 -- Applicative Parsers
@@ -62,15 +62,8 @@ scriptHashArg helpDoc =
         <> help helpDoc
 
 scriptHashReader :: String -> Either String ScriptHash
-scriptHashReader str = do
-    (_hrp, bytes) <- bech32Reader allowedPrefixes str
-    case scriptHashFromBytes bytes of
-        Just scriptHash -> pure scriptHash
-        Nothing -> Left "Failed to convert bytes into a valid script hash."
-  where
-    allowedPrefixes =
-        [ CIP5.script
-        ]
+scriptHashReader str =
+    first prettyErrScriptHashFromText (scriptHashFromText . T.pack $ str)
 
 levelOpt :: Parser ValidationLevel
 levelOpt = required <|> recommended

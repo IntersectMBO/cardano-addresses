@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -40,12 +41,16 @@ module Cardano.Address.Script
     , ScriptHash (..)
     , toScriptHash
     , scriptHashFromBytes
+    , scriptHashToText
+    , scriptHashFromText
+    , prettyErrScriptHashFromText
 
     , KeyHash (..)
     , KeyRole (..)
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
+    , keyHashAppendByteCIP0129
     , ErrKeyHashFromText
     , prettyErrKeyHashFromText
     ) where
@@ -222,6 +227,122 @@ scriptHashFromBytes bytes
     | BS.length bytes /= credentialHashSize = Nothing
     | otherwise = Just $ ScriptHash bytes
 
+-- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
+-- In the case of governance role, if one wants to include additional byte
+-- as specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0129/README.md),
+-- the function needs to be called with withByte=true.
+--
+-- One byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
+-- below
+--
+--   drep       0010....
+--   hot        0000....    key type
+--   cold       0001....
+--
+--   scripthash ....0011    credential type
+--
+-- This is on top of X_script, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+-- In `scriptHashFromText` we additionally
+-- support reading legacy X which also lacks the additional byte, and has the same payload as
+-- as the corresponding X_script.
+--
+-- @since 4.0.0
+scriptHashToText :: ScriptHash -> KeyRole -> Bool -> Text
+scriptHashToText (ScriptHash scriptHash) cred withByte = case cred of
+    Representative ->
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep_script) scriptHash
+    CommitteeCold ->
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_script) scriptHash
+    CommitteeHot ->
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_script) scriptHash
+    Unknown ->
+        T.decodeUtf8 $ encode EBase16 scriptHash
+    _ ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.script) scriptHash
+  where
+    appendByte payload =  maybe payload (`BS.cons` payload) bytePrefix
+    bytePrefix = case cred of
+        Representative -> Just 0b00100011
+        CommitteeCold -> Just 0b00010011
+        CommitteeHot -> Just 0b00000011
+        _ -> Nothing
+
+-- | Construct a 'ScriptHash' from 'Text'. It should be
+-- Bech32 encoded text with one of following hrp:
+-- - `script`
+-- - `drep`
+-- - `cc_cold`
+-- - `cc_hot`
+-- - `drep_script`
+-- - `cc_cold_script`
+-- - `cc_hot_script`
+-- If if hex is encountered it is converted in rawly fashion
+--
+-- @since 4.0.0
+scriptHashFromText :: Text -> Either ErrScriptHashFromText ScriptHash
+scriptHashFromText txt =
+    case (fromBase16 $ T.encodeUtf8 txt) of
+        Right bs ->
+            if checkBSLength bs 28 then
+                pure $ ScriptHash bs
+            else
+                Left ErrScriptHashFromTextInvalidHex
+        Left _ -> do
+            (hrp, dp) <- first (const ErrScriptHashFromTextInvalidString) $
+                Bech32.decodeLenient txt
+
+            maybeToRight ErrScriptHashFromTextWrongDataPart (Bech32.dataPartToBytes dp)
+                >>= maybeToRight ErrScriptHashFromTextWrongHrp . convertBytes hrp
+                >>= maybeToRight ErrScriptHashFromTextWrongPayload . scriptHashFromBytes
+ where
+    convertBytes hrp bytes
+        | hrp == CIP5.drep && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   drep          0010....
+              --   scripthash    ....0011
+              in if fstByte == 0b00100011 then
+                  Just payload
+                 else
+                  Nothing
+        | hrp == CIP5.drep_script && checkBSLength bytes 28 =
+              Just bytes
+        | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   cold          0001....
+              --   scripthash    ....0011
+              in if fstByte == 0b00010011 then
+                  Just payload
+                 else
+                  Nothing
+        | hrp == CIP5.cc_cold_script && checkBSLength bytes 28 =
+              Just bytes
+        | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   hot           0000....
+              --   scripthash    ....0011
+              in if fstByte == 0b00000011 then
+                  Just payload
+                 else
+                  Nothing
+        | hrp == CIP5.cc_hot_script && checkBSLength bytes 28 =
+              Just bytes
+        | hrp == CIP5.script && checkBSLength bytes 28 =
+              Just bytes
+        | otherwise = Nothing
+
+checkBSLength :: ByteString -> Int -> Bool
+checkBSLength bytes expLength =
+    BS.length bytes == expLength
+
 data KeyRole =
       Payment
     | Delegation
@@ -252,10 +373,12 @@ keyHashFromBytes (cred, bytes)
     | otherwise = Just $ KeyHash cred bytes
 
 -- | Encode a 'KeyHash' to bech32 'Text' or hex is key role unknown.
+--  If one wants to include, valid in governance roles only, additional byte
+--  as specified in CIP-0129, the function needs to be called with withByte=true.
 --
 -- @since 3.0.0
-keyHashToText :: KeyHash -> Text
-keyHashToText (KeyHash cred keyHash) = case cred of
+keyHashToText :: KeyHash -> Bool -> Text
+keyHashToText (KeyHash cred keyHash) withByte = case cred of
     Payment ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
     Delegation ->
@@ -263,13 +386,45 @@ keyHashToText (KeyHash cred keyHash) = case cred of
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.drep) keyHash
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) keyHash
     CommitteeCold ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) keyHash
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) keyHash
     CommitteeHot ->
-        T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) keyHash
+        if withByte then
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
+        else
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) keyHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
+
+-- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
+--   one byte is prepended to vkh only in governance context. The rules how to contruct it are summarized
+--   below
+--
+--   drep       0010....
+--   hot        0000....    key type
+--   cold       0001....
+--
+--   keyhash    ....0010
+--   This is on top of X_vkh, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+--   In `keyHashFromText` we additionally
+--   support reading legacy X which also lacks the additional byte, and has the same payload as
+--   as the corresponding X_vkh.
+keyHashAppendByteCIP0129 :: ByteString -> KeyRole -> ByteString
+keyHashAppendByteCIP0129 payload cred =
+    maybe payload (`BS.cons` payload) bytePrefix
+  where
+    bytePrefix = case cred of
+        Representative -> Just 0b00100010
+        CommitteeCold -> Just 0b00010010
+        CommitteeHot -> Just 0b00000010
+        _ -> Nothing
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
@@ -281,6 +436,9 @@ keyHashToText (KeyHash cred keyHash) = case cred of
 -- - `drep`
 -- - `cc_cold`
 -- - `cc_hot`
+-- - `drep_vkh`
+-- - `cc_cold_vkh`
+-- - `cc_hot_vkh`
 -- - `addr_shared_vk`
 -- - `stake_shared_vk`
 -- - `addr_vk`
@@ -332,11 +490,41 @@ keyHashFromText txt =
               Just (Delegation, bytes)
         | hrp == CIP5.policy_vkh && checkBSLength bytes 28 =
               Just (Policy, bytes)
+        | hrp == CIP5.drep && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   drep          0010....
+              --   keyhash       ....0010
+              in if fstByte == 0b00100010 then
+                  Just (Representative, payload)
+                 else
+                  Nothing
         | hrp == CIP5.drep && checkBSLength bytes 28 =
               Just (Representative, bytes)
+        | hrp == CIP5.drep_vkh && checkBSLength bytes 28 =
+              Just (Representative, bytes)
+        | hrp == CIP5.cc_cold && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   cold          0001....
+              --   keyhash       ....0010
+              in if fstByte == 0b00010010 then
+                  Just (CommitteeCold, payload)
+                 else
+                  Nothing
         | hrp == CIP5.cc_cold && checkBSLength bytes 28 =
               Just (CommitteeCold, bytes)
+        | hrp == CIP5.cc_cold_vkh && checkBSLength bytes 28 =
+              Just (CommitteeCold, bytes)
+        | hrp == CIP5.cc_hot && checkBSLength bytes 29 =
+              let (fstByte, payload) = first BS.head $ BS.splitAt 1 bytes
+              --   hot           0000....
+              --   keyhash       ....0010
+              in if fstByte == 0b00000010 then
+                  Just (CommitteeHot, payload)
+                 else
+                  Nothing
         | hrp == CIP5.cc_hot && checkBSLength bytes 28 =
+              Just (CommitteeHot, bytes)
+        | hrp == CIP5.cc_hot_vkh && checkBSLength bytes 28 =
               Just (CommitteeHot, bytes)
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
@@ -371,8 +559,6 @@ keyHashFromText txt =
         | hrp == CIP5.cc_hot_xvk && checkBSLength bytes 64 =
               Just (CommitteeHot, hashCredential $ BS.take 32 bytes)
         | otherwise = Nothing
-    checkBSLength bytes expLength =
-        BS.length bytes == expLength
 
 -- Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
@@ -408,7 +594,34 @@ prettyErrKeyHashFromText = \case
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
     ErrKeyHashFromTextInvalidHex ->
-        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes"
+        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
+
+-- Possible errors when deserializing a script hash from text.
+--
+-- @since 4.0.0
+data ErrScriptHashFromText
+    = ErrScriptHashFromTextInvalidString
+    | ErrScriptHashFromTextWrongPayload
+    | ErrScriptHashFromTextWrongHrp
+    | ErrScriptHashFromTextWrongDataPart
+    | ErrScriptHashFromTextInvalidHex
+    deriving (Show, Eq)
+
+-- Possible errors when deserializing a script hash from text.
+--
+-- @since 4.0.0
+prettyErrScriptHashFromText :: ErrScriptHashFromText -> String
+prettyErrScriptHashFromText = \case
+    ErrScriptHashFromTextInvalidString ->
+        "Invalid encoded string: must be either bech32 or hex-encoded."
+    ErrScriptHashFromTextWrongPayload ->
+        "Script hash must contain exactly 28-byte payload and one specific prepended byte."
+    ErrScriptHashFromTextWrongHrp ->
+        "Invalid human-readable prefix: must be 'drep', 'cc_hot' or 'cc_cold'."
+    ErrScriptHashFromTextWrongDataPart ->
+        "Script hash is Bech32-encoded but has an invalid data part."
+    ErrScriptHashFromTextInvalidHex ->
+        "Invalid hex-encoded string: must be 28 bytes."
 
 --
 -- Script folding
@@ -722,7 +935,7 @@ instance ToJSON elem => ToJSON (Script elem) where
         object ["active_until" .= slot]
 
 instance ToJSON KeyHash where
-    toJSON = String . keyHashToText
+    toJSON = String . flip keyHashToText True
 
 instance FromJSON (Script KeyHash) where
     parseJSON v =

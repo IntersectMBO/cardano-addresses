@@ -583,7 +583,7 @@ stake_test17z03zgfexpfvka0l6z94shk2dknjqu8pv85lk2hkwcakdhgx52yaj
   <summary>How to generate drep keys (<strong>drep</strong>)</summary>
 
 ```console
-$ cat ../tests/root.xsk
+$ cat root.xsk
 root_xsk1hqzfzrgskgnpwskxxrv5khs7ess82ecy8za9l5ef7e0afd2849p3zryje8chk39nxtva0sww5me3pzkej4rvd5cae3q3v8eu7556n6pdrp4fdu8nsglynpmcppxxvfdyzdz5gfq3fefjepxhvqspmuyvmvqg8983
 
 $ cardano-address key child 1852H/1815H/0H/3/0 < root.xsk > drep.xsk
@@ -592,8 +592,59 @@ drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3
 $ cardano-address key public --with-chain-code < drep.xsk > drep.xvk
 drep_xvk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yy45805manx2kj2neg40kfpy9em36vnkjfm4fw09k66837unrvd70qq8ewzf
 
-$ cardano-address key hash < drep.xvk > drep
+$ cardano-address key public --without-chain-code < drep.xsk > drep.vk
+drep_vk1mg7xae48d7z4nntd35tey0jmclxaavwmk3kw2lkkt07p3s3x3yysra6588
+
+$ cardano-address key hash --cip-0105 < drep.xvk > drep.vkh
+drep_vkh1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va5hqgpg4
+
+$ cat drep.vkh | bech32
+80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da
+
+$ cat drep.vkh | bech32 drep > drep.deprecated
 drep1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va538nup0
+
+$ cat drep.deprecated | bech32
+80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da
+
+$ cardano-address key hash < drep.xvk > drep.credential
+drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm
+
+$ cat drep.credential | bech32
+2280686bb3727f602581309117d8e1cc07a410e14376d3882101d299da
+
+(there is the expected 0x22 prepended byte as it is drep key hash credential in accordance to CIP-0129. The corresponding key hash credential is '80686bb3727f602581309117d8e1cc07a410e14376d3882101d299da' and it is the same as in case of both `drep.vkh` and `drep.deprecated`).
+```
+</details>
+
+<details>
+  <summary>How to create script and its hash from drep keys (<strong>drep</strong>)</summary>
+
+```console
+
+$ cat drep.vkh
+drep_vkh1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va5hqgpg4
+$ cat drep.deprecated
+drep1sp5xhvmj0asztqfsjyta3cwvq7jppc2rwmfcsggp62va538nup0
+$ cat drep.credential
+drep1y2qxs6anwflkqfvpxzg30k8pesr6gy8pgdmd8zppq8ffnksapjznm
+
+$ cardano-address script hash "all [$(cat drep.xvk), active_from 100, active_until 120]"
+drep_script1eeccqnkak63vtp32l3epv5hcn8qpc2nxz4drxzadvj9q78ysk3q
+$ cardano-address script hash "all [$(cat drep.deprecated), active_from 100, active_until 120]"
+drep_script1eeccqnkak63vtp32l3epv5hcn8qpc2nxz4drxzadvj9q78ysk3q
+$ cardano-address script hash "all [$(cat drep.credential), active_from 100, active_until 120]"
+drep_script1eeccqnkak63vtp32l3epv5hcn8qpc2nxz4drxzadvj9q78ysk3q
+
+$ cardano-address script hash "all [$(cat drep.credential), active_from 100, active_until 120]" | bech32
+ce71804eddb6a2c5862afc721652f899c01c2a66155a330bad648a0f
+
+$ cardano-address script hash --with-byte "all [$(cat drep.credential), active_from 100, active_until 120]"
+drep1y088rqzwmkm293vx9t78y9jjlzvuq8p2vc245vct44jg5rcyp8s2d
+$ cardano-address script hash --with-byte "all [$(cat drep.credential), active_from 100, active_until 120]" | bech32
+23ce71804eddb6a2c5862afc721652f899c01c2a66155a330bad648a0f
+
+(there is the expected 0x23 prepended byte as it is drep script hash credential in accordance to CIP-0129. The corresponding script hash credential is 'ce71804eddb6a2c5862afc721652f899c01c2a66155a330bad648a0f' and it is the same irrespective of how the script hash is constructed, i.e.,  from `drep.vkh`, `drep.credential` or `drep.deprecated`).
 ```
 </details>
 
@@ -611,8 +662,59 @@ cc_cold_xsk1fp4megtpn4vu4cug2lmsyhg4xvnnar55q6k8wp5e6f2h8jz849ph8v8jhm0qffw8v6ut
 $ cardano-address key public --with-chain-code < cold.xsk > cold.xvk
 cc_cold_xvk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzzdqzpe9yw37u7mu7xaenhv7242990ps3sn8jcg52yx7n3fuke9kst5t2py
 
-$ cardano-address key hash < cold.xvk > cold
+$ cardano-address key public --without-chain-code < cold.xsk > cold.vk
+cc_cold_vk1dg8d5du0v4ukqkfgset50xncudhwlfzz2p6epv096x0ndl8jsgzqmwj2x5
+
+$ cardano-address key hash --cip-0105 < cold.xvk > cold.vkh
+cc_cold_vkh1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddctn5rch
+
+$ cat cold.vkh  | bech32
+6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc
+
+$ cat cold.vkh  | bech32 cc_cold > cold.deprecated
 cc_cold1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddccyzfjm
+
+$ cat cold.deprecated | bech32
+6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc
+
+$ cardano-address key hash < cold.xvk > cold.credential
+cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx
+
+$ cat cold.credential | bech32
+126f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc
+
+(there is the expected 0x12 prepended byte as it is cc cold key hash credential in accordance to CIP-0129. The corresponding key hash is '6f88e8e9411b27dcd1383bf513373d0ba050ac4d44ac06d5b6881adc' and it is the same as in case of both `cold.vkh` and `cold.deprecated`).
+```
+</details>
+
+<details>
+  <summary>How to create script and its hash from cold committee keys (<strong>drep</strong>)</summary>
+
+```console
+
+$ cat cold.vkh
+cc_cold_vkh1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddctn5rch
+$ cat cold.deprecated
+cc_cold1d7yw362prvnae5fc8063xdeapws9ptzdgjkqd4dk3qddccyzfjm
+$ cat cold.credential
+cc_cold1zfhc368fgydj0hx38qal2yeh8596q59vf4z2cpk4k6yp4hqy3mpsx
+
+$ cardano-address script hash "all [$(cat cold.xvk), active_from 100, active_until 120]"
+cc_cold_script18zy6g0vu7ajzmzamkvysfzc0nnfpf8w3n7404xxhaz2jqexhzw5
+$ cardano-address script hash "all [$(cat cold.deprecated), active_from 100, active_until 120]"
+cc_cold_script18zy6g0vu7ajzmzamkvysfzc0nnfpf8w3n7404xxhaz2jqexhzw5
+$ cardano-address script hash "all [$(cat cold.credential), active_from 100, active_until 120]"
+cc_cold_script18zy6g0vu7ajzmzamkvysfzc0nnfpf8w3n7404xxhaz2jqexhzw5
+
+$ cardano-address script hash "all [$(cat cold.credential), active_from 100, active_until 120]" | bech32
+3889a43d9cf7642d8bbbb309048b0f9cd2149dd19faafa98d7e89520
+
+$ cardano-address script hash --with-byte "all [$(cat cold.credential), active_from 100, active_until 120]"
+cc_cold1zvugnfpannmkgtvthwesjpytp7wdy9ya6x06475c6l5f2gqcxtssu
+$ cardano-address script hash --with-byte "all [$(cat cold.credential), active_from 100, active_until 120]" | bech32
+133889a43d9cf7642d8bbbb309048b0f9cd2149dd19faafa98d7e89520
+
+(there is the expected 0x13 prepended byte as it is cc cold script hash credential in accordance to CIP-0129. The corresponding script hash credential is '3889a43d9cf7642d8bbbb309048b0f9cd2149dd19faafa98d7e89520' and it is the same irrespective of how the script hash is constructed, i.e.,  from `cold.vkh`, `cold.credential` or `cold.deprecated`).
 ```
 </details>
 
@@ -629,10 +731,62 @@ cc_hot_xsk14z9ktfggpsm8sqd5ecepv9f4estxkukfualezuxrfry0mjj849puxsq7ch3tw67d7rfr4
 $ cardano-address key public --with-chain-code < hot.xsk > hot.xvk
 cc_hot_xvk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3hjwwaw54qwj0rn084enysj8ha2vwg2wd7umksf4tcnskaj8xr4tcempwly
 
-$ cardano-address key hash < hot.xvk > hot
+$ cardano-address key public --without-chain-code < hot.xsk > hot.vk
+cc_hot_vk1a5q4r34xzm0r6y728d4gmrl7jvrfuh7r022k7wh5mzwmyg7d7l3s3fzqkv
+
+$ cardano-address key hash --cip-0105 < hot.xvk > hot.vkh
+cc_hot_vkh1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezk2qmuz
+
+$ cat hot.vkh | bech32
+358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991
+
+$ cat hot.vkh  | bech32 cc_hot > hot.deprecated
 cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
+
+$ cat hot.deprecated | bech32
+358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991
+
+$ cardano-address key hash < hot.xvk > hot.credential
+cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d
+
+$ cat hot.credential | bech32
+02358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991
+
+(there is the expected 0x02 prepended byte as it is cc cold key hash credential in accordance to CIP-0129. The corresponding key hash credential is '358b52181c48f748492ca4697fcec43e12548914b30311d4022b6991' and it is the same as in case of both `hot.vkh` and `hot.deprecated`).
 ```
 </details>
+
+<details>
+  <summary>How to create script and its hash from hot committee keys (<strong>drep</strong>)</summary>
+
+```console
+
+$ cat hot.vkh
+cc_hot_vkh1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezk2qmuz
+$ cat hot.deprecated
+cc_hot1xk94yxqufrm5sjfv535hlnky8cf9fzg5kvp3r4qz9d5ezua5p8v
+$ cat hot.credential
+cc_hot1qg6ck5scr3y0wjzf9jjxjl7wcslpy4yfzjesxyw5qg4knyg9ckh0d
+
+$ cardano-address script hash "all [$(cat hot.xvk), active_from 100, active_until 120]"
+cc_hot_script14xptkz0f6kv85nctxuycj0vm73u7ajuz4rglxn5qgzncsdq80mv
+$ cardano-address script hash "all [$(cat hot.deprecated), active_from 100, active_until 120]"
+cc_hot_script14xptkz0f6kv85nctxuycj0vm73u7ajuz4rglxn5qgzncsdq80mv
+$ cardano-address script hash "all [$(cat hot.credential), active_from 100, active_until 120]"
+cc_hot_script14xptkz0f6kv85nctxuycj0vm73u7ajuz4rglxn5qgzncsdq80mv
+
+$ cardano-address script hash "all [$(cat hot.credential), active_from 100, active_until 120]" | bech32
+a982bb09e9d5987a4f0b3709893d9bf479eecb82a8d1f34e8040a788
+
+$ cardano-address script hash --with-byte "all [$(cat hot.credential), active_from 100, active_until 120]"
+cc_hot1qw5c9wcfa82es7j0pvmsnzfan068nmkts25dru6wspq20zqsumm4q
+$ cardano-address script hash --with-byte "all [$(cat hot.credential), active_from 100, active_until 120]" | bech32
+03a982bb09e9d5987a4f0b3709893d9bf479eecb82a8d1f34e8040a788
+
+(there is the expected 0x03 prepended byte as it is cc hot script hash credential in accordance to CIP-0129. The corresponding script hash credential is 'a982bb09e9d5987a4f0b3709893d9bf479eecb82a8d1f34e8040a788' and it is the same irrespective of how the script hash is constructed, i.e.,  from `hot.vkh`, `hot.credential` or `hot.deprecated`).
+```
+</details>
+
 
 <details>
   <summary>How to get signing key and chain code from an extended signing key (<strong>drep.sk</strong>)</summary>

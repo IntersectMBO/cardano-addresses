@@ -70,6 +70,7 @@ module Cardano.Codec.Bech32.Prefixes
     , drep_sk
     , drep_xvk
     , drep_xsk
+    , drep_vkh
     , drep
     , drep_script
 
@@ -77,6 +78,7 @@ module Cardano.Codec.Bech32.Prefixes
     , cc_cold_sk
     , cc_cold_xvk
     , cc_cold_xsk
+    , cc_cold_vkh
     , cc_cold
     , cc_cold_script
 
@@ -84,6 +86,7 @@ module Cardano.Codec.Bech32.Prefixes
     , cc_hot_sk
     , cc_hot_xvk
     , cc_hot_xsk
+    , cc_hot_vkh
     , cc_hot
     , cc_hot_script
     ) where
@@ -253,6 +256,9 @@ drep_xvk = [humanReadablePart|drep_xvk|]
 drep_xsk :: HumanReadablePart
 drep_xsk = [humanReadablePart|drep_xsk|]
 
+drep_vkh :: HumanReadablePart
+drep_vkh = [humanReadablePart|drep_vkh|]
+
 drep :: HumanReadablePart
 drep = [humanReadablePart|drep|]
 
@@ -267,6 +273,9 @@ cc_cold_sk = [humanReadablePart|cc_cold_sk|]
 
 cc_cold_xvk :: HumanReadablePart
 cc_cold_xvk = [humanReadablePart|cc_cold_xvk|]
+
+cc_cold_vkh :: HumanReadablePart
+cc_cold_vkh = [humanReadablePart|cc_cold_vkh|]
 
 cc_cold_xsk :: HumanReadablePart
 cc_cold_xsk = [humanReadablePart|cc_cold_xsk|]
@@ -288,6 +297,9 @@ cc_hot_xvk = [humanReadablePart|cc_hot_xvk|]
 
 cc_hot_xsk :: HumanReadablePart
 cc_hot_xsk = [humanReadablePart|cc_hot_xsk|]
+
+cc_hot_vkh :: HumanReadablePart
+cc_hot_vkh = [humanReadablePart|cc_hot_vkh|]
 
 cc_hot :: HumanReadablePart
 cc_hot = [humanReadablePart|cc_hot|]

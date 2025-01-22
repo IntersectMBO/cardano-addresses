@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -18,19 +17,18 @@ import Prelude hiding
 import Cardano.Address.Script
     ( ErrValidateScript (..)
     , KeyHash (..)
-    , KeyRole (..)
     , Script (..)
-    , ScriptHash (..)
     , foldScript
     , prettyErrValidateScript
+    , scriptHashToText
     , toScriptHash
     )
-import Codec.Binary.Encoding
-    ( AbstractEncoding (..) )
 import Data.Text
     ( Text )
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+import Options.Applicative.Governance
+    ( GovernanceType (..), governanceOpt )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
@@ -38,13 +36,14 @@ import Options.Applicative.Script
 import System.IO
     ( stderr, stdout )
 import System.IO.Extra
-    ( hPutBytes, hPutString, progName )
+    ( hPutString, hPutStringNoNewLn, progName )
 
-import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.List as L
+import qualified Data.Text as T
 
-newtype Cmd = Cmd
+data Cmd = Cmd
     { script :: Script KeyHash
+    , govType :: GovernanceType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -65,16 +64,18 @@ mod liftCmd = command "hash" $
   where
     parser = Cmd
         <$> scriptArg
+        <*> governanceOpt
 
     prettyText :: Text -> Doc
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script} = do
-    let (ScriptHash bytes) = toScriptHash script
+run Cmd{script,govType} = do
+    let scriptHash = toScriptHash script
     case checkRoles of
         Just role ->
-            hPutBytes stdout bytes (EBech32 $ pickCIP5 role)
+            hPutStringNoNewLn stdout $ T.unpack $
+            scriptHashToText scriptHash role (govToBool govType)
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -86,8 +87,5 @@ run Cmd{script} = do
             Just $ head allRoles
         else
             Nothing
-    pickCIP5 = \case
-        Representative -> CIP5.drep_script
-        CommitteeCold -> CIP5.cc_cold_script
-        CommitteeHot -> CIP5.cc_hot_script
-        _ -> CIP5.script
+    govToBool CIP0129 = True
+    govToBool CIP0105 = False
