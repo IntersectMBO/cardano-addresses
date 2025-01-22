@@ -43,7 +43,7 @@ import qualified Data.Text as T
 
 data Cmd = Cmd
     { script :: Script KeyHash
-    , withByte :: GovernanceType
+    , govType :: GovernanceType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -70,12 +70,12 @@ mod liftCmd = command "hash" $
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script,withByte} = do
+run Cmd{script,govType} = do
     let scriptHash = toScriptHash script
     case checkRoles of
         Just role ->
             hPutStringNoNewLn stdout $ T.unpack $
-            scriptHashToText scriptHash role (govToBool withByte)
+            scriptHashToText scriptHash role (govToBool govType)
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -87,5 +87,5 @@ run Cmd{script,withByte} = do
             Just $ head allRoles
         else
             Nothing
-    govToBool WithByte = True
-    govToBool WithoutByte = False
+    govToBool CIP0129 = True
+    govToBool CIP0105 = False

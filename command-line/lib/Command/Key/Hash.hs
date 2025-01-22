@@ -40,7 +40,7 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 
 newtype Cmd = Hash
-    { withByte :: GovernanceType
+    { govType :: GovernanceType
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -57,7 +57,7 @@ mod liftCmd = command "hash" $
         <$> governanceOpt
 
 run :: Cmd -> IO ()
-run Hash{withByte} = do
+run Hash{govType} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
     let encoding = EBech32 $ prefixFor hrp
@@ -75,28 +75,28 @@ run Hash{withByte} = do
         , ( CIP5.stake_shared_xvk, CIP5.stake_shared_vkh )
         , ( CIP5.policy_vk       , CIP5.policy_vkh  )
         , ( CIP5.policy_xvk      , CIP5.policy_vkh  )
-        , ( CIP5.drep_vk         , if withByte == WithByte then CIP5.drep else CIP5.drep_vkh )
-        , ( CIP5.drep_xvk        , if withByte == WithByte then CIP5.drep else CIP5.drep_vkh )
-        , ( CIP5.cc_cold_vk      , if withByte == WithByte then CIP5.cc_cold else CIP5.cc_cold_vkh )
-        , ( CIP5.cc_cold_xvk     , if withByte == WithByte then CIP5.cc_cold else CIP5.cc_cold_vkh )
-        , ( CIP5.cc_hot_vk       , if withByte == WithByte then CIP5.cc_hot else CIP5.cc_hot_vkh )
-        , ( CIP5.cc_hot_xvk      , if withByte == WithByte then CIP5.cc_hot else CIP5.cc_hot_vkh )
+        , ( CIP5.drep_vk         , if govType == CIP0129 then CIP5.drep else CIP5.drep_vkh )
+        , ( CIP5.drep_xvk        , if govType == CIP0129 then CIP5.drep else CIP5.drep_vkh )
+        , ( CIP5.cc_cold_vk      , if govType == CIP0129 then CIP5.cc_cold else CIP5.cc_cold_vkh )
+        , ( CIP5.cc_cold_xvk     , if govType == CIP0129 then CIP5.cc_cold else CIP5.cc_cold_vkh )
+        , ( CIP5.cc_hot_vk       , if govType == CIP0129 then CIP5.cc_hot else CIP5.cc_hot_vkh )
+        , ( CIP5.cc_hot_xvk      , if govType == CIP0129 then CIP5.cc_hot else CIP5.cc_hot_vkh )
         ]
     allowedPrefixes = map fst prefixes
     prefixFor = fromJust . flip lookup prefixes
 
     afterHashing hrp hashed
-        | hrp == CIP5.drep_vk && withByte == WithByte =
+        | hrp == CIP5.drep_vk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed Representative
-        | hrp == CIP5.drep_xvk && withByte == WithByte =
+        | hrp == CIP5.drep_xvk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed Representative
-        | hrp == CIP5.cc_cold_vk && withByte == WithByte =
+        | hrp == CIP5.cc_cold_vk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed CommitteeCold
-        | hrp == CIP5.cc_cold_xvk && withByte == WithByte =
+        | hrp == CIP5.cc_cold_xvk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed CommitteeCold
-        | hrp == CIP5.cc_hot_vk && withByte == WithByte =
+        | hrp == CIP5.cc_hot_vk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed CommitteeHot
-        | hrp == CIP5.cc_hot_xvk && withByte == WithByte =
+        | hrp == CIP5.cc_hot_xvk && govType == CIP0129 =
             keyHashAppendByteCIP0129 hashed CommitteeHot
         | otherwise =
             hashed
