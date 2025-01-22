@@ -228,8 +228,23 @@ scriptHashFromBytes bytes
     | otherwise = Just $ ScriptHash bytes
 
 -- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
---  If one wants to include, valid in governance roles only, additional byte
---  as specified in CIP-0129, the function needs to be called with withByte=true.
+-- In the case of governance role, if one wants to include additional byte
+-- as specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0129/README.md),
+-- the function needs to be called with withByte=true.
+--
+-- One byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
+-- below
+--
+--   drep       0010....
+--   hot        0000....    key type
+--   cold       0001....
+--
+--   scripthash ....0011    credential type
+--
+-- This is on top of X_script, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+-- In `scriptHashFromText` we additionally
+-- support reading legacy X which also lacks the additional byte, and has the same payload as
+-- as the corresponding X_script.
 --
 -- @since 4.0.0
 scriptHashToText :: ScriptHash -> KeyRole -> Bool -> Text
@@ -254,20 +269,6 @@ scriptHashToText (ScriptHash scriptHash) cred withByte = case cred of
     _ ->
         T.decodeUtf8 $ encode (EBech32 CIP5.script) scriptHash
   where
--- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
---   one byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
---   below
---
---   drep       0010....
---   hot        0000....    key type
---   cold       0001....
---
---   scripthash ....0011    credential type
---
---   This is on top of X_script, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
---   In `scriptHashFromText` we additionally
---   support reading legacy X which also lacks the additional byte, and has the same payload as
---   as the corresponding X_script.
     appendByte payload =  maybe payload (`BS.cons` payload) bytePrefix
     bytePrefix = case cred of
         Representative -> Just 0b00100011
