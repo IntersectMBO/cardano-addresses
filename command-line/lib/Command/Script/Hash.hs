@@ -15,7 +15,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.KeyHash
-    ( KeyHash (..) )
+    ( GovernanceType (..), KeyHash (..) )
 import Cardano.Address.Script
     ( ErrValidateScript (..)
     , Script (..)
@@ -29,7 +29,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Governance
-    ( GovernanceType (..), governanceOpt )
+    ( governanceOpt )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script

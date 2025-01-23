@@ -17,6 +17,7 @@ module Cardano.Address.KeyHash
     (
       KeyHash (..)
     , KeyRole (..)
+    , GovernanceType (..)
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
@@ -50,6 +51,12 @@ import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
+
+-- | Determines if one asks for deprecated HRP prefixes, '*_vkh' and '*_script'
+-- in accordance to CIP-0105 (on demand when flag 'cip-0105' is used) or uses default format
+-- specified in CIP-0129 (where additional byte is prepended to 28-byte hash).
+data GovernanceType = CIP0129 | CIP0105
+    deriving (Eq, Show)
 
 data KeyRole =
       PaymentShared
@@ -87,8 +94,8 @@ keyHashFromBytes (cred, bytes)
 --  as specified in CIP-0129, the function needs to be called with withByte=true.
 --
 -- @since 3.0.0
-keyHashToText :: KeyHash -> Bool -> Text
-keyHashToText (KeyHash cred keyHash) withByte = case cred of
+keyHashToText :: KeyHash -> Maybe GovernanceType -> Text
+keyHashToText (KeyHash cred keyHash) govType = case cred of
     PaymentShared ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
     DelegationShared ->
@@ -99,21 +106,21 @@ keyHashToText (KeyHash cred keyHash) withByte = case cred of
         T.decodeUtf8 $ encode (EBech32 CIP5.stake_vkh) keyHash
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
-    Representative ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
-        else
+    Representative -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) keyHash
-    CommitteeCold ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
-        else
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
+    CommitteeCold -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) keyHash
-    CommitteeHot ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
-        else
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
+    CommitteeHot -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) keyHash
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
 
@@ -305,4 +312,4 @@ prettyErrKeyHashFromText = \case
         "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
 
 instance ToJSON KeyHash where
-    toJSON = String . flip keyHashToText True
+    toJSON = String . flip keyHashToText Nothing

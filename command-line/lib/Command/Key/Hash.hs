@@ -16,7 +16,7 @@ import Prelude hiding
 import Cardano.Address.Derivation
     ( hashCredential )
 import Cardano.Address.KeyHash
-    ( KeyHash (..), KeyRole (..), keyHashToText )
+    ( GovernanceType, KeyHash (..), KeyRole (..), keyHashToText )
 import Control.Monad
     ( when )
 import Data.Maybe
@@ -26,7 +26,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Governance
-    ( GovernanceType (..), governanceOpt )
+    ( governanceOpt )
 import Options.Applicative.Help.Pretty
     ( pretty )
 import System.IO
@@ -61,7 +61,7 @@ run Hash{govType} = do
     guardBytes hrp bytes
     let keyhash = KeyHash (prefixFor hrp) (hashCredential $ BS.take 32 bytes)
     hPutStringNoNewLn stdout $ T.unpack $
-        keyHashToText keyhash (govToBool govType)
+        keyHashToText keyhash (Just govType)
   where
     -- Mapping of input HRP to key role
     prefixToRole =
@@ -104,6 +104,3 @@ run Hash{govType} = do
         | otherwise = do
             when (BS.length bytes /= 32) $
                 fail "data should be a 32-byte public key."
-
-    govToBool CIP0129 = True
-    govToBool CIP0105 = False

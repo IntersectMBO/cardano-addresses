@@ -4,26 +4,18 @@
 
 module Options.Applicative.Governance
     (
-    -- * Types
-      GovernanceType (..)
-
     -- * Applicative Parser
-    , governanceOpt
+      governanceOpt
     ) where
 
 import Prelude
 
+import Cardano.Address.KeyHash
+    ( GovernanceType (..) )
 import Control.Applicative
     ( (<|>) )
 import Options.Applicative
     ( Parser, flag', long )
-
-
--- | Determines if one asks for deprecated HRP prefixes, '*_vkh' and '*_script'
--- in accordance to CIP-0105 (on demand when flag 'cip-0105' is used) or uses default format
--- specified in CIP-0129 (where additional byte is prepended to 28-byte hash).
-data GovernanceType = CIP0129 | CIP0105
-    deriving (Eq, Show)
 
 --
 -- Applicative Parser
