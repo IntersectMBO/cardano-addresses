@@ -52,7 +52,9 @@ import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
 data KeyRole =
-      Payment
+      PaymentShared
+    | DelegationShared
+    | Payment
     | Delegation
     | Policy
     | Representative
@@ -87,10 +89,14 @@ keyHashFromBytes (cred, bytes)
 -- @since 3.0.0
 keyHashToText :: KeyHash -> Bool -> Text
 keyHashToText (KeyHash cred keyHash) withByte = case cred of
-    Payment ->
+    PaymentShared ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
-    Delegation ->
+    DelegationShared ->
         T.decodeUtf8 $ encode (EBech32 CIP5.stake_shared_vkh) keyHash
+    Payment ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.addr_vkh) keyHash
+    Delegation ->
+        T.decodeUtf8 $ encode (EBech32 CIP5.stake_vkh) keyHash
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative ->
