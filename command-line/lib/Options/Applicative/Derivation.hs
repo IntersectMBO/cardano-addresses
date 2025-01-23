@@ -48,7 +48,7 @@ import Cardano.Address.Derivation
     , wholeDomainIndex
     , xpubFromBytes
     )
-import Cardano.Address.Script
+import Cardano.Address.KeyHash
     ( KeyHash (..), KeyRole (..), keyHashFromBytes )
 import Codec.Binary.Bech32
     ( HumanReadablePart, humanReadablePartToText )

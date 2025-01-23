@@ -15,7 +15,7 @@ import Prelude hiding
 
 import Cardano.Address.Derivation
     ( hashCredential )
-import Cardano.Address.Script
+import Cardano.Address.KeyHash
     ( KeyRole (..), keyHashAppendByteCIP0129 )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )

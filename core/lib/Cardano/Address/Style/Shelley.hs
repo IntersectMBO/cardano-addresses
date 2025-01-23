@@ -121,8 +121,10 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Internal
     ( WithErrorMessage (..), orElse )
+import Cardano.Address.KeyHash
+    ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Script
-    ( KeyHash (..), KeyRole (..), Script, ScriptHash (..), toScriptHash )
+    ( Script, ScriptHash (..), toScriptHash )
 import Cardano.Mnemonic
     ( SomeMnemonic, someMnemonicToBytes )
 import Codec.Binary.Encoding

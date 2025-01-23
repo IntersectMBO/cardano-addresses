@@ -13,7 +13,7 @@ import Cardano.Address.Derivation
     ( Depth (..) )
 import Cardano.Address.Internal
     ( orElse )
-import Cardano.Address.Script
+import Cardano.Address.KeyHash
     ( KeyRole (..) )
 import Cardano.Address.Style.Shelley
     ( Credential (..), liftPub, liftXPub )

@@ -26,13 +26,13 @@ import Cardano.Address.Derivation
     , toXPub
     , xpubFromBytes
     )
+import Cardano.Address.KeyHash
+    ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Script
     ( Cosigner (..)
     , ErrRecommendedValidateScript (..)
     , ErrValidateScript (..)
     , ErrValidateScriptTemplate (..)
-    , KeyHash (..)
-    , KeyRole (..)
     , Script (..)
     , ScriptHash (..)
     , ScriptTemplate (..)

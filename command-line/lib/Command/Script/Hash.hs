@@ -14,9 +14,10 @@ module Command.Script.Hash
 import Prelude hiding
     ( mod )
 
+import Cardano.Address.KeyHash
+    ( KeyHash (..) )
 import Cardano.Address.Script
     ( ErrValidateScript (..)
-    , KeyHash (..)
     , Script (..)
     , foldScript
     , prettyErrValidateScript

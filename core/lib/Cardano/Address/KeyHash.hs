@@ -33,6 +33,8 @@ import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Control.DeepSeq
     ( NFData )
+import Data.Aeson
+    ( ToJSON (..), Value (..) )
 import Data.Bifunctor
     ( first )
 import Data.ByteString
@@ -295,3 +297,6 @@ prettyErrKeyHashFromText = \case
         "Verification key hash is Bech32-encoded but has an invalid data part."
     ErrKeyHashFromTextInvalidHex ->
         "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
+
+instance ToJSON KeyHash where
+    toJSON = String . flip keyHashToText True

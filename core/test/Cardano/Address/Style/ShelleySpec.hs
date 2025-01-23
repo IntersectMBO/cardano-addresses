@@ -55,14 +55,10 @@ import Cardano.Address.Derivation
     , xpubToBytes
     , xpubToPub
     )
+import Cardano.Address.KeyHash
+    ( KeyHash (..), KeyRole (..), keyHashToText )
 import Cardano.Address.Script
-    ( KeyHash (..)
-    , KeyRole (..)
-    , Script (..)
-    , ScriptHash (..)
-    , keyHashToText
-    , toScriptHash
-    )
+    ( Script (..), ScriptHash (..), toScriptHash )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
