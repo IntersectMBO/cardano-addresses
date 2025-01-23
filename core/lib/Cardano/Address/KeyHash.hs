@@ -8,7 +8,6 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -21,7 +20,6 @@ module Cardano.Address.KeyHash
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
-    , keyHashAppendByteCIP0129
     , ErrKeyHashFromText
     , prettyErrKeyHashFromText
     ) where
