@@ -52,7 +52,12 @@ import Prelude
 import Cardano.Address.Derivation
     ( XPub, credentialHashSize, hashCredential, xpubFromBytes, xpubToBytes )
 import Cardano.Address.KeyHash
-    ( KeyHash (..), KeyRole (..), keyHashFromText, prettyErrKeyHashFromText )
+    ( GovernanceType (..)
+    , KeyHash (..)
+    , KeyRole (..)
+    , keyHashFromText
+    , prettyErrKeyHashFromText
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Control.Applicative
@@ -223,8 +228,8 @@ scriptHashFromBytes bytes
 
 -- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
 -- In the case of governance role, if one wants to include additional byte
--- as specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0129/README.md),
--- the function needs to be called with withByte=true.
+-- as specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0129/README.md)
+-- unless the function is called with (Just CIP0105).
 --
 -- One byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
 -- below
@@ -241,23 +246,23 @@ scriptHashFromBytes bytes
 -- as the corresponding X_script.
 --
 -- @since 4.0.0
-scriptHashToText :: ScriptHash -> KeyRole -> Bool -> Text
-scriptHashToText (ScriptHash scriptHash) cred withByte = case cred of
-    Representative ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
-        else
+scriptHashToText :: ScriptHash -> KeyRole -> Maybe GovernanceType -> Text
+scriptHashToText (ScriptHash scriptHash) cred govType = case cred of
+    Representative -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.drep_script) scriptHash
-    CommitteeCold ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
-        else
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ appendByte scriptHash
+    CommitteeCold -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_script) scriptHash
-    CommitteeHot ->
-        if withByte then
-            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
-        else
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ appendByte scriptHash
+    CommitteeHot -> case govType of
+        Just CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_script) scriptHash
+        _ ->
+            T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ appendByte scriptHash
     Unknown ->
         T.decodeUtf8 $ encode EBase16 scriptHash
     _ ->

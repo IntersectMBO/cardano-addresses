@@ -15,7 +15,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Address.KeyHash
-    ( GovernanceType (..), KeyHash (..) )
+    ( GovernanceType, KeyHash (..) )
 import Cardano.Address.Script
     ( ErrValidateScript (..)
     , Script (..)
@@ -76,7 +76,7 @@ run Cmd{script,govType} = do
     case checkRoles of
         Just role ->
             hPutStringNoNewLn stdout $ T.unpack $
-            scriptHashToText scriptHash role (govToBool govType)
+            scriptHashToText scriptHash role (Just govType)
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -88,5 +88,3 @@ run Cmd{script,govType} = do
             Just $ head allRoles
         else
             Nothing
-    govToBool CIP0129 = True
-    govToBool CIP0105 = False
