@@ -16,8 +16,10 @@ import Cardano.Address
     ( NetworkTag (..), unAddress )
 import Cardano.Address.Derivation
     ( pubFromBytes, xpubFromBytes )
+import Cardano.Address.KeyHash
+    ( KeyHash, KeyRole (..), keyHashFromBytes )
 import Cardano.Address.Script
-    ( KeyHash, KeyRole (..), Script, keyHashFromBytes, scriptHashFromBytes )
+    ( Script, scriptHashFromBytes )
 import Cardano.Address.Style.Shelley
     ( Credential (..), shelleyTestnet, unsafeFromRight )
 import Codec.Binary.Encoding

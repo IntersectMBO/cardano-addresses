@@ -14,9 +14,10 @@ module Command.Script.Hash
 import Prelude hiding
     ( mod )
 
+import Cardano.Address.KeyHash
+    ( GovernanceType, KeyHash (..) )
 import Cardano.Address.Script
     ( ErrValidateScript (..)
-    , KeyHash (..)
     , Script (..)
     , foldScript
     , prettyErrValidateScript
@@ -28,7 +29,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Governance
-    ( GovernanceType (..), governanceOpt )
+    ( governanceOpt )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
@@ -75,7 +76,7 @@ run Cmd{script,govType} = do
     case checkRoles of
         Just role ->
             hPutStringNoNewLn stdout $ T.unpack $
-            scriptHashToText scriptHash role (govToBool govType)
+            scriptHashToText scriptHash role (Just govType)
         Nothing ->
             hPutString stderr (prettyErrValidateScript NotUniformKeyType)
   where
@@ -87,5 +88,3 @@ run Cmd{script,govType} = do
             Just $ head allRoles
         else
             Nothing
-    govToBool CIP0129 = True
-    govToBool CIP0105 = False

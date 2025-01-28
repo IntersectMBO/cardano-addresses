@@ -27,6 +27,7 @@ library
       Cardano.Address
       Cardano.Address.Derivation
       Cardano.Address.Internal
+      Cardano.Address.KeyHash
       Cardano.Address.Script
       Cardano.Address.Script.Parser
       Cardano.Address.Style.Byron

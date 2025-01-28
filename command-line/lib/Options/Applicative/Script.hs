@@ -17,9 +17,10 @@ module Options.Applicative.Script
 
 import Prelude
 
+import Cardano.Address.KeyHash
+    ( KeyHash )
 import Cardano.Address.Script
     ( Cosigner (..)
-    , KeyHash
     , Script (..)
     , ScriptHash
     , ValidationLevel (..)

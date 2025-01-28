@@ -14,8 +14,10 @@ module Command.Script.Preimage
 import Prelude hiding
     ( mod )
 
+import Cardano.Address.KeyHash
+    ( KeyHash )
 import Cardano.Address.Script
-    ( KeyHash, Script (..), serializeScript )
+    ( Script (..), serializeScript )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Data.Text

@@ -144,7 +144,7 @@ jobs:
       run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
 
     - name: Cache Cabal store
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ steps.cabal-store.outputs.cabal-store }}
         key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
@@ -152,7 +152,7 @@ jobs:
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       name: "Cache `dist-newstyle`"
       with:
         path: |
@@ -180,8 +180,8 @@ jobs:
         fi
 
     - name: Upload Windows Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: ${{ matrix.os }}-exe
+        name: ${{ matrix.os }}-${{ matrix.ghc }}-exe
         path: ${{ steps.cabal-store.outputs.cabal-store }}

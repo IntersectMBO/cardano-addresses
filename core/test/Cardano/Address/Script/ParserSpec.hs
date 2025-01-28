@@ -10,8 +10,10 @@ module Cardano.Address.Script.ParserSpec
 
 import Prelude
 
+import Cardano.Address.KeyHash
+    ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Script
-    ( Cosigner (..), KeyHash (..), KeyRole (..), Script (..) )
+    ( Cosigner (..), Script (..) )
 import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser

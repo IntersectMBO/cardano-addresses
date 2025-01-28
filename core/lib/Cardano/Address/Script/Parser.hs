@@ -22,14 +22,10 @@ module Cardano.Address.Script.Parser
 
 import Prelude
 
+import Cardano.Address.KeyHash
+    ( KeyHash, keyHashFromText, prettyErrKeyHashFromText )
 import Cardano.Address.Script
-    ( Cosigner (..)
-    , ErrValidateScript (..)
-    , KeyHash
-    , Script (..)
-    , keyHashFromText
-    , prettyErrKeyHashFromText
-    )
+    ( Cosigner (..), ErrValidateScript (..), Script (..) )
 import Data.Char
     ( isDigit, isLetter )
 import Data.Text
