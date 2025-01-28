@@ -56,7 +56,7 @@ import Cardano.Address.Derivation
     , xpubToPub
     )
 import Cardano.Address.KeyHash
-    ( KeyHash (..), KeyRole (..), keyHashToText )
+    ( GovernanceType (..), KeyHash (..), KeyRole (..), keyHashToText )
 import Cardano.Address.Script
     ( Script (..), ScriptHash (..), toScriptHash )
 import Cardano.Address.Style.Shelley
@@ -985,7 +985,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let drepPubTxt = bech32With CIP5.drep_vk $ getVerKey $ toXPub <$> drepXPrv
         let drepPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> drepXPrv
         let drepKeyHash = toKeyHash Representative $ toXPub <$> drepXPrv
-        let drepTxt = keyHashToText drepKeyHash Nothing
+        let drepTxt = keyHashToText drepKeyHash CIP0129
         let drepTxtHex = tob16text . digest $ drepKeyHash
         let drepScriptHash1 = toScriptHash (script1 drepKeyHash)
         let drepScript1Txt = toScriptTxt drepScriptHash1 CIP5.drep
@@ -1004,7 +1004,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let coldPubTxt = bech32With CIP5.cc_cold_vk $ getVerKey $ toXPub <$> coldXPrv
         let coldPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> coldXPrv
         let coldKeyHash = toKeyHash CommitteeCold $ toXPub <$> coldXPrv
-        let coldTxt = keyHashToText coldKeyHash Nothing
+        let coldTxt = keyHashToText coldKeyHash CIP0129
         let coldTxtHex = tob16text . digest $ coldKeyHash
         let coldScriptHash1 = toScriptHash (script1 coldKeyHash)
         let coldScript1Txt = toScriptTxt coldScriptHash1 CIP5.cc_cold
@@ -1023,7 +1023,7 @@ goldenTestGovernance GoldenTestGovernance{..} =
         let hotPubTxt = bech32With CIP5.cc_hot_vk $ getVerKey $ toXPub <$> hotXPrv
         let hotPubTxtHex = tob16text . unAddress $ getVerKey $ toXPub <$> hotXPrv
         let hotKeyHash = toKeyHash CommitteeHot $ toXPub <$> hotXPrv
-        let hotTxt = keyHashToText hotKeyHash Nothing
+        let hotTxt = keyHashToText hotKeyHash CIP0129
         let hotTxtHex = tob16text . digest $ hotKeyHash
         let hotScriptHash1 = toScriptHash (script1 hotKeyHash)
         let hotScript1Txt = toScriptTxt hotScriptHash1 CIP5.cc_hot

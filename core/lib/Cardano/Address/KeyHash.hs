@@ -53,9 +53,27 @@ import qualified Data.Text.Encoding as T
 -- | Determines if one asks for deprecated HRP prefixes, '*_vkh' and '*_script'
 -- in accordance to CIP-0105 (on demand when flag 'cip-0105' is used) or uses default format
 -- specified in CIP-0129 (where additional byte is prepended to 28-byte hash).
-data GovernanceType = CIP0129 | CIP0105
+data GovernanceType = NoGovernance | CIP0129 | CIP0105
     deriving (Eq, Show)
 
+-- | Determines the role a given key plays. The role basically can be mapped into derivation path
+-- which was used to derive it from the parent. Also it has a dedicated user facing HRP
+-- when presented in bech32 format - see 'keyHashToText' for more details.
+-- Take notice that purpose/role (except 'Policy') are as defined below in derivation path:
+-- m / purpose' / coin_type' / account_ix' / role / index
+-- 'Policy' has a dedicated derivation path as follows:
+-- m / purpose' / coin_type' / policy_ix'
+--
+-- |    KeyRole       |   purpose  |  role  |                                  CIP                                         |
+---------------------------------------------------------------------------------------------------------------------------|
+-- | PaymentShared    |   1854H    |   0,1  | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
+-- | DelegationShared |   1854H    |   2    | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
+-- | Payment          |   1852H    |   0,1  | [CIP-1852](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1852)  |
+-- | Delegation       |   1852H    |   2    | [CIP-0011](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0011)  |
+-- | Representative   |   1852H    |   3    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- | CommitteeCold    |   1852H    |   4    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- | CommitteeHot     |   1852H    |   5    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- | Policy           |   1855H    |   -    | [CIP-1855](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1855)  |
 data KeyRole =
       PaymentShared
     | DelegationShared
@@ -92,7 +110,7 @@ keyHashFromBytes (cred, bytes)
 --  as specified in CIP-0129, the function needs to be called with withByte=true.
 --
 -- @since 3.0.0
-keyHashToText :: KeyHash -> Maybe GovernanceType -> Text
+keyHashToText :: KeyHash -> GovernanceType -> Text
 keyHashToText (KeyHash cred keyHash) govType = case cred of
     PaymentShared ->
         T.decodeUtf8 $ encode (EBech32 CIP5.addr_shared_vkh) keyHash
@@ -105,17 +123,17 @@ keyHashToText (KeyHash cred keyHash) govType = case cred of
     Policy ->
         T.decodeUtf8 $ encode (EBech32 CIP5.policy_vkh) keyHash
     Representative -> case govType of
-        Just CIP0105 ->
+        CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.drep_vkh) keyHash
         _ ->
             T.decodeUtf8 $ encode (EBech32 CIP5.drep) $ keyHashAppendByteCIP0129 keyHash cred
     CommitteeCold -> case govType of
-        Just CIP0105 ->
+        CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold_vkh) keyHash
         _ ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_cold) $ keyHashAppendByteCIP0129 keyHash cred
     CommitteeHot -> case govType of
-        Just CIP0105 ->
+        CIP0105 ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot_vkh) keyHash
         _ ->
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
@@ -147,6 +165,7 @@ keyHashAppendByteCIP0129 payload cred =
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
+
 -- - `addr_shared_vkh`
 -- - `stake_shared_vkh`
 -- - `addr_vkh`
@@ -173,9 +192,10 @@ keyHashAppendByteCIP0129 payload cred =
 -- - `drep_xvk`
 -- - `cc_cold_xvk`
 -- - `cc_hot_xvk`
+
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
--- If if hex is encountered Unknown policy key is assumed
+-- If if hex is encountered 'Unknown' policy key is assumed.
 --
 -- @since 3.1.0
 keyHashFromText :: Text -> Either ErrKeyHashFromText KeyHash
@@ -310,4 +330,4 @@ prettyErrKeyHashFromText = \case
         "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
 
 instance ToJSON KeyHash where
-    toJSON = String . flip keyHashToText Nothing
+    toJSON = String . flip keyHashToText CIP0129

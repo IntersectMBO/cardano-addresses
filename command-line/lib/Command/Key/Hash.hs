@@ -61,7 +61,7 @@ run Hash{govType} = do
     guardBytes hrp bytes
     let keyhash = KeyHash (prefixFor hrp) (hashCredential $ BS.take 32 bytes)
     hPutStringNoNewLn stdout $ T.unpack $
-        keyHashToText keyhash (Just govType)
+        keyHashToText keyhash govType
   where
     -- Mapping of input HRP to key role
     prefixToRole =
