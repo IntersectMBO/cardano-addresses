@@ -229,7 +229,7 @@ scriptHashFromBytes bytes
 -- | Encode a 'ScriptHash' to bech32 'Text' or hex if key role is unknown.
 -- In the case of governance role, if one wants to include additional byte
 -- as specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0129/README.md)
--- unless the function is called with (Just CIP0105).
+-- unless the function is called with CIP0105.
 --
 -- One byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
 -- below

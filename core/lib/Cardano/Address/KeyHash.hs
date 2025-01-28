@@ -65,7 +65,7 @@ data GovernanceType = NoGovernance | CIP0129 | CIP0105
 -- m / purpose' / coin_type' / policy_ix'
 --
 -- |    KeyRole       |   purpose  |  role  |                                  CIP                                         |
----------------------------------------------------------------------------------------------------------------------------|
+-- ------------------------------------------------------------------------------------------------------------------------|
 -- | PaymentShared    |   1854H    |   0,1  | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
 -- | DelegationShared |   1854H    |   2    | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
 -- | Payment          |   1852H    |   0,1  | [CIP-1852](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1852)  |
@@ -209,7 +209,7 @@ keyHashFromText txt =
             else if checkBSLength bs 64 then
                 pure $ KeyHash Unknown (hashCredential $ BS.take 32 bs)
             else
-                Left ErrKeyHashFromTextInvalidHex
+                Left (ErrKeyHashFromTextInvalidHex $ BS.length bs)
         Left _ -> do
             (hrp, dp) <- first (const ErrKeyHashFromTextInvalidString) $
                 Bech32.decodeLenient txt
@@ -310,7 +310,7 @@ data ErrKeyHashFromText
     | ErrKeyHashFromTextWrongPayload
     | ErrKeyHashFromTextWrongHrp
     | ErrKeyHashFromTextWrongDataPart
-    | ErrKeyHashFromTextInvalidHex
+    | ErrKeyHashFromTextInvalidHex Int
     deriving (Show, Eq)
 
 -- Possible errors when deserializing a key hash from text.
@@ -326,8 +326,8 @@ prettyErrKeyHashFromText = \case
         "Invalid human-readable prefix: must be 'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy'."
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
-    ErrKeyHashFromTextInvalidHex ->
-        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes."
+    ErrKeyHashFromTextInvalidHex size->
+        "Invalid hex-encoded string: must be either 28, 32 or 64 bytes, but has " <> show size <> " bytes."
 
 instance ToJSON KeyHash where
     toJSON = String . flip keyHashToText CIP0129
