@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- |
--- Copyright: © 2018-2021 IOHK
+-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
 -- License: Apache-2.0
 --
 -- Utility functions for internal use of the library.
