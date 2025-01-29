@@ -14,8 +14,6 @@
 
   <a href="">[![Coding Standards](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml)</a>
   <a href="">[![Haskell CI using Cabal](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml)</a>
-  <a href="">[![Haskell CI using stack for Linux](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/main.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/main.yml)</a>
-  <a href="">[![TypeScript NPM Package](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/typescript.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/typescript.yml)</a>
 
 </div>
 
@@ -916,6 +914,18 @@ $ cardano-address key public --without-chain-code < key.xsk | cardano-address ke
 
 ```
 </details>
+
+## Building/testing from source using nix
+
+``` console
+$ nix develop
+
+$ cabal build all
+
+$ export LANG=C.UTF-8
+$ cabal test cardano-addresses:unit
+$ cabal test cardano-addresses-cli:unit
+```
 
 ## Docker Image
 
