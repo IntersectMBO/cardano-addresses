@@ -13,8 +13,11 @@ jobs:
       fail-fast: false
       matrix:
         ghc: ["8.10.7", "9.6.5"]
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # GHC versions older than ghc-9.2 are not supported on macos-latest
+        exclude:
+          - os: macos-latest
+            ghc: "8.10.7"
 
     env:
       # we need the LD_LIBRARY_PATH env var here because we ended up installing libsecp256k1 into /usr/local,
@@ -43,6 +46,7 @@ jobs:
      # above. It appears as if PATHEXT is set _after_ ghcup install ghc/cabal, and
      # as such we'd need pacman.exe instead.
     - name: Setup Haskell
+      if: runner.os == 'Linux'
       run: |
         # Use GHCUP to manage ghc/cabal
         ghcup install ghc --set ${{ matrix.ghc }}
@@ -50,6 +54,13 @@ jobs:
 
         ghc --version
         cabal --version
+
+    - name: "MAC: Setup Haskell"
+      if: runner.os == 'macOS'
+      uses: input-output-hk/actions/haskell@latest
+      with:
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: 3.12.1.0
 
     - name: "WIN: fixup cabal config"
       if: runner.os == 'Windows'
@@ -185,3 +196,20 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.ghc }}-exe
         path: ${{ steps.cabal-store.outputs.cabal-store }}
+
+    - name: "Tar artifacts"
+      if: runner.os != 'Windows'
+      run: |
+        mkdir -p artifacts
+
+        for exe in $(cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style == "local" and (."component-name" | startswith("exe:"))) | ."bin-file"'); do
+          if [ -f $exe ]; then
+            echo "Including artifact $exe"
+
+            ( cd artifacts
+              tar -C "$(dirname $exe)" -czf "$(basename $exe).tar.gz" "$(basename $exe)"
+            )
+          else
+            echo "Skipping artifact $exe"
+          fi
+        done
