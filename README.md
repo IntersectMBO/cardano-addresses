@@ -970,7 +970,7 @@ Javascript support was dicontinued and dropped. One could look at the following 
 1. [MeshJS](https://github.com/MeshJS/mesh)
 2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
 
-Alternatively one could lean back on release [3.12.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.12.0)
+Alternatively one could lean back on release [4.0.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/4.0.0)
 where Javascript was still present.
 
 ## Contributing
