@@ -163,8 +163,8 @@ jobs:
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
           cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
 
-    - uses: actions/cache@v4
-      name: "Cache `dist-newstyle`"
+    - name: "Cache `dist-newstyle`"
+      uses: actions/cache@v4
       with:
         path: |
           dist-newstyle
@@ -194,22 +194,12 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: ${{ matrix.os }}-${{ matrix.ghc }}-exe
+        name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}-exe
         path: ${{ steps.cabal-store.outputs.cabal-store }}
 
-    - name: "Tar artifacts"
+    - name: Upload Linux/Macos artifacts
       if: runner.os != 'Windows'
-      run: |
-        mkdir -p artifacts
-
-        for exe in $(cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style == "local" and (."component-name" | startswith("exe:"))) | ."bin-file"'); do
-          if [ -f $exe ]; then
-            echo "Including artifact $exe"
-
-            ( cd artifacts
-              tar -C "$(dirname $exe)" -czf "$(basename $exe).tar.gz" "$(basename $exe)"
-            )
-          else
-            echo "Skipping artifact $exe"
-          fi
-        done
+      uses: actions/upload-artifact@v4
+      with:
+        name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}
+        path: ${{ steps.cabal-store.outputs.cabal-store }}
