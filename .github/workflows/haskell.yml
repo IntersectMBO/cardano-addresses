@@ -190,16 +190,35 @@ jobs:
           cabal test cardano-addresses-cli
         fi
 
-    - name: Upload Windows Artifact
+    - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}-exe
         path: ${{ steps.cabal-store.outputs.cabal-store }}
 
-    - name: Upload Linux/Macos artifacts
+    - name: Upload Linux/Macos artifact
       if: runner.os != 'Windows'
-      uses: actions/upload-artifact@v4
+      run: |
+        mkdir artifacts
+
+        for exe in $(cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style == "local" and (."component-name" | startswith("exe:"))) | ."bin-file"'); do
+          if [ -f $exe ]; then
+            echo "Including artifact $exe"
+
+            artifactName="$(basename $exe).tar.gz"
+
+            ( cd artifacts
+              tar -C "$(dirname $exe)" -czf "$(basename $exe).tar.gz" "$(basename $exe)"
+            )
+          else
+            echo "Skipping artifact $exe"
+          fi
+        done
+
+        echo "artifactPath=artifacts/$(artifactName)" >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v4
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}
-        path: ${{ steps.cabal-store.outputs.cabal-store }}
+        path: ${{ env.artifactPath }}
