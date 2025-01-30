@@ -196,8 +196,9 @@ jobs:
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}-exe
         path: ${{ steps.cabal-store.outputs.cabal-store }}
+        retention-days: 2
 
-    - name: Upload Linux/Macos artifact
+    - name: Preparing Linux/Macos artifact
       if: runner.os != 'Windows'
       run: |
         mkdir artifacts
@@ -218,7 +219,10 @@ jobs:
 
         echo "artifactPath=artifacts/$(artifactName)" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload Linux/Macos artifact
+      uses: actions/upload-artifact@v4
+      if: runner.os != 'Windows'
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}
         path: ${{ env.artifactPath }}
+        retention-days: 2
