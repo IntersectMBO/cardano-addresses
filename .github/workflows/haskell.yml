@@ -181,7 +181,6 @@ jobs:
     - name: Run unit tests
       shell: bash
       run: |
-        cabal test cardano-addresses
         if [ "${{ runner.os }}" != "Windows" ] || [ "${{ matrix.ghc }}" !=  "9.6.5" ]; then
           # This test is currently broken with GHC 9.6 on windows.
           # This could be related to:
