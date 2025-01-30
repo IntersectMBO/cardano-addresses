@@ -6,6 +6,10 @@
 {-# OPTIONS_HADDOCK hide #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
+-- |
+-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
+-- License: Apache-2.0
+
 module Command.Address.Pointer
     ( Cmd
     , mod

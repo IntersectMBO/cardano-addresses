@@ -4,7 +4,11 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {- HLINT ignore "Use camelCase" -}
 
--- | List common bech32 prefixes used for objects in the Cardano eco-systems.
+-- |
+-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
+-- License: Apache-2.0
+--
+-- List common bech32 prefixes used for objects in the Cardano eco-systems.
 --
 -- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)
 -- and in [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)

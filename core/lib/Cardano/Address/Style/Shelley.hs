@@ -19,7 +19,7 @@
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 -- |
--- Copyright: © 2018-2021 IOHK
+-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
 -- License: Apache-2.0
 
 module Cardano.Address.Style.Shelley
@@ -1133,7 +1133,7 @@ liftXPub = Shelley
 -- speed up test code (and avoid having to do needless derivations from a master
 -- key down to an address key for instance).
 --
--- @since 3.14.0
+-- @since 3.0.0
 liftPub :: Pub -> Shelley depth Pub
 liftPub = Shelley
 
