@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
-name:           cardano-addresses-cli
+name:           cardano-addresses
 version:        4.0.0
 synopsis:       Utils for constructing a command-line on top of cardano-addresses.
 description:    Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
@@ -76,7 +76,7 @@ library
       System.Git.TH
       System.IO.Extra
   other-modules:
-      Paths_cardano_addresses_cli
+      Paths_cardano_addresses
   hs-source-dirs:
       lib
   default-extensions:
@@ -121,13 +121,13 @@ library
 executable cardano-address
   main-is: Main.hs
   other-modules:
-      Paths_cardano_addresses_cli
+      Paths_cardano_addresses
   hs-source-dirs:
       exe
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , cardano-addresses-cli
+    , cardano-addresses
     , with-utf8
   if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
@@ -176,7 +176,7 @@ test-suite unit
       System.IO.ExtraSpec
       Test.Arbitrary
       Test.Utils
-      Paths_cardano_addresses_cli
+      Paths_cardano_addresses
   hs-source-dirs:
       test
   default-extensions:
@@ -195,7 +195,7 @@ test-suite unit
     , bech32-th
     , binary
     , bytestring
-    , cardano-addresses-cli
+    , cardano-addresses
     , cardano-crypto
     , cryptonite
     , containers

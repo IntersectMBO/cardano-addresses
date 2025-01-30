@@ -8,7 +8,7 @@ import Prelude
 
 import Data.Version
     ( showVersion )
-import Paths_cardano_addresses_cli
+import Paths_cardano_addresses
     ( version )
 import Test.Hspec
     ( Spec, it, shouldContain )

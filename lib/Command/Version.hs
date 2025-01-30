@@ -29,7 +29,7 @@ import Options.Applicative
     , subparser
     , (<|>)
     )
-import Paths_cardano_addresses_cli
+import Paths_cardano_addresses
     ( version )
 import System.Git.TH
     ( gitRevParseHEAD )

@@ -884,7 +884,7 @@ $ cabal build all
 
 # testing
 $ export LANG=C.UTF-8
-$ cabal test cardano-addresses-cli:unit
+$ cabal test cardano-addresses:unit
 
 # installing executable locally
 $ cabal install cardano-address
