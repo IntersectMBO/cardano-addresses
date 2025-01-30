@@ -186,7 +186,7 @@ jobs:
           # This could be related to:
           # * UTF8 encoding and the use of emoji's in the output.
           # * unhandled PEi386 relocation type 14 (less likely).
-          cabal test cardano-addresses-cli
+          cabal test
         fi
 
     - name: Upload Windows artifact
