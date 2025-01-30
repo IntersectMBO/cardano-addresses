@@ -14,7 +14,6 @@ haskell-nix.cabalProject' (
     # When adding a new Cabal package, or removing, update this attrset.
     # It's not automatically discovered from stack-pkgs yet.
     projectPackages = [
-      "cardano-addresses"
       "cardano-addresses-cli"
     ];
     isCrossBuild = stdenv.hostPlatform != stdenv.buildPlatform;
@@ -22,7 +21,7 @@ haskell-nix.cabalProject' (
     compareGhc = builtins.compareVersions pkgs.buildPackages.haskell-nix.compiler.${config.compiler-nix-name}.version;
   in
   {
-    src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-src"; src = ../.; };
+    src = haskell-nix.cleanSourceHaskell { name = "cardano-addresses-cli-src"; src = ../.; };
 
     inputMap = {
       "https://chap.intersectmbo.org/" = CHaP;
