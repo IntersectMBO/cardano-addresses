@@ -109,7 +109,7 @@ jobs:
     - name: "MAC: Install build environment (brew)"
       if: runner.os == 'macOS'
       run: |
-        brew install libsodium
+        brew reinstall libsodium
         brew install pcre
 
     - name: Cabal update
