@@ -4,8 +4,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -91,6 +93,8 @@ import Data.Word
     ( Word64 )
 import GHC.Stack
     ( HasCallStack )
+import GHC.TypeLits
+    ( natVal )
 import Numeric.Natural
     ( Natural )
 import Options.Applicative.Derivation
