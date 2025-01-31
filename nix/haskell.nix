@@ -15,7 +15,6 @@ haskell-nix.cabalProject' (
     # It's not automatically discovered from stack-pkgs yet.
     projectPackages = [
       "cardano-addresses"
-      "cardano-addresses-cli"
     ];
     isCrossBuild = stdenv.hostPlatform != stdenv.buildPlatform;
     cabalProject = builtins.readFile ../cabal.project;
@@ -70,17 +69,17 @@ haskell-nix.cabalProject' (
 
     modules = [
       ({ config, ... }: {
-        # This works around an issue with `cardano-addresses-cli.cabal`
+        # This works around an issue with `cardano-addresses.cabal`
         # Haskell.nix does not like `build-tool: cardano-address` as it looks in the
-        # cardano-address package instead of the `cardano-addresses-cli`.
+        # cardano-address package instead of the `cardano-addresses`.
         # For some reason `cabal configure` fails if it is changed to:
-        # `build-tool-depends: cardano-address-cli:cardano-address
+        # `build-tool-depends: cardano-address:cardano-address
         # Explicitly overriding the `build-tools` allows `build-tool: cardano-address`
         # for now.  A better fix would be to work out why cabal fails when
         # `build-tool-depends` is used.
-        packages.cardano-addresses-cli.components.tests.unit.build-tools = pkgs.lib.mkForce [
+        packages.cardano-addresses.components.tests.unit.build-tools = pkgs.lib.mkForce [
           config.hsPkgs.buildPackages.hspec-discover.components.exes.hspec-discover
-          config.hsPkgs.cardano-addresses-cli.components.exes.cardano-address
+          config.hsPkgs.cardano-addresses.components.exes.cardano-address
         ];
       })
 
@@ -94,7 +93,7 @@ haskell-nix.cabalProject' (
           # Needed for linking of the musl static build.
           packages.pcre-light.flags.use-pkg-config = true;
           packages.pcre-light.components.library.libs = [ pcre ];
-          packages.cardano-addresses-cli.components.tests.unit.configureFlags = [ "--ghc-option=-optl=-L${pcre}/lib" ];
+          packages.cardano-addresses.components.tests.unit.configureFlags = [ "--ghc-option=-optl=-L${pcre}/lib" ];
         }))
 
       (lib.mkIf isCrossBuild ({ pkgs, ... }: {

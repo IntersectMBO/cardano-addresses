@@ -35,7 +35,7 @@
       overlay = final: prev:
         {
           cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
-          inherit (final.cardanoAddressesHaskellProject.cardano-addresses-cli.components.exes) cardano-address;
+          inherit (final.cardanoAddressesHaskellProject.cardano-addresses.components.exes) cardano-address;
         };
     in
     {
@@ -72,10 +72,10 @@
           legacyPackages = haskellProject;
 
           # Built by `nix build .`
-          defaultPackage = flake.packages."cardano-addresses-cli:exe:cardano-address";
+          defaultPackage = flake.packages."cardano-addresses:exe:cardano-address";
 
           # Run by `nix run .`
-          defaultApp = flake.apps."cardano-addresses-cli:exe:cardano-address";
+          defaultApp = flake.apps."cardano-addresses:exe:cardano-address";
 
           apps = {
             repl = mkApp {

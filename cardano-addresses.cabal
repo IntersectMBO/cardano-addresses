@@ -1,0 +1,216 @@
+cabal-version: 1.12
+
+name:           cardano-addresses
+version:        4.0.0
+synopsis:       Utils for constructing a command-line on top of cardano-addresses.
+description:    Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
+category:       Cardano
+homepage:       https://github.com/IntersectMBO/cardano-addresses#readme
+bug-reports:    https://github.com/IntersectMBO/cardano-addresses/issues
+author:         IOHK
+maintainer:     operations@iohk.io
+copyright:      2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
+license:        Apache-2.0
+build-type:     Simple
+extra-source-files:
+    ./schemas/address-inspect.json
+
+source-repository head
+  type: git
+  location: https://github.com/IntersectMBO/cardano-addresses
+
+flag release
+  description: Compile executables for a release.
+  manual: True
+  default: False
+
+library
+  exposed-modules:
+      Cardano.Address
+      Cardano.Address.Derivation
+      Cardano.Address.Internal
+      Cardano.Address.KeyHash
+      Cardano.Address.Script
+      Cardano.Address.Script.Parser
+      Cardano.Address.Style.Byron
+      Cardano.Address.Style.Icarus
+      Cardano.Address.Style.Shared
+      Cardano.Address.Style.Shelley
+      Cardano.Codec.Bech32.Prefixes
+      Cardano.Codec.Cbor
+      Cardano.Mnemonic
+      Codec.Binary.Encoding
+      Command
+      Command.Address
+      Command.Address.Bootstrap
+      Command.Address.Delegation
+      Command.Address.Inspect
+      Command.Address.Payment
+      Command.Address.Pointer
+      Command.Address.Reward
+      Command.Key
+      Command.Key.Child
+      Command.Key.FromRecoveryPhrase
+      Command.Key.Hash
+      Command.Key.Inspect
+      Command.Key.Public
+      Command.Key.Private
+      Command.Key.WalletId
+      Command.RecoveryPhrase
+      Command.RecoveryPhrase.Generate
+      Command.Script
+      Command.Script.Hash
+      Command.Script.Preimage
+      Command.Script.Validation
+      Command.Version
+      Data.Word7
+      Options.Applicative.Credential
+      Options.Applicative.Derivation
+      Options.Applicative.Discrimination
+      Options.Applicative.Governance
+      Options.Applicative.MnemonicSize
+      Options.Applicative.Public
+      Options.Applicative.Script
+      Options.Applicative.Private
+      Options.Applicative.Style
+      System.Git.TH
+      System.IO.Extra
+  other-modules:
+      Paths_cardano_addresses
+  hs-source-dirs:
+      lib
+  default-extensions:
+      NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
+  build-depends:
+      aeson >= 2.0
+    , aeson-pretty
+    , ansi-terminal
+    , ansi-wl-pprint
+    , base >=4.7 && <5
+    , base58-bytestring
+    , basement
+    , bech32
+    , bech32-th
+    , binary
+    , bytestring
+    , cardano-crypto
+    , cborg
+    , containers
+    , cryptonite
+    , deepseq
+    , digest
+    , either
+    , exceptions
+    , extra
+    , fmt
+    , hashable
+    , memory
+    , mtl >=2.2.2
+    , optparse-applicative
+    , process
+    , safe
+    , template-haskell
+    , text
+    , transformers
+    , unordered-containers
+  if flag(release)
+    ghc-options: -Werror
+  default-language: Haskell2010
+
+executable cardano-address
+  main-is: Main.hs
+  other-modules:
+      Paths_cardano_addresses
+  hs-source-dirs:
+      exe
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cardano-addresses
+    , with-utf8
+  if flag(release) && !impl(ghcjs) && !os(ghcjs)
+    ghc-options: -Werror -static -O2
+    cc-options: -static
+    ld-options: -static -pthread
+  default-language: Haskell2010
+
+test-suite unit
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      AutoDiscover
+      Cardano.Address.DerivationSpec
+      Cardano.Address.Script.ParserSpec
+      Cardano.Address.ScriptSpec
+      Cardano.Address.Style.ByronSpec
+      Cardano.Address.Style.IcarusSpec
+      Cardano.Address.Style.SharedSpec
+      Cardano.Address.Style.ShelleySpec
+      Cardano.AddressSpec
+      Cardano.Codec.CborSpec
+      Cardano.MnemonicSpec
+      Codec.Binary.EncodingSpec
+      Command.Address.BootstrapSpec
+      Command.Address.DelegationSpec
+      Command.Address.InspectSpec
+      Command.Address.PaymentSpec
+      Command.Address.PointerSpec
+      Command.Address.RewardSpec
+      Command.Key.ChildSpec
+      Command.Key.FromRecoveryPhraseSpec
+      Command.Key.HashSpec
+      Command.Key.InspectSpec
+      Command.Key.PrivateSpec
+      Command.Key.PublicSpec
+      Command.Key.WalletIdSpec
+      Command.KeySpec
+      Command.RecoveryPhrase.GenerateSpec
+      Command.RecoveryPhraseSpec
+      Command.Script.HashSpec
+      Command.Script.PreimageSpec
+      Command.Script.ValidationSpec
+      CommandSpec
+      Data.Word7Spec
+      Options.Applicative.DerivationSpec
+      System.IO.ExtraSpec
+      Test.Arbitrary
+      Test.Utils
+      Paths_cardano_addresses
+  hs-source-dirs:
+      test
+  default-extensions:
+      NoImplicitPrelude
+  ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-tools:
+      cardano-address
+  build-tool-depends:
+      hspec-discover:hspec-discover
+  build-depends:
+      QuickCheck >=2.14.2
+    , aeson >= 2.0
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bech32
+    , bech32-th
+    , binary
+    , bytestring
+    , cardano-addresses
+    , cardano-crypto
+    , cryptonite
+    , containers
+    , hspec
+    , hspec-golden >=0.1.0.3 && <0.2
+    , memory
+    , pretty-simple
+    , process
+    , string-interpolate
+    , temporary
+    , text
+    , with-utf8
+  if os(windows)
+    build-depends:
+        Win32
+  if flag(release)
+    ghc-options: -Werror
+  default-language:   Haskell2010

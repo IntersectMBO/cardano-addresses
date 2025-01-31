@@ -874,17 +874,20 @@ $ cardano-address key public --without-chain-code < key.xsk | cardano-address ke
 
 ```
 
-
 ## Building/testing from source using nix
 
 ``` console
 $ nix develop
 
+# building
 $ cabal build all
 
+# testing
 $ export LANG=C.UTF-8
 $ cabal test cardano-addresses:unit
-$ cabal test cardano-addresses-cli:unit
+
+# installing executable locally
+$ cabal install cardano-address
 ```
 
 ## Docker Image

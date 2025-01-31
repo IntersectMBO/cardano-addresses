@@ -23,8 +23,7 @@ if impl(ghc>=9.8)
 active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 packages:
-  command-line/cardano-addresses-cli.cabal
-  core/cardano-addresses.cabal
+  cardano-addresses.cabal
 
 -- Make sure `hsc2hs` is available for building the `zlib` package
 -- when cross compiling for windows.  The conditional dependency on

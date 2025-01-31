@@ -42,15 +42,15 @@ let
         ++ (
         let ps = jobs.packages.${defaultSystem}; in
         [
-          ps."cardano-addresses-cli:exe:cardano-address"
+          ps."cardano-addresses:exe:cardano-address"
           ps."js-unknown-ghcjs:cardano-addresses:lib:cardano-addresses"
         ]
       )
         ++ (lib.optionals linuxBuild (
         let ps = jobs.packages."x86_64-linux"; in
         [
-          ps."x86_64-w64-mingw32:cardano-addresses-cli:exe:cardano-address"
-          ps."x86_64-unknown-linux-musl:cardano-addresses-cli:exe:cardano-address"
+          ps."x86_64-w64-mingw32:cardano-addresses:exe:cardano-address"
+          ps."x86_64-unknown-linux-musl:cardano-addresses:exe:cardano-address"
         ]
       ))
         ++ (lib.attrValues jobs.checks.${defaultSystem})
