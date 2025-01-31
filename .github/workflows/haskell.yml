@@ -1,4 +1,4 @@
-name: Haskell CI using Cabal
+name: Haskell CI
 
 on:
   push:
@@ -19,183 +19,96 @@ jobs:
           - os: macos-latest
             ghc: "8.10.7"
 
-    env:
-      # we need the LD_LIBRARY_PATH env var here because we ended up installing libsecp256k1 into /usr/local,
-      # pkg-config, *does* return the proper location, but the library does not appear to be properly referenced.
-      # FIXME: this is arguably a bug, and pkg-config should return the right values!
-      LD_LIBRARY_PATH: ${{ (matrix.os != 'windows-latest' && '/usr/local/lib') || '' }}
-
     steps:
-    - name: "WIN: Install System Dependencies via pacman (msys2)"
-      if: runner.os == 'Windows'
-      run: |
-         # ghcup should be installed on current GHA Windows runners. Let's use ghcup to run
-         # pacman, to install the necessary dependencies, ...
-         ghcup run --mingw-path -- pacman --noconfirm -S `
-            mingw-w64-x86_64-pkg-config `
-            mingw-w64-x86_64-pcre `
-            mingw-w64-x86_64-libsodium `
-            base-devel `
-            autoconf-wrapper `
-            autoconf `
-            automake `
-            libtool `
-            make
-
-     # this seems to break something. It _must_ come after the pacman setup
-     # above. It appears as if PATHEXT is set _after_ ghcup install ghc/cabal, and
-     # as such we'd need pacman.exe instead.
-    - name: Setup Haskell
-      if: runner.os == 'Linux'
-      run: |
-        # Use GHCUP to manage ghc/cabal
-        ghcup install ghc --set ${{ matrix.ghc }}
-        ghcup install cabal --set 3.10.1.0
-
-        ghc --version
-        cabal --version
-
-    - name: "MAC: Setup Haskell"
-      if: runner.os == 'macOS'
+    - name: Install Haskell
       uses: input-output-hk/actions/haskell@latest
+      id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: 3.12.1.0
 
-    - name: "WIN: fixup cabal config"
-      if: runner.os == 'Windows'
-      run: |
-        # make sure cabal knows about msys64, and mingw64 tools. Not clear why C:/cabal/config is empty
-        # and C:/cabal doesn't even exist.  The ghcup bootstrap file should have create it in the image:
-        # See https://github.com/haskell/ghcup-hs/blob/787edc17af4907dbc51c85e25c490edd8d68b80b/scripts/bootstrap/bootstrap-haskell#L591
-        # So we'll do it by hand here for now.
-        #
-        # We'll _not_ add extra-include-dirs, or extra-lib-dirs, and rely on what's shipped with GHC.
-        # https://github.com/msys2/MINGW-packages/issues/10837#issuecomment-1047105402
-        # https://gitlab.haskell.org/ghc/ghc/-/issues/21111
-        # if we _do_ want them, this would be the lines to add below
-
-        $ghcMingwDir = Join-Path -Path $(ghc --print-libdir) `
-                                 -ChildPath ../mingw/x86_64-*-mingw32/lib/ `
-                                 -Resolve
-
-        cabal user-config -a "extra-prog-path: C:/msys64/mingw64/bin, C:/msys64/usr/bin" `
-                          -a "extra-include-dirs: C:/msys64/mingw64/include" `
-                          -a ("extra-lib-dirs: {0}, C:/msys64/mingw64/lib" -f $ghcMingwDir) `
-                          -f init
-
-    - name: Set cache version
-      run: echo "CACHE_VERSION=grFfw7r" >> $GITHUB_ENV
-
-    - uses: actions/checkout@v2
-
-    - name: "[PowerShell] Add build script path"
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: Add-Content $env:GITHUB_PATH "$(pwd)/.github/bin"
-
-    - name: "[Bash] Add build script path"
-      if: runner.os != 'Windows'
-      run: echo "$(pwd)/.github/bin" >> $GITHUB_PATH
-
-    - name: "LINUX: Install build environment (apt-get)"
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get -y install libsodium23 libsodium-dev
-        sudo apt-get -y remove --purge software-properties-common
-        sudo apt-get -y autoremove
-
-    - name: "MAC: Install build environment (brew)"
-      if: runner.os == 'macOS'
-      run: |
-        brew reinstall libsodium
-        brew install pcre
+    - uses: actions/checkout@v4
 
     - name: Cabal update
       run: cabal update
 
-    - name: "Setup cabal-store"
-      id: cabal-store
-      shell: bash
-      run: |
-        cabal_config_file="$(cabal help user-config | tail -n 1 | xargs)"
-
-        if [[ '${{ runner.os }}' != 'Windows' ]]; then
-          echo "cabal-store=$(dirname "$cabal_config_file")/store" | tee -a "$GITHUB_OUTPUT"
-        else
-          echo "cabal-store=C:\\cabal\\store" | tee -a "$GITHUB_OUTPUT"
-        fi
-
-    - name: "Check cabal-store"
-      shell: bash
-      run: echo '${{ steps.cabal-store.outputs.cabal-store }}'
-
     - name: Configure build
       shell: bash
       run: |
-        if [ "${{github.event.inputs.tests}}" == "all" ]; then
-          echo "Reconfigure cabal projects to run tests for all dependencies"
-          sed -i 's|tests: False|tests: True|g' cabal.project
-        fi
-
         cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
-
         echo "# cabal.project.local"
         cat cabal.project.local
 
+    # A dry run `build all` operation does *NOT* download anything, it just looks at the package
+    # indices to generate an install plan.
+    - name: Build dry run
+      run: cabal build all --enable-tests --dry-run --minimize-conflict-set
+
+    # From the install plan a dependency list is generated here.
     - name: Record dependencies
       id: record-deps
       run: |
-        cabal build all --dry-run
+        # The tests call out to msys2 commands. We generally do not want to mix toolchains, so
+        # we are very deliberate about only adding msys64 to the path where absolutely necessary.
+        ${{ (runner.os == 'Windows' && '$env:PATH=("C:\msys64\mingw64\bin;{0}" -f $env:PATH)') || '' }}
         cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
 
-    - name: "OUTPUT Record weeknum"
-      shell: bash
-      run: echo "weeknum=$(/usr/bin/date -u "+%W")" >> $GITHUB_OUTPUT
-
-    - name: Cache Cabal store
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.cabal-store.outputs.cabal-store }}
-        key: cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
-        restore-keys: |
-          cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
-          cache-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
-
-    - name: "Cache `dist-newstyle`"
-      uses: actions/cache@v4
+    # From the dependency list the cached dependencies is restored.
+    # The hash of `dependencies.txt` is used as a part of the cache key because that will be stable
+    # until the `index-state` values in the `cabal.project` file changes.
+    - name: Restore cached dependencies
+      uses: actions/cache/restore@v4
+      id: cache
       with:
         path: |
+          ${{ steps.setup-haskell.outputs.cabal-store }}
           dist-newstyle
-          !dist-newstyle/**/.git
-        key: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ steps.record-deps.outputs.weeknum }}
-        restore-keys: cache-dist-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
+        key: cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
 
+    # The dependencies are installed. If the cache is found and restored in the previous step,
+    # this should be a no-op. If the cache key is not found the build assets are produced for the
+    # caching in the next step.
     - name: Install dependencies
-      run: cabal build all --only-dependencies
+      run: cabal build all --enable-tests --only-dependencies -j --ghc-option=-j4
 
-    - name: Build
-      run: cabal build all
+    # Always store the cabal cache.
+    # This may benignly fail if the cache key is already populated.
+    - name: Cache Cabal store
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ steps.setup-haskell.outputs.cabal-store }}
+          dist-newstyle
+        key: cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
 
-    - name: Run unit tests
-      shell: bash
+    - name: Build Windows
+      if: runner.os == 'Windows'
+      id: build-step-windows
       run: |
-        if [ "${{ runner.os }}" != "Windows" ] || [ "${{ matrix.ghc }}" !=  "9.6.5" ]; then
-          # This test is currently broken with GHC 9.6 on windows.
-          # This could be related to:
-          # * UTF8 encoding and the use of emoji's in the output.
-          # * unhandled PEi386 relocation type 14 (less likely).
-          cabal test
-        fi
+        cabal build all --enable-tests -j --ghc-option=-j4
+
+        if ( "${{ runner.os }}" -eq "Windows" ) {
+          echo "exe-location=D:\a\cardano-addresses\cardano-addresses\dist-newstyle\build\x86_64-windows\ghc-${{ matrix.ghc }}\cardano-addresses-4.0.0\x\cardano-address\build\cardano-address\cardano-address.exe" >> $env:GITHUB_OUTPUT
+        }
+
+    - name: Build Linux/Macos
+      if: runner.os != 'Windows'
+      run: cabal build all --enable-tests -j --ghc-option=-j4
+
+    - name: Running all tests
+      env:
+        # these two are msys2 env vars, they have no effect on non-msys2 installs.
+        MSYS2_PATH_TYPE: inherit
+        MSYSTEM: MINGW64
+      run: cabal test all --enable-tests --test-show-details=direct -j1
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}-exe
-        path: ${{ steps.cabal-store.outputs.cabal-store }}
-        retention-days: 2
+        path: ${{ steps.build-step-windows.outputs.exe-location }}
+        retention-days: 1
 
     - name: Preparing Linux/Macos artifact
       if: runner.os != 'Windows'
@@ -219,9 +132,9 @@ jobs:
         echo "artifactPath=artifacts/$(artifactName)" >> $GITHUB_ENV
 
     - name: Upload Linux/Macos artifact
-      uses: actions/upload-artifact@v4
       if: runner.os != 'Windows'
+      uses: actions/upload-artifact@v4
       with:
         name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}
         path: ${{ env.artifactPath }}
-        retention-days: 2
+        retention-days: 1

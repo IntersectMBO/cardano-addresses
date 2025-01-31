@@ -43,7 +43,6 @@ let
         let ps = jobs.packages.${defaultSystem}; in
         [
           ps."cardano-addresses:exe:cardano-address"
-          ps."js-unknown-ghcjs:cardano-addresses:lib:cardano-addresses"
         ]
       )
         ++ (lib.optionals linuxBuild (

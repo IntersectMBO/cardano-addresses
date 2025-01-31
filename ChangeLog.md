@@ -1,7 +1,8 @@
-## [4.0.0] - 2025-01-30
+## [4.0.0] - 2025-01-31
 
 ### Added
 
+- Unify core and command-line packages into one
 - Drop JavaScript support and get rid of JavaScript codebase
 - CIP-0129 support added, affecting `cardano-address key hash` and `cardano-address script hash`
 - CIP-0129 support with backward compatibility added, affecting `cardano-address key hash` and `cardano-address script hash`
