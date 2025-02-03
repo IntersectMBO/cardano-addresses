@@ -106,7 +106,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}-exe
+        name: cardano-address-${{ matrix.ghc }}-${{ matrix.os }}
         path: ${{ steps.build-step-windows.outputs.exe-location }}
         retention-days: 1
 
@@ -135,6 +135,35 @@ jobs:
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
       with:
-        name: cardano-address-${{ matrix.os }}-${{ matrix.ghc }}
+        name: cardano-address-${{ matrix.ghc }}-${{ matrix.os }}
         path: ${{ env.artifactPath }}
         retention-days: 1
+
+  release:
+    name: "Release"
+    # if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+
+    - name: Pick artifacts to publish and change names
+      run: |
+        ls *
+        sha256sums_filename="cardano-address-4.0.0-sha256sums.txt"
+        sha256sum cardano-address-*/* >> "$sha256sums_filename"
+
+        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-4.0.0-win64.exe
+        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.0-macos.tar.gz
+        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.0-linux.tar.gz
+
+#    - name: Draft Release
+#      uses: softprops/action-gh-release@v2
+#      with:
+#        draft: true
+#        files: |
+#          cardano-address-*-win64.exe
+#          cardano-address-*-macos.tar.gz
+#          cardano-address-*-linux.tar.gz
+#          cardano-address-*-sha256sums.txt
+#
