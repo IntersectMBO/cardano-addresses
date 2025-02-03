@@ -141,7 +141,7 @@ jobs:
 
   release:
     name: "Release"
-    # if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -149,7 +149,6 @@ jobs:
 
     - name: Pick artifacts to publish and change names
       run: |
-        ls *
         sha256sums_filename="cardano-address-4.0.0-sha256sums.txt"
         sha256sum cardano-address-*/* >> "$sha256sums_filename"
 
@@ -157,13 +156,12 @@ jobs:
         mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.0-macos.tar.gz
         mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.0-linux.tar.gz
 
-#    - name: Draft Release
-#      uses: softprops/action-gh-release@v2
-#      with:
-#        draft: true
-#        files: |
-#          cardano-address-*-win64.exe
-#          cardano-address-*-macos.tar.gz
-#          cardano-address-*-linux.tar.gz
-#          cardano-address-*-sha256sums.txt
-#
+    - name: Draft Release
+      uses: softprops/action-gh-release@v2
+      with:
+        draft: true
+        files: |
+          cardano-address-*-win64.exe
+          cardano-address-*-macos.tar.gz
+          cardano-address-*-linux.tar.gz
+          cardano-address-*-sha256sums.txt
