@@ -31,8 +31,5 @@ packages:
 -- are not needed for building the linux.
 extra-packages: hsc2hs
 
-constraints:
-  , optparse-applicative >= 0.18.1.0
-
 tests: True
 test-show-details: direct
