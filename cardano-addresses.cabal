@@ -87,32 +87,32 @@ library
     , aeson-pretty
     , ansi-terminal
     , ansi-wl-pprint
-    , base >=4.7 && <5
-    , base58-bytestring
+    , base >= 4.7 && < 5
+    , base58-bytestring >= 0.1.0 && < 0.2
     , basement
-    , bech32
-    , bech32-th
+    , bech32 >= 1.1.7 && < 1.2
+    , bech32-th >= 1.1.7 && < 1.2
     , binary
-    , bytestring
+    , bytestring >= 0.10.6 && < 0.13
     , cardano-crypto
-    , cborg
-    , containers
+    , cborg >= 0.2.1 && <0.3
+    , containers >= 0.5 && < 0.8
     , cryptonite
-    , deepseq
+    , deepseq >= 1.4.4.0 && < 1.6
     , digest
     , either
     , exceptions
-    , extra
-    , fmt
+    , extra >= 1.7.14 && < 1.9
+    , fmt >= 0.6.3 && < 0.7
     , hashable
-    , memory
-    , mtl >=2.2.2
-    , optparse-applicative
-    , process
-    , safe
-    , template-haskell
-    , text
-    , transformers
+    , memory  >= 0.18.0 && < 0.19
+    , mtl >= 2.2.2
+    , optparse-applicative >= 0.18.1.0 && < 0.19
+    , process >= 1.6.13.2 && < 1.7
+    , safe >= 0.3.19 && < 0.4
+    , template-haskell >= 2.16.0.0 && < 2.24
+    , text >= 1.2 && < 2.2
+    , transformers >= 0.5.6.2 && < 0.7
     , unordered-containers
   if flag(release)
     ghc-options: -Werror
@@ -126,9 +126,9 @@ executable cardano-address
       exe
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      base >= 4.7 && < 5
     , cardano-addresses
-    , with-utf8
+    , with-utf8 >= 1.1.0.0 && < 1.2
   if flag(release) && !impl(ghcjs) && !os(ghcjs)
     ghc-options: -Werror -static -O2
     cc-options: -static
@@ -187,27 +187,27 @@ test-suite unit
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      QuickCheck >=2.14.2
+      QuickCheck >= 2.14 && < 2.16
     , aeson >= 2.0
     , aeson-pretty
-    , base >=4.7 && <5
-    , bech32
-    , bech32-th
+    , base >= 4.7 && < 5
+    , bech32 >= 1.1.7 && < 1.2
+    , bech32-th >= 1.1.7 && < 1.2
     , binary
-    , bytestring
+    , bytestring >= 0.10.6 && < 0.13
     , cardano-addresses
     , cardano-crypto
     , cryptonite
-    , containers
-    , hspec
+    , containers >= 0.5 && < 0.8
+    , hspec >= 2.11.0 && < 2.12
     , hspec-golden >=0.1.0.3 && <0.2
     , memory
     , pretty-simple
     , process
     , string-interpolate
     , temporary
-    , text
-    , with-utf8
+    , text >= 1.2 && < 2.2
+    , with-utf8 >= 1.1.0.0 && < 1.2
   if os(windows)
     build-depends:
         Win32
