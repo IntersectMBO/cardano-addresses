@@ -155,8 +155,8 @@ import qualified Data.Text.Encoding as T
 -- We call 'Icarus' addresses the new format of Cardano addresses which came
 -- after 'Cardano.Address.Style.Byron.Byron'. This is the format initially used in /Yoroi/
 -- and now also used by /Daedalus/.
-
--- | A cryptographic key for sequential-scheme address derivation, with
+--
+-- A cryptographic key for sequential-scheme address derivation, with
 -- phantom-types to disambiguate key types.
 --
 -- @
@@ -214,13 +214,15 @@ roleToIndex = unsafeMkIndex . \case
 -- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- > let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 --
--- === Deriving child keys
+--
+-- Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
--- === accIx assumes values from 2147483648 (ie. 0x80000000) to 4294967295 (ie. 0xFFFFFFFF)
--- === addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
+-- accIx assumes values from 2147483648 (ie. 0x80000000) to 4294967295 (ie. 0xFFFFFFFF)
+-- addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
+--
 -- > let Just accIx = indexFromWord32 0x80000000
--- === this is the same as
+-- > // this is the same as
 -- > let accIx = minBound @(Index 'Hardened 'AccountK)
 -- > let acctK = Icarus.deriveAccountPrivateKey rootK accIx
 -- >
@@ -349,8 +351,9 @@ deriveAddressPublicKey =
 -- Addresses
 --
 -- $addresses
--- === Generating a 'PaymentAddress'
 --
+-- === Generating a 'PaymentAddress'
+
 -- | Possible errors from inspecting a Shelley address
 --
 -- @since 3.0.0
@@ -373,7 +376,7 @@ prettyErrInspectAddress = \case
     DeserialiseError e ->
         format "Deserialisation error (was: {})" (show e)
 
--- Determines whether an 'Address' is an Icarus address.
+-- | Determines whether an 'Address' is an Icarus address.
 --
 -- Returns a JSON object with information about the address, or throws
 -- 'ErrInspectAddress' if the address isn't an icarus address.
@@ -421,14 +424,17 @@ inspectIcarusAddress = inspectAddress
 -- λ> encode EBase16 rootAddr
 -- "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf"
 --
--- $ echo Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5 | cardano-address address inspect
+-- @
+--  echo Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5 | cardano-address address inspect
 -- {
 --    "stake_reference": "none",
 --    "address_style": "Icarus",
 --    "address_root": "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf",
 --    "network_tag": null,
 --    "address_type": 8
---}
+-- }
+-- @
+--
 -- @since 2.0.0
 inspectAddress :: MonadThrow m => Address -> m Json.Value
 inspectAddress = either throwM (pure . toJSON) . eitherInspectAddress

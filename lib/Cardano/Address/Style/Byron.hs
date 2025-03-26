@@ -318,8 +318,10 @@ deriveAddressPrivateKey acctK =
 -- Addresses
 --
 -- $addresses
+--
 -- === Generating a 'PaymentAddress'
 --
+
 -- | Possible errors from inspecting a Byron address
 --
 -- @since 3.0.0
@@ -345,7 +347,7 @@ prettyErrInspectAddress = \case
     FailedToDecryptPath ->
         "Failed to decrypt derivation path"
 
--- Determines whether an 'Address' is a Byron address.
+-- | Determines whether an 'Address' is a Byron address.
 --
 -- Returns a JSON object with information about the address, or throws
 -- 'ErrInspectAddress' if the address isn't a byron address.
