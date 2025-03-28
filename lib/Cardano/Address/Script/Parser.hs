@@ -82,6 +82,8 @@ scriptToText (ActiveUntilSlot s) =
 -- it valid. We assume here that the script could
 -- delivered from standard input. The examples below are self-explanatory:
 --
+-- ==== __Example__:
+--
 -- 1. requiring signature
 -- 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
 --
