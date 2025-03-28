@@ -345,7 +345,7 @@ scriptHashFromText txt =
     checkBSLength bytes expLength =
         BS.length bytes == expLength
 
--- Validation level. Required level does basic check that will make sure the script
+-- | Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
 -- warn about dangerous, unwise and redundant things present in the script.
 --
@@ -354,7 +354,7 @@ data ValidationLevel = RequiredValidation | RecommendedValidation
     deriving (Show, Eq, Generic)
 instance NFData ValidationLevel
 
--- Possible errors when deserializing a script hash from text.
+-- | Possible errors when deserializing a script hash from text.
 --
 -- @since 4.0.0
 data ErrScriptHashFromText
@@ -365,7 +365,7 @@ data ErrScriptHashFromText
     | ErrScriptHashFromTextInvalidHex
     deriving (Show, Eq)
 
--- Possible errors when deserializing a script hash from text.
+-- | Possible errors when deserializing a script hash from text.
 --
 -- @since 4.0.0
 prettyErrScriptHashFromText :: ErrScriptHashFromText -> String

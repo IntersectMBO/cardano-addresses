@@ -256,28 +256,27 @@ roleToIndex = unsafeMkIndex . \case
 --
 -- $keyDerivation
 --
--- === Generating a root key from 'SomeMnemonic'
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+-- ==== Generating a root key from 'SomeMnemonic'
+-- λ> :set -XOverloadedStrings
+-- λ> :set -XTypeApplications
+-- λ> :set -XDataKinds
+-- λ> import Cardano.Mnemonic ( mkSomeMnemonic )
 --
--- === Deriving child keys
+-- λ> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- λ> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- λ> let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
+--
+-- ==== Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > let Just accIx = indexFromWord32 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
--- >
--- > let Just addIx = indexFromWord32 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- λ> let Just accIx = indexFromWord32 0x80000000
+-- λ> let acctK = deriveAccountPrivateKey rootK accIx
 --
--- > let stakeK = deriveDelegationPrivateKey acctK
-
+-- λ> let Just addIx = indexFromWord32 0x00000014
+-- λ> let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+--
+-- λ> let stakeK = deriveDelegationPrivateKey acctK
 instance Internal.GenMasterKey Shelley where
     type SecondFactor Shelley = ScrubbedBytes
 
@@ -447,55 +446,53 @@ deriveCCHotPrivateKey accXPrv =
 -- Addresses
 --
 -- $addresses
--- === Generating a 'PaymentAddress' from public key credential
 --
--- > import Cardano.Address ( bech32 )
--- > import Cardano.Address.Derivation ( toXPub )
--- >
--- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
--- > bech32 $ paymentAddress tag paymentCredential
--- > "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
+-- ==== Generating a 'PaymentAddress' from public key credential
 --
--- === Generating a 'PaymentAddress' from script credential
+-- λ> import Cardano.Address ( bech32 )
+-- λ> import Cardano.Address.Derivation ( toXPub )
+-- λ> let (Right tag) = mkNetworkDiscriminant 1
+-- λ> let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
+-- λ> bech32 $ paymentAddress tag paymentCredential
+-- λ> "addr1vxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdncxsce5t"
 --
--- > import Cardano.Address.Script.Parser ( scriptFromString )
--- > import Cardano.Address.Script ( toScriptHash )
--- > import Codec.Binary.Encoding ( encode )
--- > import Data.Text.Encoding ( decodeUtf8 )
--- >
--- > let (Right tag) = mkNetworkDiscriminant 1
--- > let verKey1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
--- > let verKey2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
--- > let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
--- > let (Right script) = scriptFromString scriptStr
--- > let infoSpendingScriptHash@(ScriptHash bytes) = toScriptHash script
--- > decodeUtf8 (encode EBase16 bytes)
--- > "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
--- > bech32 $ paymentAddress tag (PaymentFromScriptHash infoSpendingScriptHash)
--- > "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
+-- ==== Generating a 'PaymentAddress' from script credential
 --
--- === Generating a 'DelegationAddress'
+-- λ> import Cardano.Address.Script.Parser ( scriptFromString )
+-- λ> import Cardano.Address.Script ( toScriptHash )
+-- λ> import Codec.Binary.Encoding ( encode )
+-- λ> import Data.Text.Encoding ( decodeUtf8 )
+-- λ> let (Right tag) = mkNetworkDiscriminant 1
+-- λ> let verKey1 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyreluzt36ms"
+-- λ> let verKey2 = "script_vkh18srsxr3khll7vl3w9mqfu55n6wzxxlxj7qzr2mhnyrenxv223vj"
+-- λ> let scriptStr = "all [" ++ verKey1 ++ ", " ++ verKey2 ++ "]"
+-- λ> let (Right script) = scriptFromString scriptStr
+-- λ> let infoSpendingScriptHash@(ScriptHash bytes) = toScriptHash script
+-- λ> decodeUtf8 (encode EBase16 bytes)
+-- "a015ae61075e25c3d9250bdcbc35c6557272127927ecf2a2d716e29f"
+-- λ> bech32 $ paymentAddress tag (PaymentFromScriptHash infoSpendingScriptHash)
+-- "addr1wxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98c9uxm83"
 --
--- > let (Right tag) = mkNetworkDiscriminant 1
--- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
--- > let delegationCredential = DelegationFromExtendedKey $ (toXPub <$> stakeK)
--- > bech32 $ delegationAddress tag paymentCredential delegationCredential
--- > "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
+-- ==== Generating a 'DelegationAddress'
 --
--- === Generating a 'PointerAddress'
+-- λ> let (Right tag) = mkNetworkDiscriminant 1
+-- λ> let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
+-- λ> let delegationCredential = DelegationFromExtendedKey $ (toXPub <$> stakeK)
+-- λ> bech32 $ delegationAddress tag paymentCredential delegationCredential
+-- "addr1qxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdn7nudck0fzve4346yytz3wpwv9yhlxt7jwuc7ytwx2vfkyqmkc5xa"
 --
--- > import Cardano.Address ( ChainPointer (..) )
--- >
--- > let (Right tag) = mkNetworkDiscriminant 1
--- > let ptr = ChainPointer 123 1 2
--- > let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
--- > bech32 $ pointerAddress tag paymentCredential ptr
--- > "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
+-- ==== Generating a 'PointerAddress'
 --
--- === Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
--- > bech32 $ delegationAddress tag (PaymentFromScriptHash infoSpendingScriptHash) (DelegationFromScript infoSpendingScriptHash)
--- > "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
+-- λ> import Cardano.Address ( ChainPointer (..) )
+-- λ> let (Right tag) = mkNetworkDiscriminant 1
+-- λ> let ptr = ChainPointer 123 1 2
+-- λ> let paymentCredential = PaymentFromExtendedKey $ (toXPub <$> addrK)
+-- λ> bech32 $ pointerAddress tag paymentCredential ptr
+-- "addr1gxpfffuj3zkp5g7ct6h4va89caxx9ayq2gvkyfvww48sdnmmqypqfcp5um"
+--
+-- ==== Generating a 'DelegationAddress' from using the same script credential in both payment and delegation
+-- λ> bech32 $ delegationAddress tag (PaymentFromScriptHash infoSpendingScriptHash) (DelegationFromScript infoSpendingScriptHash)
+-- "addr1xxspttnpqa0zts7ey59ae0p4ce2hyusj0yn7eu4z6utw98aqzkhxzp67yhpajfgtmj7rt3j4wfepy7f8ane294cku20swucnrl"
 
 -- | Possible errors from inspecting a Shelley, Icarus, or Byron address.
 --
@@ -546,7 +543,7 @@ prettyErrInspectAddress = \case
     ErrByron e -> "Invalid Byron address: "
         <> Byron.prettyErrInspectAddress e
 
--- Determines whether an 'Address' a Shelley address.
+-- | Determines whether an 'Address' a Shelley address.
 --
 -- Throws 'AddrError' if it's not a valid Shelley address, or a ready-to-print
 -- string giving details about the 'Address'.

@@ -18,12 +18,17 @@
 
 module Cardano.Address.KeyHash
     (
+    -- * Types
       KeyHash (..)
     , KeyRole (..)
     , GovernanceType (..)
+
+    -- * Conversions
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
+
+    -- * Errors
     , ErrKeyHashFromText
     , prettyErrKeyHashFromText
     ) where
@@ -169,7 +174,6 @@ keyHashAppendByteCIP0129 payload cred =
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
-
 -- - `addr_shared_vkh`
 -- - `stake_shared_vkh`
 -- - `addr_vkh`
@@ -196,7 +200,6 @@ keyHashAppendByteCIP0129 payload cred =
 -- - `drep_xvk`
 -- - `cc_cold_xvk`
 -- - `cc_hot_xvk`
-
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 -- If if hex is encountered 'Unknown' policy key is assumed.
@@ -306,7 +309,7 @@ keyHashFromText txt =
     checkBSLength bytes expLength =
         BS.length bytes == expLength
 
--- Possible errors when deserializing a key hash from text.
+-- | Possible errors when deserializing a key hash from text.
 --
 -- @since 3.0.0
 data ErrKeyHashFromText
@@ -317,7 +320,7 @@ data ErrKeyHashFromText
     | ErrKeyHashFromTextInvalidHex Int
     deriving (Show, Eq)
 
--- Possible errors when deserializing a key hash from text.
+-- | Possible errors when deserializing a key hash from text.
 --
 -- @since 3.0.0
 prettyErrKeyHashFromText :: ErrKeyHashFromText -> String

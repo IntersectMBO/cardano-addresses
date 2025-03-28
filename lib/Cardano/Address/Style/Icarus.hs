@@ -177,6 +177,9 @@ newtype Icarus (depth :: Depth) key = Icarus
 deriving instance (Functor (Icarus depth))
 instance (NFData key) => NFData (Icarus depth key)
 
+-- | Role the key assumes
+--
+-- @since 1.0.0
 data Role
     = UTxOExternal
     | UTxOInternal
@@ -200,7 +203,10 @@ roleToIndex = unsafeMkIndex . \case
 --
 -- $keyDerivation
 --
--- === Generating a root key from 'SomeMnemonic'
+-- __Example__:
+--
+-- ==== Generating a root key from 'SomeMnemonic'
+--
 -- > :set -XOverloadedStrings
 -- > :set -XTypeApplications
 -- > :set -XDataKinds
@@ -215,23 +221,20 @@ roleToIndex = unsafeMkIndex . \case
 -- > let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 --
 --
--- Deriving child keys
+-- ==== Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 -- accIx assumes values from 2147483648 (ie. 0x80000000) to 4294967295 (ie. 0xFFFFFFFF)
 -- addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
 --
 -- > let Just accIx = indexFromWord32 0x80000000
--- > // this is the same as
+-- // this is the same as
 -- > let accIx = minBound @(Index 'Hardened 'AccountK)
 -- > let acctK = Icarus.deriveAccountPrivateKey rootK accIx
--- >
 -- > let Just addIx = indexFromWord32 0x00000014
 -- > let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
--- >
 -- > base58 $ Icarus.paymentAddress Icarus.icarusMainnet (toXPub <$> addrK)
 -- >"Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
-
 instance Internal.GenMasterKey Icarus where
     type SecondFactor Icarus = ScrubbedBytes
 
@@ -352,7 +355,6 @@ deriveAddressPublicKey =
 --
 -- $addresses
 --
--- === Generating a 'PaymentAddress'
 
 -- | Possible errors from inspecting a Shelley address
 --
@@ -386,10 +388,10 @@ inspectIcarusAddress :: MonadThrow m => Address -> m Json.Value
 inspectIcarusAddress = inspectAddress
 {-# DEPRECATED inspectIcarusAddress "use qualified 'inspectAddress' instead." #-}
 
--- | Determines whether an 'Address' is an Icarus address.
+-- | How to go from address root and the payment address
 --
--- Returns a JSON object with information about the address, or throws
--- 'ErrInspectAddress' if the address isn't an icarus address.
+-- ==== __Example__:
+--
 -- λ> :set -XOverloadedStrings
 -- λ> :set -XTypeApplications
 -- λ> :set -XDataKinds
@@ -434,7 +436,11 @@ inspectIcarusAddress = inspectAddress
 --    "address_type": 8
 -- }
 -- @
+
+-- | Determines whether an 'Address' is an Icarus address.
 --
+-- Returns a JSON object with information about the address, or throws
+-- 'ErrInspectAddress' if the address isn't an icarus address.
 -- @since 2.0.0
 inspectAddress :: MonadThrow m => Address -> m Json.Value
 inspectAddress = either throwM (pure . toJSON) . eitherInspectAddress
