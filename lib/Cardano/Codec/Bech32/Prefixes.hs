@@ -4,6 +4,8 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {- HLINT ignore "Use camelCase" -}
 
+{-# OPTIONS_HADDOCK prune #-}
+
 -- |
 -- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
 -- License: Apache-2.0

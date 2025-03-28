@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK prune #-}
 
 -- |
 -- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
@@ -75,8 +75,8 @@ import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
-{-------------------------------------------------------------------------------
-                       Byron Address Binary Format
+
+{- |                       Byron Address Binary Format
 
 In the composition of a Cardano address, the following functions concern the
 "Derivation Path" box.
@@ -115,10 +115,7 @@ In the composition of a Cardano address, the following functions concern the
                                |---->|                                  |
                                      | Addr Discr: MainNet vs TestNet   |
                                      +----------------------------------+
-
--------------------------------------------------------------------------------}
-
--- * Encoding
+-}
 
 -- | Encode a public key to a corresponding Cardano Address. The encoding of the
 -- attributes part of an address is left out to the caller; This allows for
@@ -187,7 +184,7 @@ encodeProtocolMagicAttr pm = mempty
     <> CBOR.encodeWord 2 -- Tag for 'ProtocolMagic' attribute
     <> CBOR.encodeBytes (CBOR.toStrictByteString $ CBOR.encodeWord32 pm)
 
--- This is the opposite of 'decodeDerivationPathAttr'.
+-- | This is the opposite of 'decodeDerivationPathAttr'.
 --
 -- NOTE: The caller must ensure that the passphrase length is 32 bytes.
 encodeDerivationPathAttr
