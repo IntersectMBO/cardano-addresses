@@ -124,19 +124,25 @@ instance (NFData key) => NFData (Shared depth key)
 -- $keyDerivation
 --
 -- ==== Generating a root key from 'SomeMnemonic'
+--
+-- @
 -- λ> :set -XOverloadedStrings
 -- λ> :set -XTypeApplications
 -- λ> :set -XDataKinds
 -- λ> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- @
 --
+-- @
 -- λ> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- λ> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- λ> let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+-- @
 --
 -- ==== Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
+-- @
 -- λ> let Just accIx = indexFromWord32 0x80000000
 -- λ> let acctK = deriveAccountPrivateKey rootK accIx
 -- λ>
@@ -144,6 +150,7 @@ instance (NFData key) => NFData (Shared depth key)
 -- λ> let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
 -- λ> let stakeK = deriveDelegationPrivateKey acctK
+-- @
 instance Internal.GenMasterKey Shared where
     type SecondFactor Shared = ScrubbedBytes
 
@@ -301,7 +308,7 @@ sharedWalletId bytes spending stakingM =
 hashKey :: KeyRole -> Shared key XPub -> KeyHash
 hashKey cred = KeyHash cred . hashCredential . xpubPublicKey . getKey
 
--- Purpose is a constant set to 1854' (or 0x8000073e) following the
+-- | Purpose is a constant set to 1854' (or 0x8000073e) following the
 -- CIP-1854 Multi-signatures HD Wallets
 --
 -- Hardened derivation is used at this level.

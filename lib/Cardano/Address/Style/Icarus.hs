@@ -198,8 +198,7 @@ roleToIndex = unsafeMkIndex . \case
     UTxOExternal -> 0
     UTxOInternal -> 1
 
---
--- Key Derivation
+-- | Key Derivation
 --
 -- $keyDerivation
 --
@@ -207,6 +206,7 @@ roleToIndex = unsafeMkIndex . \case
 --
 -- ==== Generating a root key from 'SomeMnemonic'
 --
+-- @
 -- > :set -XOverloadedStrings
 -- > :set -XTypeApplications
 -- > :set -XDataKinds
@@ -219,7 +219,7 @@ roleToIndex = unsafeMkIndex . \case
 -- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
 -- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
 -- > let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
---
+-- @
 --
 -- ==== Deriving child keys
 --
@@ -227,6 +227,7 @@ roleToIndex = unsafeMkIndex . \case
 -- accIx assumes values from 2147483648 (ie. 0x80000000) to 4294967295 (ie. 0xFFFFFFFF)
 -- addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
 --
+-- @
 -- > let Just accIx = indexFromWord32 0x80000000
 -- // this is the same as
 -- > let accIx = minBound @(Index 'Hardened 'AccountK)
@@ -235,6 +236,7 @@ roleToIndex = unsafeMkIndex . \case
 -- > let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
 -- > base58 $ Icarus.paymentAddress Icarus.icarusMainnet (toXPub <$> addrK)
 -- >"Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
+-- @
 instance Internal.GenMasterKey Icarus where
     type SecondFactor Icarus = ScrubbedBytes
 
@@ -392,6 +394,7 @@ inspectIcarusAddress = inspectAddress
 --
 -- ==== __Example__:
 --
+-- @
 -- λ> :set -XOverloadedStrings
 -- λ> :set -XTypeApplications
 -- λ> :set -XDataKinds
@@ -425,6 +428,9 @@ inspectIcarusAddress = inspectAddress
 -- λ> let rootAddr = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty <> CBOR.encodeListLen 3 <> CBOR.encodeWord8 0 <> encodeSpendingData <> encodeAttrs
 -- λ> encode EBase16 rootAddr
 -- "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf"
+-- @
+--
+-- Usage from the command-line:
 --
 -- @
 --  echo Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5 | cardano-address address inspect

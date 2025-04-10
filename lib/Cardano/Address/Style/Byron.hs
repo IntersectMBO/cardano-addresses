@@ -212,6 +212,8 @@ type family DerivationPath (depth :: Depth) :: Type where
 -- __Example__:
 --
 -- ==== Generating a root key from 'SomeMnemonic'
+--
+-- @
 -- λ> :set -XOverloadedStrings
 -- λ> :set -XTypeApplications
 -- λ> :set -XDataKinds
@@ -223,12 +225,17 @@ type family DerivationPath (depth :: Depth) :: Type where
 --
 -- λ> let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
 -- λ> let rootK = Byron.genMasterKeyFromMnemonic mw :: Byron 'RootK XPrv
+-- @
 --
 -- ==== Deriving child keys
--- -- Both accIx and addIx assume values from 0 to 4294967295 (ie. 0xFFFFFFFF)
--- -- In case of account one can get this bound via
--- -- let accIxMin = minBound @(Index 'WholeDomain 'AccountK)
--- -- let accIxMax = maxBound @(Index 'WholeDomain 'AccountK)
+--
+-- Both `accIx` and `addIx` assume values from 0 to 4294967295 (ie. 0xFFFFFFFF)
+-- In case of account one can get this bound via
+--
+-- @
+-- let accIxMin = minBound @(Index 'WholeDomain 'AccountK)
+-- let accIxMax = maxBound @(Index 'WholeDomain 'AccountK)
+--
 -- λ> let Just accIx = wholeDomainIndex 0x80000000
 -- λ> let acctK = Byron.deriveAccountPrivateKey rootK accIx
 --
@@ -237,6 +244,8 @@ type family DerivationPath (depth :: Depth) :: Type where
 --
 -- λ> base58 $ Byron.paymentAddress Byron.byronMainnet (toXPub <$> addrK)
 -- "DdzFFzCqrhsq3KjLtT51mESbZ4RepiHPzLqEhamexVFTJpGbCXmh7qSxnHvaL88QmtVTD1E1sjx8Z1ZNDhYmcBV38ZjDST9kYVxSkhcw"
+-- @
+--
 instance Internal.GenMasterKey Byron where
     type SecondFactor Byron = ()
 

@@ -65,24 +65,44 @@ import qualified Data.Text.Encoding as T
 data GovernanceType = NoGovernance | CIP0129 | CIP0105
     deriving (Eq, Show)
 
--- | Determines the role a given key plays. The role basically can be mapped into derivation path
+-- | Determines the role a given key plays.
+--
+-- The role basically can be mapped into derivation path
 -- which was used to derive it from the parent. Also it has a dedicated user facing HRP
 -- when presented in bech32 format - see 'keyHashToText' for more details.
--- Take notice that purpose/role (except 'Policy') are as defined below in derivation path:
--- m / purpose' / coin_type' / account_ix' / role / index
--- 'Policy' has a dedicated derivation path as follows:
--- m / purpose' / coin_type' / policy_ix'
 --
+-- Take notice that purpose/role (except 'Policy') are as defined below in derivation path:
+--
+-- @
+-- m / purpose' / coin_type' / account_ix' / role / index
+-- @
+--
+-- 'Policy' has a dedicated derivation path as follows:
+--
+-- @
+-- m / purpose' / coin_type' / policy_ix'
+-- @
+--
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- |    KeyRole       |   purpose  |  role  |                                  CIP                                         |
--- ------------------------------------------------------------------------------------------------------------------------|
+-- +==================+============+========+==============================================================================+
 -- | PaymentShared    |   1854H    |   0,1  | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | DelegationShared |   1854H    |   2    | [CIP-1854](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1854)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | Payment          |   1852H    |   0,1  | [CIP-1852](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1852)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | Delegation       |   1852H    |   2    | [CIP-0011](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0011)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | Representative   |   1852H    |   3    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | CommitteeCold    |   1852H    |   4    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | CommitteeHot     |   1852H    |   5    | [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- | Policy           |   1855H    |   -    | [CIP-1855](https://github.com/cardano-foundation/CIPs/tree/master/CIP-1855)  |
+-- +------------------+------------+--------+------------------------------------------------------------------------------+
+--
 data KeyRole =
       PaymentShared
     | DelegationShared
@@ -174,6 +194,7 @@ keyHashAppendByteCIP0129 payload cred =
 
 -- | Construct a 'KeyHash' from 'Text'. It should be
 -- Bech32 encoded text with one of following hrp:
+--
 -- - `addr_shared_vkh`
 -- - `stake_shared_vkh`
 -- - `addr_vkh`
@@ -200,6 +221,7 @@ keyHashAppendByteCIP0129 payload cred =
 -- - `drep_xvk`
 -- - `cc_cold_xvk`
 -- - `cc_hot_xvk`
+--
 -- Raw keys will be hashed on the fly, whereas hash that are directly
 -- provided will remain as such.
 -- If if hex is encountered 'Unknown' policy key is assumed.
