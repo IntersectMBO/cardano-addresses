@@ -102,6 +102,10 @@ jobs:
         MSYSTEM: MINGW64
       run: cabal test all --enable-tests --test-show-details=direct -j1
 
+    - name: Running Haddock
+      run: |
+        cabal haddock
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
