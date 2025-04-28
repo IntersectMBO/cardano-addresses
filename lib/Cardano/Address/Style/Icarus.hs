@@ -207,18 +207,18 @@ roleToIndex = unsafeMkIndex . \case
 -- ==== Generating a root key from 'SomeMnemonic'
 --
 -- @
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > :set -XFlexibleContexts
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- > import Cardano.Address ( base58 )
--- > import Cardano.Address.Derivation ( toXPub )
--- > import qualified Cardano.Address.Style.Icarus as Icarus
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
+-- >>> :set -XOverloadedStrings
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >>> import Cardano.Address ( base58 )
+-- >>> import Cardano.Address.Derivation ( toXPub )
+-- >>> import qualified Cardano.Address.Style.Icarus as Icarus
+-- >>>
+-- >>> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- >>> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- >>> let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
 -- @
 --
 -- ==== Deriving child keys
@@ -228,14 +228,14 @@ roleToIndex = unsafeMkIndex . \case
 -- addIx assume values from 0 to 2147483647 (ie. 7FFFFFFF)
 --
 -- @
--- > let Just accIx = indexFromWord32 0x80000000
+-- >>> let Just accIx = indexFromWord32 0x80000000
 -- // this is the same as
--- > let accIx = minBound @(Index 'Hardened 'AccountK)
--- > let acctK = Icarus.deriveAccountPrivateKey rootK accIx
--- > let Just addIx = indexFromWord32 0x00000014
--- > let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
--- > base58 $ Icarus.paymentAddress Icarus.icarusMainnet (toXPub <$> addrK)
--- >"Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
+-- >>> let accIx = minBound @(Index 'Hardened 'AccountK)
+-- >>> let acctK = Icarus.deriveAccountPrivateKey rootK accIx
+-- >>> let Just addIx = indexFromWord32 0x00000014
+-- >>> let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
+-- >>> base58 $ Icarus.paymentAddress Icarus.icarusMainnet (toXPub <$> addrK)
+-- >>>"Ae2tdPwUPEZ8XpsjgQPH2cJdtohkYrxJ3i5y6mVsrkZZkdpdn6mnr4Rt6wG"
 -- @
 instance Internal.GenMasterKey Icarus where
     type SecondFactor Icarus = ScrubbedBytes
@@ -395,38 +395,38 @@ inspectIcarusAddress = inspectAddress
 -- ==== __Example__:
 --
 -- @
--- λ> :set -XOverloadedStrings
--- λ> :set -XTypeApplications
--- λ> :set -XDataKinds
--- λ> :set -XFlexibleContexts
--- λ> import Cardano.Mnemonic ( mkSomeMnemonic )
--- λ> import qualified Cardano.Address.Style.Icarus as Icarus
--- λ> import Cardano.Address.Derivation ( toXPub )
--- λ> import Cardano.Address ( base58 )
--- λ> let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
--- λ> let sndFactor = mempty
--- λ> let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
--- λ> let Just accIx = indexFromWord32 0x80000000
--- λ> let acctK = Icarus.deriveAccountPrivateKey rootK accIx
--- λ> let Just addIx = indexFromWord32 0x00000014
--- λ> let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
--- λ> (toXPub <$> addrK)
+-- >>> :set -XOverloadedStrings
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >>> import qualified Cardano.Address.Style.Icarus as Icarus
+-- >>> import Cardano.Address.Derivation ( toXPub )
+-- >>> import Cardano.Address ( base58 )
+-- >>> let (Right mw) = mkSomeMnemonic @'[12] ["moon","fox","ostrich","quick","cactus","raven","wasp","intact","first","ring","crumble","error"]
+-- >>> let sndFactor = mempty
+-- >>> let rootK = Icarus.genMasterKeyFromMnemonic mw sndFactor :: Icarus 'RootK XPrv
+-- >>> let Just accIx = indexFromWord32 0x80000000
+-- >>> let acctK = Icarus.deriveAccountPrivateKey rootK accIx
+-- >>> let Just addIx = indexFromWord32 0x00000014
+-- >>> let addrK = Icarus.deriveAddressPrivateKey acctK Icarus.UTxOExternal addIx
+-- >>> (toXPub <$> addrK)
 -- Icarus {getKey = XPub {xpubPublicKey = "\223\148\230\206\187\135\253\SO\151\216\183\210]}s:\151\134\174q\173\207\184\202\EM\176\170\220\216\235\&1\243", xpubChaincode = ChainCode "\\\160\196\&8~\208\165\241\138\SOH\222\ETX*\150&\214\185\196 \153\DC2\167\165\243\155\136\228\255\229~d\253"}}
--- λ> base58 $ Icarus.paymentAddress icarusMainnet (toXPub <$> addrK)
+-- >>> base58 $ Icarus.paymentAddress icarusMainnet (toXPub <$> addrK)
 -- "Ae2tdPwUPEYyzBcNXkFWKywMiZ9eSd96dQxhBQd371foiH16Y7gFgLBj9G5"
 --
--- λ> import Cardano.Codec.Cbor
--- λ> import Crypto.Hash.Algorithms (Blake2b_224, SHA3_256)
--- λ> import Crypto.Hash (hash)
--- λ> let blake2b224 = hash @_ @Blake2b_224
--- λ> let sha3256 = hash @_ @SHA3_256
--- λ> import qualified Codec.CBOR.Encoding as CBOR
--- λ> let encodeXPub = CBOR.encodeBytes (xpubToBytes . Icarus.getKey $ icarusAddrKPub)
--- λ> let encodeSpendingData = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0 <> encodeXPub
--- λ> let encodeAttrs = CBOR.encodeMapLen 0
--- λ> import qualified Data.ByteArray as BA
--- λ> let rootAddr = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty <> CBOR.encodeListLen 3 <> CBOR.encodeWord8 0 <> encodeSpendingData <> encodeAttrs
--- λ> encode EBase16 rootAddr
+-- >>> import Cardano.Codec.Cbor
+-- >>> import Crypto.Hash.Algorithms (Blake2b_224, SHA3_256)
+-- >>> import Crypto.Hash (hash)
+-- >>> let blake2b224 = hash @_ @Blake2b_224
+-- >>> let sha3256 = hash @_ @SHA3_256
+-- >>> import qualified Codec.CBOR.Encoding as CBOR
+-- >>> let encodeXPub = CBOR.encodeBytes (xpubToBytes . Icarus.getKey $ icarusAddrKPub)
+-- >>> let encodeSpendingData = CBOR.encodeListLen 2 <> CBOR.encodeWord8 0 <> encodeXPub
+-- >>> let encodeAttrs = CBOR.encodeMapLen 0
+-- >>> import qualified Data.ByteArray as BA
+-- >>> let rootAddr = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty <> CBOR.encodeListLen 3 <> CBOR.encodeWord8 0 <> encodeSpendingData <> encodeAttrs
+-- >>> encode EBase16 rootAddr
 -- "1fdde02c9e087474aa7ab0a46ae2f6d316a92cd0fa2d4e8b1c2eebdf"
 -- @
 --

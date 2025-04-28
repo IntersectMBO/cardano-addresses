@@ -59,9 +59,9 @@ import qualified Codec.Binary.Bech32 as Bech32
 import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as T
 
--- | Determines if one asks for deprecated HRP prefixes, '*_vkh' and '*_script'
--- in accordance to CIP-0105 (on demand when flag 'cip-0105' is used) or uses default format
--- specified in CIP-0129 (where additional byte is prepended to 28-byte hash).
+-- | Determines if one asks for deprecated HRP prefixes, __*_vkh__ and __*_script__
+-- in accordance to [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105) (on demand when flag 'cip-0105' is used) or uses default format
+-- specified in [CIP-0129](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129) (where additional byte is prepended to 28-byte hash).
 data GovernanceType = NoGovernance | CIP0129 | CIP0105
     deriving (Eq, Show)
 
@@ -82,6 +82,7 @@ data GovernanceType = NoGovernance | CIP0129 | CIP0105
 -- @
 -- m / purpose' / coin_type' / policy_ix'
 -- @
+--
 --
 -- +------------------+------------+--------+------------------------------------------------------------------------------+
 -- |    KeyRole       |   purpose  |  role  |                                  CIP                                         |

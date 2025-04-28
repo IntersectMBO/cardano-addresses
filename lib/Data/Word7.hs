@@ -37,6 +37,7 @@ import Numeric.Natural
 
 
 -- | A 'Word7' algebraic data-type.
+--
 -- @since 2.0.0
 newtype Word7 = Word7 Word8
   deriving (Eq, Show)

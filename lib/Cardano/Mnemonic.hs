@@ -47,7 +47,7 @@ module Cardano.Mnemonic
     , entropyToBytes
     , entropyToMnemonic
 
-      -- Internals & Re-export from @Crypto.Encoding.BIP39@
+      -- * Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
     , DictionaryError(..)
     , MnemonicWordsError(..)
@@ -131,8 +131,8 @@ import qualified Data.Text as T
 -- 'Entropy' is @96-256@ bits and is __necessarily a multiple of 32 bits__ (4
 -- bytes).
 --
--- We call 'Mnemonic' an 'Entropy' with an appended checksum calculated by
--- taking the first @ent / 32@ bits of the /SHA256/ hash of it, where ent
+-- 'Mnemonic' is an 'Entropy' with an appended checksum calculated by
+-- taking the first @ent / 32@ bits of the /SHA256/ hash of it, where @ent@
 -- designates the 'Entropy' size in bits.
 --
 -- The concatenated result is split into groups of @11@ bits, each encoding a
@@ -354,7 +354,7 @@ instance NFData SomeMnemonic where
 -- | This class enables caller to parse text list of variable length
 -- into mnemonic sentences.
 --
--- Note that the given 'Nat's **have** to be valid mnemonic sizes, otherwise the
+-- Note that the given 'Nat's __have__ to be valid mnemonic sizes, otherwise the
 -- underlying code won't even compile, with not-so-friendly error messages.
 class MkSomeMnemonic (sz :: [Nat]) where
     -- | Construct a mnemonic from a list of words. This function is particularly useful when the

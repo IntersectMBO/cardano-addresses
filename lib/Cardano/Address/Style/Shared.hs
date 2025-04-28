@@ -126,16 +126,16 @@ instance (NFData key) => NFData (Shared depth key)
 -- ==== Generating a root key from 'SomeMnemonic'
 --
 -- @
--- λ> :set -XOverloadedStrings
--- λ> :set -XTypeApplications
--- λ> :set -XDataKinds
--- λ> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- >>> :set -XOverloadedStrings
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> import Cardano.Mnemonic ( mkSomeMnemonic )
 -- @
 --
 -- @
--- λ> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- λ> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- λ> let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+-- >>> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- >>> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- >>> let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
 -- @
 --
 -- ==== Deriving child keys
@@ -143,13 +143,13 @@ instance (NFData key) => NFData (Shared depth key)
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
 -- @
--- λ> let Just accIx = indexFromWord32 0x80000000
--- λ> let acctK = deriveAccountPrivateKey rootK accIx
--- λ>
--- λ> let Just addIx = indexFromWord32 0x00000014
--- λ> let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- >>> let Just accIx = indexFromWord32 0x80000000
+-- >>> let acctK = deriveAccountPrivateKey rootK accIx
+-- >>>
+-- >>> let Just addIx = indexFromWord32 0x00000014
+-- >>> let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
--- λ> let stakeK = deriveDelegationPrivateKey acctK
+-- >>> let stakeK = deriveDelegationPrivateKey acctK
 -- @
 instance Internal.GenMasterKey Shared where
     type SecondFactor Shared = ScrubbedBytes

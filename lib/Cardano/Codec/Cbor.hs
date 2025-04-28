@@ -35,7 +35,7 @@ module Cardano.Codec.Cbor
     , deserialiseCbor
     , unsafeDeserialiseCbor
 
-     -- * Reexports from CBOR
+     -- * Re-exports from CBOR
     , CBOR.encodeBytes
     , CBOR.toStrictByteString
     , CBOR.toLazyByteString
@@ -76,48 +76,51 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
 
-{- |                       Byron Address Binary Format
-
-In the composition of a Cardano address, the following functions concern the
-"Derivation Path" box.
-
-+-------------------------------------------------------------------------------+
-|                                                                               |
-|                        CBOR-Serialized Object with CRC¹                       |
-|                                                                               |
-+-------------------------------------------------------------------------------+
-                                        |
-                                        |
-                                        v
-+-------------------------------------------------------------------------------+
-|     Address Root    |     Address Attributes    |           AddrType          |
-|                     |                           |                             |
-|   Hash (224 bits)   |  Der. Path² + Stake + NM  |  PubKey | (Script) | Redeem |
-|                     |    (open for extension)   |     (open for extension)    |
-+-------------------------------------------------------------------------------+
-             |                 |
-             |                 |     +----------------------------------+
-             v                 |     |        Derivation Path           |
-+---------------------------+  |---->|                                  |
-| SHA3-256                  |  |     | ChaChaPoly⁴ AccountIx/AddressIx  |
-|   |> Blake2b 224          |  |     +----------------------------------+
-|   |> CBOR                 |  |
-|                           |  |
-|  -AddrType                |  |     +----------------------------------+
-|  -ASD³ (~AddrType+PubKey) |  |     |       Stake Distribution         |
-|  -Address Attributes      |  |     |                                  |
-+---------------------------+  |---->|  BootstrapEra | (Single | Multi) |
-                               |     +----------------------------------+
-                               |
-                               |
-                               |     +----------------------------------+
-                               |     |          Network Magic           |
-                               |---->|                                  |
-                                     | Addr Discr: MainNet vs TestNet   |
-                                     +----------------------------------+
--}
-
--- | Encode a public key to a corresponding Cardano Address. The encoding of the
+-- |
+-- @
+--                        __Byron Address Binary Format__
+--
+--
+-- In the composition of a Cardano address, the following functions concern the
+-- "Derivation Path" box.
+--
+-- +-------------------------------------------------------------------------------+
+-- |                                                                               |
+-- |                        CBOR-Serialized Object with CRC¹                       |
+-- |                                                                               |
+-- +-------------------------------------------------------------------------------+
+--                                         |
+--                                         |
+--                                         v
+-- +-------------------------------------------------------------------------------+
+-- |     Address Root    |     Address Attributes    |           AddrType          |
+-- |                     |                           |                             |
+-- |   Hash (224 bits)   |  Der. Path² + Stake + NM  |  PubKey | (Script) | Redeem |
+-- |                     |    (open for extension)   |     (open for extension)    |
+-- +-------------------------------------------------------------------------------+
+--              |                 |
+--              |                 |     +----------------------------------+
+--              v                 |     |        Derivation Path           |
+-- +---------------------------+  |---->|                                  |
+-- | SHA3-256                  |  |     | ChaChaPoly⁴ AccountIx/AddressIx  |
+-- |   |> Blake2b 224          |  |     +----------------------------------+
+-- |   |> CBOR                 |  |
+-- |                           |  |
+-- |  -AddrType                |  |     +----------------------------------+
+-- |  -ASD³ (~AddrType+PubKey) |  |     |       Stake Distribution         |
+-- |  -Address Attributes      |  |     |                                  |
+-- +---------------------------+  |---->|  BootstrapEra | (Single | Multi) |
+--                                |     +----------------------------------+
+--                                |
+--                                |
+--                                |     +----------------------------------+
+--                                |     |          Network Magic           |
+--                                |---->|                                  |
+--                                      | Addr Discr: MainNet vs TestNet   |
+--                                      +----------------------------------+
+-- @
+--
+-- Encode a public key to a corresponding Cardano Address. The encoding of the
 -- attributes part of an address is left out to the caller; This allows for
 -- distinguishing between Sequential and Random addresses (the former doesn't
 -- have any attributes to encode).

@@ -92,7 +92,7 @@ instance NFData Address
 
 -- | Unsafe constructor for easily lifting bytes inside an 'Address'.
 --
--- /!\ Use at your own risks.
+-- __Use at your own risks.__
 unsafeMkAddress :: ByteString -> Address
 unsafeMkAddress = Address
 
