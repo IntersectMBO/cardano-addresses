@@ -356,10 +356,10 @@ credentialHashSize = hashDigestSize Blake2b_224
 -- Key Derivation
 --
 
--- | Key Depth in the derivation path, according to BIP-0039 / BIP-0044
+-- | Key Depth in the derivation path, according to [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) and [BIP-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 --
 -- @
--- root | purpose' | cointype' | account' | role | address@
+-- root | purpose' | cointype' | account' | role | address
 -- 0th      1st         2nd        3rd       4th     5th
 -- @
 --

@@ -47,7 +47,7 @@ module Cardano.Mnemonic
     , entropyToBytes
     , entropyToMnemonic
 
-      -- Internals & Re-export from @Crypto.Encoding.BIP39@
+      -- * Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
     , DictionaryError(..)
     , MnemonicWordsError(..)
@@ -131,8 +131,8 @@ import qualified Data.Text as T
 -- 'Entropy' is @96-256@ bits and is __necessarily a multiple of 32 bits__ (4
 -- bytes).
 --
--- We call 'Mnemonic' an 'Entropy' with an appended checksum calculated by
--- taking the first @ent / 32@ bits of the /SHA256/ hash of it, where ent
+-- 'Mnemonic' is an 'Entropy' with an appended checksum calculated by
+-- taking the first @ent / 32@ bits of the /SHA256/ hash of it, where @ent@
 -- designates the 'Entropy' size in bits.
 --
 -- The concatenated result is split into groups of @11@ bits, each encoding a
@@ -158,7 +158,7 @@ import qualified Data.Text as T
 -- | 256 bits (32 bytes) | 8 bits        | 24 words        | excess behave track soul table wear ocean cash stay nature item turtle palm soccer lunch horror start stumble month panic right must lock dress |
 -- +---------------------+---------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
 
--- A opaque 'Mnemonic' type.
+-- | A opaque 'Mnemonic' type.
 data Mnemonic (mw :: Nat) = Mnemonic
     { mnemonicToEntropy  :: Entropy (EntropySize mw)
         -- ^ Convert a 'Mnemonic' back to an 'Entropy'.
@@ -167,7 +167,7 @@ data Mnemonic (mw :: Nat) = Mnemonic
     , mnemonicToSentence :: MnemonicSentence mw
     } deriving stock (Eq, Show)
 
--- This wraps EntropyError of "Cardano.Encoding.BIP39"
+-- | This wraps EntropyError of "Cardano.Encoding.BIP39"
 newtype MnemonicException csz =
     UnexpectedEntropyError (EntropyError csz)
     -- ^ Invalid entropy length or checksum
@@ -188,7 +188,7 @@ deriving instance Eq (EntropyError czs)
 deriving instance Eq MnemonicWordsError
 deriving instance Eq DictionaryError
 
--- NFData instances
+-- | NFData instances
 instance NFData (Mnemonic mw) where
     rnf (Mnemonic ent ws) = toNormalForm ent `seq` toNormalForm ws
 instance NFData (EntropyError csz) where
@@ -205,12 +205,12 @@ instance NFData (MkMnemonicError csz) where
 
 -- | Smart-constructor for the 'Entropy'. Make sure the 'ByteString' comes from a highly random source or use 'genEntropy'.
 --
--- __example__:
+-- __Example__:
 --
 -- >>> mkEntropy @160 bytes
 -- Entropy {} :: Entropy 160
 --
--- __property__:
+-- __Property__:
 --
 -- prop> mkEntropy (entropyToBytes ent) == Right ent
 --
@@ -223,7 +223,7 @@ mkEntropy = toEntropy
 
 -- | Generate Entropy of a given size using a cryptographically secure random seed.
 --
--- __example:__
+-- __Example:__
 --
 -- >>> genEntropy @128
 -- Entropy {} :: Entropy 128
@@ -244,12 +244,12 @@ genEntropy =
 -- | Smart-constructor for 'Mnemonic'. Requires a type application to
 -- disambiguate the mnemonic size.
 --
--- __example__:
+-- __Example__:
 --
 -- >>> mkMnemonic @15 sentence
 -- Mnemonic {} :: Mnemonic 15
 --
--- __property__:
+-- __Property__:
 --
 -- prop> mkMnemonic (mnemonicToText mnemonic) == Right mnemonic
 --
@@ -354,14 +354,14 @@ instance NFData SomeMnemonic where
 -- | This class enables caller to parse text list of variable length
 -- into mnemonic sentences.
 --
--- Note that the given 'Nat's **have** to be valid mnemonic sizes, otherwise the
+-- Note that the given 'Nat's __have__ to be valid mnemonic sizes, otherwise the
 -- underlying code won't even compile, with not-so-friendly error messages.
 class MkSomeMnemonic (sz :: [Nat]) where
     -- | Construct a mnemonic from a list of words. This function is particularly useful when the
     -- number of words is not necessarily known at runtime. The function is however /ambiguous/ and
     -- requires thereby a type application.
     --
-    -- __examples:__
+    -- __Examples:__
     --
     -- >>> mkSomeMnemonic @'[ 12 ] [ "test", "child", "burst", "immense", "armed", "parrot", "company", "walk", "dog" ]
     -- Left "Invalid number of words: 12 words are expected."

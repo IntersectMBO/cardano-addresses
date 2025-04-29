@@ -90,9 +90,9 @@ newtype Address = Address
     } deriving stock (Generic, Show, Eq, Ord)
 instance NFData Address
 
--- Unsafe constructor for easily lifting bytes inside an 'Address'.
+-- | Unsafe constructor for easily lifting bytes inside an 'Address'.
 --
--- /!\ Use at your own risks.
+-- __Use at your own risks.__
 unsafeMkAddress :: ByteString -> Address
 unsafeMkAddress = Address
 
@@ -230,7 +230,7 @@ class HasNetworkDiscriminant (key :: Depth -> Type -> Type) where
     addressDiscrimination :: NetworkDiscriminant key -> AddressDiscrimination
     networkTag :: NetworkDiscriminant key -> NetworkTag
 
--- Magic constant associated with a given network. This is mainly used in two
+-- | Magic constant associated with a given network. This is mainly used in two
 -- places:
 --
 -- (1) In 'Address' payloads, to discriminate addresses between networks.

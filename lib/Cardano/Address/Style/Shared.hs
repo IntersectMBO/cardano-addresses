@@ -123,28 +123,34 @@ instance (NFData key) => NFData (Shared depth key)
 --
 -- $keyDerivation
 --
--- === Generating a root key from 'SomeMnemonic'
--- > :set -XOverloadedStrings
--- > :set -XTypeApplications
--- > :set -XDataKinds
--- > import Cardano.Mnemonic ( mkSomeMnemonic )
--- >
--- > let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
--- > let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
--- > let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+-- ==== Generating a root key from 'SomeMnemonic'
 --
--- === Deriving child keys
+-- @
+-- >>> :set -XOverloadedStrings
+-- >>> :set -XTypeApplications
+-- >>> :set -XDataKinds
+-- >>> import Cardano.Mnemonic ( mkSomeMnemonic )
+-- @
+--
+-- @
+-- >>> let (Right mw) = mkSomeMnemonic @'[15] ["network","empty","cause","mean","expire","private","finger","accident","session","problem","absurd","banner","stage","void","what"]
+-- >>> let sndFactor = mempty -- Or alternatively, a second factor mnemonic transformed to bytes via someMnemonicToBytes
+-- >>> let rootK = genMasterKeyFromMnemonic mw sndFactor :: Shared 'RootK XPrv
+-- @
+--
+-- ==== Deriving child keys
 --
 -- Let's consider the following 3rd, 4th and 5th derivation paths @0'\/0\/14@
 --
--- > let Just accIx = indexFromWord32 0x80000000
--- > let acctK = deriveAccountPrivateKey rootK accIx
--- >
--- > let Just addIx = indexFromWord32 0x00000014
--- > let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
+-- @
+-- >>> let Just accIx = indexFromWord32 0x80000000
+-- >>> let acctK = deriveAccountPrivateKey rootK accIx
+-- >>>
+-- >>> let Just addIx = indexFromWord32 0x00000014
+-- >>> let addrK = deriveAddressPrivateKey acctK UTxOExternal addIx
 --
--- > let stakeK = deriveDelegationPrivateKey acctK
-
+-- >>> let stakeK = deriveDelegationPrivateKey acctK
+-- @
 instance Internal.GenMasterKey Shared where
     type SecondFactor Shared = ScrubbedBytes
 
@@ -302,7 +308,7 @@ sharedWalletId bytes spending stakingM =
 hashKey :: KeyRole -> Shared key XPub -> KeyHash
 hashKey cred = KeyHash cred . hashCredential . xpubPublicKey . getKey
 
--- Purpose is a constant set to 1854' (or 0x8000073e) following the
+-- | Purpose is a constant set to 1854' (or 0x8000073e) following the
 -- CIP-1854 Multi-signatures HD Wallets
 --
 -- Hardened derivation is used at this level.

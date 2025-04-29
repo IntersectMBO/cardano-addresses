@@ -82,26 +82,30 @@ scriptToText (ActiveUntilSlot s) =
 -- it valid. We assume here that the script could
 -- delivered from standard input. The examples below are self-explanatory:
 --
+-- __Example__:
+--
+-- @
 -- 1. requiring signature
--- 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
+--    3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe
 --
--- 2. 'any' for signature required
--- any [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+-- 2. any for signature required
+--    any [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
 --
--- 3. 'all' signatures required
--- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+-- 3. all signatures required
+--    all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
 --
--- 4. 'at_least' 1 signature required
--- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
+-- 4. at_least 1 signature required
+--    at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]
 --
 -- 5. Nested script are supported
--- at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
+--    at_least 1 [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1, 3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3f1]]
 -- 6. 1 signature required after slot number 120
--- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 120]
+--    all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 120]
 -- 7. 1 signature required until slot number 150
--- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_until 150]
+--    all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_until 150]
 -- 8. 1 signature required in slot interval <145, 150)
--- all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 145, active_until 150]
+--    all [3c07030e36bfffe67e2e2ec09e5293d384637cd2f004356ef320f3fe, active_from 145, active_until 150]
+-- @
 --
 -- Parser is insensitive to whitespaces.
 --

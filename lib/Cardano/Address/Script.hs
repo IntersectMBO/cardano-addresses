@@ -238,13 +238,15 @@ scriptHashFromBytes bytes
 -- One byte is prepended to script hash only in governance context. The rules how to contruct it are summarized
 -- below
 --
+-- @
 --   drep       0010....
 --   hot        0000....    key type
 --   cold       0001....
 --
 --   scripthash ....0011    credential type
+-- @
 --
--- This is on top of X_script, where X={drep, cc_hot, cc_hot}, which lacks the additional byte.
+-- This is on top of @X_script@, where @X={drep, cc_hot, cc_hot}@, which lacks the additional byte.
 -- In `scriptHashFromText` we additionally
 -- support reading legacy X which also lacks the additional byte, and has the same payload as
 -- as the corresponding X_script.
@@ -280,7 +282,9 @@ scriptHashToText (ScriptHash scriptHash) cred govType = case cred of
         _ -> Nothing
 
 -- | Construct a 'ScriptHash' from 'Text'. It should be
+--
 -- Bech32 encoded text with one of following hrp:
+--
 -- - `script`
 -- - `drep`
 -- - `cc_cold`
@@ -288,6 +292,7 @@ scriptHashToText (ScriptHash scriptHash) cred govType = case cred of
 -- - `drep_script`
 -- - `cc_cold_script`
 -- - `cc_hot_script`
+--
 -- If if hex is encountered it is converted in rawly fashion
 --
 -- @since 4.0.0
@@ -345,7 +350,7 @@ scriptHashFromText txt =
     checkBSLength bytes expLength =
         BS.length bytes == expLength
 
--- Validation level. Required level does basic check that will make sure the script
+-- | Validation level. Required level does basic check that will make sure the script
 -- is accepted in ledger. Recommended level collects a number of checks that will
 -- warn about dangerous, unwise and redundant things present in the script.
 --
@@ -354,7 +359,7 @@ data ValidationLevel = RequiredValidation | RecommendedValidation
     deriving (Show, Eq, Generic)
 instance NFData ValidationLevel
 
--- Possible errors when deserializing a script hash from text.
+-- | Possible errors when deserializing a script hash from text.
 --
 -- @since 4.0.0
 data ErrScriptHashFromText
@@ -365,7 +370,7 @@ data ErrScriptHashFromText
     | ErrScriptHashFromTextInvalidHex
     deriving (Show, Eq)
 
--- Possible errors when deserializing a script hash from text.
+-- | Possible errors when deserializing a script hash from text.
 --
 -- @since 4.0.0
 prettyErrScriptHashFromText :: ErrScriptHashFromText -> String
@@ -646,7 +651,7 @@ prettyErrValidateScriptTemplate = \case
 -- Internal
 --
 
--- Examples of Script jsons:
+    -- Examples of Script jsons:
 --"addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
 --"stake_shared_vkh1nqc00hvlc6cq0sfhretk0rmzw8dywmusp8retuqnnxzajtzhjg5"
 --{ "all" : [ "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
