@@ -47,6 +47,10 @@ module Cardano.Mnemonic
     , entropyToBytes
     , entropyToMnemonic
 
+    -- * @Dictionary@
+    , Dictionary
+    , Dictionary.english
+
       -- * Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
     , DictionaryError(..)
@@ -79,6 +83,7 @@ import Control.Monad.Catch
 import Crypto.Encoding.BIP39
     ( CheckSumBits
     , ConsistentEntropy
+    , Dictionary
     , DictionaryError (..)
     , Entropy
     , EntropyError (..)
@@ -246,12 +251,12 @@ genEntropy =
 --
 -- __Example__:
 --
--- >>> mkMnemonic @15 sentence
+-- >>> mkMnemonic @15 sentence dictionary
 -- Mnemonic {} :: Mnemonic 15
 --
 -- __Property__:
 --
--- prop> mkMnemonic (mnemonicToText mnemonic) == Right mnemonic
+-- prop> mkMnemonic (mnemonicToText mnemonic dictionary) dictionary == Right mnemonic
 --
 -- @since 1.0.0
 mkMnemonic
@@ -260,13 +265,14 @@ mkMnemonic
      , EntropySize mw ~ ent
      )
     => [Text]
+    -> Dictionary
     -> Either (MkMnemonicError csz) (Mnemonic mw)
-mkMnemonic wordsm = do
+mkMnemonic wordsm dictionary = do
     phrase <- left ErrMnemonicWords
         $ mnemonicPhrase @mw (toUtf8String <$> wordsm)
 
     sentence <- left ErrDictionary
-        $ mnemonicPhraseToMnemonicSentence Dictionary.english phrase
+        $ mnemonicPhraseToMnemonicSentence dictionary phrase
 
     entropy <- left ErrEntropy
         $ wordsToEntropy sentence
@@ -316,17 +322,19 @@ fromUtf8String = T.pack . Basement.toList
 
 instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
 
--- | Convert a 'Mnemonic' to a sentence of English mnemonic words.
+-- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
 --
 -- @since 1.0.0
 mnemonicToText
     :: Mnemonic mw
+    -> Dictionary
     -> [Text]
-mnemonicToText =
-    map (fromUtf8String . dictionaryIndexToWord Dictionary.english)
+mnemonicToText mnemonic dictionary =
+    map (fromUtf8String . dictionaryIndexToWord dictionary)
     . unListN
     . mnemonicSentenceToListN
     . mnemonicToSentence
+    $ mnemonic
 
 -- | Convert a 'SomeMnemonic' to bytes.
 --
@@ -426,7 +434,7 @@ instance
     MkSomeMnemonic (mw ': '[])
   where
     mkSomeMnemonic parts = do
-        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)
+        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts Dictionary.english)
       where
         pretty = \case
             ErrMnemonicWords ErrWrongNumberOfWords{} ->
