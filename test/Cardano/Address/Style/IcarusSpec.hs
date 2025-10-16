@@ -44,7 +44,7 @@ import Cardano.Mnemonic
     ( ConsistentEntropy
     , EntropySize
     , SomeMnemonic (..)
-    , mkMnemonic
+    , mkEnglishMnemonic
     , mkSomeMnemonic
     )
 import Control.Monad
@@ -263,7 +263,7 @@ goldenHardwareLedger
     -> Spec
 goldenHardwareLedger sentence addrs =
     it title $ do
-        let Right mnemonic = SomeMnemonic <$> mkMnemonic @mw sentence
+        let Right mnemonic = SomeMnemonic <$> mkEnglishMnemonic @mw sentence
         let rootXPrv = unsafeGenerateKeyFromHardwareLedger mnemonic
         let acctXPrv = deriveAccountPrivateKey rootXPrv minBound
         let deriveAddr = deriveAddressPrivateKey acctXPrv UTxOExternal

@@ -15,6 +15,7 @@
 
 module Test.Arbitrary
     ( unsafeMkMnemonic
+    , unsafeMkEnglishMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
     , unsafeFromRight
@@ -57,12 +58,14 @@ import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic
     ( ConsistentEntropy
+    , Dictionary
     , Entropy
     , EntropySize
     , Mnemonic
     , MnemonicException (..)
     , MnemonicWords
     , SomeMnemonic (..)
+    , english
     , entropyToMnemonic
     , mkEntropy
     , mkMnemonic
@@ -318,13 +321,23 @@ unsafeMkEntropy
 unsafeMkEntropy = either (error . show) id . mkEntropy . BA.convert
 
 -- | Build 'Mnemonic' from literals
-unsafeMkMnemonic
+unsafeMkEnglishMnemonic
     :: forall mw n csz
     .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
     => [Text]
     -> Mnemonic mw
-unsafeMkMnemonic m =
-    case mkMnemonic m of
+unsafeMkEnglishMnemonic =
+    flip unsafeMkMnemonic english
+
+-- | Build 'Mnemonic' from literals
+unsafeMkMnemonic
+    :: forall mw n csz
+    .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
+    => [Text]
+    -> Dictionary
+    -> Mnemonic mw
+unsafeMkMnemonic m dict =
+    case mkMnemonic m dict of
         Left e -> error $ "unsafeMnemonic: " <> show e
         Right a -> a
 

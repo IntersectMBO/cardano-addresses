@@ -43,7 +43,7 @@ import Data.ByteString
 import Data.Text
     ( Text )
 import Test.Arbitrary
-    ( unsafeMkMnemonic )
+    ( unsafeMkEnglishMnemonic )
 import Test.Hspec
     ( Expectation, Spec, describe, it, shouldBe )
 import Test.QuickCheck
@@ -111,7 +111,7 @@ generateTest :: GenerateKeyFromSeed -> Expectation
 generateTest (GenerateKeyFromSeed mnemonic rootXPrv)  =
     getKey masterKey `shouldBe` getKey rootXPrv
   where
-    mw = SomeMnemonic $ unsafeMkMnemonic @12 mnemonic
+    mw = SomeMnemonic $ unsafeMkEnglishMnemonic @12 mnemonic
     masterKey = genMasterKeyFromMnemonic mw () :: Byron 'RootK XPrv
 
 generateTest1 :: GenerateKeyFromSeed

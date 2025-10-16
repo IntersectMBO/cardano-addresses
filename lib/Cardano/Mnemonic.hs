@@ -36,8 +36,11 @@ module Cardano.Mnemonic
       -- * @Mnemonic@
     , Mnemonic
     , mkMnemonic
+    , mkEnglishMnemonic
+
     , MkMnemonicError(..)
     , mnemonicToText
+    , englishMnemonicToText
     , mnemonicToEntropy
 
       -- * @Entropy@
@@ -246,7 +249,7 @@ genEntropy =
     in
         (eitherToIO . mkEntropy) =<< Crypto.getEntropy (size `div` 8)
 
--- | Smart-constructor for 'Mnemonic'. Requires a type application to
+-- | Smart-constructor for 'Mnemonic' for arbitrary dictionary. Requires a type application to
 -- disambiguate the mnemonic size.
 --
 -- __Example__:
@@ -258,7 +261,7 @@ genEntropy =
 --
 -- prop> mkMnemonic (mnemonicToText mnemonic dictionary) dictionary == Right mnemonic
 --
--- @since 1.0.0
+-- @since 4.1.0
 mkMnemonic
     :: forall (mw :: Nat) (ent :: Nat) csz.
      ( ConsistentEntropy ent mw csz
@@ -281,6 +284,29 @@ mkMnemonic wordsm dictionary = do
         { mnemonicToEntropy  = entropy
         , mnemonicToSentence = sentence
         }
+
+-- | Smart-constructor for English 'Mnemonic'. Requires a type application to
+-- disambiguate the mnemonic size.
+--
+-- __Example__:
+--
+-- >>> mkEnglishMnemonic @15 sentence
+-- Mnemonic {} :: Mnemonic 15
+--
+-- __Property__:
+--
+-- prop> mkEnglishMnemonic (englishMnemonicToText mnemonic) == Right mnemonic
+--
+-- @since 1.0.0
+mkEnglishMnemonic
+    :: forall (mw :: Nat) (ent :: Nat) csz.
+     ( ConsistentEntropy ent mw csz
+     , EntropySize mw ~ ent
+     )
+    => [Text]
+    -> Either (MkMnemonicError csz) (Mnemonic mw)
+mkEnglishMnemonic = flip mkMnemonic Dictionary.english
+
 
 -- | Convert an Entropy to a corresponding Mnemonic Sentence. Since 'Entropy'
 -- and 'Mnemonic' can only be created through smart-constructors, this function
@@ -324,7 +350,7 @@ instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
 
 -- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
 --
--- @since 1.0.0
+-- @since 4.1.0
 mnemonicToText
     :: Mnemonic mw
     -> Dictionary
@@ -335,6 +361,14 @@ mnemonicToText mnemonic dictionary =
     . mnemonicSentenceToListN
     . mnemonicToSentence
     $ mnemonic
+
+-- | Convert a 'Mnemonic' to a sentence of English mnemonic words.
+--
+-- @since 1.0.0
+englishMnemonicToText
+    :: Mnemonic mw
+    -> [Text]
+englishMnemonicToText = flip mnemonicToText Dictionary.english
 
 -- | Convert a 'SomeMnemonic' to bytes.
 --
