@@ -19,7 +19,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Mnemonic
-    ( entropyToMnemonic, genEntropy, mnemonicToText )
+    ( english, entropyToMnemonic, genEntropy, mnemonicToText )
 import Options.Applicative
     ( CommandFields, Mod, command, helper, info, progDesc )
 import Options.Applicative.MnemonicSize
@@ -51,4 +51,4 @@ run Generate{size} = do
         MS_18 -> mnemonicToText @18 . entropyToMnemonic <$> genEntropy
         MS_21 -> mnemonicToText @21 . entropyToMnemonic <$> genEntropy
         MS_24 -> mnemonicToText @24 . entropyToMnemonic <$> genEntropy
-    B8.putStrLn $ T.encodeUtf8 $ T.unwords m
+    B8.putStrLn $ T.encodeUtf8 $ T.unwords $ m english

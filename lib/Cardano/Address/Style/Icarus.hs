@@ -94,7 +94,7 @@ import Cardano.Address.Internal
 import Cardano.Address.Style.Byron
     ( byronMainnet, byronPreprod, byronPreview, byronStaging, byronTestnet )
 import Cardano.Mnemonic
-    ( SomeMnemonic (..), entropyToBytes, mnemonicToEntropy, mnemonicToText )
+    ( SomeMnemonic (..), english, entropyToBytes, mnemonicToEntropy, mnemonicToText )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.DeepSeq
@@ -637,7 +637,7 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
     let seed = pbkdf2HmacSha512
             $ T.encodeUtf8
             $ T.intercalate " "
-            $ mnemonicToText mw
+            $ mnemonicToText mw english
 
     -- NOTE
     -- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code
