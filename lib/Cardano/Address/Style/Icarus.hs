@@ -94,7 +94,12 @@ import Cardano.Address.Internal
 import Cardano.Address.Style.Byron
     ( byronMainnet, byronPreprod, byronPreview, byronStaging, byronTestnet )
 import Cardano.Mnemonic
-    ( SomeMnemonic (..), english, entropyToBytes, mnemonicToEntropy, mnemonicToText )
+    ( SomeMnemonic (..)
+    , english
+    , entropyToBytes
+    , mnemonicToEntropy
+    , mnemonicToText
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Control.DeepSeq

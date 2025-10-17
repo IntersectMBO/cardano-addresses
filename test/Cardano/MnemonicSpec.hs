@@ -19,14 +19,14 @@ import Cardano.Mnemonic
     , MkMnemonicError (..)
     , MkSomeMnemonicError (..)
     , Mnemonic
+    , englishMnemonicToText
     , entropyToBytes
     , entropyToMnemonic
     , genEntropy
-    , mkEntropy
     , mkEnglishMnemonic
+    , mkEntropy
     , mkSomeMnemonic
     , mnemonicToEntropy
-    , englishMnemonicToText
     )
 import Control.Monad
     ( forM_ )
