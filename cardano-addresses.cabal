@@ -75,6 +75,7 @@ library
       Options.Applicative.Derivation
       Options.Applicative.Discrimination
       Options.Applicative.Governance
+      Options.Applicative.MnemonicLanguage
       Options.Applicative.MnemonicSize
       Options.Applicative.Public
       Options.Applicative.Script
