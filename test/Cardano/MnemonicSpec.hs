@@ -19,14 +19,14 @@ import Cardano.Mnemonic
     , MkMnemonicError (..)
     , MkSomeMnemonicError (..)
     , Mnemonic
-    , englishMnemonicToText
     , entropyToBytes
     , entropyToMnemonic
     , genEntropy
-    , mkEnglishMnemonic
     , mkEntropy
+    , mkMnemonic
     , mkSomeMnemonic
     , mnemonicToEntropy
+    , mnemonicToText
     )
 import Control.Monad
     ( forM_ )
@@ -87,23 +87,23 @@ spec = do
     prop "(24) entropyToMnemonic . mnemonicToEntropy == identity" $ \e ->
         (mnemonicToEntropy @24 . entropyToMnemonic @24 @(EntropySize 24)) e == e
 
-    prop "(9) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 9) -> (mkEnglishMnemonic @9 . englishMnemonicToText) mw === pure mw
+    prop "(9) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 9) -> (mkMnemonic @9 . mnemonicToText) mw === pure mw
 
-    prop "(12) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 12) -> (mkEnglishMnemonic @12 . englishMnemonicToText) mw === pure mw
+    prop "(12) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 12) -> (mkMnemonic @12 . mnemonicToText) mw === pure mw
 
-    prop "(15) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 15) -> (mkEnglishMnemonic @15 . englishMnemonicToText) mw === pure mw
+    prop "(15) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 15) -> (mkMnemonic @15 . mnemonicToText) mw === pure mw
 
-    prop "(18) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 18) -> (mkEnglishMnemonic @18 . englishMnemonicToText) mw === pure mw
+    prop "(18) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 18) -> (mkMnemonic @18 . mnemonicToText) mw === pure mw
 
-    prop "(21) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 21) -> (mkEnglishMnemonic @21 . englishMnemonicToText) mw === pure mw
+    prop "(21) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 21) -> (mkMnemonic @21 . mnemonicToText) mw === pure mw
 
-    prop "(24) mkEnglishMnemonic . englishMnemonicToText == pure" $
-        \(mw :: Mnemonic 24) -> (mkEnglishMnemonic @24 . englishMnemonicToText) mw === pure mw
+    prop "(24) mkMnemonic . mnemonicToText == pure" $
+        \(mw :: Mnemonic 24) -> (mkMnemonic @24 . mnemonicToText) mw === pure mw
 
     describe "MkSomeMnemonic" $ do
         let noInDictErr =
@@ -186,11 +186,11 @@ spec = do
 
     describe "golden tests" $ do
         it "No empty mnemonic" $
-            mkEnglishMnemonic @15 [] `shouldBe`
+            mkMnemonic @15 [] `shouldBe`
                 Left (ErrMnemonicWords (ErrWrongNumberOfWords 0 15))
 
         it "No 1 word mnemonic" $
-            mkEnglishMnemonic @15 ["material"] `shouldBe`
+            mkMnemonic @15 ["material"] `shouldBe`
                 Left (ErrMnemonicWords (ErrWrongNumberOfWords 1 15))
 
         it "No too long fake mnemonic" $ do
@@ -198,7 +198,7 @@ spec = do
                     [ "squirrel","material","silly","twice","direct"
                     , "slush","pistol","razor","become","twice"
                     ]
-            mkEnglishMnemonic @9 sentence `shouldBe`
+            mkMnemonic @9 sentence `shouldBe`
                 Left (ErrMnemonicWords (ErrWrongNumberOfWords 10 9))
 
         it "No empty entropy" $
@@ -236,10 +236,10 @@ spec = do
             (BA.length . entropyToBytes <$> genEntropy @256) `shouldReturn` 32
 
         it "Mnemonic to Text" $ forM_ testVectors $ \TestVector{..} ->
-            englishMnemonicToText mnemonic `shouldBe` extractWords string
+            mnemonicToText mnemonic `shouldBe` extractWords string
 
         it "Mnemonic from Text" $ forM_ testVectors $ \TestVector{..} ->
-            (mkEnglishMnemonic @12 . extractWords) string `shouldBe` pure mnemonic
+            (mkMnemonic @12 . extractWords) string `shouldBe` pure mnemonic
 
         it "Mnemonic to Entropy" $ forM_ testVectors $ \TestVector{..} ->
             mnemonicToEntropy mnemonic `shouldBe` entropy
@@ -248,28 +248,28 @@ spec = do
             let mnemonicFromApi =
                     "[squirrel,material,silly,twice,direct,slush,pistol,razor,\
                     \become,junk,kingdom,flee,squirrel,silly,twice]"
-            (mkEnglishMnemonic @15 . extractWords) mnemonicFromApi `shouldSatisfy`
+            (mkMnemonic @15 . extractWords) mnemonicFromApi `shouldSatisfy`
                 isErrInvalidEntropyChecksum
 
         it "Mnemonic 2nd factor from Api is invalid" $ do
             let mnemonicFromApi =
                     "[squirrel,material,silly,twice,direct,slush,pistol,razor,\
                     \become]"
-            (mkEnglishMnemonic @9 . extractWords) mnemonicFromApi `shouldSatisfy`
+            (mkMnemonic @9 . extractWords) mnemonicFromApi `shouldSatisfy`
                 isErrInvalidEntropyChecksum
 
-        it "15 long mnemonics not valid for mkEnglishMnemonic @12" $ do
+        it "15 long mnemonics not valid for mkMnemonic @12" $ do
             let mnemonicFromApi =
                     "[trigger,artwork,lab,raw,confirm,visual,energy,double,\
                     \coral,fat,hen,ghost,phone,yellow,bag]"
-            (mkEnglishMnemonic @12 . extractWords) mnemonicFromApi `shouldBe`
+            (mkMnemonic @12 . extractWords) mnemonicFromApi `shouldBe`
                 Left (ErrMnemonicWords (ErrWrongNumberOfWords 15 12))
 
-        it "15 long mnemonics not valid for mkEnglishMnemonic @24" $ do
+        it "15 long mnemonics not valid for mkMnemonic @24" $ do
             let mnemonicFromApi =
                     "[trigger,artwork,lab,raw,confirm,visual,energy,double,\
                     \coral,fat,hen,ghost,phone,yellow,bag]"
-            (mkEnglishMnemonic @24 . extractWords) mnemonicFromApi `shouldBe`
+            (mkMnemonic @24 . extractWords) mnemonicFromApi `shouldBe`
                 Left (ErrMnemonicWords (ErrWrongNumberOfWords 15 24))
 
         it "Non-English mnemonics don't work" $ do
@@ -277,7 +277,7 @@ spec = do
                     "[むしば,いてん,ぜんりゃく,になう,きあい,よっか,けんま,\
                     \げきげん,きおん,こふん,しゅらば,しあさって,てんし,わかめ,\
                     \いわば]"
-            (mkEnglishMnemonic @15 . extractWords) mnemonicFromApi `shouldBe`
+            (mkMnemonic @15 . extractWords) mnemonicFromApi `shouldBe`
                 Left (ErrDictionary (ErrInvalidDictionaryWord "むしば"))
   where
     testVectors :: [TestVector]
@@ -288,7 +288,7 @@ spec = do
           (orFail $ mkEntropy'
               "\NUL\NUL\NUL\NUL\NUL\NUL\NUL\NUL\
               \\NUL\NUL\NUL\NUL\NUL\NUL\NUL\NUL")
-          (orFail $ mkEnglishMnemonic
+          (orFail $ mkMnemonic
               [ "abandon", "abandon", "abandon", "abandon", "abandon", "abandon"
               , "abandon", "abandon", "abandon", "abandon", "abandon", "about"
               ])
@@ -298,7 +298,7 @@ spec = do
             (orFail $ mkEntropy'
                 "\128\128\128\128\128\128\128\128\
                 \\128\128\128\128\128\128\128\128")
-            (orFail $ mkEnglishMnemonic
+            (orFail $ mkMnemonic
                 [ "letter", "advice", "cage", "absurd", "amount", "doctor"
                 , "acoustic", "avoid", "letter", "advice", "cage", "above"
                 ])
@@ -307,7 +307,7 @@ spec = do
             (orFail $ mkEntropy'
                 "\255\255\255\255\255\255\255\255\
                 \\255\255\255\255\255\255\255\255")
-            (orFail $ mkEnglishMnemonic
+            (orFail $ mkMnemonic
                 [ "zoo", "zoo", "zoo", "zoo", "zoo", "zoo"
                 , "zoo", "zoo", "zoo", "zoo", "zoo", "wrong" ])
         ]

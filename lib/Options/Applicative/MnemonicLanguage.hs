@@ -5,7 +5,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 -- |
--- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
+-- Copyright: 2025 Intersect
 -- License: Apache-2.0
 
 module Options.Applicative.MnemonicLanguage
@@ -21,8 +21,6 @@ module Options.Applicative.MnemonicLanguage
 
 import Prelude
 
-import Data.Char
-    ( toLower )
 import Data.List
     ( intercalate )
 import Data.List.Extra
@@ -50,14 +48,15 @@ data MnemonicLanguage
     = English
     deriving (Generic, Show, Bounded, Enum, Eq)
 
+-- | MnemonicLanguage displays according to [ISO 639-2 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)
 mnemonicLanguageToString :: MnemonicLanguage -> String
-mnemonicLanguageToString = map toLower . show
+mnemonicLanguageToString English = "eng"
 
 mnemonicLanguageFromString :: String -> Either String MnemonicLanguage
 mnemonicLanguageFromString = \case
-    "english" -> Right English
+    "eng" -> Right English
     _ -> Left $ mempty
-           <> "Invalid mnemonic language. At this moment only 'english' available."
+           <> "Invalid mnemonic language. At this moment only 'eng' available."
 
 languageStrs :: [String]
 languageStrs = mnemonicLanguageToString <$> enumerate

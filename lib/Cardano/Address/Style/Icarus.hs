@@ -98,7 +98,7 @@ import Cardano.Mnemonic
     , english
     , entropyToBytes
     , mnemonicToEntropy
-    , mnemonicToText
+    , mnemonicToTextWithDict
     )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
@@ -642,7 +642,7 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
     let seed = pbkdf2HmacSha512
             $ T.encodeUtf8
             $ T.intercalate " "
-            $ mnemonicToText mw english
+            $ mnemonicToTextWithDict mw english
 
     -- NOTE
     -- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code
