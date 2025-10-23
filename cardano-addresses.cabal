@@ -45,6 +45,7 @@ library
       Cardano.Address.Style.Shelley
       Cardano.Codec.Bech32.Prefixes
       Cardano.Codec.Cbor
+      Cardano.Dictionary.English
       Cardano.Mnemonic
       Codec.Binary.Encoding
       Command
