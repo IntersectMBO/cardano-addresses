@@ -15,13 +15,19 @@ The `cardano-addresses` repository is co-maintained by @intersectmbo and @cardan
 The following people hold key responsibilities:
 
 * @disassembler is responsible for releases
-* @Crypto2099 is responsible for compilation to JavaScript and CI
+* @Crypto2099 is responsible for CI
 * @paweljakubas is responsible for the Haskell components
 
 Regular contributors for the Haskell components are
 
-* @Anviking @HeinrichApfelmus @jonathanknowles @paweljakubas @paolino
+* @Anviking @paweljakubas @paolino
 
 all of whom can merge PRs and be asked to review them.
 
 In addition, the CODEOWNERS file identifies specific reviewers who are required for PRs that affect specific components.
+
+## Versioning standard
+**Semantic Versioning** is adopted in the repository. This means that if we have, for example, version *0.4.1*, then
+public API exposed by `cardano-addresses` is ensured to stay the same until *0.5.0* version.
+Hence, versions *0.4.2*, *0.4.3*,... *0.4.x* are patches
+with regards to *0.4.1* and client code of `cardano-addresses` is expected to stay intact and functioning correctly.

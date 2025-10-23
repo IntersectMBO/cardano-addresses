@@ -48,15 +48,15 @@ data MnemonicLanguage
     = English
     deriving (Generic, Show, Bounded, Enum, Eq)
 
--- | MnemonicLanguage displays according to [ISO 639-2 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)
+-- | MnemonicLanguage displays according to two-letter [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)
 mnemonicLanguageToString :: MnemonicLanguage -> String
-mnemonicLanguageToString English = "eng"
+mnemonicLanguageToString English = "en"
 
 mnemonicLanguageFromString :: String -> Either String MnemonicLanguage
 mnemonicLanguageFromString = \case
-    "eng" -> Right English
+    "en" -> Right English
     _ -> Left $ mempty
-           <> "Invalid mnemonic language. At this moment only 'eng' available."
+           <> "Invalid mnemonic language. At this moment only 'en' available."
 
 languageStrs :: [String]
 languageStrs = mnemonicLanguageToString <$> enumerate

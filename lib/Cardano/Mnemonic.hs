@@ -261,7 +261,7 @@ genEntropy =
 --
 -- prop> mkMnemonicWithDict (mnemonicToTextWithDict mnemonic dictionary) dictionary == Right mnemonic
 --
--- @since 4.1.0
+-- @since 4.0.1
 mkMnemonicWithDict
     :: forall (mw :: Nat) (ent :: Nat) csz.
      ( ConsistentEntropy ent mw csz
@@ -350,7 +350,7 @@ instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
 
 -- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
 --
--- @since 4.1.0
+-- @since 4.0.1
 mnemonicToTextWithDict
     :: Mnemonic mw
     -> Dictionary
