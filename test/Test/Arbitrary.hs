@@ -14,7 +14,8 @@
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 
 module Test.Arbitrary
-    ( unsafeMkMnemonic
+    ( unsafeMkMnemonicWithDict
+    , unsafeMkEnglishMnemonic
     , unsafeMkSomeMnemonicFromEntropy
     , unsafeFromHex
     , unsafeFromRight
@@ -57,15 +58,17 @@ import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Mnemonic
     ( ConsistentEntropy
+    , Dictionary
     , Entropy
     , EntropySize
     , Mnemonic
     , MnemonicException (..)
     , MnemonicWords
     , SomeMnemonic (..)
+    , english
     , entropyToMnemonic
     , mkEntropy
-    , mkMnemonic
+    , mkMnemonicWithDict
     )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
@@ -318,13 +321,23 @@ unsafeMkEntropy
 unsafeMkEntropy = either (error . show) id . mkEntropy . BA.convert
 
 -- | Build 'Mnemonic' from literals
-unsafeMkMnemonic
+unsafeMkEnglishMnemonic
     :: forall mw n csz
     .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
     => [Text]
     -> Mnemonic mw
-unsafeMkMnemonic m =
-    case mkMnemonic m of
+unsafeMkEnglishMnemonic =
+    flip unsafeMkMnemonicWithDict english
+
+-- | Build 'Mnemonic' from literals
+unsafeMkMnemonicWithDict
+    :: forall mw n csz
+    .  (ConsistentEntropy n mw csz, EntropySize mw ~ n, HasCallStack)
+    => [Text]
+    -> Dictionary
+    -> Mnemonic mw
+unsafeMkMnemonicWithDict m dict =
+    case mkMnemonicWithDict m dict of
         Left e -> error $ "unsafeMnemonic: " <> show e
         Right a -> a
 

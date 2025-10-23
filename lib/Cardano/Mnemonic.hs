@@ -35,8 +35,11 @@ module Cardano.Mnemonic
 
       -- * @Mnemonic@
     , Mnemonic
+    , mkMnemonicWithDict
     , mkMnemonic
+
     , MkMnemonicError(..)
+    , mnemonicToTextWithDict
     , mnemonicToText
     , mnemonicToEntropy
 
@@ -46,6 +49,10 @@ module Cardano.Mnemonic
     , mkEntropy
     , entropyToBytes
     , entropyToMnemonic
+
+    -- * @Dictionary@
+    , Dictionary
+    , Dictionary.english
 
       -- * Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
@@ -79,6 +86,7 @@ import Control.Monad.Catch
 import Crypto.Encoding.BIP39
     ( CheckSumBits
     , ConsistentEntropy
+    , Dictionary
     , DictionaryError (..)
     , Entropy
     , EntropyError (..)
@@ -241,7 +249,43 @@ genEntropy =
     in
         (eitherToIO . mkEntropy) =<< Crypto.getEntropy (size `div` 8)
 
--- | Smart-constructor for 'Mnemonic'. Requires a type application to
+-- | Smart-constructor for 'Mnemonic' for arbitrary dictionary. Requires a type application to
+-- disambiguate the mnemonic size.
+--
+-- __Example__:
+--
+-- >>> mkMnemonicWithDict @15 sentence dictionary
+-- Mnemonic {} :: Mnemonic 15
+--
+-- __Property__:
+--
+-- prop> mkMnemonicWithDict (mnemonicToTextWithDict mnemonic dictionary) dictionary == Right mnemonic
+--
+-- @since 4.0.1
+mkMnemonicWithDict
+    :: forall (mw :: Nat) (ent :: Nat) csz.
+     ( ConsistentEntropy ent mw csz
+     , EntropySize mw ~ ent
+     )
+    => [Text]
+    -> Dictionary
+    -> Either (MkMnemonicError csz) (Mnemonic mw)
+mkMnemonicWithDict wordsm dictionary = do
+    phrase <- left ErrMnemonicWords
+        $ mnemonicPhrase @mw (toUtf8String <$> wordsm)
+
+    sentence <- left ErrDictionary
+        $ mnemonicPhraseToMnemonicSentence dictionary phrase
+
+    entropy <- left ErrEntropy
+        $ wordsToEntropy sentence
+
+    pure Mnemonic
+        { mnemonicToEntropy  = entropy
+        , mnemonicToSentence = sentence
+        }
+
+-- | Smart-constructor for English 'Mnemonic'. Requires a type application to
 -- disambiguate the mnemonic size.
 --
 -- __Example__:
@@ -261,20 +305,8 @@ mkMnemonic
      )
     => [Text]
     -> Either (MkMnemonicError csz) (Mnemonic mw)
-mkMnemonic wordsm = do
-    phrase <- left ErrMnemonicWords
-        $ mnemonicPhrase @mw (toUtf8String <$> wordsm)
+mkMnemonic = flip mkMnemonicWithDict Dictionary.english
 
-    sentence <- left ErrDictionary
-        $ mnemonicPhraseToMnemonicSentence Dictionary.english phrase
-
-    entropy <- left ErrEntropy
-        $ wordsToEntropy sentence
-
-    pure Mnemonic
-        { mnemonicToEntropy  = entropy
-        , mnemonicToSentence = sentence
-        }
 
 -- | Convert an Entropy to a corresponding Mnemonic Sentence. Since 'Entropy'
 -- and 'Mnemonic' can only be created through smart-constructors, this function
@@ -316,17 +348,27 @@ fromUtf8String = T.pack . Basement.toList
 
 instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
 
+-- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
+--
+-- @since 4.0.1
+mnemonicToTextWithDict
+    :: Mnemonic mw
+    -> Dictionary
+    -> [Text]
+mnemonicToTextWithDict mnemonic dictionary =
+    map (fromUtf8String . dictionaryIndexToWord dictionary)
+    . unListN
+    . mnemonicSentenceToListN
+    . mnemonicToSentence
+    $ mnemonic
+
 -- | Convert a 'Mnemonic' to a sentence of English mnemonic words.
 --
 -- @since 1.0.0
 mnemonicToText
     :: Mnemonic mw
     -> [Text]
-mnemonicToText =
-    map (fromUtf8String . dictionaryIndexToWord Dictionary.english)
-    . unListN
-    . mnemonicSentenceToListN
-    . mnemonicToSentence
+mnemonicToText = flip mnemonicToTextWithDict Dictionary.english
 
 -- | Convert a 'SomeMnemonic' to bytes.
 --
@@ -426,7 +468,7 @@ instance
     MkSomeMnemonic (mw ': '[])
   where
     mkSomeMnemonic parts = do
-        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonic @mw parts)
+        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonicWithDict @mw parts Dictionary.english)
       where
         pretty = \case
             ErrMnemonicWords ErrWrongNumberOfWords{} ->
