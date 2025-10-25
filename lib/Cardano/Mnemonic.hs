@@ -52,7 +52,8 @@ module Cardano.Mnemonic
 
     -- * @Dictionary@
     , Dictionary
-    , Dictionary.english
+    , english
+    , italian
 
       -- * Internals & Re-export from @Crypto.Encoding.BIP39@
     , EntropyError(..)
@@ -77,6 +78,10 @@ import Basement.NormalForm
     ( NormalForm (..) )
 import Basement.Sized.List
     ( unListN )
+import Cardano.Dictionary.English
+    ( english )
+import Cardano.Dictionary.Italian
+    ( italian )
 import Control.Arrow
     ( left )
 import Control.DeepSeq
@@ -127,7 +132,6 @@ import Type.Reflection
 
 import qualified Basement.Compat.Base as Basement
 import qualified Basement.String as Basement
-import qualified Crypto.Encoding.BIP39.English as Dictionary
 import qualified Crypto.Random.Entropy as Crypto
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
@@ -305,7 +309,7 @@ mkMnemonic
      )
     => [Text]
     -> Either (MkMnemonicError csz) (Mnemonic mw)
-mkMnemonic = flip mkMnemonicWithDict Dictionary.english
+mkMnemonic = flip mkMnemonicWithDict english
 
 
 -- | Convert an Entropy to a corresponding Mnemonic Sentence. Since 'Entropy'
@@ -368,7 +372,7 @@ mnemonicToTextWithDict mnemonic dictionary =
 mnemonicToText
     :: Mnemonic mw
     -> [Text]
-mnemonicToText = flip mnemonicToTextWithDict Dictionary.english
+mnemonicToText = flip mnemonicToTextWithDict english
 
 -- | Convert a 'SomeMnemonic' to bytes.
 --
@@ -468,7 +472,7 @@ instance
     MkSomeMnemonic (mw ': '[])
   where
     mkSomeMnemonic parts = do
-        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonicWithDict @mw parts Dictionary.english)
+        bimap (MkSomeMnemonicError . pretty) SomeMnemonic (mkMnemonicWithDict @mw parts english)
       where
         pretty = \case
             ErrMnemonicWords ErrWrongNumberOfWords{} ->
