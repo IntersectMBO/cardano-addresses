@@ -116,6 +116,31 @@ spec = do
           let dict = dictionaryFromLanguage lang
           mkMnemonicWithDict @9 (mnemonicToTextWithDict mw dict) dict === pure mw
 
+    prop "(12) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 12) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @12 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(15) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 15) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @15 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(18) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 18) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @18 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(21) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 21) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @21 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(24) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 24) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @24 (mnemonicToTextWithDict mw dict) dict === pure mw
+
     describe "MkSomeMnemonic" $ do
         let noInDictErr =
                 "Found an unknown word not present in the pre-defined dictionary. \
