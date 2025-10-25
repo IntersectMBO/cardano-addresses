@@ -39,6 +39,12 @@ API documentation is available [here](https://IntersectMBO.github.io/cardano-add
 ```console
 $ cardano-address recovery-phrase generate --size 15 > phrase.prv
 exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+
+$ cardano-address recovery-phrase generate --size 15 --language en
+joke someone lesson napkin cloud crush cattle machine toddler auction until dumb nephew atom nest
+
+$ cardano-address recovery-phrase generate --size 15 --language it
+tetro assoluto velcro cullato prassi perdonato rifugio esercito placebo zanna sogno mitezza valoroso neutrale pranzo
 ```
 
 

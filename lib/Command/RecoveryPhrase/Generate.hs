@@ -20,7 +20,7 @@ import Prelude hiding
     ( mod )
 
 import Cardano.Mnemonic
-    ( english, entropyToMnemonic, genEntropy, mnemonicToTextWithDict )
+    ( english, entropyToMnemonic, genEntropy, italian, mnemonicToTextWithDict )
 import Options.Applicative
     ( CommandFields, Mod, command, helper, info, progDesc )
 import Options.Applicative.MnemonicLanguage
@@ -60,3 +60,4 @@ run Generate{size,language} = do
   where
     dictionaryFromLanguage = \case
         English -> english
+        Italian -> italian
