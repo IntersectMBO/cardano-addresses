@@ -46,6 +46,7 @@ library
       Cardano.Codec.Bech32.Prefixes
       Cardano.Codec.Cbor
       Cardano.Dictionary.English
+      Cardano.Dictionary.Italian
       Cardano.Mnemonic
       Codec.Binary.Encoding
       Command
