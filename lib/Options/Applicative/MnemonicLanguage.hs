@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -10,23 +9,23 @@
 
 module Options.Applicative.MnemonicLanguage
     (
-    -- * Type
-      MnemonicLanguage(..)
-    , mnemonicLanguageToString
-    , mnemonicLanguageFromString
-
     -- * Applicative Parser
-    , mnemonicLanguageOpt
+      mnemonicLanguageOpt
+
+    -- * Helpers
+    , supportedDictionaryToString
+    , supportedDictionaryFromString
+
     ) where
 
 import Prelude
 
+import Cardano.Dictionary
+    ( SupportedDictionary (..) )
 import Data.List
     ( intercalate )
 import Data.List.Extra
     ( enumerate )
-import GHC.Generics
-    ( Generic )
 import Options.Applicative
     ( Parser
     , completer
@@ -40,41 +39,33 @@ import Options.Applicative
     , value
     )
 
---
--- Type
---
 
-data MnemonicLanguage
-    = English
-    | Italian
-    deriving (Generic, Show, Bounded, Enum, Eq)
+-- | SupportedDictionary displays according to two-letter [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)
+supportedDictionaryToString :: SupportedDictionary -> String
+supportedDictionaryToString English = "en"
+supportedDictionaryToString Italian = "it"
 
--- | MnemonicLanguage displays according to two-letter [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)
-mnemonicLanguageToString :: MnemonicLanguage -> String
-mnemonicLanguageToString English = "en"
-mnemonicLanguageToString Italian = "it"
-
-mnemonicLanguageFromString :: String -> Either String MnemonicLanguage
-mnemonicLanguageFromString = \case
+supportedDictionaryFromString :: String -> Either String SupportedDictionary
+supportedDictionaryFromString = \case
     "en" -> Right English
     "it" -> Right Italian
     _ -> Left $ mempty
-           <> "Invalid mnemonic language. At this moment only 'en' and 'it' available."
+           <> "Invalid supported dictionary. At this moment only 'en' and 'it' available."
 
 languageStrs :: [String]
-languageStrs = mnemonicLanguageToString <$> enumerate
+languageStrs = supportedDictionaryToString <$> enumerate
 
 --
 -- Applicative Parser
 --
 
-mnemonicLanguageOpt :: Parser MnemonicLanguage
-mnemonicLanguageOpt = option (eitherReader mnemonicLanguageFromString) $ mempty
+mnemonicLanguageOpt :: Parser SupportedDictionary
+mnemonicLanguageOpt = option (eitherReader supportedDictionaryFromString) $ mempty
     <> long "language"
     <> metavar "STR"
     <> help ( "Language of mnemonic words to generate. Must be one of: "
              <> intercalate ", " languageStrs
              <> ".")
     <> value English
-    <> showDefaultWith mnemonicLanguageToString
+    <> showDefaultWith supportedDictionaryToString
     <> completer (listCompleter languageStrs)

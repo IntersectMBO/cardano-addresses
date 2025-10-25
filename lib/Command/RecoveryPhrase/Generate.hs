@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -19,12 +18,14 @@ module Command.RecoveryPhrase.Generate
 import Prelude hiding
     ( mod )
 
+import Cardano.Dictionary
+    ( SupportedDictionary (..), dictionaryFromLanguage )
 import Cardano.Mnemonic
-    ( english, entropyToMnemonic, genEntropy, italian, mnemonicToTextWithDict )
+    ( entropyToMnemonic, genEntropy, mnemonicToTextWithDict )
 import Options.Applicative
     ( CommandFields, Mod, command, helper, info, progDesc )
 import Options.Applicative.MnemonicLanguage
-    ( MnemonicLanguage (..), mnemonicLanguageOpt )
+    ( mnemonicLanguageOpt )
 import Options.Applicative.MnemonicSize
     ( MnemonicSize (..), mnemonicSizeOpt )
 
@@ -35,7 +36,7 @@ import qualified Data.Text.Encoding as T
 
 data Cmd = Generate
     { size :: MnemonicSize
-    , language :: MnemonicLanguage
+    , language :: SupportedDictionary
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -57,7 +58,3 @@ run Generate{size,language} = do
         MS_21 -> mnemonicToTextWithDict @21 . entropyToMnemonic <$> genEntropy
         MS_24 -> mnemonicToTextWithDict @24 . entropyToMnemonic <$> genEntropy
     B8.putStrLn $ T.encodeUtf8 $ T.unwords $ m $ dictionaryFromLanguage language
-  where
-    dictionaryFromLanguage = \case
-        English -> english
-        Italian -> italian

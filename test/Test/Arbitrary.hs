@@ -56,6 +56,9 @@ import Cardano.Address.Style.Icarus
     )
 import Cardano.Address.Style.Shelley
     ( Shelley )
+import Cardano.Dictionary
+    ( SupportedDictionary (..)
+    )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Dictionary
@@ -277,6 +280,13 @@ instance Arbitrary Icarus.Role where
     arbitrary = elements
         [ Icarus.UTxOExternal
         , Icarus.UTxOInternal
+        ]
+
+instance Arbitrary SupportedDictionary where
+    shrink = genericShrink
+    arbitrary = elements
+        [ English
+        , Italian
         ]
 
 --
