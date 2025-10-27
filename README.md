@@ -48,6 +48,9 @@ tetro assoluto velcro cullato prassi perdonato rifugio esercito placebo zanna so
 
 $ cardano-address recovery-phrase generate --size 15 --language fr
 maximal saisir gendarme gazon libre cinéma maigre sabre inexact brusque légal patience étude fable tronc
+
+$ cardano-address recovery-phrase generate --size 15 --language es
+freno taza luz ciego votar tabla ilusión pomada rasgo droga alga ocio flúor resumen tiempo
 ```
 
 

@@ -45,6 +45,7 @@ supportedDictionaryToString :: SupportedDictionary -> String
 supportedDictionaryToString English = "en"
 supportedDictionaryToString Italian = "it"
 supportedDictionaryToString French = "fr"
+supportedDictionaryToString Spanish = "es"
 
 languageStrs :: [String]
 languageStrs = supportedDictionaryToString <$> enumerate
@@ -54,6 +55,7 @@ supportedDictionaryFromString = \case
     "en" -> Right English
     "it" -> Right Italian
     "fr" -> Right French
+    "es" -> Right Spanish
     _ -> Left $ mempty
            <> "Invalid supported dictionary. The following are available: "
            <> intercalate ", " languageStrs
