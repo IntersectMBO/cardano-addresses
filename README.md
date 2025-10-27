@@ -54,6 +54,9 @@ freno taza luz ciego votar tabla ilusión pomada rasgo droga alga ocio flúor re
 
 $ cardano-address recovery-phrase generate --size 15 --language ja
 さつたば ようちえん せめる にさんかたんそ さめる おんだん ひんぱん いおん げどく ふいうち こうさい だんな もちろん のらねこ さつたば
+
+$ cardano-address recovery-phrase generate --size 15 --language ko
+번역 자연 수건 확인 양념 가장 운동 장점 주인 망원경 전자 한문 대응 진료 시즌
 ```
 
 

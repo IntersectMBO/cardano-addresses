@@ -46,6 +46,7 @@ supportedDictionaryToString English = "en"
 supportedDictionaryToString Italian = "it"
 supportedDictionaryToString Japanese = "ja"
 supportedDictionaryToString French = "fr"
+supportedDictionaryToString Korean = "ko"
 supportedDictionaryToString Spanish = "es"
 
 languageStrs :: [String]
@@ -57,6 +58,7 @@ supportedDictionaryFromString = \case
     "it" -> Right Italian
     "ja" -> Right Japanese
     "fr" -> Right French
+    "ko" -> Right Korean
     "es" -> Right Spanish
     _ -> Left $ mempty
            <> "Invalid supported dictionary. The following are available: "

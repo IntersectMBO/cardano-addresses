@@ -289,6 +289,7 @@ instance Arbitrary SupportedDictionary where
         , French
         , Italian
         , Japanese
+        , Korean
         , Spanish
         ]
 

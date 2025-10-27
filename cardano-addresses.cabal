@@ -51,6 +51,7 @@ library
       Cardano.Dictionary.Generic
       Cardano.Dictionary.Italian
       Cardano.Dictionary.Japanese
+      Cardano.Dictionary.Korean
       Cardano.Dictionary.Spanish
       Cardano.Mnemonic
       Codec.Binary.Encoding

@@ -28,6 +28,8 @@ import Cardano.Dictionary.Italian
     ( italian )
 import Cardano.Dictionary.Japanese
     ( japanese )
+import Cardano.Dictionary.Korean
+    ( korean )
 import Cardano.Dictionary.Spanish
     ( spanish )
 import Crypto.Encoding.BIP39.Dictionary
@@ -42,6 +44,7 @@ data SupportedDictionary =
     | Italian
     | Japanese
     | French
+    | Korean
     | Spanish
     deriving (Generic, Show, Bounded, Enum, Eq)
 
@@ -51,4 +54,5 @@ dictionaryFromLanguage = \case
     Italian -> italian
     Japanese -> japanese
     French -> french
+    Korean -> korean
     Spanish -> spanish
