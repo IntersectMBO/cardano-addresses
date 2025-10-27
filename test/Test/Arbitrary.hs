@@ -57,8 +57,7 @@ import Cardano.Address.Style.Icarus
 import Cardano.Address.Style.Shelley
     ( Shelley )
 import Cardano.Dictionary
-    ( SupportedDictionary (..)
-    )
+    ( SupportedDictionary (..) )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Dictionary

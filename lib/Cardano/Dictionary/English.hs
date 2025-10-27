@@ -8,7 +8,7 @@
 -- Copyright: 2025 Intersect
 -- License: Apache-2.0
 --
--- Adopted from https://github.com/IntersectMBO/cardano-crypto/blob/develop/src/Crypto/Encoding/BIP39/English.hs
+-- Adopted from https://github.com/IntersectMBO/cardano-crypto/blob/develop/src/Crypto/Encoding/BIP39/english.hs
 
 module Cardano.Dictionary.English
     (
@@ -16,7 +16,8 @@ module Cardano.Dictionary.English
      english
     ) where
 
-import Basement.String (String)
+import Basement.String
+    ( String )
 import Cardano.Dictionary.Generic
     ( toDictionary )
 import Crypto.Encoding.BIP39.Dictionary

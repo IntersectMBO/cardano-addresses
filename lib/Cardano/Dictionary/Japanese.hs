@@ -16,7 +16,8 @@ module Cardano.Dictionary.Japanese
      japanese
     ) where
 
-import Basement.String (String)
+import Basement.String
+    ( String )
 import Cardano.Dictionary.Generic
     ( toDictionary )
 import Crypto.Encoding.BIP39.Dictionary

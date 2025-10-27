@@ -15,24 +15,15 @@ module Cardano.Dictionary.Generic
     ) where
 
 import Basement.Imports
-    ( Bounded(..)
-    , Either(..)
-    , Maybe(..)
-    , (.)
-    , ($)
-    , error
-    , flip
-    , fromList
-    )
-import Basement.Sized.Vect (Vect (..), index, toVect)
-import Basement.String (String)
+    ( Bounded (..), Either (..), Maybe (..), error, flip, fromList, ($), (.) )
+import Basement.Sized.Vect
+    ( Vect (..), index, toVect )
+import Basement.String
+    ( String )
 import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary (..)
-    , DictionaryError (..)
-    , WordIndex
-    , unWordIndex
-    )
-import Data.Maybe (fromMaybe)
+    ( Dictionary (..), DictionaryError (..), WordIndex, unWordIndex )
+import Data.Maybe
+    ( fromMaybe )
 
 import qualified Data.List as L
 

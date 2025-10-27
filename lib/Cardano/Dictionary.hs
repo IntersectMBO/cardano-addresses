@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -33,8 +33,7 @@ import Cardano.Dictionary.Korean
 import Cardano.Dictionary.Spanish
     ( spanish )
 import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary
-    )
+    ( Dictionary )
 import GHC.Generics
     ( Generic )
 

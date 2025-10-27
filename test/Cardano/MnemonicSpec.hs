@@ -13,9 +13,7 @@ module Cardano.MnemonicSpec
 import Prelude
 
 import Cardano.Dictionary
-    ( SupportedDictionary
-    , dictionaryFromLanguage
-    )
+    ( SupportedDictionary, dictionaryFromLanguage )
 import Cardano.Mnemonic
     ( Entropy
     , EntropyError
