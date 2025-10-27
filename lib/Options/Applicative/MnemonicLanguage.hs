@@ -44,6 +44,7 @@ import Options.Applicative
 supportedDictionaryToString :: SupportedDictionary -> String
 supportedDictionaryToString English = "en"
 supportedDictionaryToString Italian = "it"
+supportedDictionaryToString Japanese = "ja"
 supportedDictionaryToString French = "fr"
 supportedDictionaryToString Spanish = "es"
 
@@ -54,6 +55,7 @@ supportedDictionaryFromString :: String -> Either String SupportedDictionary
 supportedDictionaryFromString = \case
     "en" -> Right English
     "it" -> Right Italian
+    "ja" -> Right Japanese
     "fr" -> Right French
     "es" -> Right Spanish
     _ -> Left $ mempty

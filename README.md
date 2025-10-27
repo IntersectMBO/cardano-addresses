@@ -51,6 +51,9 @@ maximal saisir gendarme gazon libre cinéma maigre sabre inexact brusque légal 
 
 $ cardano-address recovery-phrase generate --size 15 --language es
 freno taza luz ciego votar tabla ilusión pomada rasgo droga alga ocio flúor resumen tiempo
+
+$ cardano-address recovery-phrase generate --size 15 --language ja
+さつたば ようちえん せめる にさんかたんそ さめる おんだん ひんぱん いおん げどく ふいうち こうさい だんな もちろん のらねこ さつたば
 ```
 
 

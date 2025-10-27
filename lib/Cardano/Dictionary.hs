@@ -26,6 +26,8 @@ import Cardano.Dictionary.French
     ( french )
 import Cardano.Dictionary.Italian
     ( italian )
+import Cardano.Dictionary.Japanese
+    ( japanese )
 import Cardano.Dictionary.Spanish
     ( spanish )
 import Crypto.Encoding.BIP39.Dictionary
@@ -38,6 +40,7 @@ import GHC.Generics
 data SupportedDictionary =
       English
     | Italian
+    | Japanese
     | French
     | Spanish
     deriving (Generic, Show, Bounded, Enum, Eq)
@@ -46,5 +49,6 @@ dictionaryFromLanguage :: SupportedDictionary -> Dictionary
 dictionaryFromLanguage = \case
     English -> english
     Italian -> italian
+    Japanese -> japanese
     French -> french
     Spanish -> spanish

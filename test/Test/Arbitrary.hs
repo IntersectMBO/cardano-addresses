@@ -288,6 +288,7 @@ instance Arbitrary SupportedDictionary where
         [ English
         , French
         , Italian
+        , Japanese
         , Spanish
         ]
 
