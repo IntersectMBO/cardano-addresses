@@ -44,16 +44,20 @@ import Options.Applicative
 supportedDictionaryToString :: SupportedDictionary -> String
 supportedDictionaryToString English = "en"
 supportedDictionaryToString Italian = "it"
+supportedDictionaryToString French = "fr"
+
+languageStrs :: [String]
+languageStrs = supportedDictionaryToString <$> enumerate
 
 supportedDictionaryFromString :: String -> Either String SupportedDictionary
 supportedDictionaryFromString = \case
     "en" -> Right English
     "it" -> Right Italian
+    "fr" -> Right French
     _ -> Left $ mempty
-           <> "Invalid supported dictionary. At this moment only 'en' and 'it' available."
-
-languageStrs :: [String]
-languageStrs = supportedDictionaryToString <$> enumerate
+           <> "Invalid supported dictionary. The following are available: "
+           <> intercalate ", " languageStrs
+           <>"."
 
 --
 -- Applicative Parser

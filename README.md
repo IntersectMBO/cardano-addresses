@@ -45,6 +45,9 @@ joke someone lesson napkin cloud crush cattle machine toddler auction until dumb
 
 $ cardano-address recovery-phrase generate --size 15 --language it
 tetro assoluto velcro cullato prassi perdonato rifugio esercito placebo zanna sogno mitezza valoroso neutrale pranzo
+
+$ cardano-address recovery-phrase generate --size 15 --language fr
+maximal saisir gendarme gazon libre cinéma maigre sabre inexact brusque légal patience étude fable tronc
 ```
 
 

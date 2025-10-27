@@ -286,6 +286,7 @@ instance Arbitrary SupportedDictionary where
     shrink = genericShrink
     arbitrary = elements
         [ English
+        , French
         , Italian
         ]
 

@@ -47,6 +47,7 @@ library
       Cardano.Codec.Cbor
       Cardano.Dictionary
       Cardano.Dictionary.English
+      Cardano.Dictionary.French
       Cardano.Dictionary.Generic
       Cardano.Dictionary.Italian
       Cardano.Mnemonic
