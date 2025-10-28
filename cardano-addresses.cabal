@@ -123,7 +123,7 @@ library
     , hashable
     , memory  >= 0.18.0 && < 0.19
     , mtl >= 2.2.2
-    , optparse-applicative >= 0.18.1.0 && < 0.19
+    , optparse-applicative >= 0.18.1.0 && < 0.20
     , process >= 1.6.13.2 && < 1.7
     , safe >= 0.3.19 && < 0.4
     , template-haskell >= 2.16.0.0 && < 2.24
