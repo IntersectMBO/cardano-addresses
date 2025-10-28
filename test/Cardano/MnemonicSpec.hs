@@ -12,6 +12,8 @@ module Cardano.MnemonicSpec
 
 import Prelude
 
+import Cardano.Dictionary
+    ( SupportedDictionary, dictionaryFromLanguage )
 import Cardano.Mnemonic
     ( Entropy
     , EntropyError
@@ -24,9 +26,11 @@ import Cardano.Mnemonic
     , genEntropy
     , mkEntropy
     , mkMnemonic
+    , mkMnemonicWithDict
     , mkSomeMnemonic
     , mnemonicToEntropy
     , mnemonicToText
+    , mnemonicToTextWithDict
     )
 import Control.Monad
     ( forM_ )
@@ -104,6 +108,36 @@ spec = do
 
     prop "(24) mkMnemonic . mnemonicToText == pure" $
         \(mw :: Mnemonic 24) -> (mkMnemonic @24 . mnemonicToText) mw === pure mw
+
+    prop "(9) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 9) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @9 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(12) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 12) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @12 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(15) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 15) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @15 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(18) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 18) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @18 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(21) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 21) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @21 (mnemonicToTextWithDict mw dict) dict === pure mw
+
+    prop "(24) mkMnemonicWithDict . mnemonicToTextWithDict == pure" $
+        \(lang :: SupportedDictionary, mw :: Mnemonic 24) -> do
+          let dict = dictionaryFromLanguage lang
+          mkMnemonicWithDict @24 (mnemonicToTextWithDict mw dict) dict === pure mw
 
     describe "MkSomeMnemonic" $ do
         let noInDictErr =

@@ -39,6 +39,24 @@ API documentation is available [here](https://IntersectMBO.github.io/cardano-add
 ```console
 $ cardano-address recovery-phrase generate --size 15 > phrase.prv
 exercise club noble adult miracle awkward problem olympic puppy private goddess piano fatal fashion vacuum
+
+$ cardano-address recovery-phrase generate --size 15 --language en
+joke someone lesson napkin cloud crush cattle machine toddler auction until dumb nephew atom nest
+
+$ cardano-address recovery-phrase generate --size 15 --language it
+tetro assoluto velcro cullato prassi perdonato rifugio esercito placebo zanna sogno mitezza valoroso neutrale pranzo
+
+$ cardano-address recovery-phrase generate --size 15 --language fr
+maximal saisir gendarme gazon libre cinéma maigre sabre inexact brusque légal patience étude fable tronc
+
+$ cardano-address recovery-phrase generate --size 15 --language es
+freno taza luz ciego votar tabla ilusión pomada rasgo droga alga ocio flúor resumen tiempo
+
+$ cardano-address recovery-phrase generate --size 15 --language ja
+さつたば ようちえん せめる にさんかたんそ さめる おんだん ひんぱん いおん げどく ふいうち こうさい だんな もちろん のらねこ さつたば
+
+$ cardano-address recovery-phrase generate --size 15 --language ko
+번역 자연 수건 확인 양념 가장 운동 장점 주인 망원경 전자 한문 대응 진료 시즌
 ```
 
 

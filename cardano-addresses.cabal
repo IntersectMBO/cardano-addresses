@@ -45,6 +45,14 @@ library
       Cardano.Address.Style.Shelley
       Cardano.Codec.Bech32.Prefixes
       Cardano.Codec.Cbor
+      Cardano.Dictionary
+      Cardano.Dictionary.English
+      Cardano.Dictionary.French
+      Cardano.Dictionary.Generic
+      Cardano.Dictionary.Italian
+      Cardano.Dictionary.Japanese
+      Cardano.Dictionary.Korean
+      Cardano.Dictionary.Spanish
       Cardano.Mnemonic
       Codec.Binary.Encoding
       Command
