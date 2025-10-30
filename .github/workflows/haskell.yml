@@ -153,12 +153,12 @@ jobs:
 
     - name: Pick artifacts to publish and change names
       run: |
-        sha256sums_filename="cardano-address-4.0.0-sha256sums.txt"
+        sha256sums_filename="cardano-address-4.0.1-sha256sums.txt"
         sha256sum cardano-address-*/* >> "$sha256sums_filename"
 
-        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-4.0.0-win64.exe
-        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.0-macos.tar.gz
-        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.0-linux.tar.gz
+        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-4.0.1-win64.exe
+        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.1-macos.tar.gz
+        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.1-linux.tar.gz
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2

@@ -1,3 +1,10 @@
+## [4.0.1] - 2025-10-30
+
+### Added
+
+- Support for other languages, i.e., `spanish`, `italian`, `french`, `korean` and `japanese` in mnemonic generation
+- Extend upper bound `optparse-applicative` to `< 0.20`
+
 ## [4.0.0] - 2025-02-04
 
 ### Added

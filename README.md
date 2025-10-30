@@ -4,7 +4,6 @@
 
 <p align="center">
   <a href="https://github.com/IntersectMBO/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/IntersectMBO/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
-  <a href="https://www.npmjs.com/package/cardano-addresses"><img src="https://img.shields.io/npm/v/cardano-addresses?color=%239b59b6&style=for-the-badge"/></a>
   <a href="https://IntersectMBO.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/badge.svg" /></a>
   <br>
 </p>
@@ -951,7 +950,7 @@ Javascript support was dicontinued and dropped. One could look at the following 
 1. [MeshJS](https://github.com/MeshJS/mesh)
 2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
 
-Alternatively one could lean back on release [4.0.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/4.0.0)
+Alternatively one could lean back on release [3.9.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.9.0)
 where Javascript was still present.
 
 ## Contributing
