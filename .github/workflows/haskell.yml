@@ -88,7 +88,7 @@ jobs:
         cabal build all --enable-tests -j --ghc-option=-j4
 
         if ( "${{ runner.os }}" -eq "Windows" ) {
-          echo "exe-location=D:\a\cardano-addresses\cardano-addresses\dist-newstyle\build\x86_64-windows\ghc-${{ matrix.ghc }}\cardano-addresses-4.0.0\x\cardano-address\build\cardano-address\cardano-address.exe" >> $env:GITHUB_OUTPUT
+          echo "exe-location=D:\a\cardano-addresses\cardano-addresses\dist-newstyle\build\x86_64-windows\ghc-${{ matrix.ghc }}\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address\cardano-address.exe" >> $env:GITHUB_OUTPUT
         }
 
     - name: Build Linux/Macos
@@ -149,20 +149,24 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - name: Set RELEASE_TAG var
+      run: |
+        echo "RELEASE_TAG=4.0.1" >> $GITHUB_ENV
+
     - uses: actions/download-artifact@v4
 
     - name: Pick artifacts to publish and change names
       run: |
-        sha256sums_filename="cardano-address-4.0.1-sha256sums.txt"
+        sha256sums_filename="cardano-address-${{ env.RELEASE_TAG }}-sha256sums.txt"
         sha256sum cardano-address-*/* >> "$sha256sums_filename"
 
-        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-4.0.1-win64.exe
-        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.1-macos.tar.gz
-        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.1-linux.tar.gz
+        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-${{ env.RELEASE_TAG }}-win64.exe
+        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-${{ env.RELEASE_TAG }}-macos.tar.gz
+        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-${{ env.RELEASE_TAG }}-linux.tar.gz
 
     - uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r cardano-address-4.0.1-win64.exe.zip cardano-address-4.0.1-win64.exe
+        args: zip -qq -r cardano-address-${{ env.RELEASE_TAG }}-win64.exe.zip cardano-address-${{ env.RELEASE_TAG }}-win64.exe
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2
