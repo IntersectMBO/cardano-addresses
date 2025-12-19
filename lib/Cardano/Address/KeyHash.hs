@@ -250,9 +250,9 @@ keyHashFromText txt =
  where
     convertBytes hrp bytes
         | hrp == CIP5.addr_shared_vkh && checkBSLength bytes 28 =
-              Just (Payment, bytes)
+              Just (PaymentShared, bytes)
         | hrp == CIP5.stake_shared_vkh && checkBSLength bytes 28 =
-              Just (Delegation, bytes)
+              Just (DelegationShared, bytes)
         | hrp == CIP5.addr_vkh && checkBSLength bytes 28 =
               Just (Payment, bytes)
         | hrp == CIP5.stake_vkh && checkBSLength bytes 28 =
@@ -296,19 +296,19 @@ keyHashFromText txt =
         | hrp == CIP5.cc_hot_vkh && checkBSLength bytes 28 =
               Just (CommitteeHot, bytes)
         | hrp == CIP5.addr_shared_vk && checkBSLength bytes 32 =
-              Just (Payment, hashCredential bytes)
+              Just (PaymentShared, hashCredential bytes)
         | hrp == CIP5.addr_vk && checkBSLength bytes 32 =
               Just (Payment, hashCredential bytes)
         | hrp == CIP5.addr_shared_xvk && checkBSLength bytes 64 =
-              Just (Payment, hashCredential $ BS.take 32 bytes)
+              Just (PaymentShared, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.addr_xvk && checkBSLength bytes 64 =
               Just (Payment, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.stake_shared_vk && checkBSLength bytes 32 =
-              Just (Delegation, hashCredential bytes)
+              Just (DelegationShared, hashCredential bytes)
         | hrp == CIP5.stake_vk && checkBSLength bytes 32 =
               Just (Delegation, hashCredential bytes)
         | hrp == CIP5.stake_shared_xvk && checkBSLength bytes 64 =
-              Just (Delegation, hashCredential $ BS.take 32 bytes)
+              Just (DelegationShared, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.stake_xvk && checkBSLength bytes 64 =
               Just (Delegation, hashCredential $ BS.take 32 bytes)
         | hrp == CIP5.policy_vk && checkBSLength bytes 32 =
