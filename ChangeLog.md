@@ -1,3 +1,9 @@
+## [4.0.2] 
+
+### Added
+
+- Fixed `keyHashFromText`
+
 ## [4.0.1] - 2025-10-30
 
 ### Added
