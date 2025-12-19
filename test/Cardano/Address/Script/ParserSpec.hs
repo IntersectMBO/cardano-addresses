@@ -64,11 +64,11 @@ spec = do
         (cosigner0,cosigner0Txt)
   where
     verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
-    kh1 = KeyHash Payment (unBech32 verKeyH1)
+    kh1 = KeyHash PaymentShared (unBech32 verKeyH1)
     verKeyH2 = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp" :: Text
-    kh2 = KeyHash Payment (unBech32 verKeyH2)
+    kh2 = KeyHash PaymentShared (unBech32 verKeyH2)
     verKeyH3 = "addr_shared_vkh175wsm9ckhm3snwcsn72543yguxeuqm7v9r6kl6gx57h8gdydcd9" :: Text
-    kh3 = KeyHash Payment (unBech32 verKeyH3)
+    kh3 = KeyHash PaymentShared (unBech32 verKeyH3)
 
     script1 txt = "all ["<>txt<>"]"
     script2 txt = " all   [ "<>txt<>"  ] "
