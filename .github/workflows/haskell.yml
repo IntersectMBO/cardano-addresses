@@ -7,17 +7,28 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.sys.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["8.10.7", "9.6.5", "9.10"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        # GHC versions older than ghc-9.2 are not supported on macos-latest
-        exclude:
-          - os: macos-latest
-            ghc: "8.10.7"
+        ghc: ["9.6", "9.10"]
+        cabal: ["3.14"]
+        sys:
+          - { os: windows-latest, shell: 'C:/msys64/usr/bin/bash.exe -e {0}' }
+          - { os: ubuntu-latest, shell: bash }
+        include:
+          # Using include, to make sure there will only be one macOS job, even if the matrix gets expanded later on.
+          # We want a single job, because macOS runners are scarce.
+          - cabal: "3.12"
+            ghc: "9.6"
+            sys:
+              os: macos-latest
+              shell: bash
+
+    defaults:
+        run:
+          shell: ${{ matrix.sys.shell }}
 
     steps:
     - name: Install Haskell
@@ -25,19 +36,18 @@ jobs:
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
-        cabal-version: 3.12.1.0
+        cabal-version: ${{ matrix.cabal }}
 
-    - uses: actions/checkout@v4
+    - name: Install system dependencies
+      uses: input-output-hk/actions/base@latest
+      with:
+        use-sodium-vrf: true
+
+    - name: Checkout
+      uses: actions/checkout@v4
 
     - name: Cabal update
       run: cabal update
-
-    - name: Configure build
-      shell: bash
-      run: |
-        cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
-        echo "# cabal.project.local"
-        cat cabal.project.local
 
     # A dry run `build all` operation does *NOT* download anything, it just looks at the package
     # indices to generate an install plan.
@@ -45,13 +55,13 @@ jobs:
       run: cabal build all --enable-tests --dry-run --minimize-conflict-set
 
     # From the install plan a dependency list is generated here.
-    - name: Record dependencies
-      id: record-deps
-      run: |
-        # The tests call out to msys2 commands. We generally do not want to mix toolchains, so
-        # we are very deliberate about only adding msys64 to the path where absolutely necessary.
-        ${{ (runner.os == 'Windows' && '$env:PATH=("C:\msys64\mingw64\bin;{0}" -f $env:PATH)') || '' }}
-        cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
+    - name: Windows toolchain setup
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+
+    - name: Record dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
 
     # From the dependency list the cached dependencies is restored.
     # The hash of `dependencies.txt` is used as a part of the cache key because that will be stable
@@ -81,26 +91,26 @@ jobs:
           dist-newstyle
         key: cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
 
+    - name: Build all
+      if: runner.os != 'Windows'
+      run: cabal build all --enable-tests
+
     - name: Build Windows
       if: runner.os == 'Windows'
       id: build-step-windows
       run: |
-        cabal build all --enable-tests -j --ghc-option=-j4
+        cabal build all
+        echo ${{ github.workspace }}
+        cd "${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-9.6\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address"
+        pwd
+        echo "windows-output=${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-9.6\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address\cardano-address.exe" >> $GITHUB_ENV
 
-        if ( "${{ runner.os }}" -eq "Windows" ) {
-          echo "exe-location=D:\a\cardano-addresses\cardano-addresses\dist-newstyle\build\x86_64-windows\ghc-${{ matrix.ghc }}\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address\cardano-address.exe" >> $env:GITHUB_OUTPUT
-        }
-
-    - name: Build Linux/Macos
-      if: runner.os != 'Windows'
-      run: cabal build all --enable-tests -j --ghc-option=-j4
-
-    - name: Running all tests
+    - name: Run tests
       env:
-        # these two are msys2 env vars, they have no effect on non-msys2 installs.
-        MSYS2_PATH_TYPE: inherit
-        MSYSTEM: MINGW64
-      run: cabal test all --enable-tests --test-show-details=direct -j1
+        TMPDIR: ${{ runner.temp }}
+        TMP: ${{ runner.temp }}
+        KEEP_WORKSPACE: 1
+      run: cabal test all --enable-tests --test-show-details=direct
 
     - name: Running Haddock
       run: |
@@ -110,36 +120,38 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: cardano-address-${{ matrix.ghc }}-${{ matrix.os }}
-        path: ${{ steps.build-step-windows.outputs.exe-location }}
+        name: cardano-address.exe"
+        path: ${{ env.windows-output }}
         retention-days: 1
 
     - name: Preparing Linux/Macos artifact
       if: runner.os != 'Windows'
+      env:
+        artifactFile: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
+        artifactName: "cardano-address.tar.gz"
       run: |
         mkdir artifacts
 
         for exe in $(cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style == "local" and (."component-name" | startswith("exe:"))) | ."bin-file"'); do
           if [ -f $exe ]; then
             echo "Including artifact $exe"
-
-            artifactName="$(basename $exe).tar.gz"
-
+            
             ( cd artifacts
-              tar -C "$(dirname $exe)" -czf "$(basename $exe).tar.gz" "$(basename $exe)"
+              tar -C "$(dirname $exe)" -czf ${{ env.artifactName}} $exe
             )
           else
             echo "Skipping artifact $exe"
           fi
         done
 
-        echo "artifactPath=artifacts/$(artifactName)" >> $GITHUB_ENV
+        echo "artifactPath=artifacts/" >> $GITHUB_ENV
+        echo "artifactFile=${{ env.artifactFile }}" >> $GITHUB_ENV
 
     - name: Upload Linux/Macos artifact
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
       with:
-        name: cardano-address-${{ matrix.ghc }}-${{ matrix.os }}
+        name: "${{ env.artifactFile }}.tar.gz"
         path: ${{ env.artifactPath }}
         retention-days: 1
 
@@ -156,9 +168,9 @@ jobs:
         sha256sums_filename="cardano-address-4.0.1-sha256sums.txt"
         sha256sum cardano-address-*/* >> "$sha256sums_filename"
 
-        mv cardano-address-9.6.5-windows-latest/cardano-address.exe cardano-address-4.0.1-win64.exe
-        mv cardano-address-9.6.5-macos-latest/cardano-address.tar.gz cardano-address-4.0.1-macos.tar.gz
-        mv cardano-address-9.6.5-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.1-linux.tar.gz
+        mv cardano-address-9.6-windows-latest/cardano-address.exe cardano-address-4.0.1-win64.exe
+        mv cardano-address-9.6-macos-latest/cardano-address.tar.gz cardano-address-4.0.1-macos.tar.gz
+        mv cardano-address-9.6-ubuntu-latest/cardano-address.tar.gz cardano-address-4.0.1-linux.tar.gz
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2
