@@ -17,8 +17,6 @@ jobs:
         sys:
           - { os: windows-latest, shell: 'C:/msys64/usr/bin/bash.exe -e {0}' }
           - { os: ubuntu-latest, shell: bash }
-        release-ghc: "9.6"
-        release-tag: "4.0.1"
         include:
           # Using include, to make sure there will only be one macOS job, even if the matrix gets expanded later on.
           # We want a single job, because macOS runners are scarce.
@@ -33,6 +31,14 @@ jobs:
           shell: ${{ matrix.sys.shell }}
 
     steps:
+    - name: Setting Release variables
+      env:
+        release-ghc: "9.6"
+        release-tag: "4.0.1"
+      run: |
+        echo "release-ghc=${{ env.release-ghc }}" >> $GITHUB_ENV            
+        echo "release-tag=${{ env.release-tag }}" >> $GITHUB_ENV            
+
     - name: Install Haskell
       uses: input-output-hk/actions/haskell@latest
       id: setup-haskell
@@ -93,17 +99,17 @@ jobs:
           dist-newstyle
         key: cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
 
-    - name: Build all
-      if: runner.os != 'Windows'
+    - name: Build (Linux/Macos)
+      if: runner.os != 'Windows'    
       run: cabal build all --enable-tests
 
     - name: Build Windows
       if: runner.os == 'Windows'
-      id: build-step-windows
+      run: |
       run: |
         cabal build all
-        echo "windows-output=${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-${{ matrix.release-ghc }}\cardano-addresses-${{ matrix.release-tag }}\x\cardano-address\build\cardano-address\cardano-address.exe" >> $GITHUB_ENV
-
+        echo "windows-output=${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-9.6.7\cardano-addresses-${{ matrix.release-tag }}\x\cardano-address\build\cardano-address\cardano-address.exe" >> $GITHUB_ENV      
+ 
     - name: Run tests
       env:
         TMPDIR: ${{ runner.temp }}
@@ -119,8 +125,8 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: cardano-address.exe
-        path: ${{ env.windows-output }}
+        name: "cardano-address.exe"
+        path: ${{ env.exe-location }}
         retention-days: 1
 
     - name: Preparing Linux/Macos artifact
@@ -167,7 +173,9 @@ jobs:
         sha256sums_filename="cardano-address-${{ matrix.release-tag }}-sha256sums.txt"
         sha256sum cardano-address-*/* >> "$sha256sums_filename"
 
-        mv cardano-address-${{ matrix.release-ghc }}-windows-latest/cardano-address.exe cardano-address-${{ matrix.release-tag }}-win64.exe
+        ls *
+
+        zip cardano-address-${{ matrix.release-tag }}-win64.zip cardano-address-${{ matrix.release-ghc }}-windows-latest/cardano-address.exe
         mv cardano-address-${{ matrix.release-ghc }}-macos-latest/cardano-address.tar.gz cardano-address-${{ matrix.release-tag }}-macos.tar.gz
         mv cardano-address-${{ matrix.release-ghc }}-ubuntu-latest/cardano-address.tar.gz cardano-address-${{ matrix.release-tag }}-linux.tar.gz
 
@@ -176,7 +184,7 @@ jobs:
       with:
         draft: true
         files: |
-          cardano-address-*-win64.exe
+          cardano-address-*-win64.zip
           cardano-address-*-macos.tar.gz
           cardano-address-*-linux.tar.gz
           cardano-address-*-sha256sums.txt
