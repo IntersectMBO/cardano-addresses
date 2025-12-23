@@ -14,7 +14,7 @@ import qualified AutoDiscover
 --  https://github.com/haskell-foundation/foundation/blob/5e28e3ea1e2fe9a98c157df463bd32d3f92e7f80/basement/Basement/Terminal.hs#L14-L26
 #ifdef mingw32_HOST_OS
 import System.IO
-    ( hPutStrLn, hSetEncoding, stderr, stdin, stdout, utf8 )
+    ( hSetEncoding, stderr, stdin, stdout, utf8 )
 import System.Win32.Console
     ( getConsoleCP, getConsoleOutputCP, setConsoleCP, setConsoleOutputCP )
 #endif
