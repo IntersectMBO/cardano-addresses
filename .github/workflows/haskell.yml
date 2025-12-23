@@ -100,9 +100,6 @@ jobs:
       id: build-step-windows
       run: |
         cabal build all
-        echo ${{ github.workspace }}
-        cd "${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-9.6\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address"
-        pwd
         echo "windows-output=${{ github.workspace }}\dist-newstyle\build\x86_64-windows\ghc-9.6\cardano-addresses-4.0.1\x\cardano-address\build\cardano-address\cardano-address.exe" >> $GITHUB_ENV
 
     - name: Run tests
@@ -120,7 +117,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: cardano-address.exe"
+        name: cardano-address.exe
         path: ${{ env.windows-output }}
         retention-days: 1
 
