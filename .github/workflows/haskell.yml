@@ -118,7 +118,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
-        name: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}.exe"
+        name: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
         path: '**/cardano-address.exe'
         retention-days: 1
 
@@ -149,7 +149,7 @@ jobs:
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
       with:
-        name: "${{ env.artifactFile }}.tar.gz"
+        name: "${{ env.artifactFile }}"
         path: ${{ env.artifactPath }}
         retention-days: 1
 
@@ -159,18 +159,23 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - name: Setting Release variables
+      run: |
+        echo "release-ghc=9.6" >> $GITHUB_ENV
+        echo "release-ghc-exact=9.6.7" >> $GITHUB_ENV        
+        echo "release-tag=4.0.1" >> $GITHUB_ENV
+
     - uses: actions/download-artifact@v4
 
     - name: Pick artifacts to publish and change names
       run: |
-        sha256sums_filename="cardano-address-${{ matrix.release-tag }}-sha256sums.txt"
-        sha256sum cardano-address-*/* >> "$sha256sums_filename"
+        sha256sums_filename="cardano-address-${{ env.release-tag }}-sha256sums.txt"
+        
+        mv cardano-address-${{ env.release-ghc }}-windows-latest/dist-newstyle/build/x86_64-windows/ghc-${{ env.release-ghc-exact }}/cardano-addresses-${{ env.release-tag }}/x/cardano-address/build/cardano-address/cardano-address.exe cardano-address-${{ env.release-ghc }}-win64.zip
+        mv cardano-address-${{ env.release-ghc }}-macos-latest/cardano-address.tar.gz cardano-address-${{ env.release-tag }}-macos.tar.gz
+        mv cardano-address-${{ env.release-ghc }}-ubuntu-latest/cardano-address.tar.gz cardano-address-${{ env.release-tag }}-linux.tar.gz
 
-        ls *
-
-        zip cardano-address-${{ matrix.release-tag }}-win64.zip cardano-address-${{ matrix.release-ghc }}-windows-latest/cardano-address.exe
-        mv cardano-address-${{ matrix.release-ghc }}-macos-latest/cardano-address.tar.gz cardano-address-${{ matrix.release-tag }}-macos.tar.gz
-        mv cardano-address-${{ matrix.release-ghc }}-ubuntu-latest/cardano-address.tar.gz cardano-address-${{ matrix.release-tag }}-linux.tar.gz
+        sha256sum cardano-address-* >> "$sha256sums_filename"
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2
