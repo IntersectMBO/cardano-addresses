@@ -1,7 +1,7 @@
 cabal-version: 1.12
 
 name:           cardano-addresses
-version:        4.0.1
+version:        4.0.2
 synopsis:       Utils for constructing a command-line on top of cardano-addresses.
 description:    Please see the README on GitHub at <https://github.com/IntersectMBO/cardano-addresses>
 category:       Cardano

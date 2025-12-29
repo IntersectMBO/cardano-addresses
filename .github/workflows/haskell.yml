@@ -31,10 +31,9 @@ jobs:
           shell: ${{ matrix.sys.shell }}
 
     steps:
-    - name: Setting Release variables
+    - name: Setting toolchain variables
       run: |
         echo "release-ghc=9.6" >> $GITHUB_ENV
-        echo "release-tag=4.0.1" >> $GITHUB_ENV
 
     - name: Install Haskell
       uses: input-output-hk/actions/haskell@latest
@@ -163,7 +162,7 @@ jobs:
       run: |
         echo "release-ghc=9.6" >> $GITHUB_ENV
         echo "release-ghc-exact=9.6.7" >> $GITHUB_ENV        
-        echo "release-tag=4.0.1" >> $GITHUB_ENV
+        echo "release-tag=4.0.2" >> $GITHUB_ENV
 
     - uses: actions/download-artifact@v4
 
