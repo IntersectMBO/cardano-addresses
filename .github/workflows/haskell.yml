@@ -180,10 +180,14 @@ jobs:
 
     - name: Checkout the repo
       uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          .github
 
     - name: Prepare release body
       shell: bash
       run: |
+        ls -R
         cat ${{ github.workspace }}/.github/workflow/draft-template.md > bodyConst.txt
         awk 'BEGIN{RS="## \\[4.0.2"; FS="4.0.3\\]"}NF>1{print $NF}' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
         echo "## 4.0.3" > body.txt
