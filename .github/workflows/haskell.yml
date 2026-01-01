@@ -180,25 +180,34 @@ jobs:
 
     - name: Checkout the repo
       uses: actions/checkout@v4
-      with:
-        sparse-checkout: |
-          .github
 
     - name: Prepare release body
       shell: bash
       run: |
-        ls -R
-        cat ${{ github.workspace }}/.github/workflow/draft-template.md > bodyConst.txt
+        cat <<EOF >bodyConst.txt
+        ## Supported Platforms
+
+        - Linux 64-bit
+        - Windows 64-bit
+        - Macos 64-bit
+
+        ## Signatures
+
+        Name                           | Role                | Approval
+        ---                            | ---                 | ---:
+        Pawel Jakubas @paweljakubas        | Software Engineer |          
+        EOF
+        
         awk 'BEGIN{RS="## \\[4.0.2"; FS="4.0.3\\]"}NF>1{print $NF}' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
-        echo "## 4.0.3" > body.txt
-        cat bodyInfo.txt >> body.txt
-        cat bodyConst.txt >> body.txt
+        echo "## 4.0.3\n" > release-body.txt
+        cat bodyInfo.txt >> release-body.txt
+        cat bodyConst.txt >> release-body.txt
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2
       with:
         draft: true
-        body_path: body.txt
+        body_path: release-body.txt
         files: |
           cardano-address-${{ env.release-tag }}-win64.zip
           cardano-address-${{ env.release-tag }}-macos.tar.gz
