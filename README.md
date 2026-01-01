@@ -907,6 +907,16 @@ $ cabal test cardano-addresses:unit
 $ cabal install cardano-address
 ```
 
+## Preparation steps before uploading to hackage
+
+``` console
+cabal build all
+cabal haddock
+cabal sdist
+```
+
+Note: Make sure proper version is set in cardano-addresses.cabal
+
 ## Docker Image
 
 Please make sure you have [just](https://github.com/casey/just) installed as `justfile` is used for building Docker image
