@@ -182,7 +182,8 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Prepare release body
-    - run: |
+      shell: bash
+      run: |
         cat ${{ github.workspace }}/.github/workflow/draft-template.md > bodyConst.txt
         awk 'BEGIN{RS="## \\[4.0.2"; FS="4.0.3\\]"}NF>1{print $NF}' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
         echo "## 4.0.3" > body.txt
