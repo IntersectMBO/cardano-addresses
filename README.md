@@ -907,6 +907,12 @@ $ cabal test cardano-addresses:unit
 $ cabal install cardano-address
 ```
 
+## Override command for cross-compilation
+
+```
+cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
+```
+
 ## Preparation steps before uploading to hackage
 
 ``` console
