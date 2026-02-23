@@ -1,10 +1,11 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module System.Git.TH (gitRevParseHEAD) where
 
-import Control.Monad (return)
-import Language.Haskell.TH (Exp (..), Lit (..), Q)
+import Control.Monad
+    ( return )
+import Language.Haskell.TH
+    ( Exp (..), Lit (..), Q )
 
 gitRevParseHEAD :: Q Exp
 #ifdef GITREV
