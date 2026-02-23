@@ -60,6 +60,21 @@ We have now fixed cross-compilation (from Linux to Windows) by replacing runtime
 cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
 ```
 
+## Docker Image using nix
+
+### Build
+
+```console
+$ nix build .#docker-image
+```
+
+### Load and run
+
+```console
+$ docker load < result
+$ docker run --rm cardano-address --version
+```
+
 ## Preparation steps before uploading to hackage
 
 ``` console
