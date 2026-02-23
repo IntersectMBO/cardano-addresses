@@ -8,7 +8,7 @@
 -- Copyright: 2025 Intersect
 -- License: Apache-2.0
 --
--- Adopted from https://github.com/IntersectMBO/cardano-crypto/blob/develop/src/Crypto/Encoding/BIP39/spanish.hs
+-- Adopted from https://github.com/bloxbean/cardano-client-lib/blob/master/crypto/src/main/resources/mnemonic/wordlist/spanish.txt
 
 module Cardano.Dictionary.Spanish
     (
@@ -2075,5 +2075,5 @@ spanish = toDictionary wordList
       ,"zona"
       ,"zorro"
       ,"zumo"
-      ,"zurdoepl"
+      ,"zurdo"
       ]

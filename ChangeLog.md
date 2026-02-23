@@ -3,6 +3,7 @@
 ### Added
 
 - Automated draft release preparation by creating fixed part and extracting the latest entries from `Changelog.md`	
+- Fix `spanish` last word in dictionary
 	
 ## [4.0.2] - 2025-12-30
 
