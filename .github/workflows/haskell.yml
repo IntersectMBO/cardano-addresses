@@ -99,6 +99,17 @@ jobs:
       if: runner.os != 'Windows'    
       run: cabal build all --enable-tests
 
+    - name: Sign and Notarize macOS executable
+      if: runner.os == 'macOS'
+      uses: toitlang/action-macos-sign-notarize@v2
+      with:
+        certificate: ${{ secrets.APPLE_CERTIFICATE }}
+        certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        username: ${{ secrets.APPLE_ID_USERNAME }}
+        password: ${{ secrets.APPLE_ID_PASSWORD }}
+        apple-team-id: ${{ vars.APPLE_TEAM_ID }}
+        app-path: '**/cardano-address'
+
     - name: Build Windows
       if: runner.os == 'Windows'
       run: cabal build all
