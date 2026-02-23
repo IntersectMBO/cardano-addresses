@@ -39,6 +39,8 @@ CLI documentation is available [here](https://IntersectMBO.github.io/cardano-add
 
 ## Building/testing from source using nix
 
+### One-liner commands
+
 ``` console
 nix develop
 
@@ -51,6 +53,24 @@ cabal test cardano-addresses:unit
 # installing executable locally
 cabal install cardano-address
 ```
+
+### Building for different platforms
+
+``` console
+# Linux x86_64
+$ nix build .
+
+# Darwin x86_64
+$ nix build .#packages.x86_64-darwin.default
+
+# Darwin aarch64 (Apple Silicon)
+$ nix build .#packages.aarch64-darwin.default
+
+# Linux aarch64
+$ nix build .#packages.aarch64-linux.default
+```
+
+Note: Cross-compilation from Linux to Windows is not yet supported in nix. Use cabal with Wine/IServ instead.
 
 ## Override command for cross-compilation
 
