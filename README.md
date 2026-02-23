@@ -979,6 +979,34 @@ Pull requests are welcome.
 When creating a pull request, please make sure that your code adheres to our
 [coding standards](https://input-output-hk.github.io/adrestia/code/Coding-Standards).
 
+## macOS Code Signing and Notarization
+
+To release macOS executables, you need to configure Apple code signing and notarization secrets in GitHub.
+
+### Required Secrets (GitHub > Settings > Secrets and variables > Actions)
+
+| Secret | Description | How to Obtain |
+|--------|-------------|---------------|
+| `APPLE_CERTIFICATE` | Base64-encoded p12 certificate | 1. Create an Apple Developer account<br>2. Generate a certificate signing request<br>3. Create "Developer ID Application" certificate in Apple Developer portal<br>4. Export certificate as p12 (include private key)<br>5. Run `base64 -w0 certificate.p12` to encode |
+| `APPLE_CERTIFICATE_PASSWORD` | Password for the p12 certificate | Password you set when exporting the p12 certificate |
+| `APPLE_ID_USERNAME` | Apple ID email for notarization | Your Apple Developer account email |
+| `APPLE_ID_PASSWORD` | App-specific password | Generate at https://appleid.apple.com (Sign in > Security > App-Specific Passwords) |
+
+### Required Variables (GitHub > Settings > Variables)
+
+| Variable | Description | How to Obtain |
+|----------|-------------|---------------|
+| `APPLE_TEAM_ID` | Your Apple Team ID | Find in Apple Developer portal (Membership details) |
+
+### Steps to Configure
+
+1. Create an Apple Developer account if you don't have one
+2. Create a Developer ID Application certificate (not for App Store)
+3. Export the certificate as p12 file
+4. Encode it: `base64 -w0 certificate.p12`
+5. Create the secrets in GitHub repository settings
+6. Generate an App-Specific Password at appleid.apple.com for notarization
+
 <hr />
 
 <p align="center">
