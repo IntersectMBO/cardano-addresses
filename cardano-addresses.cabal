@@ -98,6 +98,7 @@ library
   default-extensions:
       NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
+  cpp-options: -DGITREV="unknown"
   build-depends:
       aeson >= 2.0
     , aeson-pretty
