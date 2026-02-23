@@ -909,6 +909,9 @@ $ cabal install cardano-address
 
 ## Override command for cross-compilation
 
+We have now fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`)
+defaulting to "unknown" but allowing overriding via `-DGITREV` as below
+
 ```
 cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
 ```
