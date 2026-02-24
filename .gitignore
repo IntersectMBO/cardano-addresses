@@ -39,3 +39,8 @@ result*
 .stack-to-nix.cache
 .nix-shell-cabal.project
 tmp/
+
+### Node/Docusaurus ###
+node_modules/
+.docusaurus/
+build/
