@@ -5,6 +5,7 @@
 - Automated draft release preparation by creating fixed part and extracting the latest entries from `Changelog.md`	
 - Fix `spanish` last word in dictionary
 - Fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV`
+- Integrate `Docusaurus` with README
 	
 ## [4.0.2] - 2025-12-30
 
