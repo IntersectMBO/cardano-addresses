@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0033ad"/>
+  <text x="600" y="315" text-anchor="middle" fill="white" font-family="Arial" font-size="80" font-weight="bold">Cardano Addresses</text>
+  <text x="600" y="380" text-anchor="middle" fill="#ccc" font-family="Arial" font-size="30">Utilities for Cardano wallet addresses</text>
+</svg>

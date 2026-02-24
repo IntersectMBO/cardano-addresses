@@ -1,3 +1,9 @@
+---
+sidebar_position: 1
+title: Introduction
+slug: /intro
+---
+
 <p align="center">
   <big><strong>Cardano Addresses</strong></big>
 </p>
