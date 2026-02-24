@@ -10,7 +10,7 @@
 
 
 <p align="center">
-  <a href="https://IntersectMBO.github.io/cardano-addresses">Documentation (Docusaurus)</a>
+  <a href="https://IntersectMBO.github.io/cardano-addresses">:book: Documentation (Docusaurus)</a>
 </p>
 
 <div align="center">
