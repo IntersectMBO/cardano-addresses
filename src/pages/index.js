@@ -1,3 +1,10 @@
-import Redirect from '@docusaurus/Redirect';
+import { useEffect } from 'react';
+import { useLocation } from '@docusaurus/router';
 
-<Redirect to="/docs/intro" />
+export default function Home() {
+  const location = useLocation();
+  useEffect(() => {
+    window.location.replace('/docs/intro');
+  }, []);
+  return null;
+}
