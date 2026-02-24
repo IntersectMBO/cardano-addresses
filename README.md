@@ -9,6 +9,10 @@
 </p>
 
 
+<p align="center">
+  <a href="https://IntersectMBO.github.io/cardano-addresses">Documentation (Docusaurus)</a>
+</p>
+
 <div align="center">
 
   <a href="">[![Coding Standards](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml)</a>
