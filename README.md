@@ -33,13 +33,7 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 ### Docusaurus-powered documentation
 
-<p align="center">
-  <img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="128" alt="Docusaurus logo"/>
-</p>
-
-<p align="center">
-[Proudly powered by Docusaurus](https://docusaurus.io/)
-</p>
+<img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" align="left" alt="Docusaurus logo"/>
 
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
 
