@@ -26,6 +26,8 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 ## Docusaurus-powered documentation
 
+Proudly powered by [Docusaurus](https://docusaurus.io/) ![Docusaurus logo](https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png)
+
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
 
 ## Building/testing from source using nix
