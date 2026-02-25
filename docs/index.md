@@ -22,6 +22,11 @@ slug: /intro
 
 </div>
 
+**This documentation is the source of truth.** The `README.md` is generated from this file using:
+```bash
+just generate-readme
+```
+
 ## Overview
 
 This module provides mnemonic (backup phrase) creation, and conversion of a
@@ -30,8 +35,6 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 ![](../.github/example.gif)
 
 ## Documentation
-
-API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
 
 ## Command-Line
 
