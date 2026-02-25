@@ -52,8 +52,6 @@ cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](ht
 
 ## Building/testing from source using nix
 
-### One-liner commands
-
 ``` console
 nix develop
 
@@ -81,9 +79,10 @@ $ nix build .#packages.aarch64-darwin.default
 
 # Linux aarch64
 $ nix build .#packages.aarch64-linux.default
-```
 
-Note: Cross-compilation from Linux to Windows is not yet supported in nix. Use cabal with Wine/IServ instead.
+# Linux x86_64 (Windows target using haskell.nix)
+$ nix build .#packages.x86_64-windows.default
+```
 
 ## Override command for cross-compilation
 
@@ -91,21 +90,6 @@ We have now fixed cross-compilation (from Linux to Windows) by replacing runtime
 
 ```console
 cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
-```
-
-## Docker Image using nix
-
-### Build
-
-```console
-$ nix build .#docker-image
-```
-
-### Load and run
-
-```console
-$ docker load < result
-$ docker run --rm cardano-address --version
 ```
 
 ## Preparation steps before uploading to hackage
