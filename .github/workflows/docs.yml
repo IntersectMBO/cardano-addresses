@@ -52,7 +52,7 @@ jobs:
       - name: Generate Coverage Report
         run: |
           find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix || true
-          hpc markup all.tix --destdir=coverage_html --hpcdir=dist-newstyle/build/x86_64-linux/ghc-*/cardano-addresses-*/t/unit/hpc
+          hpc markup all.tix --destdir=coverage_html --hpcdir=dist-newstyle/build/x86_64-linux/ghc-*/cardano-addresses-*/t/unit/hpc || true
 
       - name: Prepare Docusaurus for deployment
         run: |
