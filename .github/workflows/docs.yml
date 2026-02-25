@@ -21,17 +21,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
         with:
-          node-version: "20"
-          cache: npm
+          ghc-version: '9.10'
+          cabal-version: '3.14'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Cabal update
+        run: cabal update
 
-      - name: Build Docusaurus
-        run: npm run build
+      - name: Build Haddock
+        run: cabal haddock --haddock-html --haddock-hyperlink-source
+
+      - name: Prepare Haddock for deployment
+        run: |
+          mkdir -p build/haddock
+          cp -r dist-newstyle/build/*/ghc-*/cardano-addresses-*/haddock/html/* build/haddock/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

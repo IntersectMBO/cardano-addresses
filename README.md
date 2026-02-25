@@ -29,7 +29,7 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ## Documentation
 
-API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
+Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
 
 ## Command-Line
 
