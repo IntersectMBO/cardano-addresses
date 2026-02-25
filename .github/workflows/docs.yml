@@ -33,10 +33,23 @@ jobs:
       - name: Build Haddock
         run: cabal haddock --haddock-html --haddock-hyperlink-source
 
+      - name: Run Tests with Coverage
+        run: cabal test all --enable-tests --enable-coverage
+
+      - name: Generate Coverage Report
+        run: |
+          find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix || true
+          hpc markup all.tix --distdir=coverage_html --hpcdir=dist-newstyle/build/*/ghc-*/cardano-addresses-*/hpc
+
       - name: Prepare Haddock for deployment
         run: |
           mkdir -p build/haddock
           cp -r dist-newstyle/build/*/ghc-*/cardano-addresses-*/haddock/html/* build/haddock/
+
+      - name: Prepare Coverage for deployment
+        run: |
+          mkdir -p build/coverage
+          cp -r coverage_html/* build/coverage/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
