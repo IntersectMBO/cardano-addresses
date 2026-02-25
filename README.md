@@ -18,11 +18,6 @@
 
 </div>
 
-**This documentation is the source of truth.** The `README.md` is generated from this file using:
-```bash
-just generate-readme
-```
-
 ## Overview
 
 This module provides mnemonic (backup phrase) creation, and conversion of a
@@ -119,6 +114,12 @@ Javascript support was discontinued and dropped. One could look at the following
 2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
 
 Alternatively one could lean back on release [3.9.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.9.0) where Javascript was still present.
+
+## The `README.md` generation
+
+```bash
+just generate-readme
+```
 
 ## Contributing
 
