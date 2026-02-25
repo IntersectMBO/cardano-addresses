@@ -107,6 +107,10 @@
           crossSystem = { config = "x86_64-w64-mingw32"; };
           overlays = [
             haskellNix.overlay
+            (final: prev: {
+              # Disable iserv for cross-compilation to avoid wine dependency
+              iserv = prev.iserv.override { enableCrossCompilation = false; };
+            })
           ];
           config = {
             allowUnsupportedSystem = true;
