@@ -21,6 +21,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install Docusaurus dependencies
+        run: npm ci
+
+      - name: Build Docusaurus site
+        run: npm run build
+
       - name: Setup Haskell
         uses: haskell-actions/setup@v2
         with:
@@ -40,6 +53,11 @@ jobs:
         run: |
           find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix || true
           hpc markup all.tix --distdir=coverage_html --hpcdir=dist-newstyle/build/*/ghc-*/cardano-addresses-*/hpc
+
+      - name: Prepare Docusaurus for deployment
+        run: |
+          mkdir -p build
+          cp -r docs/build/* build/
 
       - name: Prepare Haddock for deployment
         run: |
