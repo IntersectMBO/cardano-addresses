@@ -27,7 +27,7 @@ slug: /intro
 This module provides mnemonic (backup phrase) creation, and conversion of a
 mnemonic to seed for wallet restoration, and address derivation functionalities.
 
-![](.github/example.gif)
+![](../.github/example.gif)
 
 ## Documentation
 
