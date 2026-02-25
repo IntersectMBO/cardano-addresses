@@ -39,3 +39,75 @@ API documentation is available [here](https://IntersectMBO.github.io/cardano-add
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 
+## Building/testing from source using nix
+
+``` console
+nix develop
+
+# building
+cabal build all
+
+# testing
+cabal test cardano-addresses:unit
+
+# installing executable locally
+cabal install cardano-address
+```
+
+## Override command for cross-compilation
+
+We have now fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV` as below:
+
+```console
+cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
+```
+
+## Preparation steps before uploading to hackage
+
+``` console
+cabal build all
+cabal haddock
+cabal sdist
+```
+
+Note: Make sure proper version is set in cardano-addresses.cabal
+
+## Docker Image
+
+Please make sure you have [just](https://github.com/casey/just) installed as `justfile` is used for building Docker image.
+
+### Build
+
+```console
+just clean-build-docker
+```
+
+### Run
+
+Use the auto-remove flag `--rm` when running commands.
+
+```console
+docker run --rm cardano-address recovery-phrase generate --size 15
+```
+
+Use the interactive flag `-i` when piping stdin:
+
+```console
+echo "addr1gqtnpvdhqrtpd4g424fcaq7k0ufuzyadt7djygf8qdyzevuph3wczvf2dwyx5u" | docker run --rm -i cardano-addresses address inspect
+```
+
+## Javascript support
+
+Javascript support was discontinued and dropped. One could look at the following now:
+
+1. [MeshJS](https://github.com/MeshJS/mesh)
+2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
+
+Alternatively one could lean back on release [3.9.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.9.0) where Javascript was still present.
+
+## Contributing
+
+Pull requests are welcome.
+
+When creating a pull request, please make sure that your code adheres to our [coding standards](https://input-output-hk.github.io/adrestia/code/Coding-Standards).
+
