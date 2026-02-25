@@ -49,7 +49,7 @@ content=$(awk '
     print "</p>"
     print ""
     print "<p align=\"center\">"
-    print "Proudly powered by [Docusaurus](https://docusaurus.io/)"
+    print "[Proudly powered by Docusaurus](https://docusaurus.io/)"
     print "</p>"
     print ""
     print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
