@@ -27,11 +27,11 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ## Documentation
 
-## Haddock documentation
+### Haddock documentation
 
 Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
 
-## Docusaurus-powered documentation
+### Docusaurus-powered documentation
 
 <p align="center">
   <img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="128" alt="Docusaurus logo"/>

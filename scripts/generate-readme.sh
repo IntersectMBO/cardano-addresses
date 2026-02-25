@@ -38,11 +38,11 @@ content=$(awk '
 /^## Documentation$/ {
     print "## Documentation"
     print ""
-    print "## Haddock documentation"
+    print "### Haddock documentation"
     print ""
     print "Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock)."
     print ""
-    print "## Docusaurus-powered documentation"
+    print "### Docusaurus-powered documentation"
     print ""
     print "<p align=\"center\">"
     print "  <img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"128\" alt=\"Docusaurus logo\"/>"
