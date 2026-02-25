@@ -26,7 +26,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, ... }:
+  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, hostNixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
@@ -98,5 +98,29 @@
           } else { packages = { }; };
         in
         baseFlake // docker
-      );
+      )
+    // {
+      # Cross-compilation to Windows from Linux x86_64
+      packages.x86_64-linux = let
+        pkgs = import hostNixpkgs {
+          system = "x86_64-linux";
+          crossSystem = { config = "x86_64-w64-mingw32"; };
+          overlays = [
+            haskellNix.overlay
+          ];
+          config = {
+            allowUnsupportedSystem = true;
+          };
+        };
+        haskellProject = import ./nix/haskell.nix {
+          system = "x86_64-linux";
+          CHaP = CHaP;
+          inherit (pkgs) haskell-nix;
+        };
+        crossFlake = haskellProject.flake { };
+      in
+        {
+          default = crossFlake.packages."cardano-addresses:exe:cardano-address";
+        };
+    };
 }

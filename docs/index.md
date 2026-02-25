@@ -68,8 +68,8 @@ $ nix build .#packages.aarch64-darwin.default
 # Linux aarch64
 $ nix build .#packages.aarch64-linux.default
 
-# Linux x86_64 (Windows target using haskell.nix)
-$ nix build .#packages.x86_64-windows.default
+# Linux x86_64 to Windows (cross-compilation)
+$ nix build .#packages.x86_64-linux.default
 ```
 
 ## Override command for cross-compilation
