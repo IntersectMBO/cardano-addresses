@@ -612,21 +612,21 @@ stake_test1urmd9uh08pen8c26a2fn86weprjh52638mrdwc5gfac2u2s25zpat
 echo addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v | cardano-address address inspect
 ```
 <pre>
-{
+\{
     "stake_reference": "none",
     "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
     "address_style": "Shelley",
     "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
     "network_tag": 0,
     "address_type": 6
-}
+\}
 </pre>
 
 ```console
 echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx05ajz890g44z0kx6a3gsnms4c4qq8ve0n | cardano-address address inspect
 ```
 <pre>
-{
+\{
     "stake_reference": "by value",
     "stake_key_hash_bech32": "stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6",
     "stake_key_hash": "f6d2f2ef387333e15aea9333e9d908e57a2b513ec6d762884f70ae2a",
@@ -635,7 +635,7 @@ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx
     "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
     "network_tag": 0,
     "address_type": 0
-}
+\}
 </pre>
 
 Details about possible address types are following (refer also to [cddl](https://github.com/input-output-hk/cardano-ledger/blob/master/eras/alonzo/test-suite/cddl-files/alonzo.cddl) )
@@ -1310,11 +1310,11 @@ cardano-address key private --chain-code < drep.xsk
 echo drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng0akw3qzppmfh6k5z7gx66h2vppu022m4eqaj26rh6d7en9tf9fu52hmysjzuacaxfmfya65h8jmddrclwf3kxl8snfs3eg | cardano-address key inspect
 ```
 <pre>
-{
+\{
     "chain_code": "5a1df4df66655a4a9e5157d9212173b8e993b493baa5cf2db5a3c7dc98d8df3c",
     "extended_key": "605b0dd4b0d8b6d75db5b4b7b56da4fca4486fd5d0fa990fc33d909ece47a943071c29dc5f4450ae9a1fdb3a201043b4df56a0bc836b5753021e3d4add720ec9",
     "key_type": "private"
-}
+\}
 </pre>
 
 
@@ -1386,11 +1386,11 @@ Create extended signing key using cardano-cli
 cardano-cli key convert-cardano-address-key --shelley-payment-key --signing-key-file key.xsk --out-file key.skey
 ```
 <pre>
-{
+\{
     "type": "PaymentExtendedSigningKeyShelley_ed25519_bip32",
     "description": "",
     "cborHex": "5880b0bf46232c7f0f58ad333030e43ffbea7c2bb6f8135bd05fb0d343ade8453c5eacc7ac09f77e16b635832522107eaa9f56db88c615f537aa6025e6c23da98ae8fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
-}
+\}
 
 The cborhex here contains of 4 parts:
 1. prefix 5880 - bytestring of 128 bytes
@@ -1404,11 +1404,11 @@ Create corresponding verification key using cardano-cli
 cardano-cli key verification-key --signing-key-file key.skey --verification-key-file key.vkey
 ```
 <pre>
-{
+\{
     "type": "PaymentExtendedVerificationKeyShelley_ed25519_bip32",
     "description": "",
     "cborHex": "5840fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834b0be1868d1c36ef9089b3b094f5fe1d783e4d5fea14e2034c0397bee50e65a1a"
-}
+\}
 The cborhex here contains of 3 parts:
 1. prefix 5840 - bytestring of 64 bytes
 2. verification key (32 bytes) - fbbbf6410e24532f35e9279febb085d2cc05b3b2ada1df77ea1951eb694f3834
