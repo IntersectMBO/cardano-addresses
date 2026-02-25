@@ -24,3 +24,7 @@ build-docker:
 clean-build-docker:
   cabal clean
   just build-docker
+
+# generate README.md from docs/index.md
+generate-readme:
+  ./scripts/generate-readme.sh
