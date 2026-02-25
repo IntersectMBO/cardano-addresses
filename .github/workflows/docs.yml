@@ -57,7 +57,7 @@ jobs:
       - name: Prepare Docusaurus for deployment
         run: |
           mkdir -p build
-          cp -r docs/build/* build/
+          cp -r build/* build/
 
       - name: Prepare Haddock for deployment
         run: |
