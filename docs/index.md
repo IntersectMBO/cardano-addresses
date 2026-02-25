@@ -14,19 +14,14 @@ slug: /intro
   <br />
 </p>
 
-
 <div align="center">
 
   <a href="">[![Coding Standards](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml)</a>
   <a href="">[![Haskell CI using Cabal](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml)</a>
-  <a href="https://docusaurus.io/"><img src="https://img.shields.io/badge/Docusaurus-3.7.0-blue?logo=docusaurus&style=for-the-badge"/></a>
+  <a href="https://docusaurus.io/"><img src="https://img.shields.io/badge/Docusaurus-3.7.0-blue?logo=docusaurus"/></a>
 
 </div>
 
-**This documentation is the source of truth.** The `README.md` is generated from this file using:
-```bash
-just generate-readme
-```
 
 ## Overview
 
@@ -108,6 +103,13 @@ Javascript support was discontinued and dropped. One could look at the following
 2. [blaze-cardano](https://github.com/butaneprotocol/blaze-cardano)
 
 Alternatively one could lean back on release [3.9.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.9.0) where Javascript was still present.
+
+## Docs generation
+
+The README.md is generated from this file using:
+```
+just generate-readme
+```
 
 ## Contributing
 
