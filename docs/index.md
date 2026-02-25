@@ -86,8 +86,8 @@ nix build .#packages.aarch64-darwin.default
 # Linux aarch64
 nix build .#packages.aarch64-linux.default
 
-# Linux x86_64 to Windows (cross-compilation via hydraJobs)
-nix build '.#hydraJobs.x86_64-linux.x86_64-w64-mingw32.packages.cardano-addresses:exe:cardano-address'
+# Linux x86_64 to Windows (cross-compilation)
+nix build .#packages.x86_64-linux.default
 ```
 
 ### Building the Docker image
