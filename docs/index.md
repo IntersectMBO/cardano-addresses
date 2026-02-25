@@ -53,6 +53,25 @@ cabal test cardano-addresses:unit
 cabal install cardano-address
 ```
 
+### Building for different platforms
+
+``` console
+# Linux x86_64
+$ nix build .
+
+# Darwin x86_64
+$ nix build .#packages.x86_64-darwin.default
+
+# Darwin aarch64 (Apple Silicon)
+$ nix build .#packages.aarch64-darwin.default
+
+# Linux aarch64
+$ nix build .#packages.aarch64-linux.default
+
+# Linux x86_64 (Windows target using haskell.nix)
+$ nix build .#packages.x86_64-windows.default
+```
+
 ## Override command for cross-compilation
 
 We have now fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV` as below:
