@@ -43,6 +43,9 @@ jobs:
       - name: Cabal update
         run: cabal update
 
+      - name: Build project
+        run: cabal build all
+
       - name: Build Haddock
         run: cabal haddock --haddock-html --haddock-hyperlink-source
 
