@@ -44,18 +44,13 @@ content=$(awk '
     print ""
     print "### Docusaurus-powered documentation"
     print ""
-    print "<p align=\"center\">"
-    print "  <img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"128\" alt=\"Docusaurus logo\"/>"
-    print "</p>"
-    print ""
-    print "<p align=\"center\">"
-    print "[Proudly powered by Docusaurus](https://docusaurus.io/)"
-    print "</p>"
+    print "<img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"64\" align=\"left\" alt=\"Docusaurus logo\"/> [Proudly powered by Docusaurus](https://docusaurus.io/)"
     print ""
     print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
     print ""
+    # Skip sections until Building/testing (skip Command-Line)
     while (getline line > 0) {
-        if (line ~ /^## /) {
+        if (line ~ /^## Building\/testing/) {
             print line
             break
         }

@@ -33,21 +33,9 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 ### Docusaurus-powered documentation
 
-<p align="center">
-  <img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="128" alt="Docusaurus logo"/>
-</p>
-
-<p align="center">
-[Proudly powered by Docusaurus](https://docusaurus.io/)
-</p>
+<img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" align="left" alt="Docusaurus logo"/> [Proudly powered by Docusaurus](https://docusaurus.io/)
 
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
-
-## Command-Line
-
-`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/IntersectMBO/cardano-addresses/releases) or [continuous integration artifacts](https://github.com/IntersectMBO/cardano-addresses/actions?query=workflow%3A%22Continuous+Integration%22) to get a pre-compiled binary, or [build a Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
-
-> :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 
 ## Building/testing from source using nix
 
