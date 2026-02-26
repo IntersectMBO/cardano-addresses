@@ -130,6 +130,27 @@ jobs:
         path: haddock_artifacts
         retention-days: 1
 
+    - name: Generate Coverage Report
+      if: runner.os != 'Windows'
+      run: |
+        shopt -s globstar
+        find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
+        if [ -s all.tix ]; then
+          HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
+          hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+        else
+          echo "No coverage data found"
+          mkdir -p coverage_html
+        fi
+
+    - name: Upload Coverage artifact
+      if: runner.os != 'Windows'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        path: coverage_html
+        retention-days: 1
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
