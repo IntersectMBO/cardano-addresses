@@ -113,6 +113,44 @@ jobs:
     - name: Running Haddock
       run: cabal haddock
 
+    - name: Prepare Haddock artifact
+      if: matrix.sys.os == 'ubuntu-latest'
+      run: |
+        mkdir -p haddock_artifacts
+        HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
+        if [ -n "$HADDOCK_DIR" ]; then
+          cp -r "$HADDOCK_DIR/html" haddock_artifacts/
+        fi
+
+    - name: Upload Haddock artifact
+      if: matrix.sys.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        path: haddock_artifacts
+        retention-days: 1
+
+    - name: Generate Coverage Report
+      if: matrix.sys.os == 'ubuntu-latest'
+      run: |
+        shopt -s globstar
+        find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
+        if [ -s all.tix ]; then
+          HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
+          hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+        else
+          echo "No coverage data found"
+          mkdir -p coverage_html
+        fi
+
+    - name: Upload Coverage artifact
+      if: matrix.sys.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        path: coverage_html
+        retention-days: 1
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'

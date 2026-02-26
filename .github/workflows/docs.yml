@@ -5,6 +5,11 @@ on:
     branches:
       - master
 
+  workflow_run:
+    workflows: [Haskell CI]
+    types: [completed]
+    branches: [master]
+
 permissions:
   contents: read
   pages: write
@@ -17,6 +22,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,50 +40,17 @@ jobs:
       - name: Build Docusaurus site
         run: npm run build
 
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
+      - name: Download Haddock artifact
+        uses: actions/download-artifact@v4
         with:
-          ghc-version: '9.10'
-          cabal-version: '3.14'
+          name: haddock-9.10-ubuntu-latest
+          path: build/haddock
 
-      - name: Cabal update
-        run: cabal update
-
-      - name: Build project
-        run: cabal build all
-
-      - name: Build Haddock
-        run: cabal haddock --haddock-html --haddock-hyperlink-source
-
-      - name: Run Tests with Coverage
-        run: cabal test all --enable-tests --enable-coverage
-
-      - name: Generate Coverage Report
-        run: |
-          shopt -s globstar
-          find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
-          if [ -s all.tix ]; then
-            HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
-            hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
-          else
-            echo "No coverage data found, skipping report generation"
-            mkdir -p coverage_html
-          fi
-
-      - name: Prepare Haddock for deployment
-        run: |
-          mkdir -p build/haddock
-          HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
-          if [ -n "$HADDOCK_DIR" ]; then
-            cp -r "$HADDOCK_DIR/html/"* build/haddock/
-          else
-            echo "Warning: No haddock directory found"
-          fi
-
-      - name: Prepare Coverage for deployment
-        run: |
-          mkdir -p build/coverage
-          cp -r coverage_html/* build/coverage/
+      - name: Download Coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-9.10-ubuntu-latest
+          path: build/coverage
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
