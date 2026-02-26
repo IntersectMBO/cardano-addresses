@@ -138,9 +138,14 @@ jobs:
         if [ -s all.tix ]; then
           HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
           hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+          COVERAGE=$(grep -oP '(\d+)%' coverage_html/hpc_index.html 2>/dev/null | head -1 || echo "N/A")
+          echo "Coverage: $COVERAGE"
+          mkdir -p badges
+          echo '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="104" height="20" role="img" aria-label="coverage: '$COVERAGE'"><linearGradient id="smooth" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="round"><rect width="104" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#round)"><rect width="61" height="20" fill="#555"/><rect x="61" width="43" height="20" fill="#007ec6"/><text x="35" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="82.5" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></g></svg>' > badges/badge.svg
         else
           echo "No coverage data found"
-          mkdir -p coverage_html
+          mkdir -p coverage_html badges
+          echo '<svg xmlns="http://www.w3.org/2000/svg" width="104" height="20"><text x="52" y="14" font-size="12" text-anchor="middle">coverage: N/A</text></svg>' > badges/badge.svg
         fi
 
     - name: Upload Coverage artifact
@@ -148,7 +153,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
-        path: coverage_html
+        path: |
+          coverage_html
+          badges
         retention-days: 1
 
     - name: Upload Windows artifact
