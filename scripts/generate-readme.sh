@@ -44,7 +44,7 @@ content=$(awk '
     print ""
     print "### Docusaurus-powered documentation"
     print ""
-    print "<img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"64\" align=\"left\" alt=\"Docusaurus logo\"/> [Proudly powered by Docusaurus](https://docusaurus.io/)"
+    print "<img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"64\" align=\"right\" alt=\"Docusaurus logo\"/> [Proudly powered by Docusaurus](https://docusaurus.io/)"
     print ""
     print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
     print ""
