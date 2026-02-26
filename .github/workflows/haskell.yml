@@ -114,7 +114,7 @@ jobs:
       run: cabal haddock
 
     - name: Prepare Haddock artifact
-      if: runner.os != 'Windows'
+      if: matrix.sys.os == 'ubuntu-latest'
       run: |
         mkdir -p haddock_artifacts
         HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
@@ -123,7 +123,7 @@ jobs:
         fi
 
     - name: Upload Haddock artifact
-      if: runner.os != 'Windows'
+      if: matrix.sys.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
@@ -131,7 +131,7 @@ jobs:
         retention-days: 1
 
     - name: Generate Coverage Report
-      if: runner.os != 'Windows'
+      if: matrix.sys.os == 'ubuntu-latest'
       run: |
         shopt -s globstar
         find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
@@ -144,7 +144,7 @@ jobs:
         fi
 
     - name: Upload Coverage artifact
-      if: runner.os != 'Windows'
+      if: matrix.sys.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
