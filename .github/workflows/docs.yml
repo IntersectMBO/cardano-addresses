@@ -5,6 +5,11 @@ on:
     branches:
       - master
 
+  workflow_run:
+    workflows: [Haskell CI]
+    types: [completed]
+    branches: [master]
+
 permissions:
   contents: read
   pages: write
@@ -17,6 +22,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,11 +49,14 @@ jobs:
       - name: Cabal update
         run: cabal update
 
+      - name: Download Haddock artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: haddock-9.10-ubuntu-latest
+          path: build/haddock
+
       - name: Build project
         run: cabal build all
-
-      - name: Build Haddock
-        run: cabal haddock --haddock-html --haddock-hyperlink-source
 
       - name: Run Tests with Coverage
         run: cabal test all --enable-tests --enable-coverage
@@ -62,16 +71,6 @@ jobs:
           else
             echo "No coverage data found, skipping report generation"
             mkdir -p coverage_html
-          fi
-
-      - name: Prepare Haddock for deployment
-        run: |
-          mkdir -p build/haddock
-          HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
-          if [ -n "$HADDOCK_DIR" ]; then
-            cp -r "$HADDOCK_DIR/html/"* build/haddock/
-          else
-            echo "Warning: No haddock directory found"
           fi
 
       - name: Prepare Coverage for deployment

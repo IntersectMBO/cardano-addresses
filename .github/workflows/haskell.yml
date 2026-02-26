@@ -113,6 +113,23 @@ jobs:
     - name: Running Haddock
       run: cabal haddock
 
+    - name: Prepare Haddock artifact
+      if: runner.os != 'Windows'
+      run: |
+        mkdir -p haddock_artifacts
+        HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
+        if [ -n "$HADDOCK_DIR" ]; then
+          cp -r "$HADDOCK_DIR/html" haddock_artifacts/
+        fi
+
+    - name: Upload Haddock artifact
+      if: runner.os != 'Windows'
+      uses: actions/upload-artifact@v4
+      with:
+        name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        path: haddock_artifacts
+        retention-days: 1
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
