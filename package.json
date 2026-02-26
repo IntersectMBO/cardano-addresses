@@ -32,5 +32,13 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "minimatch": "3.1.3",
+    "serve-handler": {
+      "dependencies": {
+        "minimatch": "3.1.3"
+      }
+    }
   }
 }
