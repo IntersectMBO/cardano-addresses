@@ -6,7 +6,6 @@ permissions:
 on:
   push:
     branches: [ "master" ]
-  pull_request:
 
 jobs:
   build:
@@ -22,12 +21,6 @@ jobs:
         run: |
           mkdir -p ~/.config/nix
           echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
-      - name: Add IntersectMBO cache
-        uses: cachix/cachix-action@v15
-        with:
-          name: intersectmbo
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build Linux x86_64
         run: nix build . --accept-flake-config
@@ -46,27 +39,3 @@ jobs:
 
       - name: Build Docker image
         run: nix build .#packages.x86_64-linux.docker-image --accept-flake-config
-
-  cache:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-
-      - name: Enable Nix flakes
-        run: |
-          mkdir -p ~/.config/nix
-          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
-      - name: Push to IntersectMBO cache
-        uses: cachix/cachix-action@v15
-        with:
-          name: intersectmbo
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          pushFilter: |
-            !**/*-test**
-            !**/*-tests**
