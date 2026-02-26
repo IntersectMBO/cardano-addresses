@@ -19,7 +19,7 @@ content="${content//..\/.github\//.github/}"
 # Add Haddock section before Documentation (using awk for more robust handling)
 haddock_section='## Haddock documentation
 
-Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
+Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock/index.html).
 
 ## Docusaurus-powered documentation
 
@@ -40,7 +40,7 @@ content=$(awk '
     print ""
     print "### Haddock documentation"
     print ""
-    print "Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock)."
+    print "Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock/index.html)."
     print ""
     print "### Docusaurus-powered documentation"
     print ""
