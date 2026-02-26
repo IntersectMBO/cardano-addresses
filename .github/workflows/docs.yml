@@ -57,7 +57,8 @@ jobs:
           shopt -s globstar
           find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
           if [ -s all.tix ]; then
-            hpc markup all.tix --destdir=coverage_html --hpcdir=dist-newstyle/build/x86_64-linux/ghc-*/cardano-addresses-*/t/unit/hpc 2>/dev/null || true
+            HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
+            hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
           else
             echo "No coverage data found, skipping report generation"
             mkdir -p coverage_html
@@ -66,7 +67,12 @@ jobs:
       - name: Prepare Haddock for deployment
         run: |
           mkdir -p build/haddock
-          cp -r dist-newstyle/build/*/ghc-*/cardano-addresses-*/haddock/html/* build/haddock/
+          HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
+          if [ -n "$HADDOCK_DIR" ]; then
+            cp -r "$HADDOCK_DIR/html/"* build/haddock/
+          else
+            echo "Warning: No haddock directory found"
+          fi
 
       - name: Prepare Coverage for deployment
         run: |
