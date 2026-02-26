@@ -5,7 +5,7 @@ title: Command-Line
 
 ## Command-Line
 
-`cardano-address` comes with a command-line interface for Linux. See the [release artifacts](https://github.com/IntersectMBO/cardano-addresses/releases) or [continuous integration artifacts](https://github.com/IntersectMBO/cardano-addresses/actions?query=workflow%3A%22Continuous+Integration%22) to get a pre-compiled binary, or [build a Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
+`cardano-addresses` comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to [build Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
 

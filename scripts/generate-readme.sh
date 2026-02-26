@@ -48,6 +48,8 @@ content=$(awk '
     print ""
     print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
     print ""
+    print "cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to build Docker image."
+    print ""
     # Skip sections until Building/testing (skip Command-Line)
     while (getline line > 0) {
         if (line ~ /^## Building\/testing/) {
