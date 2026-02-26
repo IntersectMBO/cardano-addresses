@@ -60,11 +60,6 @@ jobs:
             mkdir -p coverage_html
           fi
 
-      - name: Prepare Docusaurus for deployment
-        run: |
-          mkdir -p build
-          cp -r build/* build/
-
       - name: Prepare Haddock for deployment
         run: |
           mkdir -p build/haddock
