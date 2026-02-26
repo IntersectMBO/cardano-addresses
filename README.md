@@ -29,13 +29,15 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ### Haddock documentation
 
-Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock).
+Haddock API documentation is available [here](https://IntersectMBO.github.io/cardano-addresses/haddock/index.html).
 
 ### Docusaurus-powered documentation
 
-<img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" align="right" alt="Docusaurus logo"/> [Proudly powered by Docusaurus](https://docusaurus.io/)
+<a href="https://docusaurus.io/"><img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" alt="Docusaurus logo"/></a>
 
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
+
+cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to build Docker image.
 
 ## Building/testing from source using nix
 
