@@ -42,19 +42,27 @@ jobs:
 
       - name: Download Haddock artifact
         if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: haddock-9.10-*
-          path: build/haddock
-          merge-multiple: false
+        run: |
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="haddock-9.10-ubuntu-latest") | .id')
+          if [ -n "$ARTIFACT_ID" ]; then
+            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip -o haddock.zip
+            unzip -o haddock.zip -d build/haddock
+            mv build/haddock/*/* build/haddock/ 2>/dev/null || true
+          else
+            echo "Haddock artifact not found"
+          fi
 
       - name: Download Coverage artifact
         if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-9.10-*
-          path: build/coverage
-          merge-multiple: false
+        run: |
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="coverage-9.10-ubuntu-latest") | .id')
+          if [ -n "$ARTIFACT_ID" ]; then
+            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip -o coverage.zip
+            unzip -o coverage.zip -d build/coverage
+            mv build/coverage/*/* build/coverage/ 2>/dev/null || true
+          else
+            echo "Coverage artifact not found"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
