@@ -45,6 +45,8 @@ jobs:
         with:
           name: haddock-9.10-ubuntu-latest
           path: build/haddock
+          workflow_run_id: ${{ github.event.workflow_run.id }}
+          workflow_run_attempt: ${{ github.event.workflow_run.run_attempt }}
 
       - name: Download Coverage artifact
         if: github.event_name == 'workflow_run'
@@ -52,6 +54,8 @@ jobs:
         with:
           name: coverage-9.10-ubuntu-latest
           path: build/coverage
+          workflow_run_id: ${{ github.event.workflow_run.id }}
+          workflow_run_attempt: ${{ github.event.workflow_run.run_attempt }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
