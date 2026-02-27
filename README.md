@@ -35,6 +35,8 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 <a href="https://docusaurus.io/">Powered by <img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" alt="Docusaurus logo"/></a>
 
+## Supported platforms
+
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
 
 cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to build Docker image.
