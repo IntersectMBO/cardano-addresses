@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  docs-build:
     runs-on: ubuntu-latest
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
@@ -38,13 +38,6 @@ jobs:
 
       - name: Build Docusaurus site
         run: npm run build
-
-      - name: List available artifacts
-        if: github.event_name == 'workflow_run'
-        run: |
-          echo "Workflow run ID: ${{ github.event.workflow_run.id }}"
-          echo "Run attempt: ${{ github.event.workflow_run.run_attempt }}"
-          gh run view ${{ github.event.workflow_run.id }} --repo ${{ github.repository }} --json artifacts
 
       - name: Download Haddock artifact
         if: github.event_name == 'workflow_run'
@@ -68,7 +61,7 @@ jobs:
           path: build
 
   deploy:
-    needs: build
+    needs: docs-build
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_run'
     environment:
