@@ -1,0 +1,41 @@
+name: Nix CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Enable Nix flakes
+        run: |
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
+      - name: Build Linux x86_64
+        run: nix build . --accept-flake-config
+
+      - name: Build Linux aarch64
+        run: nix build .#packages.aarch64-linux.default --accept-flake-config
+
+      - name: Build Darwin x86_64
+        run: nix build .#packages.x86_64-darwin.default --accept-flake-config
+
+      - name: Build Darwin aarch64
+        run: nix build .#packages.aarch64-darwin.default --accept-flake-config
+
+      - name: Build Windows (cross-compilation)
+        run: nix build .#packages.x86_64-linux.default --accept-flake-config
+
+      - name: Build Docker image
+        run: nix build .#packages.x86_64-linux.docker-image --accept-flake-config

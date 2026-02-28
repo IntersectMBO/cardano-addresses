@@ -40,9 +40,17 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ## Building/testing from source using nix
 
+Prerequisites: [Install Nix](https://nixos.org/download.html) with flakes enabled.
+
+### Enter development shell
+
 ``` console
 nix develop
+```
 
+Inside the development shell:
+
+``` console
 # building
 cabal build all
 
@@ -51,6 +59,42 @@ cabal test cardano-addresses:unit
 
 # installing executable locally
 cabal install cardano-address
+```
+
+### Build using nix directly
+
+``` console
+# Build the Linux x86_64 binary
+nix build .
+
+# Run the built binary
+./result/bin/cardano-address
+```
+
+### Building for different platforms
+
+``` console
+# Linux x86_64
+nix build .
+
+# Darwin x86_64
+nix build .#packages.x86_64-darwin.default
+
+# Darwin aarch64 (Apple Silicon)
+nix build .#packages.aarch64-darwin.default
+
+# Linux aarch64
+nix build .#packages.aarch64-linux.default
+
+# Linux x86_64 to Windows (cross-compilation)
+nix build .#packages.x86_64-linux.default
+```
+
+### Building the Docker image
+
+``` console
+nix build .#packages.x86_64-linux.docker-image
+docker load < result
 ```
 
 ## Override command for cross-compilation

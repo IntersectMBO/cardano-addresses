@@ -4,9 +4,10 @@
 
 - Automated draft release preparation by creating fixed part and extracting the latest entries from `Changelog.md`	
 - Fix `spanish` last word in dictionary
-- Fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV`
+- Fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV`<<<<<<< HEAD
+- Fix `nix develop` to work smoothly, adding darwin to packages when `nix build`, adding `nix-build` for docker plus docs how to do everything
 - Integrate `Docusaurus` with README
-	
+
 ## [4.0.2] - 2025-12-30
 
 ### Added
