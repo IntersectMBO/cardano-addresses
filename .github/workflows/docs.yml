@@ -47,7 +47,7 @@ jobs:
         run: |
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="haddock-9.10-ubuntu-latest") | .id')
           if [ -n "$ARTIFACT_ID" ]; then
-            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip -o haddock.zip
+            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip --output haddock.zip
             unzip -o haddock.zip -d build/haddock
             mv build/haddock/*/* build/haddock/ 2>/dev/null || true
           else
@@ -61,7 +61,7 @@ jobs:
         run: |
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="coverage-9.10-ubuntu-latest") | .id')
           if [ -n "$ARTIFACT_ID" ]; then
-            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip -o coverage.zip
+            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip --output coverage.zip
             unzip -o coverage.zip -d build/coverage
             mv build/coverage/*/* build/coverage/ 2>/dev/null || true
           else
