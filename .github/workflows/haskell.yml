@@ -108,7 +108,7 @@ jobs:
         TMPDIR: ${{ runner.temp }}
         TMP: ${{ runner.temp }}
         KEEP_WORKSPACE: 1
-      run: cabal test all --enable-tests --test-show-details=direct
+      run: cabal test all --enable-tests --enable-coverage --test-show-details=direct
 
     - name: Running Haddock
       run: cabal haddock
@@ -117,9 +117,12 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest'
       run: |
         mkdir -p haddock_artifacts
-        HADDOCK_DIR=$(find dist-newstyle/build -type d -name "haddock" | head -1)
+        HADDOCK_DIR=$(find dist-newstyle/doc -type d -name "html" | head -1)
         if [ -n "$HADDOCK_DIR" ]; then
-          cp -r "$HADDOCK_DIR/html" haddock_artifacts/
+          cp -r "$HADDOCK_DIR" haddock_artifacts/
+        else
+          echo "No haddock directory found"
+          ls -la dist-newstyle/
         fi
 
     - name: Upload Haddock artifact
@@ -136,8 +139,10 @@ jobs:
         shopt -s globstar
         find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
         if [ -s all.tix ]; then
-          HPC_DIR=$(find dist-newstyle/build -type d -path "*/hpc" | head -1)
-          hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" | head -1)
+          if [ -n "$HPC_DIR" ]; then
+            hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+          fi
           COVERAGE=$(grep -oP '(\d+)%' coverage_html/hpc_index.html 2>/dev/null | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
           mkdir -p badges
