@@ -102,7 +102,11 @@ jobs:
     - name: Build Windows
       if: runner.os == 'Windows'
       run: cabal build all
- 
+  
+    - name: Clean coverage data
+      if: matrix.sys.os == 'ubuntu-latest'
+      run: find . -name "*.tix" -delete 2>/dev/null || true
+
     - name: Run tests
       env:
         TMPDIR: ${{ runner.temp }}
