@@ -117,7 +117,7 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest'
       run: |
         mkdir -p haddock_artifacts
-        HADDOCK_DIR=$(find dist-newstyle/doc -type d -name "html" | head -1)
+        HADDOCK_DIR=$(find dist-newstyle -type d -name "html" 2>/dev/null | head -1)
         if [ -n "$HADDOCK_DIR" ]; then
           cp -r "$HADDOCK_DIR" haddock_artifacts/
         else
@@ -139,7 +139,7 @@ jobs:
         shopt -s globstar
         find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
         if [ -s all.tix ]; then
-          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" | head -1)
+          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" 2>/dev/null | head -1)
           if [ -n "$HPC_DIR" ]; then
             hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
           fi
