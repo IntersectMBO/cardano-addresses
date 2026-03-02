@@ -45,10 +45,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="haddock-9.10-ubuntu-latest") | .id')
-          if [ -n "$ARTIFACT_ID" ]; then
-            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip --output haddock.zip
-            unzip -o haddock.zip -d build/haddock
+          if gh run artifact download haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }} 2>/dev/null; then
             mv build/haddock/*/* build/haddock/ 2>/dev/null || true
           else
             echo "Haddock artifact not found"
@@ -59,10 +56,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="coverage-9.10-ubuntu-latest") | .id')
-          if [ -n "$ARTIFACT_ID" ]; then
-            gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip --output coverage.zip
-            unzip -o coverage.zip -d build/coverage
+          if gh run artifact download coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }} 2>/dev/null; then
             mv build/coverage/*/* build/coverage/ 2>/dev/null || true
           else
             echo "Coverage artifact not found"
