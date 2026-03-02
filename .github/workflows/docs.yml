@@ -42,6 +42,8 @@ jobs:
 
       - name: Download Haddock artifact
         if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="haddock-9.10-ubuntu-latest") | .id')
           if [ -n "$ARTIFACT_ID" ]; then
@@ -54,6 +56,8 @@ jobs:
 
       - name: Download Coverage artifact
         if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts --jq '.artifacts[] | select(.name=="coverage-9.10-ubuntu-latest") | .id')
           if [ -n "$ARTIFACT_ID" ]; then
