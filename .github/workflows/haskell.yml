@@ -112,6 +112,7 @@ jobs:
         TMPDIR: ${{ runner.temp }}
         TMP: ${{ runner.temp }}
         KEEP_WORKSPACE: 1
+        GHC_RTS_OPTS: --read-tix-file=no
       run: cabal test all --enable-tests --enable-coverage --test-show-details=direct
 
     - name: Running Haddock
