@@ -45,12 +45,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh run artifact download haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }} 2>/dev/null; then
+          RUN_ID=${{ github.event.workflow_run.id }}
+          echo "Downloading from run: $RUN_ID"
+          if gh run artifact download haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }} --run-id "$RUN_ID"; then
+            echo "Downloaded haddock artifact"
             rm -rf build/haddock/html 2>/dev/null || true
             if [ -d build/haddock/haddock_artifacts/html ]; then
               mv build/haddock/haddock_artifacts/html/* build/haddock/
               rm -rf build/haddock/haddock_artifacts
             fi
+            ls -la build/haddock/
           else
             echo "Haddock artifact not found"
           fi
@@ -60,7 +64,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh run artifact download coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }} 2>/dev/null; then
+          RUN_ID=${{ github.event.workflow_run.id }}
+          echo "Downloading from run: $RUN_ID"
+          if gh run artifact download coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }} --run-id "$RUN_ID"; then
+            echo "Downloaded coverage artifact"
             if [ -d build/coverage/coverage_html ]; then
               mv build/coverage/coverage_html/* build/coverage/
               rm -rf build/coverage/coverage_html
@@ -69,6 +76,7 @@ jobs:
               mv build/coverage/badges/* build/coverage/
               rm -rf build/coverage/badges
             fi
+            ls -la build/coverage/
           else
             echo "Coverage artifact not found"
           fi
