@@ -102,22 +102,32 @@ jobs:
     - name: Build Windows
       if: runner.os == 'Windows'
       run: cabal build all
- 
+  
+    - name: Clean coverage data
+      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      run: find . -name "*.tix" -delete 2>/dev/null || true
+
     - name: Run tests
       env:
         TMPDIR: ${{ runner.temp }}
         TMP: ${{ runner.temp }}
         KEEP_WORKSPACE: 1
-      run: cabal test all --enable-tests --enable-coverage --test-show-details=direct
+        GHC_RTS_OPTS: --read-tix-file=no
+      run: |
+        if [ "${{ matrix.sys.os }}" == "ubuntu-latest" ] && [ "${{ matrix.ghc }}" == "9.10" ]; then
+          cabal test all --enable-tests --enable-coverage --test-show-details=direct
+        else
+          cabal test all --enable-tests --test-show-details=direct
+        fi
 
     - name: Running Haddock
       run: cabal haddock
 
     - name: Prepare Haddock artifact
-      if: matrix.sys.os == 'ubuntu-latest'
+      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p haddock_artifacts
-        HADDOCK_DIR=$(find dist-newstyle/doc -type d -name "html" | head -1)
+        HADDOCK_DIR=$(find dist-newstyle -type d -name "html" 2>/dev/null | head -1)
         if [ -n "$HADDOCK_DIR" ]; then
           cp -r "$HADDOCK_DIR" haddock_artifacts/
         else
@@ -126,7 +136,7 @@ jobs:
         fi
 
     - name: Upload Haddock artifact
-      if: matrix.sys.os == 'ubuntu-latest'
+      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       uses: actions/upload-artifact@v4
       with:
         name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
@@ -134,12 +144,12 @@ jobs:
         retention-days: 1
 
     - name: Generate Coverage Report
-      if: matrix.sys.os == 'ubuntu-latest'
+      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         shopt -s globstar
         find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
         if [ -s all.tix ]; then
-          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" | head -1)
+          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" 2>/dev/null | head -1)
           if [ -n "$HPC_DIR" ]; then
             hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
           fi
@@ -154,7 +164,7 @@ jobs:
         fi
 
     - name: Upload Coverage artifact
-      if: matrix.sys.os == 'ubuntu-latest'
+      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
