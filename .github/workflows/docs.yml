@@ -47,7 +47,7 @@ jobs:
         run: |
           RUN_ID=${{ github.event.workflow_run.id }}
           echo "Downloading from run: $RUN_ID"
-          if gh run artifact download haddock-9.10-ubuntu-latest -D build/haddock --repo ${{ github.repository }} --run-id "$RUN_ID"; then
+          if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest -D build/haddock --repo ${{ github.repository }}; then
             echo "Downloaded haddock artifact"
             rm -rf build/haddock/html 2>/dev/null || true
             if [ -d build/haddock/haddock_artifacts/html ]; then
@@ -66,7 +66,7 @@ jobs:
         run: |
           RUN_ID=${{ github.event.workflow_run.id }}
           echo "Downloading from run: $RUN_ID"
-          if gh run artifact download coverage-9.10-ubuntu-latest -D build/coverage --repo ${{ github.repository }} --run-id "$RUN_ID"; then
+          if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest -D build/coverage --repo ${{ github.repository }}; then
             echo "Downloaded coverage artifact"
             if [ -d build/coverage/coverage_html ]; then
               mv build/coverage/coverage_html/* build/coverage/
