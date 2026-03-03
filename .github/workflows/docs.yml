@@ -49,11 +49,10 @@ jobs:
           echo "Downloading from run: $RUN_ID"
           if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }}; then
             echo "Downloaded haddock artifact"
-            ls -R build/haddock/
             rm -rf build/haddock/html 2>/dev/null || true
-            if [ -d build/haddock/haddock_artifacts/html ]; then
-              mv build/haddock/haddock_artifacts/html/* build/haddock/
-              rm -rf build/haddock/haddock_artifacts
+            if [ -d build/haddock/html/cardano-addresses ]; then
+              mv build/haddock/html/* build/haddock/
+              rm -rf build/haddock/html
             fi
             ls -la build/haddock/
           else
@@ -69,7 +68,6 @@ jobs:
           echo "Downloading from run: $RUN_ID"
           if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }}; then
             echo "Downloaded coverage artifact"
-            ls -R build/coverage/
             if [ -d build/coverage/coverage_html ]; then
               mv build/coverage/coverage_html/* build/coverage/
               rm -rf build/coverage/coverage_html
