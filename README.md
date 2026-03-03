@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://github.com/IntersectMBO/cardano-addresses/releases"><img src="https://img.shields.io/github/v/release/IntersectMBO/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge"/></a>
-  <a href="https://IntersectMBO.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/badge.svg" height="30"/></a>
+  <a href="https://IntersectMBO.github.io/cardano-addresses/coverage/hpc_index.html"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/badge.svg" height="20"/></a>
   <br />
 </p>
 
