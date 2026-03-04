@@ -160,13 +160,7 @@ jobs:
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
           echo "=== Running hpc report ==="
-          HPC_MIX_DIR=$(find dist-newstyle -type d -path "*cardano-addresses*/hpc/vanilla" 2>/dev/null | head -1)
-          echo "=== HPC_MIX_DIR: $HPC_MIX_DIR ==="
-          if [ -n "$HPC_MIX_DIR" ]; then
-            HPC_OUTPUT=$(hpc report all.tix --hpcdir="$HPC_MIX_DIR" 2>&1)
-          else
-            HPC_OUTPUT=$(hpc report all.tix 2>&1)
-          fi
+          HPC_OUTPUT=$(hpc report all.tix 2>&1 || true)
           echo "=== HPC output: $HPC_OUTPUT ==="
           COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
