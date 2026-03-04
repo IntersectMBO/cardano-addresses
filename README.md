@@ -14,7 +14,7 @@
   <a href="">[![Coding Standards](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml/badge.svg?branch=master)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/style.yml)</a>
   <a href="">[![Haskell CI using Cabal](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/haskell.yml)</a>
   <a href="">[![Docs](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/docs.yml/badge.svg)](https://github.com/IntersectMBO/cardano-addresses/actions/workflows/docs.yml)</a>
-  <a href="https://docusaurus.io/"><img src="https://img.shields.io/badge/Docusaurus-3.7.0-blue?logo=docusaurus"/></a>
+  Powered by <a href="https://docusaurus.io/"><img src="https://img.shields.io/badge/Docusaurus-3.7.0-blue?logo=docusaurus"/></a>
 
 </div>
 
@@ -34,7 +34,7 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 ### Docusaurus-powered documentation
 
-<a href="https://docusaurus.io/"><img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" alt="Docusaurus logo"/></a>
+Powered by <a href="https://docusaurus.io/"><img src="https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png" width="64" alt="Docusaurus logo"/></a>
 
 CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
 
