@@ -160,9 +160,13 @@ jobs:
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
           echo "=== Running hpc report ==="
-          HPC_OUTPUT=$(hpc report all.tix 2>&1 || true)
+          HPC_OUTPUT=$(hpc report all.tix --exclude=unit 2>&1 || echo "hpc failed")
           echo "=== HPC output: $HPC_OUTPUT ==="
-          COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
+          if echo "$HPC_OUTPUT" | grep -q "hpc failed"; then
+            COVERAGE="N/A"
+          else
+            COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
+          fi
           echo "Coverage: $COVERAGE"
           mkdir -p coverage_html badges
           if [ "$COVERAGE" = "N/A" ]; then
