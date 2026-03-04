@@ -127,9 +127,15 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p haddock_artifacts
+        echo "=== Finding haddock directories ==="
+        find dist-newstyle -type d -path "*cardano-addresses*/doc/html" 2>/dev/null | head -5
         HADDOCK_DIR=$(find dist-newstyle -type d -path "*cardano-addresses*/doc/html" 2>/dev/null | head -1)
+        echo "HADDOCK_DIR=$HADDOCK_DIR"
         if [ -n "$HADDOCK_DIR" ] && [ -d "$HADDOCK_DIR" ]; then
           cp -r "$HADDOCK_DIR" haddock_artifacts/html
+          echo "=== Copied haddock, listing ==="
+          ls -la haddock_artifacts/
+          ls -la haddock_artifacts/html/ 2>/dev/null || true
         else
           echo "No haddock directory found for cardano-addresses"
           find dist-newstyle -type d -name "html" 2>/dev/null | head -5
@@ -147,7 +153,11 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         shopt -s globstar
-        find dist-newstyle -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
+        echo "=== Finding .tix files ==="
+        find . -name "*.tix" -type f 2>/dev/null | head -20
+        find . -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
+        echo "=== all.tix size ==="
+        ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
           HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" 2>/dev/null | head -1)
           if [ -n "$HPC_DIR" ]; then
