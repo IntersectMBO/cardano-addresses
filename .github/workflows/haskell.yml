@@ -170,23 +170,16 @@ jobs:
           echo "Coverage: $COVERAGE"
           mkdir -p coverage_html badges
           if [ "$COVERAGE" = "N/A" ]; then
-            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-grey?style=for-the-badge"
+            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-%239b59b6?style=for-the-badge"
           else
-            if [ "$COVERAGE" -ge 80 ]; then
-              COLOR="green"
-            elif [ "$COVERAGE" -ge 50 ]; then
-              COLOR="orange"
-            else
-              COLOR="red"
-            fi
-            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-${COLOR}?style=for-the-badge"
+            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-%239b59b6?style=for-the-badge"
           fi
           echo "Badge URL: $BADGE_URL"
           curl -sL "$BADGE_URL" -o badges/badge.svg
         else
           echo "No coverage data found"
           mkdir -p coverage_html badges
-          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-grey?style=for-the-badge"
+          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-%239b59b6?style=for-the-badge"
           echo "Badge URL: $BADGE_URL"
           curl -sL "$BADGE_URL" -o badges/badge.svg
           echo "<html><head><title>Coverage</title></head><body><h1>Coverage: N/A</h1></body></html>" > coverage_html/hpc_index.html
