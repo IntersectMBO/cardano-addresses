@@ -127,12 +127,12 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p haddock_artifacts
-        HADDOCK_DIR=$(find dist-newstyle -type d -name "html" 2>/dev/null | head -1)
-        if [ -n "$HADDOCK_DIR" ]; then
-          cp -r "$HADDOCK_DIR" haddock_artifacts/
+        HADDOCK_DIR=$(find dist-newstyle -type d -path "*cardano-addresses*/doc/html" 2>/dev/null | head -1)
+        if [ -n "$HADDOCK_DIR" ] && [ -d "$HADDOCK_DIR" ]; then
+          cp -r "$HADDOCK_DIR" haddock_artifacts/html
         else
-          echo "No haddock directory found"
-          ls -la dist-newstyle/
+          echo "No haddock directory found for cardano-addresses"
+          find dist-newstyle -type d -name "html" 2>/dev/null | head -5
         fi
 
     - name: Upload Haddock artifact
@@ -156,11 +156,11 @@ jobs:
           COVERAGE=$(grep -oP '(\d+)%' coverage_html/hpc_index.html 2>/dev/null | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
           mkdir -p badges
-          echo '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="104" height="20" role="img" aria-label="coverage: '$COVERAGE'"><linearGradient id="smooth" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="round"><rect width="104" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#round)"><rect width="61" height="20" fill="#555"/><rect x="61" width="43" height="20" fill="#007ec6"/><text x="35" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="82.5" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></g></svg>' > badges/badge.svg
+          echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" role="img" aria-label="coverage: '$COVERAGE'"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></svg>' > badges/badge.svg
         else
           echo "No coverage data found"
           mkdir -p coverage_html badges
-          echo '<svg xmlns="http://www.w3.org/2000/svg" width="104" height="20"><text x="52" y="14" font-size="12" text-anchor="middle">coverage: N/A</text></svg>' > badges/badge.svg
+          echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">N/A</text></svg>' > badges/badge.svg
         fi
 
     - name: Upload Coverage artifact
