@@ -160,25 +160,36 @@ jobs:
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
           echo "=== Running hpc report ==="
-          if hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep -q "percent"; then
-            COVERAGE=$(hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep "percent" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
-          else
-            COVERAGE=$(hpc report all.tix 2>/dev/null | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
-          fi
+          HPC_OUTPUT=$(hpc report all.tix 2>&1 || true)
+          echo "=== HPC output: $HPC_OUTPUT ==="
+          COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
           mkdir -p coverage_html badges
           if [ "$COVERAGE" = "N/A" ]; then
-            echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">N/A</text></svg>' > badges/badge.svg
+            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-grey?style=for-the-badge"
           else
-            echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" role="img" aria-label="coverage: '$COVERAGE'"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></svg>' > badges/badge.svg
-            echo " Coverage report generated. Visit https://intersectmbo.github.io/cardano-addresses/coverage/hpc_index.html" > coverage_html/hpc_index.html
-            echo "<html><head><title>Coverage</title></head><body><h1>Coverage: $COVERAGE%</h1></body></html>" >> coverage_html/hpc_index.html
+            if [ "$COVERAGE" -ge 80 ]; then
+              COLOR="green"
+            elif [ "$COVERAGE" -ge 50 ]; then
+              COLOR="orange"
+            else
+              COLOR="red"
+            fi
+            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-${COLOR}?style=for-the-badge"
           fi
+          echo "Badge URL: $BADGE_URL"
+          curl -sL "$BADGE_URL" -o badges/badge.svg
         else
           echo "No coverage data found"
           mkdir -p coverage_html badges
-          echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">N/A</text></svg>' > badges/badge.svg
+          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-grey?style=for-the-badge"
+          echo "Badge URL: $BADGE_URL"
+          curl -sL "$BADGE_URL" -o badges/badge.svg
           echo "<html><head><title>Coverage</title></head><body><h1>Coverage: N/A</h1></body></html>" > coverage_html/hpc_index.html
+        fi
+        if [ "$COVERAGE" != "N/A" ]; then
+          echo " Coverage report generated. Visit https://intersectmbo.github.io/cardano-addresses/coverage/hpc_index.html" > coverage_html/hpc_index.html
+          echo "<html><head><title>Coverage</title></head><body><h1>Coverage: $COVERAGE%</h1></body></html>" >> coverage_html/hpc_index.html
         fi
 
     - name: Upload Coverage artifact
