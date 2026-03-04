@@ -159,18 +159,26 @@ jobs:
         echo "=== all.tix size ==="
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
-          HPC_DIR=$(find dist-newstyle -type d -path "*/hpc" 2>/dev/null | head -1)
-          if [ -n "$HPC_DIR" ]; then
-            hpc markup all.tix --destdir=coverage_html --hpcdir="$HPC_DIR" 2>/dev/null || true
+          echo "=== Running hpc report ==="
+          if hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep -q "percent"; then
+            COVERAGE=$(hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep "percent" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
+          else
+            COVERAGE=$(hpc report all.tix 2>/dev/null | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
           fi
-          COVERAGE=$(grep -oP '(\d+)%' coverage_html/hpc_index.html 2>/dev/null | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
-          mkdir -p badges
-          echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" role="img" aria-label="coverage: '$COVERAGE'"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></svg>' > badges/badge.svg
+          mkdir -p coverage_html badges
+          if [ "$COVERAGE" = "N/A" ]; then
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">N/A</text></svg>' > badges/badge.svg
+          else
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" role="img" aria-label="coverage: '$COVERAGE'"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">'$COVERAGE'</text></svg>' > badges/badge.svg
+            echo " Coverage report generated. Visit https://intersectmbo.github.io/cardano-addresses/coverage/hpc_index.html" > coverage_html/hpc_index.html
+            echo "<html><head><title>Coverage</title></head><body><h1>Coverage: $COVERAGE%</h1></body></html>" >> coverage_html/hpc_index.html
+          fi
         else
           echo "No coverage data found"
           mkdir -p coverage_html badges
           echo '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20"><rect width="44" height="20" fill="#555"/><rect x="44" width="44" height="20" fill="#007ec6"/><text x="22" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">coverage</text><text x="66" y="15" fill="#fff" fill-opacity=".9" font-size="12" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-weight="bold">N/A</text></svg>' > badges/badge.svg
+          echo "<html><head><title>Coverage</title></head><body><h1>Coverage: N/A</h1></body></html>" > coverage_html/hpc_index.html
         fi
 
     - name: Upload Coverage artifact
