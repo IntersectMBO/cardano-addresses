@@ -49,10 +49,12 @@ jobs:
           echo "Downloading from run: $RUN_ID"
           if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }}; then
             echo "Downloaded haddock artifact"
-            rm -rf build/haddock/html 2>/dev/null || true
-            if [ -d build/haddock/html/cardano-addresses ]; then
-              mv build/haddock/html/* build/haddock/
-              rm -rf build/haddock/html
+            ls -la build/haddock/
+            if [ -d build/haddock/html ]; then
+              if [ -d build/haddock/html/cardano-addresses ]; then
+                mv build/haddock/html/cardano-addresses/* build/haddock/
+                rm -rf build/haddock/html
+              fi
             fi
             ls -la build/haddock/
           else
