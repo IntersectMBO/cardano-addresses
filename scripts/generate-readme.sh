@@ -48,7 +48,15 @@ content=$(awk '
     print ""
     print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
     print ""
-    print "cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to build Docker image."
+    print "### Supported platforms"
+    print ""
+    print "cardano-addresses is officially supported on the following operating systems:"
+    print ""
+    print "- **Linux** - Ubuntu 20.04+, Debian 11+, Fedora 38+, and other major distributions"
+    print "- **macOS** - version 11 (Big Sur) and later"
+    print "- **Windows** - Windows 10 and Windows 11"
+    print ""
+    print "cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to [build Docker image](#docker-image)."
     print ""
     # Skip sections until Building/testing (skip Command-Line)
     while (getline line > 0) {

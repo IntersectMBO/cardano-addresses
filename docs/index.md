@@ -35,6 +35,14 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ## Command-Line
 
+### Supported platforms
+
+`cardano-addresses` is officially supported on the following operating systems:
+
+- **Linux** - Ubuntu 20.04+, Debian 11+, Fedora 38+, and other major distributions
+- **macOS** - version 11 (Big Sur) and later
+- **Windows** - Windows 10 and Windows 11
+
 `cardano-addresses` comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to [build Docker image](#docker-image). The command-line is self explanatory by using `--help` on various commands and sub-commands.
 
 > :bulb: Most commands read argument from the standard input. This prevent sensitive information from appearing into your shell history and, makes it easy to pipe commands!
