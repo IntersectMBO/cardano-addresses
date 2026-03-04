@@ -160,11 +160,15 @@ jobs:
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
           echo "=== Running hpc report ==="
-          if hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep -q "percent"; then
-            COVERAGE=$(hpc report all.tix --sp=[a-zA-Z0-9_]+\. 2>/dev/null | grep "percent" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
+          HPC_MIX_DIR=$(find dist-newstyle -type d -path "*cardano-addresses*/hpc/vanilla" 2>/dev/null | head -1)
+          echo "=== HPC_MIX_DIR: $HPC_MIX_DIR ==="
+          if [ -n "$HPC_MIX_DIR" ]; then
+            HPC_OUTPUT=$(hpc report all.tix --hpcdir="$HPC_MIX_DIR" 2>&1)
           else
-            COVERAGE=$(hpc report all.tix 2>/dev/null | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
+            HPC_OUTPUT=$(hpc report all.tix 2>&1)
           fi
+          echo "=== HPC output: $HPC_OUTPUT ==="
+          COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
           echo "Coverage: $COVERAGE"
           mkdir -p coverage_html badges
           if [ "$COVERAGE" = "N/A" ]; then
