@@ -159,8 +159,16 @@ jobs:
         echo "=== all.tix size ==="
         ls -la all.tix 2>/dev/null || echo "all.tix not found"
         if [ -s all.tix ]; then
+          echo "=== Finding hpc mix directories ==="
+          find dist-newstyle -type d -name "mix" 2>/dev/null | head -5
+          MIX_DIR=$(find dist-newstyle -type d -name "mix" 2>/dev/null | head -1)
+          echo "=== MIX_DIR: $MIX_DIR ==="
           echo "=== Running hpc report ==="
-          HPC_OUTPUT=$(hpc report all.tix --exclude=unit 2>&1 || echo "hpc failed")
+          if [ -n "$MIX_DIR" ]; then
+            HPC_OUTPUT=$(hpc report all.tix --hpcdir="$MIX_DIR" 2>&1 || echo "hpc failed")
+          else
+            HPC_OUTPUT=$(hpc report all.tix 2>&1 || echo "hpc failed")
+          fi
           echo "=== HPC output: $HPC_OUTPUT ==="
           if echo "$HPC_OUTPUT" | grep -q "hpc failed"; then
             COVERAGE="N/A"
