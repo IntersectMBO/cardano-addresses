@@ -152,50 +152,23 @@ jobs:
     - name: Generate Coverage Report
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
-        shopt -s globstar
-        echo "=== Finding .tix files ==="
-        find . -name "*.tix" -type f 2>/dev/null | head -20
-        find . -name "*.tix" -type f -exec cat {} \; > all.tix 2>/dev/null || true
-        echo "=== all.tix size ==="
-        ls -la all.tix 2>/dev/null || echo "all.tix not found"
-        if [ -s all.tix ]; then
-          echo "=== Finding hpc mix directories ==="
-          find dist-newstyle -type d -name "mix" 2>/dev/null | head -5
-          MIX_DIR=$(find dist-newstyle -type d -name "mix" 2>/dev/null | head -1)
-          echo "=== MIX_DIR: $MIX_DIR ==="
-          echo "=== Running hpc report ==="
-          if [ -n "$MIX_DIR" ]; then
-            HPC_OUTPUT=$(hpc report all.tix --hpcdir="$MIX_DIR" 2>&1 || echo "hpc failed")
-          else
-            HPC_OUTPUT=$(hpc report all.tix 2>&1 || echo "hpc failed")
-          fi
-          echo "=== HPC output: $HPC_OUTPUT ==="
-          if echo "$HPC_OUTPUT" | grep -q "hpc failed"; then
-            COVERAGE="N/A"
-          else
-            COVERAGE=$(echo "$HPC_OUTPUT" | grep -oP '\d+(?=%)' | head -1 || echo "N/A")
-          fi
-          echo "Coverage: $COVERAGE"
-          mkdir -p coverage_html badges
-          if [ "$COVERAGE" = "N/A" ]; then
-            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-%239b59b6?style=for-the-badge"
-          else
-            BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-%239b59b6?style=for-the-badge"
-          fi
-          echo "Badge URL: $BADGE_URL"
-          curl -sL "$BADGE_URL" -o badges/badge.svg
+        mkdir -p coverage_html badges
+        HPC_HTML=$(find dist-newstyle -name "hpc_index.html" -path "*/hpc/vanilla/html/*" 2>/dev/null | head -1)
+        echo "=== Found hpc_index.html: $HPC_HTML ==="
+        if [ -n "$HPC_HTML" ] && [ -f "$HPC_HTML" ]; then
+          cp "$HPC_HTML" coverage_html/
+          COVERAGE=$(grep -oP '\d+(?=%)' "$HPC_HTML" | head -1 || echo "N/A")
         else
-          echo "No coverage data found"
-          mkdir -p coverage_html badges
+          COVERAGE="N/A"
+        fi
+        echo "Coverage: $COVERAGE"
+        if [ "$COVERAGE" = "N/A" ]; then
           BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-%239b59b6?style=for-the-badge"
-          echo "Badge URL: $BADGE_URL"
-          curl -sL "$BADGE_URL" -o badges/badge.svg
-          echo "<html><head><title>Coverage</title></head><body><h1>Coverage: N/A</h1></body></html>" > coverage_html/hpc_index.html
+        else
+          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-%239b59b6?style=for-the-badge"
         fi
-        if [ "$COVERAGE" != "N/A" ]; then
-          echo " Coverage report generated. Visit https://intersectmbo.github.io/cardano-addresses/coverage/hpc_index.html" > coverage_html/hpc_index.html
-          echo "<html><head><title>Coverage</title></head><body><h1>Coverage: $COVERAGE%</h1></body></html>" >> coverage_html/hpc_index.html
-        fi
+        echo "Badge URL: $BADGE_URL"
+        curl -sL "$BADGE_URL" -o badges/badge.svg
 
     - name: Upload Coverage artifact
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
