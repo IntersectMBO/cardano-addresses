@@ -127,12 +127,12 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p haddock_artifacts
-        HADDOCK_DIR=$(find dist-newstyle -type d -name "html" 2>/dev/null | head -1)
-        if [ -n "$HADDOCK_DIR" ]; then
-          cp -r "$HADDOCK_DIR" haddock_artifacts/
+        HADDOCK_DIR=$(find dist-newstyle -type d -path "*cardano-addresses*/doc/html" 2>/dev/null | head -1)
+        if [ -n "$HADDOCK_DIR" ] && [ -d "$HADDOCK_DIR" ]; then
+          cp -r "$HADDOCK_DIR" haddock_artifacts/html
         else
-          echo "No haddock directory found"
-          ls -la dist-newstyle/
+          echo "No haddock directory found for cardano-addresses"
+          find dist-newstyle -type d -name "html" 2>/dev/null | head -5
         fi
 
     - name: Upload Haddock artifact
