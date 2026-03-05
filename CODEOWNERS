@@ -3,8 +3,8 @@
 # Later rules override earlier rules.
 
 # CICD
-.github/          @Crypto2099
-nix/              @Crypto2099
+.github/          @paweljakubas
+nix/              @paweljakubas
 
 # Haskell components
 command-line/     @paweljakubas

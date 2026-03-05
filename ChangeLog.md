@@ -6,6 +6,10 @@
 - Fix `spanish` last word in dictionary
 - Fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV`
 - Integrate `Docusaurus` with README
+- Fixed Haddock and Tests Coverage deployment and presentation
+- Many stylistic improvements to docs, badges, etc.
+- Significant improvements to workflow pipelines
+- Fixing caching	
 	
 ## [4.0.2] - 2025-12-30
 

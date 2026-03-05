@@ -29,7 +29,7 @@ Haddock API documentation is available [here](https://IntersectMBO.github.io/car
 
 Proudly powered by [Docusaurus](https://docusaurus.io/)
 
-CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)
+CLI documentation is available [here](https://intersectmbo.github.io/cardano-addresses/command-line)
 
 '
 
