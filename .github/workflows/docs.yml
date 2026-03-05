@@ -88,6 +88,17 @@ jobs:
         with:
           path: build
 
+      - name: Generate Docusaurus badge
+        run: |
+          mkdir -p build/coverage/badges
+          if [ -f "build/index.html" ]; then
+            DOCUSAURUS_BADGE_URL="https://img.shields.io/badge/Docusaurus%20docs-OK-green?style=for-the-badge"
+          else
+            DOCUSAURUS_BADGE_URL="https://img.shields.io/badge/Docusaurus%20docs-INVALID-red?style=for-the-badge"
+          fi
+          echo "Docusaurus Badge URL: $DOCUSAURUS_BADGE_URL"
+          curl -sL "$DOCUSAURUS_BADGE_URL" -o build/coverage/badges/docusaurus-badge.svg
+
   deploy:
     needs: docs-build
     runs-on: ubuntu-latest
