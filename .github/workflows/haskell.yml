@@ -162,10 +162,10 @@ jobs:
           COVERAGE="N/A"
         fi
         echo "Coverage: $COVERAGE"
-        if [ "$COVERAGE" = "N/A" ]; then
-          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-N%2FA-%239b59b6?style=for-the-badge"
+        if [ -n "$HPC_HTML" ] && [ -f "$HPC_HTML" ]; then
+          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-OK-green?style=for-the-badge"
         else
-          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-${COVERAGE}%25-%239b59b6?style=for-the-badge"
+          BADGE_URL="https://img.shields.io/badge/Tests%20Coverage-INVALID-red?style=for-the-badge"
         fi
         echo "Badge URL: $BADGE_URL"
         curl -sL "$BADGE_URL" -o badges/badge.svg
