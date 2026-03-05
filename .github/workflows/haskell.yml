@@ -173,7 +173,7 @@ jobs:
           sed -i 's|href="\([^"]*\)inplace/\([^"]*\)"|href="\2"|g' coverage_html/hpc_index.html
           sed -i 's|href="\([^"]*\)"|href="https://github.com/IntersectMBO/cardano-addresses/blob/master/lib/\1"|g' coverage_html/hpc_index.html
           sed -i 's|\.hs\.html"|"|g' coverage_html/hpc_index.html
-          while sed -i 's|\(href="https://github.com/IntersectMBO/cardano-addresses/blob/master/lib/[^"]*\)\.\([^."]*\)|\1/\2|g' coverage_html/hpc_index.html 2>/dev/null; do true; done
+          for _ in $(seq 10); do sed -i 's|\(href="https://github.com/IntersectMBO/cardano-addresses/blob/master/lib/[^"]*\)\.\([^."]*\)|\1/\2|g' coverage_html/hpc_index.html 2>/dev/null || break; done
           sed -i 's|href="https://github.com/IntersectMBO/cardano-addresses/blob/master/lib/\([^"]*\)"|href="https://github.com/IntersectMBO/cardano-addresses/blob/master/lib/\1.hs"|g' coverage_html/hpc_index.html
           
           COVERAGE=$(grep -oP '\d+(?=%)' "$HPC_HTML" | head -1 || echo "N/A")
