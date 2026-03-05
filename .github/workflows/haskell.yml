@@ -153,6 +153,16 @@ jobs:
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p coverage_html badges
+
+        HADDOCK_HTML=$(find dist-newstyle -name "index.html" -path "*cardano-addresses*/doc/html/*" 2>/dev/null | grep -v "mini" | head -1)
+        if [ -n "$HADDOCK_HTML" ] && [ -f "$HADDOCK_HTML" ]; then
+          HADDOCK_BADGE_URL="https://img.shields.io/badge/Hackage-OK-green?style=for-the-badge"
+        else
+          HADDOCK_BADGE_URL="https://img.shields.io/badge/Hackage-INVALID-red?style=for-the-badge"
+        fi
+        echo "Haddock Badge URL: $HADDOCK_BADGE_URL"
+        curl -sL "$HADDOCK_BADGE_URL" -o badges/haddock-badge.svg
+
         HPC_HTML=$(find dist-newstyle -name "hpc_index.html" -path "*/hpc/vanilla/html/*" 2>/dev/null | head -1)
         echo "=== Found hpc_index.html: $HPC_HTML ==="
         if [ -n "$HPC_HTML" ] && [ -f "$HPC_HTML" ]; then
