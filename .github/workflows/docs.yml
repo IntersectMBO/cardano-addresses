@@ -85,11 +85,6 @@ jobs:
             echo "Coverage artifact not found"
           fi
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build
-
       - name: Generate Docusaurus badge
         run: |
           mkdir -p build/badges
@@ -100,6 +95,11 @@ jobs:
           fi
           echo "Docusaurus Badge URL: $DOCUSAURUS_BADGE_URL"
           curl -sL "$DOCUSAURUS_BADGE_URL" -o build/badges/docusaurus-badge.svg
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
 
   deploy:
     needs: docs-build
