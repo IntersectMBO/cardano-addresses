@@ -10,9 +10,9 @@ slug: /intro
 
 <p align="center">
   <a href="https://github.com/IntersectMBO/cardano-addresses/releases" rel="nofollow"><img src="https://img.shields.io/github/v/release/IntersectMBO/cardano-addresses?color=%239b59b6&label=RELEASE&sort=semver&style=for-the-badge" height="26"/></a>
-  <a href="https://IntersectMBO.github.io/cardano-addresses/haddock/index.html" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/haddock-badge.svg" height="26"/></a>
-  <a href="https://IntersectMBO.github.io/cardano-addresses/coverage/hpc_index.html" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/badge.svg" height="26"/></a>
-  <a href="https://intersectmbo.github.io/cardano-addresses/intro/" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/coverage/docusaurus-badge.svg" height="26"/></a>
+  <a href="https://IntersectMBO.github.io/cardano-addresses/haddock/index.html" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/badges/haddock-badge.svg" height="26"/></a>
+  <a href="https://IntersectMBO.github.io/cardano-addresses/hpc_index.html" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/badges/badge.svg" height="26"/></a>
+  <a href="https://intersectmbo.github.io/cardano-addresses/intro/" rel="nofollow"><img src="https://IntersectMBO.github.io/cardano-addresses/badges/docusaurus-badge.svg" height="26"/></a>
   <br />
 </p>
 

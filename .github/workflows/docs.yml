@@ -68,17 +68,19 @@ jobs:
         run: |
           RUN_ID=${{ github.event.workflow_run.id }}
           echo "Downloading from run: $RUN_ID"
+          mkdir -p build/badges
           if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }}; then
             echo "Downloaded coverage artifact"
             if [ -d build/coverage/coverage_html ]; then
-              mv build/coverage/coverage_html/* build/coverage/
+              mv build/coverage/coverage_html/* build/
               rm -rf build/coverage/coverage_html
             fi
             if [ -d build/coverage/badges ]; then
-              mv build/coverage/badges/* build/coverage/
+              mv build/coverage/badges/* build/badges/
               rm -rf build/coverage/badges
             fi
-            ls -la build/coverage/
+            rm -rf build/coverage
+            ls -la build/badges/
           else
             echo "Coverage artifact not found"
           fi
@@ -90,14 +92,14 @@ jobs:
 
       - name: Generate Docusaurus badge
         run: |
-          mkdir -p build/coverage/badges
+          mkdir -p build/badges
           if [ -f "build/index.html" ]; then
             DOCUSAURUS_BADGE_URL="https://img.shields.io/badge/Docusaurus%20docs-OK-green?style=for-the-badge"
           else
             DOCUSAURUS_BADGE_URL="https://img.shields.io/badge/Docusaurus%20docs-INVALID-red?style=for-the-badge"
           fi
           echo "Docusaurus Badge URL: $DOCUSAURUS_BADGE_URL"
-          curl -sL "$DOCUSAURUS_BADGE_URL" -o build/coverage/badges/docusaurus-badge.svg
+          curl -sL "$DOCUSAURUS_BADGE_URL" -o build/badges/docusaurus-badge.svg
 
   deploy:
     needs: docs-build
