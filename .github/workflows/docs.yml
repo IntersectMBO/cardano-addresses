@@ -98,6 +98,7 @@ jobs:
           fi
           echo "Docusaurus Badge URL: $DOCUSAURUS_BADGE_URL"
           curl -sL "$DOCUSAURUS_BADGE_URL" -o build/coverage/badges/docusaurus-badge.svg
+          mv build/coverage/badges/docusaurus-badge.svg build/coverage/docusaurus-badge.svg
 
   deploy:
     needs: docs-build
