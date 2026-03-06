@@ -46,7 +46,7 @@ content=$(awk '
     print ""
     print "Powered by <a href=\"https://docusaurus.io/\"><img src=\"https://images.icon-icons.com/2699/PNG/512/docusaurus_logo_icon_171229.png\" width=\"64\" alt=\"Docusaurus logo\"/></a>"
     print ""
-    print "CLI documentation is available [here](https://IntersectMBO.github.io/cardano-addresses)"
+    print "CLI documentation is available [here](https://intersectmbo.github.io/cardano-addresses/command-line)"
     print ""
     print "### Supported platforms"
     print ""
