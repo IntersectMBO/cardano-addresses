@@ -92,6 +92,7 @@ jobs:
 
       - name: Generate Docusaurus badge
         run: |
+          mkdir -p build/badges
           if [ -f "build/index.html" ]; then
             DOCUSAURUS_BADGE_URL="https://img.shields.io/badge/Docusaurus%20docs-OK-green?style=for-the-badge"
           else
