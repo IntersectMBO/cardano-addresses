@@ -42,7 +42,7 @@ haskell-nix.cabalProject' (
     compiler-nix-name = "ghc96";
     flake = {
       variants = {
-        ghc810.compiler-nix-name = lib.mkForce "ghc810";
+        ghc910.compiler-nix-name = lib.mkForce "ghc910";
       };
       crossPlatforms = p: with p;
         lib.optional (system == "x86_64-linux") mingwW64 ++
