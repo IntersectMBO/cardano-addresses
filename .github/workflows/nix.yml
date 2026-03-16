@@ -10,47 +10,23 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: ubuntu-latest
-            target: x86_64-linux
-            compiler: ghc96
-          - platform: ubuntu-latest
-            target: x86_64-linux
-            compiler: ghc910
-          - platform: ubuntu-latest
-            target: x86_64-linux
-            compiler: ghc912
-          - platform: ubuntu-latest
-            target: aarch64-linux
-            compiler: ghc96
-          - platform: macos-latest
-            target: x86_64-darwin
-            compiler: ghc96
-          - platform: macos-latest
-            target: aarch64-darwin
-            compiler: ghc96
-
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install GHC and Cabal
-        uses: input-output-hk/actions/devx@latest
-        with:
-          platform: ${{ matrix.platform }}
-          target-platform: ${{ matrix.target }}
-          compiler-nix-name: ${{ matrix.compiler }}
-          iog: true
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
 
-      - name: Update package index
-        run: cabal update
+      - name: Enable Nix flakes
+        run: |
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 
-      - name: Build
-        run: cabal build all
-
-      - name: Run tests
-        run: cabal test cardano-addresses:unit
+      - name: Enter dev shell and build
+        run: |
+          nix develop github:input-output-hk/devx#ghc96-iog --no-write-lock-file --refresh --command bash -c "
+            cabal update
+            cabal build all
+            cabal test cardano-addresses:unit
+          "
