@@ -115,6 +115,27 @@ To build the project inside the container:
 cabal build all
 ```
 
+### Cross-compilation
+
+Devx supports cross-compilation through variants:
+
+``` console
+# Windows cross-compilation (when available)
+nix develop github:input-output-hk/devx#ghc96-windows-iog
+
+# JavaScript cross-compilation
+nix develop github:input-output-hk/devx#ghc96-js-iog
+
+# Static binary build
+nix develop github:input-output-hk/devx#ghc96-static-iog
+```
+
+You can combine variants:
+``` console
+# Static build with minimal IOG dependencies
+nix develop github:input-output-hk/devx#ghc96-static-minimal-iog
+```
+
 ## Preparation steps before uploading to hackage
 
 ``` console
