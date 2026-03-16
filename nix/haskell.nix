@@ -55,7 +55,7 @@ haskell-nix.cabalProject' (
             then haskell-nix.sources."hls-2.2"
             else haskell-nix.sources."hls-2.8";
       };
-      nativeBuildInputs = with pkgs.pkgsBuildBuild; [ nixWrapped cabalWrapped ];
+      nativeBuildInputs = with pkgs.pkgsBuildBuild; [ cabalWrapped ];
       # the below hook is needed for cardano-addresses all test passing when invoked in 'nix develop'
       shellHook = ''
         export LANG=C.UTF-8
