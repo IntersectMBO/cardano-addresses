@@ -740,9 +740,6 @@
       "inputs": {
         "devx": "devx",
         "flake-utils": "flake-utils_2",
-        "hostNixpkgs": [
-          "nixpkgs"
-        ],
         "nixpkgs": [
           "devx",
           "nixpkgs"
