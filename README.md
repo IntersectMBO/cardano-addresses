@@ -56,6 +56,16 @@ Prerequisites: [Install Nix](https://nixos.org/download.html) with flakes enable
 
 This project uses [devx](https://github.com/input-output-hk/devx) for the development shell.
 
+### Updating dependencies
+
+Periodically update the flake lock file to get the latest versions of devx and nixpkgs:
+
+``` console
+nix flake update
+```
+
+This ensures you have recent GHC versions, security updates, and bug fixes.
+
 ### Enter development shell
 
 ``` console
