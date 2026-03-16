@@ -48,16 +48,28 @@ cardano-addresses is officially supported on the following operating systems:
 - **macOS** - version 11 (Big Sur) and later
 - **Windows** - Windows 10 and Windows 11
 
-cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to [build Docker image](#docker-image).
+cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries.
 
 ## Building/testing from source using nix
 
 Prerequisites: [Install Nix](https://nixos.org/download.html) with flakes enabled.
 
+This project uses [devx](https://github.com/input-output-hk/devx) for the development shell.
+
 ### Enter development shell
 
 ``` console
 nix develop
+```
+
+To use a specific GHC version, append the variant:
+
+``` console
+# GHC 9.10
+nix develop github:input-output-hk/devx#ghc910-iog
+
+# GHC 9.12
+nix develop github:input-output-hk/devx#ghc912-iog
 ```
 
 Inside the development shell:
@@ -73,48 +85,12 @@ cabal test cardano-addresses:unit
 cabal install cardano-address
 ```
 
-### Build using nix directly
+### Using direnv
 
-``` console
-# Build the Linux x86_64 binary
-nix build .
+If you use [direnv](https://direnv.net), add this to your `.envrc`:
 
-# Run the built binary
-./result/bin/cardano-address
 ```
-
-### Building for different platforms
-
-``` console
-# Linux x86_64
-nix build .
-
-# Darwin x86_64
-nix build .#packages.x86_64-darwin.default
-
-# Darwin aarch64 (Apple Silicon)
-nix build .#packages.aarch64-darwin.default
-
-# Linux aarch64
-nix build .#packages.aarch64-linux.default
-
-# Linux x86_64 to Windows (cross-compilation)
-nix build .#packages.x86_64-linux.default
-```
-
-### Building the Docker image
-
-``` console
-nix build .#packages.x86_64-linux.docker-image
-docker load < result
-```
-
-## Override command for cross-compilation
-
-We have now fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV` as below:
-
-```console
-cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
+use flake "github:input-output-hk/devx#ghc96-iog"
 ```
 
 ## Preparation steps before uploading to hackage
