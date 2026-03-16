@@ -93,6 +93,28 @@ If you use [direnv](https://direnv.net), add this to your `.envrc`:
 use flake "github:input-output-hk/devx#ghc96-iog"
 ```
 
+### Docker image
+
+Use the devx devcontainer image:
+
+``` console
+docker run -it ghcr.io/input-output-hk/devx-devcontainer:x86_64-linux.ghc96-iog
+```
+
+Available images:
+- `ghc96-iog` - GHC 9.6 with IOG libraries
+- `ghc98-iog` - GHC 9.8 with IOG libraries
+- `ghc910-iog` - GHC 9.10 with IOG libraries
+- `ghc912-iog` - GHC 9.12 with IOG libraries
+- `ghc96-js-iog` - GHC 9.6 with JavaScript cross-compilation
+- `ghc98-js-iog` - GHC 9.8 with JavaScript cross-compilation
+
+To build the project inside the container:
+
+``` console
+cabal build all
+```
+
 ## Preparation steps before uploading to hackage
 
 ``` console
