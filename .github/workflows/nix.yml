@@ -15,18 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
+   - name: Pull container
+      uses: input-output-hk/actions/devx@latest
+      with:
+         platform: 'x86_64-linux'
+         compiler-nix-name: 'ghc96'
+         minimal: false
+         iog: true
 
-      - name: Enable Nix flakes
-        run: |
-          mkdir -p ~/.config/nix
-          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
-      - name: Enter dev shell and build
-        run: |
-          nix develop github:input-output-hk/devx#ghc96-iog --no-write-lock-file --refresh --command bash -c "
+    - name: Build
+      shell: devx {0}
+      run: |
             cabal update
             cabal build all
             cabal test cardano-addresses:unit
-          "
