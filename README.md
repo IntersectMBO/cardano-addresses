@@ -48,13 +48,43 @@ cardano-addresses is officially supported on the following operating systems:
 - **macOS** - version 11 (Big Sur) and later
 - **Windows** - Windows 10 and Windows 11
 
-cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries. There is also straightforward way to [build Docker image](#docker-image).
+cardano-addresses comes with CLI for Linux, MacOS and Windows. See [releases](https://github.com/IntersectMBO/cardano-addresses/releases) to get respective pre-compiled binaries.
 
 ## Building/testing from source using nix
 
+Prerequisites: [Install Nix](https://nixos.org/download.html) with flakes enabled.
+
+This project uses [devx](https://github.com/input-output-hk/devx) for the development shell.
+
+### Updating dependencies
+
+Periodically update the flake lock file to get the latest versions of devx and nixpkgs:
+
+``` console
+nix flake update
+```
+
+This ensures you have recent GHC versions, security updates, and bug fixes.
+
+### Enter development shell
+
 ``` console
 nix develop
+```
 
+To use a specific GHC version, append the variant:
+
+``` console
+# GHC 9.10
+nix develop github:input-output-hk/devx#ghc910-iog
+
+# GHC 9.12
+nix develop github:input-output-hk/devx#ghc912-iog
+```
+
+Inside the development shell:
+
+``` console
 # building
 cabal build all
 
@@ -65,12 +95,55 @@ cabal test cardano-addresses:unit
 cabal install cardano-address
 ```
 
-## Override command for cross-compilation
+### Using direnv
 
-We have now fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV` as below:
+If you use [direnv](https://direnv.net), add this to your `.envrc`:
 
-```console
-cabal build all --ghc-option=-DGITREV=\"$(git rev-parse HEAD)\"
+```
+use flake "github:input-output-hk/devx#ghc96-iog"
+```
+
+### Docker image
+
+Use the devx devcontainer image:
+
+``` console
+docker run -it ghcr.io/input-output-hk/devx-devcontainer:x86_64-linux.ghc96-iog
+```
+
+Available images:
+- `ghc96-iog` - GHC 9.6 with IOG libraries
+- `ghc98-iog` - GHC 9.8 with IOG libraries
+- `ghc910-iog` - GHC 9.10 with IOG libraries
+- `ghc912-iog` - GHC 9.12 with IOG libraries
+- `ghc96-js-iog` - GHC 9.6 with JavaScript cross-compilation
+- `ghc98-js-iog` - GHC 9.8 with JavaScript cross-compilation
+
+To build the project inside the container:
+
+``` console
+cabal build all
+```
+
+### Cross-compilation
+
+Devx supports cross-compilation through variants:
+
+``` console
+# Windows cross-compilation (when available)
+nix develop github:input-output-hk/devx#ghc96-windows-iog
+
+# JavaScript cross-compilation
+nix develop github:input-output-hk/devx#ghc96-js-iog
+
+# Static binary build
+nix develop github:input-output-hk/devx#ghc96-static-iog
+```
+
+You can combine variants:
+``` console
+# Static build with minimal IOG dependencies
+nix develop github:input-output-hk/devx#ghc96-static-minimal-iog
 ```
 
 ## Preparation steps before uploading to hackage

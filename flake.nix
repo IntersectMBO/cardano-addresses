@@ -2,80 +2,28 @@
   description = "Cardano Addresses";
 
   inputs = {
-    nixpkgs.follows = "haskellNix/nixpkgs-2305";
-    hostNixpkgs.follows = "nixpkgs";
-    hackageNix = {
-      url = "github:input-output-hk/hackage.nix";
-      flake = false;
-    };
-    haskellNix = {
-      # GHC 8.10.7 cross compilation for windows is broken in newer versions of haskell.nix.
-      # Unpin this once we no longer need GHC 8.10.7.
-      url = "github:input-output-hk/haskell.nix/cb139fa956158397aa398186bb32dd26f7318784";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hackage.follows = "hackageNix";
-    };
-    CHaP = {
-      url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
-      flake = false;
-    };
+    nixpkgs.follows = "devx/nixpkgs";
+    devx.url = "github:input-output-hk/devx";
     flake-utils.url = "github:numtide/flake-utils";
-    iohkNix = {
-      url = "github:input-output-hk/iohk-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, haskellNix, iohkNix, CHaP, ... }:
+  outputs = { self, nixpkgs, flake-utils, devx, ... }:
     let
       inherit (nixpkgs) lib;
       inherit (flake-utils.lib) eachSystem mkApp;
       supportedSystems = import ./nix/supported-systems.nix;
-      defaultSystem = lib.head supportedSystems;
-      overlay = final: prev:
-        {
-          cardanoAddressesHaskellProject = self.legacyPackages.${final.system};
-          inherit (final.cardanoAddressesHaskellProject.cardano-addresses.components.exes) cardano-address;
-        };
     in
     {
-      inherit overlay;
+      devShells = lib.genAttrs supportedSystems (system:
+        devx.outputs.devShells.${system}
+      );
     } // eachSystem supportedSystems
       (system:
         let
-          pkgs = import nixpkgs {
-            inherit system;
-            inherit (haskellNix) config;
-            overlays = [
-              haskellNix.overlay
-              iohkNix.overlays.utils
-              iohkNix.overlays.crypto
-              (final: prev: {
-                cabal = final.haskell-nix.tool haskellProject.pkg-set.config.compiler.nix-name "cabal" {
-                  version = "latest";
-                };
-              })
-              overlay
-            ];
-          };
-
-          haskellProject = (import ./nix/haskell.nix {
-            inherit system CHaP;
-            inherit (pkgs) haskell-nix;
-          });
-
-          flake = haskellProject.flake {};
+          pkgs = import nixpkgs { inherit system; };
         in
-        lib.recursiveUpdate flake {
-          hydraJobs.devShells = flake.devShells;
-
-          legacyPackages = haskellProject;
-
-          # Built by `nix build .`
-          defaultPackage = flake.packages."cardano-addresses:exe:cardano-address";
-
-          # Run by `nix run .`
-          defaultApp = flake.apps."cardano-addresses:exe:cardano-address";
+        {
+          devShells.default = devx.outputs.devShells.${system}.ghc96-iog;
 
           apps = {
             repl = mkApp {
