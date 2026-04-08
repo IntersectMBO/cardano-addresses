@@ -15,9 +15,16 @@ module Cardano.Dictionary.Generic
 import Prelude
 
 import Cardano.Address.Crypto.BIP39.Dictionary
-    ( Dictionary (..), DictionaryError (..), WordIndex, unWordIndex, wordIndex )
-import Data.Text ( Text )
-import Data.Word ( Word16 )
+    ( Dictionary (..)
+    , DictionaryError (..)
+    , WordIndex
+    , unWordIndex
+    , wordIndex
+    )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word16 )
 
 import qualified Data.List as L
 import qualified Data.Map.Strict as Map

@@ -1,8 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -10,8 +12,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Vendored from @cardano-crypto@ (Apache-2.0).
@@ -71,26 +71,41 @@ module Cardano.Address.Crypto.BIP39
 
 import Prelude
 
-import Control.DeepSeq ( NFData (..) )
-import Control.Monad ( (<=<) )
-import Data.Bits ( Bits (..) )
-import Data.ByteArray ( ByteArray, ByteArrayAccess )
-import Data.ByteString ( ByteString )
-import Data.Data ( Typeable )
-import Data.Kind ( Constraint )
-import Data.List ( intersperse, reverse )
-import Data.Maybe ( fromMaybe )
-import Data.Proxy ( Proxy (..) )
-import Data.Text ( Text )
-import Data.Word ( Word8 )
-import GHC.TypeLits ( ErrorMessage (..), KnownNat, Nat, TypeError, natVal )
+import Control.DeepSeq
+    ( NFData (..) )
+import Control.Monad
+    ( (<=<) )
+import Data.Bits
+    ( Bits (..) )
+import Data.ByteArray
+    ( ByteArray, ByteArrayAccess )
+import Data.ByteString
+    ( ByteString )
+import Data.Data
+    ( Typeable )
+import Data.Kind
+    ( Constraint )
+import Data.List
+    ( intersperse, reverse )
+import Data.Maybe
+    ( fromMaybe )
+import Data.Proxy
+    ( Proxy (..) )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word8 )
+import GHC.TypeLits
+    ( ErrorMessage (..), KnownNat, Nat, TypeError, natVal )
 
+import Cardano.Address.Crypto.ListN
+    ( ListN )
 import qualified Cardano.Address.Crypto.ListN as ListN
-import Cardano.Address.Crypto.ListN ( ListN )
 
 import qualified Crypto.Hash as Hash
 import qualified Crypto.KDF.PBKDF2 as PBKDF2
-import Crypto.Number.Serialize ( i2ospOf_, os2ip )
+import Crypto.Number.Serialize
+    ( i2ospOf_, os2ip )
 
 import Cardano.Address.Crypto.BIP39.Dictionary
     ( Dictionary (..)

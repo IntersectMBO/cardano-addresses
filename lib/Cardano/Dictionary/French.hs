@@ -16,12 +16,12 @@ module Cardano.Dictionary.French
      french
     ) where
 
-import Data.Text
-    ( Text )
-import Cardano.Dictionary.Generic
-    ( toDictionary )
 import Cardano.Address.Crypto.BIP39.Dictionary
     ( Dictionary )
+import Cardano.Dictionary.Generic
+    ( toDictionary )
+import Data.Text
+    ( Text )
 
 french :: Dictionary
 french = toDictionary wordList

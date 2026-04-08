@@ -56,8 +56,10 @@ import Cardano.Address.Style.Icarus
     , icarusStaging
     , icarusTestnet
     )
-import Cardano.Address.Style.Shelley ( Shelley )
-import Cardano.Dictionary ( SupportedDictionary (..) )
+import Cardano.Address.Style.Shelley
+    ( Shelley )
+import Cardano.Dictionary
+    ( SupportedDictionary (..) )
 import Cardano.Mnemonic
     ( ConsistentEntropy
     , Dictionary
@@ -72,20 +74,34 @@ import Cardano.Mnemonic
     , mkEntropy
     , mkMnemonicWithDict
     )
-import Codec.Binary.Bech32 ( HumanReadablePart )
-import Codec.Binary.Bech32.TH ( humanReadablePart )
-import Codec.Binary.Encoding ( AbstractEncoding (..) )
-import Data.ByteArray.Encoding ( Base (..), convertFromBase )
-import Data.ByteString ( ByteString )
-import Data.Function ( on )
-import Data.List ( intercalate )
-import Data.Maybe ( fromMaybe, mapMaybe )
-import Data.Proxy ( Proxy (..) )
-import Data.Text ( Text )
-import Data.Word ( Word64 )
-import GHC.Stack ( HasCallStack )
-import GHC.TypeLits ( natVal )
-import Numeric.Natural ( Natural )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
+import Codec.Binary.Bech32.TH
+    ( humanReadablePart )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..) )
+import Data.ByteArray.Encoding
+    ( Base (..), convertFromBase )
+import Data.ByteString
+    ( ByteString )
+import Data.Function
+    ( on )
+import Data.List
+    ( intercalate )
+import Data.Maybe
+    ( fromMaybe, mapMaybe )
+import Data.Proxy
+    ( Proxy (..) )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word64 )
+import GHC.Stack
+    ( HasCallStack )
+import GHC.TypeLits
+    ( natVal )
+import Numeric.Natural
+    ( Natural )
 import Options.Applicative.Derivation
     ( DerivationIndex
     , DerivationPath

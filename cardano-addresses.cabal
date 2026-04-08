@@ -150,6 +150,19 @@ library
     ghc-options: -Werror
   default-language: Haskell2010
 
+executable inspect-address
+  main-is: inspect.hs
+  hs-source-dirs:
+      browser
+  ghc-options: -Wall -Wcompat
+  build-depends:
+      aeson-pretty
+    , base >= 4.7 && < 5
+    , bytestring
+    , cardano-addresses
+    , text
+  default-language: Haskell2010
+
 executable cardano-address
   main-is: Main.hs
   other-modules:

@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -41,23 +42,35 @@ module Cardano.Address.Crypto.Wallet
 
 import Prelude
 
-import Control.Arrow ( second )
-import Control.DeepSeq ( NFData )
+import Control.Arrow
+    ( second )
+import Control.DeepSeq
+    ( NFData )
 import Crypto.Error
     ( CryptoError (..), CryptoFailable (..), throwCryptoError )
-import Crypto.Hash ( SHA512 )
-import Crypto.KDF.PBKDF2 ( Parameters (..), fastPBKDF2_SHA512 )
+import Crypto.Hash
+    ( SHA512 )
+import Crypto.KDF.PBKDF2
+    ( Parameters (..), fastPBKDF2_SHA512 )
 import qualified Crypto.MAC.HMAC as HMAC
 import qualified Crypto.PubKey.Ed25519 as Ed25519
-import Data.ByteArray ( ByteArrayAccess, convert )
-import qualified Data.ByteArray as B ( append, length, splitAt )
-import Data.ByteString ( ByteString )
+import Data.ByteArray
+    ( ByteArrayAccess, convert )
+import qualified Data.ByteArray as B
+    ( append, length, splitAt )
+import Data.ByteString
+    ( ByteString )
 import qualified Data.ByteString.Char8 as BC
-import Data.Data ( Typeable )
-import Data.Hashable ( Hashable )
-import Data.Word ( Word32 )
-import GHC.Generics ( Generic )
-import GHC.Stack ( HasCallStack )
+import Data.Data
+    ( Typeable )
+import Data.Hashable
+    ( Hashable )
+import Data.Word
+    ( Word32 )
+import GHC.Generics
+    ( Generic )
+import GHC.Stack
+    ( HasCallStack )
 
 import Cardano.Address.Crypto.Wallet.Encrypted
     ( EncryptedKey

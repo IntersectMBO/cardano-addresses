@@ -39,21 +39,28 @@ jobs:
         nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
           --command bash -c "wasm32-wasi-cabal update"
 
-    - name: Build cardano-addresses for WASM
+    - name: Build library and inspector for WASM
       run: |
         nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
-          --command bash -c "wasm32-wasi-cabal --project-file=cabal-wasm.project build cardano-addresses:lib:cardano-addresses"
+          --command bash -c "wasm32-wasi-cabal --project-file=cabal-wasm.project build cardano-addresses:lib:cardano-addresses inspect-address"
 
-    - name: Collect WASM artifacts
+    - name: Test WASM binary with wasmtime
       run: |
-        mkdir -p artifacts
-        find dist-newstyle/build/wasm32-wasi -name "*.a" -path "*/cardano-addresses-*/build/*" \
-          -exec cp {} artifacts/ \;
-        ls -lh artifacts/
+        WASM=$(find dist-newstyle -name "inspect-address.wasm" -type f | head -1)
+        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
+          --command bash -c "echo -n 'stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw' | wasmtime $WASM"
 
-    - name: Upload WASM library
+    - name: Package browser app
+      run: |
+        mkdir -p artifacts/browser
+        WASM=$(find dist-newstyle -name "inspect-address.wasm" -type f | head -1)
+        cp "$WASM" artifacts/browser/inspect-address.wasm
+        cp browser/index.html artifacts/browser/
+        ls -lh artifacts/browser/
+
+    - name: Upload browser app
       uses: actions/upload-artifact@v4
       with:
-        name: cardano-addresses-wasm
-        path: artifacts/
+        name: cardano-address-inspector-browser
+        path: artifacts/browser/
         retention-days: 30

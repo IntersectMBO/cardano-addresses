@@ -95,22 +95,38 @@ import Cardano.Address.Crypto.BIP39
     , toEntropy
     , wordsToEntropy
     )
-import Cardano.Address.Crypto.BIP39.English ( english )
-import Cardano.Address.Crypto.ListN ( unListN )
-import Cardano.Dictionary.Italian ( italian )
-import Control.Arrow ( left )
-import Control.DeepSeq ( NFData (..) )
-import Control.Exception ( Exception )
-import Control.Monad.Catch ( throwM )
-import Data.Bifunctor ( bimap )
-import Data.ByteArray ( ScrubbedBytes )
-import Data.List ( intercalate )
-import Data.Proxy ( Proxy (..) )
-import Data.Text ( Text )
-import Data.Type.Equality ( testEquality, (:~:) (..) )
-import Data.Typeable ( Typeable )
-import GHC.TypeLits ( KnownNat, Nat, natVal )
-import Type.Reflection ( typeOf )
+import Cardano.Address.Crypto.BIP39.English
+    ( english )
+import Cardano.Address.Crypto.ListN
+    ( unListN )
+import Cardano.Dictionary.Italian
+    ( italian )
+import Control.Arrow
+    ( left )
+import Control.DeepSeq
+    ( NFData (..) )
+import Control.Exception
+    ( Exception )
+import Control.Monad.Catch
+    ( throwM )
+import Data.Bifunctor
+    ( bimap )
+import Data.ByteArray
+    ( ScrubbedBytes )
+import Data.List
+    ( intercalate )
+import Data.Proxy
+    ( Proxy (..) )
+import Data.Text
+    ( Text )
+import Data.Type.Equality
+    ( (:~:) (..), testEquality )
+import Data.Typeable
+    ( Typeable )
+import GHC.TypeLits
+    ( KnownNat, Nat, natVal )
+import Type.Reflection
+    ( typeOf )
 
 import qualified Cardano.Address.Crypto as Crypto
 import qualified Data.ByteArray as BA

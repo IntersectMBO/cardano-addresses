@@ -15,13 +15,20 @@ module Cardano.Address.Crypto.Wallet.Types
 
 import Prelude
 
-import Control.DeepSeq ( NFData )
-import Data.ByteArray ( ByteArrayAccess )
-import Data.ByteString ( ByteString )
-import Data.Data ( Typeable )
-import Data.Hashable ( Hashable )
-import Data.Word ( Word32 )
-import GHC.Generics ( Generic )
+import Control.DeepSeq
+    ( NFData )
+import Data.ByteArray
+    ( ByteArrayAccess )
+import Data.ByteString
+    ( ByteString )
+import Data.Data
+    ( Typeable )
+import Data.Hashable
+    ( Hashable )
+import Data.Word
+    ( Word32 )
+import GHC.Generics
+    ( Generic )
 
 type DerivationIndex = Word32
 

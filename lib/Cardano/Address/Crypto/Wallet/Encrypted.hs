@@ -17,19 +17,22 @@ module Cardano.Address.Crypto.Wallet.Encrypted
     , encryptedDerivePublic
     ) where
 
-import           Prelude
-import           Control.DeepSeq
-import           Data.Word
-import           Foreign.C.Types
-import           Foreign.Ptr
+import Control.DeepSeq
+import Data.Word
+import Foreign.C.Types
+import Foreign.Ptr
+import Prelude
 
-import           Crypto.Error
-import           Data.ByteArray   (ByteArrayAccess, withByteArray)
-import qualified Data.ByteArray   as B
-import           Data.ByteString  (ByteString)
-import           System.IO.Unsafe
+import Crypto.Error
+import Data.ByteArray
+    ( ByteArrayAccess, withByteArray )
+import qualified Data.ByteArray as B
+import Data.ByteString
+    ( ByteString )
+import System.IO.Unsafe
 
-import           Cardano.Address.Crypto.Wallet.Types (DerivationScheme(..), DerivationIndex)
+import Cardano.Address.Crypto.Wallet.Types
+    ( DerivationIndex, DerivationScheme (..) )
 
 totalKeySize :: Int
 totalKeySize = encryptedKeySize + publicKeySize + ccSize

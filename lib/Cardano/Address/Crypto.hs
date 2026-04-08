@@ -137,11 +137,16 @@ import Prelude
 
 import Cardano.Address.Crypto.Wallet
     ( ChainCode (..), DerivationScheme (..), XPrv, XPub (..), XSignature )
-import Crypto.Error ( CryptoError (..), CryptoFailable (..), eitherCryptoError )
-import Data.ByteArray ( ByteArrayAccess, ScrubbedBytes )
-import Data.Bits ( shiftR, xor, (.&.) )
-import Data.ByteString ( ByteString )
-import Data.Word ( Word32, Word8 )
+import Crypto.Error
+    ( CryptoError (..), CryptoFailable (..), eitherCryptoError )
+import Data.Bits
+    ( shiftR, xor, (.&.) )
+import Data.ByteArray
+    ( ByteArrayAccess, ScrubbedBytes )
+import Data.ByteString
+    ( ByteString )
+import Data.Word
+    ( Word32, Word8 )
 
 import qualified Cardano.Address.Crypto.Wallet as CC
 import qualified Crypto.Cipher.ChaChaPoly1305 as Poly

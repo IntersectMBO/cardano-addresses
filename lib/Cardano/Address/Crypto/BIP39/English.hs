@@ -17,8 +17,10 @@ import Cardano.Address.Crypto.BIP39.Dictionary
     , unWordIndex
     , wordIndex
     )
-import Data.Text ( Text )
-import Data.Word ( Word16 )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word16 )
 
 import qualified Data.List
 import qualified Data.Map.Strict as Map

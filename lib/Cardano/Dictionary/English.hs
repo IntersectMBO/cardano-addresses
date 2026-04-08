@@ -16,9 +16,12 @@ module Cardano.Dictionary.English
      english
     ) where
 
-import Cardano.Address.Crypto.BIP39.Dictionary ( Dictionary )
-import Cardano.Dictionary.Generic ( toDictionary )
-import Data.Text ( Text )
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary )
+import Cardano.Dictionary.Generic
+    ( toDictionary )
+import Data.Text
+    ( Text )
 
 english :: Dictionary
 english = toDictionary wordList

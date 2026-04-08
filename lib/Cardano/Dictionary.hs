@@ -20,14 +20,22 @@ module Cardano.Dictionary
 
 import Prelude
 
-import Cardano.Address.Crypto.BIP39.Dictionary ( Dictionary )
-import Cardano.Dictionary.English ( english )
-import Cardano.Dictionary.French ( french )
-import Cardano.Dictionary.Italian ( italian )
-import Cardano.Dictionary.Japanese ( japanese )
-import Cardano.Dictionary.Korean ( korean )
-import Cardano.Dictionary.Spanish ( spanish )
-import GHC.Generics ( Generic )
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary )
+import Cardano.Dictionary.English
+    ( english )
+import Cardano.Dictionary.French
+    ( french )
+import Cardano.Dictionary.Italian
+    ( italian )
+import Cardano.Dictionary.Japanese
+    ( japanese )
+import Cardano.Dictionary.Korean
+    ( korean )
+import Cardano.Dictionary.Spanish
+    ( spanish )
+import GHC.Generics
+    ( Generic )
 
 
 data SupportedDictionary =

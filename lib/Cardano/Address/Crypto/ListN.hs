@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -17,13 +18,18 @@ module Cardano.Address.Crypto.ListN
     , foldl'
     ) where
 
-import Prelude hiding ( foldl', map, mapM )
+import Prelude hiding
+    ( foldl', map, mapM )
 
-import Control.DeepSeq ( NFData )
+import Control.DeepSeq
+    ( NFData )
 import qualified Data.List as List
-import Data.Proxy ( Proxy (..) )
-import GHC.Stack ( HasCallStack )
-import GHC.TypeLits ( KnownNat, Nat, natVal )
+import Data.Proxy
+    ( Proxy (..) )
+import GHC.Stack
+    ( HasCallStack )
+import GHC.TypeLits
+    ( KnownNat, Nat, natVal )
 
 import qualified Control.Monad as M
 

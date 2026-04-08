@@ -21,10 +21,14 @@ module Cardano.Address.Crypto.BIP39.Dictionary
 
 import Prelude
 
-import Control.DeepSeq ( NFData (..) )
-import Data.Data ( Typeable )
-import Data.Text ( Text )
-import Data.Word ( Word16 )
+import Control.DeepSeq
+    ( NFData (..) )
+import Data.Data
+    ( Typeable )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word16 )
 
 -- | Describes the properties of a BIP39 word dictionary.
 data Dictionary = Dictionary
