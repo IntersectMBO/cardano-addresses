@@ -1,0 +1,116 @@
+-- |
+-- Module      : Basement.UTF8.Table
+-- License     : BSD-style
+-- Maintainer  : Vincent Hanquez <vincent@snarc.org>
+-- Stability   : experimental
+-- Portability : portable
+--
+-- UTF8 lookup tables for fast continuation & nb bytes per header queries
+{-# LANGUAGE MagicHash #-}
+module Basement.UTF8.Table
+    ( isContinuation
+    , isContinuation2
+    , isContinuation3
+    , getNbBytes
+    , isContinuation#
+    , isContinuationW#
+    , getNbBytes#
+    ) where
+
+import           GHC.Prim (Word#, Int#, Addr#, indexWord8OffAddr#, word2Int#)
+import           GHC.Types
+import           GHC.Word
+import           Basement.Compat.Base
+import           Basement.Compat.Primitive
+import           Basement.Bits
+import           Basement.UTF8.Types (StepASCII(..))
+
+-- | Check if the byte is a continuation byte
+isContinuation :: Word8 -> Bool
+isContinuation (W8# w) = isContinuation# w
+{-# INLINE isContinuation #-}
+
+isContinuation2 :: Word8 -> Word8 -> Bool
+isContinuation2 !w1 !w2 = mask w1 && mask w2
+  where
+    mask v = (v .&. 0xC0) == 0x80
+{-# INLINE isContinuation2 #-}
+
+isContinuation3 :: Word8 -> Word8 -> Word8 -> Bool
+isContinuation3 !w1 !w2 !w3 =
+    mask w1 && mask w2 && mask w3
+  where
+    mask v = (v .&. 0xC0) == 0x80
+{-# INLINE isContinuation3 #-}
+
+-- | Number of bytes associated with a specific header byte
+--
+-- If the header byte is invalid then NbBytesInvalid is returned,
+data NbBytesCont = NbBytesInvalid | NbBytesCont0 | NbBytesCont1 | NbBytesCont2 | NbBytesCont3
+
+-- | Identical to 'NbBytesCont' but doesn't allow to represent any failure.
+--
+-- Only use in validated place
+data NbBytesCont_ = NbBytesCont0_ | NbBytesCont1_ | NbBytesCont2_ | NbBytesCont3_
+
+-- | Get the number of following bytes given the first byte of a UTF8 sequence.
+getNbBytes :: StepASCII -> Int
+getNbBytes (StepASCII (W8# w)) = I# (getNbBytes# w)
+{-# INLINE getNbBytes #-}
+
+-- | Check if the byte is a continuation byte
+isContinuation# :: Word8# -> Bool
+isContinuation# w = W8# (indexWord8OffAddr# (unTable contTable) (word2Int# (word8ToWord# w))) == 0
+{-# INLINE isContinuation# #-}
+
+-- | Check if the byte is a continuation byte
+isContinuationW# :: Word# -> Bool
+isContinuationW# w = W8# (indexWord8OffAddr# (unTable contTable) (word2Int# w)) == 0
+{-# INLINE isContinuationW# #-}
+
+-- | Get the number of following bytes given the first byte of a UTF8 sequence.
+getNbBytes# :: Word8# -> Int#
+getNbBytes# w = word8ToInt# (indexWord8OffAddr# (unTable headTable) (word2Int# (word8ToWord# w)))
+{-# INLINE getNbBytes# #-}
+
+data Table = Table { unTable :: !Addr# }
+
+contTable :: Table
+contTable = Table
+        "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"#
+{-# NOINLINE contTable #-}
+
+headTable :: Table
+headTable = Table
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+        \\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\
+        \\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\
+        \\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\
+        \\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\
+        \\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\x02\
+        \\x03\x03\x03\x03\x03\x03\x03\x03\xff\xff\xff\xff\xff\xff\xff\xff"#
+{-# NOINLINE headTable #-}

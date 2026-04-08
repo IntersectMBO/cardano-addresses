@@ -16,17 +16,17 @@ module Cardano.Dictionary.Japanese
      japanese
     ) where
 
-import Basement.String
-    ( String )
+import Data.Text
+    ( Text )
 import Cardano.Dictionary.Generic
     ( toDictionary )
-import Crypto.Encoding.BIP39.Dictionary
+import Cardano.Address.Crypto.BIP39.Dictionary
     ( Dictionary )
 
 japanese :: Dictionary
 japanese = toDictionary wordList
   where
-  wordList :: [String]
+  wordList :: [Text]
   wordList =
       ["あいこくしん"
       ,"あいさつ"

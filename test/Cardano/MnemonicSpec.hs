@@ -12,8 +12,13 @@ module Cardano.MnemonicSpec
 
 import Prelude
 
-import Cardano.Dictionary
-    ( SupportedDictionary, dictionaryFromLanguage )
+import Cardano.Address.Crypto.BIP39
+    ( DictionaryError (..)
+    , EntropyError (..)
+    , MnemonicWordsError (..)
+    , toEntropy
+    )
+import Cardano.Dictionary ( SupportedDictionary, dictionaryFromLanguage )
 import Cardano.Mnemonic
     ( Entropy
     , EntropyError
@@ -32,28 +37,15 @@ import Cardano.Mnemonic
     , mnemonicToText
     , mnemonicToTextWithDict
     )
-import Control.Monad
-    ( forM_ )
-import Crypto.Encoding.BIP39
-    ( DictionaryError (..)
-    , EntropyError (..)
-    , MnemonicWordsError (..)
-    , toEntropy
-    )
-import Data.ByteString
-    ( ByteString )
-import Data.Either
-    ( isRight )
-import Data.Text
-    ( Text )
+import Control.Monad ( forM_ )
+import Data.ByteString ( ByteString )
+import Data.Either ( isRight )
+import Data.Text ( Text )
 import Test.Arbitrary
     ()
-import Test.Hspec
-    ( Spec, describe, it, shouldBe, shouldReturn, shouldSatisfy )
-import Test.Hspec.QuickCheck
-    ( prop )
-import Test.QuickCheck
-    ( (===) )
+import Test.Hspec ( Spec, describe, it, shouldBe, shouldReturn, shouldSatisfy )
+import Test.Hspec.QuickCheck ( prop )
+import Test.QuickCheck ( (===) )
 
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T

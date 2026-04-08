@@ -35,6 +35,10 @@ library
   exposed-modules:
       Cardano.Address
       Cardano.Address.Crypto
+      Cardano.Address.Crypto.BIP39
+      Cardano.Address.Crypto.BIP39.Dictionary
+      Cardano.Address.Crypto.BIP39.English
+      Cardano.Address.Crypto.ListN
       Cardano.Address.Crypto.Wallet
       Cardano.Address.Crypto.Wallet.Encrypted
       Cardano.Address.Crypto.Wallet.Types
@@ -116,15 +120,13 @@ library
     , ansi-wl-pprint
     , base >= 4.7 && < 5
     , base58-bytestring >= 0.1.0 && < 0.2
-    , basement
     , bech32 >= 1.1.7 && < 1.2
     , bech32-th >= 1.1.7 && < 1.2
     , binary
     , bytestring >= 0.10.6 && < 0.13
-    , cardano-crypto >= 1.2.0 && < 1.4.0
     , cborg >= 0.2.1 && <0.3
     , containers >= 0.5 && < 0.8
-    , crypton >= 0.32 && < 1.1
+    , crypton >= 0.32
     , deepseq >= 1.4.4.0 && < 1.6
     , digest
     , either
@@ -132,7 +134,7 @@ library
     , extra >= 1.7.14 && < 1.9
     , fmt >= 0.6.3 && < 0.7
     , hashable
-    , memory  >= 0.18.0 && < 0.19
+    , memory >= 0.18.0 && < 0.19
     , mtl >= 2.2.2
     , optparse-applicative >= 0.18.1.0 && < 0.20
     , process >= 1.6.13.2 && < 1.7
@@ -141,6 +143,7 @@ library
     , text >= 1.2 && < 2.2
     , transformers >= 0.5.6.2 && < 0.7
     , unordered-containers
+    , vector
   if flag(release)
     ghc-options: -Werror
   default-language: Haskell2010
@@ -224,7 +227,6 @@ test-suite unit
     , binary
     , bytestring >= 0.10.6 && < 0.13
     , cardano-addresses
-    , cardano-crypto
     , crypton
     , containers >= 0.5 && < 0.8
     , hspec >= 2.11.0 && < 2.12

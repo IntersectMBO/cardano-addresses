@@ -1,0 +1,12 @@
+--- a/cbits/foundation_system.h
++++ b/cbits/foundation_system.h
+@@ -53,6 +53,9 @@
+ #elif defined(_POSIX_VERSION)
+     #define FOUNDATION_SYSTEM_UNIX
+     // POSIX
++#elif defined(__wasm__)
++    #define FOUNDATION_SYSTEM_API_NO_CLOCK
++    // WebAssembly (WASI)
+ #else
+ #   error "foundation: system: Unknown compiler"
+ #endif
