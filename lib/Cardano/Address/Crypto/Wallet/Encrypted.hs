@@ -105,8 +105,9 @@ encryptedCreateDirectWithTweak :: (ByteArrayAccess passphrase, ByteArrayAccess s
 encryptedCreateDirectWithTweak sec pass =
     EncryptedKey $ B.allocAndFreeze totalKeySize $ \ekey ->
         withByteArray sec  $ \psec  ->
-        withByteArray pass $ \ppass ->
-            wallet_encrypted_new_from_mkg ppass (fromIntegral $ B.length pass) psec ekey
+        withByteArray pass $ \ppass -> do
+            _ <- wallet_encrypted_new_from_mkg ppass (fromIntegral $ B.length pass) psec ekey
+            return ()
 
 -- | Create a new encrypted key that uses a different passphrase
 encryptedChangePass :: (ByteArrayAccess oldPassPhrase, ByteArrayAccess newPassPhrase)
@@ -196,7 +197,7 @@ foreign import ccall "wallet_encrypted_new_from_mkg"
     wallet_encrypted_new_from_mkg :: Ptr PassPhrase -> Word32
                                   -> Ptr Word8 -- 96 bytes master key generation
                                   -> Ptr EncryptedKey
-                                  -> IO ()
+                                  -> IO CInt
 
 foreign import ccall "wallet_encrypted_sign"
     wallet_encrypted_sign :: Ptr EncryptedKey

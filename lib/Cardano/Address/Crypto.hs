@@ -137,16 +137,11 @@ import Prelude
 
 import Cardano.Address.Crypto.Wallet
     ( ChainCode (..), DerivationScheme (..), XPrv, XPub (..), XSignature )
-import Crypto.Error
-    ( CryptoError (..), CryptoFailable (..), eitherCryptoError )
-import Data.ByteArray
-    ( ByteArrayAccess, ScrubbedBytes )
-import Data.ByteString
-    ( ByteString )
-import Data.Digest.CRC32
-    ( crc32 )
-import Data.Word
-    ( Word32 )
+import Crypto.Error ( CryptoError (..), CryptoFailable (..), eitherCryptoError )
+import Data.ByteArray ( ByteArrayAccess, ScrubbedBytes )
+import Data.Bits ( shiftR, xor, (.&.) )
+import Data.ByteString ( ByteString )
+import Data.Word ( Word32, Word8 )
 
 import qualified Cardano.Address.Crypto.Wallet as CC
 import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
@@ -159,6 +154,7 @@ import qualified Crypto.MAC.HMAC as HMAC
 import qualified Crypto.Random.Entropy as Entropy
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
+import qualified Data.Vector as V
 
 --
 -- Hashing
@@ -382,3 +378,29 @@ ccDeriveXPub = CC.deriveXPub
 getEntropy :: Int -> IO ScrubbedBytes
 getEntropy = Entropy.getEntropy
 
+--
+-- CRC32 (pure Haskell, replacing the @digest@ C binding)
+--
+
+-- | CRC32 checksum (ISO 3309 / ITU-T V.42).
+crc32 :: ByteString -> Word32
+crc32 = xor 0xFFFFFFFF . BS.foldl' step 0xFFFFFFFF
+    where
+      step :: Word32 -> Word8 -> Word32
+      step acc byte =
+          let idx = fromIntegral ((acc `xor` fromIntegral byte) .&. 0xFF)
+           in (acc `shiftR` 8) `xor` crc32Table idx
+
+-- | Pre-computed CRC32 lookup table (polynomial 0xEDB88320).
+crc32Table :: Word8 -> Word32
+crc32Table i = crc32Arr `V.unsafeIndex` fromIntegral i
+  where
+    crc32Arr :: V.Vector Word32
+    crc32Arr = V.generate 256 $ \n -> go 8 (fromIntegral n)
+    {-# NOINLINE crc32Arr #-}
+
+    go :: Int -> Word32 -> Word32
+    go 0 crc = crc
+    go n crc
+        | crc .&. 1 == 1 = go (n - 1) ((crc `shiftR` 1) `xor` 0xEDB88320)
+        | otherwise = go (n - 1) (crc `shiftR` 1)
