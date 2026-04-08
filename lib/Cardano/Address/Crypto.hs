@@ -135,7 +135,7 @@ module Cardano.Address.Crypto
 
 import Prelude
 
-import Cardano.Crypto.Wallet
+import Cardano.Address.Crypto.Wallet
     ( ChainCode (..), DerivationScheme (..), XPrv, XPub (..), XSignature )
 import Crypto.Error
     ( CryptoError (..), CryptoFailable (..), eitherCryptoError )
@@ -148,7 +148,7 @@ import Data.Digest.CRC32
 import Data.Word
     ( Word32 )
 
-import qualified Cardano.Crypto.Wallet as CC
+import qualified Cardano.Address.Crypto.Wallet as CC
 import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
 import qualified Crypto.ECC.Edwards25519 as Ed25519
 import qualified Crypto.Hash as Hash

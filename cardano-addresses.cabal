@@ -35,6 +35,9 @@ library
   exposed-modules:
       Cardano.Address
       Cardano.Address.Crypto
+      Cardano.Address.Crypto.Wallet
+      Cardano.Address.Crypto.Wallet.Encrypted
+      Cardano.Address.Crypto.Wallet.Types
       Cardano.Address.Derivation
       Cardano.Address.Internal
       Cardano.Address.KeyHash
@@ -96,6 +99,12 @@ library
       Paths_cardano_addresses
   hs-source-dirs:
       lib
+  c-sources:
+      cbits/encrypted_sign.c
+      cbits/ed25519/ed25519.c
+  include-dirs:
+      cbits/ed25519
+      cbits
   default-extensions:
       NoImplicitPrelude
   ghc-options: -Wall -Wcompat -fwarn-redundant-constraints
