@@ -3,7 +3,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {-# OPTIONS_HADDOCK prune #-}
@@ -43,22 +42,21 @@ module Cardano.Codec.Cbor
 
 import Prelude
 
-import Cardano.Crypto.Wallet
-    ( ChainCode (..), XPub (..) )
+import Cardano.Address.Crypto
+    ( ChainCode (..)
+    , CryptoFailable (..)
+    , ScrubbedBytes
+    , XPub (..)
+    , blake2b224
+    , crc32
+    , decryptChaChaPoly1305
+    , encryptChaChaPoly1305
+    , sha3_256
+    )
 import Control.Monad
     ( replicateM, when )
-import Crypto.Error
-    ( CryptoError (..), CryptoFailable (..) )
-import Crypto.Hash
-    ( hash )
-import Crypto.Hash.Algorithms
-    ( Blake2b_224, SHA3_256 )
-import Data.ByteArray
-    ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
-import Data.Digest.CRC32
-    ( crc32 )
 import Data.List
     ( find )
 import Data.Word
@@ -70,9 +68,6 @@ import qualified Codec.CBOR.Decoding as CBOR
 import qualified Codec.CBOR.Encoding as CBOR
 import qualified Codec.CBOR.Read as CBOR
 import qualified Codec.CBOR.Write as CBOR
-import qualified Crypto.Cipher.ChaChaPoly1305 as Poly
-import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 
 
@@ -152,14 +147,12 @@ encodeAddress :: XPub -> [CBOR.Encoding] -> CBOR.Encoding
 encodeAddress (XPub pub (ChainCode cc)) attrs =
     encodeAddressPayload payload
   where
-    blake2b224 = hash @_ @Blake2b_224
-    sha3256 = hash @_ @SHA3_256
     payload = CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 3
         <> CBOR.encodeBytes root
         <> encodeAttributes attrs
         <> CBOR.encodeWord8 0 -- Address Type, 0 = Public Key
-    root = BA.convert $ blake2b224 $ sha3256 $ CBOR.toStrictByteString $ mempty
+    root = blake2b224 $ sha3_256 $ CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 3
         <> CBOR.encodeWord8 0 -- Address Type, 0 = Public Key
         <> encodeSpendingData
@@ -221,11 +214,8 @@ encryptDerivationPath
         -- ^ Payload to be encrypted
     -> ByteString
         -- ^ Ciphertext with a 128-bit crypto-tag appended.
-encryptDerivationPath pwd payload = unsafeSerialize $ do
-    nonce <- Poly.nonce12 cardanoNonce
-    st1 <- Poly.finalizeAAD <$> Poly.initialize pwd nonce
-    let (out, st2) = Poly.encrypt (CBOR.toStrictByteString payload) st1
-    return $ out <> BA.convert (Poly.finalize st2)
+encryptDerivationPath pwd payload = unsafeSerialize $
+    encryptChaChaPoly1305 pwd cardanoNonce (CBOR.toStrictByteString payload)
   where
     unsafeSerialize :: CryptoFailable ByteString -> ByteString
     unsafeSerialize =
@@ -339,14 +329,7 @@ decryptDerivationPath
     -> ByteString
         -- ^ Payload to be decrypted
     -> CryptoFailable ByteString
-decryptDerivationPath pwd bytes = do
-    let (payload, tag) = BS.splitAt (BS.length bytes - 16) bytes
-    nonce <- Poly.nonce12 cardanoNonce
-    st1 <- Poly.finalizeAAD <$> Poly.initialize pwd nonce
-    let (out, st2) = Poly.decrypt payload st1
-    when (BA.convert (Poly.finalize st2) /= tag) $
-        CryptoFailed CryptoError_MacKeyInvalid
-    return out
+decryptDerivationPath pwd = decryptChaChaPoly1305 pwd cardanoNonce
 
 -- Opposite of 'encodeDerivationPath'.
 decodeDerivationPath

@@ -77,22 +77,32 @@ module Cardano.Address.Derivation
 
 import Prelude
 
-import Cardano.Crypto.Wallet
-    ( DerivationScheme (..) )
+import Cardano.Address.Crypto
+    ( ByteArrayAccess
+    , ChainCode (..)
+    , DerivationScheme (..)
+    , ScrubbedBytes
+    , XPrv
+    , XPub (XPub)
+    , XSignature
+    , blake2b160
+    , blake2b224
+    , ccDeriveXPrv
+    , ccDeriveXPub
+    , ccGenerate
+    , ccGenerateNew
+    , ccSign
+    , ccToXPub
+    , ccUnXPrv
+    , ccVerify
+    , ccXPrv
+    , ccXPub
+    , ed25519ScalarMult
+    )
 import Cardano.Mnemonic
     ( SomeMnemonic )
 import Control.DeepSeq
     ( NFData )
-import Crypto.Error
-    ( eitherCryptoError )
-import Crypto.Hash
-    ( hash )
-import Crypto.Hash.Algorithms
-    ( Blake2b_160 (..), Blake2b_224 (..) )
-import Crypto.Hash.IO
-    ( HashAlgorithm (hashDigestSize) )
-import Data.ByteArray
-    ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
 import Data.Coerce
@@ -109,12 +119,8 @@ import Fmt
     ( Buildable (..) )
 import GHC.Generics
     ( Generic )
-import GHC.Stack
-    ( HasCallStack )
 
-import qualified Cardano.Crypto.Wallet as CC
-import qualified Crypto.ECC.Edwards25519 as Ed25519
-import qualified Data.ByteArray as BA
+import qualified Cardano.Address.Crypto as Crypto
 import qualified Data.ByteString as BS
 
 -- $overview
@@ -143,29 +149,13 @@ import qualified Data.ByteString as BS
 -- @forall xprv msg. 'verify' ('toXPub' xprv) msg ('sign' xprv msg) == 'True'@
 --
 -- @since 1.0.0
-type XPrv = CC.XPrv
-
--- | An opaque type representing an extended public key.
---
--- __Properties:__
---
--- ===== Roundtripping
---
--- @forall xpub. 'xpubFromBytes' ('xpubToBytes' xpub) == 'Just' xpub@
---
--- @since 1.0.0
-type XPub = CC.XPub
-
--- | An opaque type representing a signature made from an 'XPrv'.
---
--- @since 1.0.0
-type XSignature = CC.XSignature
+-- NOTE: XPrv, XPub, XSignature are re-exported from Cardano.Address.Crypto
 
 -- | Construct an 'XPub' from raw 'ByteString' (64 bytes).
 --
 -- @since 1.0.0
 xpubFromBytes :: ByteString -> Maybe XPub
-xpubFromBytes = eitherToMaybe . CC.xpub
+xpubFromBytes = eitherToMaybe . ccXPub
 
 -- | Convert an 'XPub' to a raw 'ByteString' (64 bytes).
 --
@@ -177,13 +167,13 @@ xpubToBytes xpub = xpubPublicKey xpub <> xpubChainCode xpub
 --
 -- @since 2.0.0
 xpubPublicKey :: XPub -> ByteString
-xpubPublicKey (CC.XPub pub _cc) = pub
+xpubPublicKey (XPub pub _cc) = pub
 
 -- | Extract the chain code from an 'XPub' as a raw 'ByteString' (32 bytes).
 --
 -- @since 2.0.0
 xpubChainCode :: XPub -> ByteString
-xpubChainCode (CC.XPub _pub (CC.ChainCode cc)) = cc
+xpubChainCode (XPub _pub (ChainCode cc)) = cc
 
 -- | An opaque type representing a non-extended public key.
 --
@@ -215,7 +205,7 @@ pubToBytes (Pub pub) = pub
 --
 -- @since 3.12.0
 xpubToPub :: XPub -> Pub
-xpubToPub (CC.XPub pub _cc) = Pub pub
+xpubToPub (XPub pub _cc) = Pub pub
 
 -- | Construct an 'XPrv' from raw 'ByteString' (96 bytes).
 --
@@ -226,12 +216,7 @@ xprvFromBytes bytes
     | otherwise = do
         let (prv, cc) = BS.splitAt 64 bytes
         pub <- ed25519ScalarMult (BS.take 32 prv)
-        eitherToMaybe $ CC.xprv $ prv <> pub <> cc
-  where
-    ed25519ScalarMult :: ByteString -> Maybe ByteString
-    ed25519ScalarMult bs = do
-        scalar <- eitherToMaybe $ eitherCryptoError $ Ed25519.scalarDecodeLong bs
-        pure $ Ed25519.pointEncode $ Ed25519.toPoint scalar
+        eitherToMaybe $ ccXPrv $ prv <> pub <> cc
 
 -- From  < xprv | pub | cc >
 -- ↳ To  < xprv |     | cc >
@@ -247,19 +232,19 @@ xprvToBytes xprv =
 --
 -- @since 2.0.0
 xprvPrivateKey :: XPrv -> ByteString
-xprvPrivateKey = BS.take 64 . CC.unXPrv
+xprvPrivateKey = BS.take 64 . ccUnXPrv
 
 -- | Extract the chain code from an 'XPrv' as a raw 'ByteString' (32 bytes).
 --
 -- @since 2.0.0
 xprvChainCode :: XPrv -> ByteString
-xprvChainCode = BS.drop 96 . CC.unXPrv
+xprvChainCode = BS.drop 96 . ccUnXPrv
 
 -- | Derive the 'XPub' associated with an 'XPrv'.
 --
 -- @since 1.0.0
-toXPub :: HasCallStack => XPrv -> XPub
-toXPub = CC.toXPub
+toXPub :: XPrv -> XPub
+toXPub = ccToXPub
 
 -- | Produce a signature of the given 'msg' from an 'XPrv'.
 --
@@ -270,7 +255,7 @@ sign
     -> msg
     -> XSignature
 sign =
-    CC.sign (mempty :: ScrubbedBytes)
+    ccSign (mempty :: ScrubbedBytes)
 
 -- | Verify the 'XSignature' of a 'msg' with the 'XPub' associated with the
 -- 'XPrv' used for signing.
@@ -283,7 +268,7 @@ verify
     -> XSignature
     -> Bool
 verify =
-    CC.verify -- re-exported for the sake of documentation.
+    ccVerify
 
 -- Derive a child extended private key from an extended private key
 --
@@ -294,7 +279,7 @@ deriveXPrv
     -> Index derivationType depth
     -> XPrv
 deriveXPrv ds prv (Index ix) =
-    CC.deriveXPrv ds (mempty :: ScrubbedBytes) prv ix
+    ccDeriveXPrv ds (mempty :: ScrubbedBytes) prv ix
 
 -- Derive a child extended public key from an extended public key
 --
@@ -305,7 +290,7 @@ deriveXPub
     -> Index derivationType depth
     -> Maybe XPub
 deriveXPub ds pub (Index ix) =
-    CC.deriveXPub ds pub ix
+    ccDeriveXPub ds pub ix
 
 -- Generate an XPrv using the legacy method (Byron).
 --
@@ -317,7 +302,7 @@ generate
     => seed
     -> XPrv
 generate seed =
-    CC.generate seed (mempty :: ScrubbedBytes)
+    ccGenerate seed (mempty :: ScrubbedBytes)
 
 -- Generate an XPrv using the new method (Icarus).
 --
@@ -330,27 +315,25 @@ generateNew
     -> sndFactor
     -> XPrv
 generateNew seed sndFactor =
-    CC.generateNew seed sndFactor (mempty :: ScrubbedBytes)
+    ccGenerateNew seed sndFactor (mempty :: ScrubbedBytes)
 
 -- Hash a credential (pub key or script).
 --
 -- __internal__
 hashCredential :: ByteString -> ByteString
-hashCredential =
-    BA.convert . hash @_ @Blake2b_224
+hashCredential = blake2b224
 
 -- Hash a extended root or account key to calculate walletid.
 --
 -- __internal__
 hashWalletId :: ByteString -> ByteString
-hashWalletId =
-    BA.convert . hash @_ @Blake2b_160
+hashWalletId = blake2b160
 
 -- Size, in bytes, of a hash of credential (pub key or script).
 --
 -- __internal__
 credentialHashSize :: Int
-credentialHashSize = hashDigestSize Blake2b_224
+credentialHashSize = Crypto.credentialHashSize
 
 --
 -- Key Derivation

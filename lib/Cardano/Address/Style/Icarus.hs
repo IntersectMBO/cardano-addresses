@@ -75,6 +75,8 @@ import Cardano.Address
     , unAddress
     , unsafeMkAddress
     )
+import Cardano.Address.Crypto
+    ( ScrubbedBytes, hmacSha256, hmacSha512, pbkdf2HmacSha512 )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationScheme (..)
@@ -110,18 +112,12 @@ import Control.Exception.Base
     ( assert )
 import Control.Monad.Catch
     ( MonadThrow, throwM )
-import Crypto.Hash.Algorithms
-    ( SHA256 (..), SHA512 (..) )
-import Crypto.MAC.HMAC
-    ( HMAC, hmac )
 import Data.Aeson
     ( ToJSON (..), (.=) )
 import Data.Bifunctor
     ( bimap, first )
 import Data.Bits
     ( clearBit, setBit, testBit )
-import Data.ByteArray
-    ( ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
 import Data.Function
@@ -141,7 +137,6 @@ import qualified Cardano.Address as Internal
 import qualified Cardano.Address.Derivation as Internal
 import qualified Cardano.Codec.Cbor as CBOR
 import qualified Codec.CBOR.Decoding as CBOR
-import qualified Crypto.KDF.PBKDF2 as PBKDF2
 import qualified Data.Aeson as Json
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -639,16 +634,17 @@ unsafeGenerateKeyFromHardwareLedger
         -- ^ The root mnemonic
     -> Icarus 'RootK XPrv
 unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
-    let seed = pbkdf2HmacSha512
-            $ T.encodeUtf8
+    let seed = BA.convert $ pbkdf2HmacSha512 2048 64
+            (T.encodeUtf8
             $ T.intercalate " "
-            $ mnemonicToTextWithDict mw english
+            $ mnemonicToTextWithDict mw english)
+            ("mnemonic" :: ByteString)
 
     -- NOTE
     -- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code
     -- is obtained as a hash of the initial seed whereas iR is used to make part
     -- of the root private key itself.
-    let cc = hmacSha256 (BS.pack [1] <> seed)
+    let cc = hmacSha256 salt (BS.pack [1] <> seed)
     let (iL, iR) = first pruneBuffer $ hashRepeatedly seed
 
     prv <- maybe (Left "invalid xprv") pure $ xprvFromBytes $ iL <> iR <> cc
@@ -680,7 +676,7 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
     --
     --      4. Use parse256(IL) as master secret key, and IR as master chain code.
     hashRepeatedly :: ByteString -> (ByteString, ByteString)
-    hashRepeatedly bytes = case BS.splitAt 32 (hmacSha512 bytes) of
+    hashRepeatedly bytes = case BS.splitAt 32 (hmacSha512 salt bytes) of
         (iL, iR) | isInvalidKey iL -> hashRepeatedly (iL <> iR)
         (iL, iR) -> (iL, iR)
       where
@@ -710,23 +706,6 @@ unsafeGenerateKeyFromHardwareLedger (SomeMnemonic mw) = unsafeFromRight $ do
                 & (`clearBit` 7)
         in
             (firstPruned `BS.cons` BS.snoc rest' lastPruned)
-
-    -- As described in [BIP 0039 - From Mnemonic to Seed](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#from-mnemonic-to-seed)
-    pbkdf2HmacSha512 :: ByteString -> ByteString
-    pbkdf2HmacSha512 bytes = PBKDF2.generate
-        (PBKDF2.prfHMAC SHA512)
-        (PBKDF2.Parameters 2048 64)
-        bytes
-        ("mnemonic" :: ByteString)
-
-    hmacSha256 :: ByteString -> ByteString
-    hmacSha256 =
-        BA.convert @(HMAC SHA256) . hmac salt
-
-    -- As described in [SLIP 0010 - Master Key Generation](https://github.com/satoshilabs/slips/blob/master/slip-0010.md#master-key-generation)
-    hmacSha512 :: ByteString -> ByteString
-    hmacSha512 =
-        BA.convert @(HMAC SHA512) . hmac salt
 
     salt :: ByteString
     salt = "ed25519 seed"
