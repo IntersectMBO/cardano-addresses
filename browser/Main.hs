@@ -12,6 +12,7 @@ import Prelude
 
 import Cardano.Address
     ( Address
+    , base58
     , bech32
     , unsafeMkAddress
     )
@@ -27,6 +28,7 @@ import Cardano.Address.Derivation
     , XPub
     , indexFromWord32
     , sign
+    , wholeDomainIndex
     , toXPub
     , verify
     , xprvFromBytes
@@ -57,6 +59,8 @@ import System.Exit
     )
 
 import qualified Cardano.Address as CA
+import qualified Cardano.Address.Style.Byron as Byron
+import qualified Cardano.Address.Style.Icarus as Icarus
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
@@ -83,6 +87,7 @@ dispatch obj = case lookupText "cmd" obj of
     Just "make-address" -> cmdMakeAddress obj
     Just "sign" -> cmdSign obj
     Just "verify" -> cmdVerify obj
+    Just "bootstrap-address" -> cmdBootstrapAddress obj
     Just other -> die' ("Unknown command: " <> T.unpack other)
     Nothing -> die' "Missing \"cmd\" field"
 
@@ -288,6 +293,127 @@ cmdVerify obj = do
         KM.fromList [("valid", Json.Bool result)]
 
 ------------------------------------------------------------------------
+-- bootstrap-address (Byron / Icarus)
+------------------------------------------------------------------------
+
+cmdBootstrapAddress :: Json.Object -> IO ()
+cmdBootstrapAddress obj = do
+    style <- requireText "style" obj
+    protocolMagic <- requireInt "protocol_magic" obj
+    case style of
+        "icarus-from-mnemonic" -> do
+            mnemonicText <- requireText "mnemonic" obj
+            accountIndex <- requireInt "account_index" obj
+            roleIndex <- requireInt "role" obj
+            addressIndex <- requireInt "address_index" obj
+            bootstrapIcarusFromMnemonic protocolMagic mnemonicText accountIndex roleIndex addressIndex
+        "byron-from-mnemonic" -> do
+            mnemonicText <- requireText "mnemonic" obj
+            accountIndex <- requireInt "account_index" obj
+            addressIndex <- requireInt "address_index" obj
+            bootstrapByronFromMnemonic protocolMagic mnemonicText accountIndex addressIndex
+        "icarus" -> do
+            xpubHex <- requireText "xpub" obj
+            bootstrapIcarusFromXPub protocolMagic xpubHex
+        "byron" -> do
+            xpubHex <- requireText "xpub" obj
+            rootXPubHex <- requireText "root_xpub" obj
+            derivationPath <- requireText "derivation_path" obj
+            bootstrapByronFromXPub protocolMagic xpubHex rootXPubHex derivationPath
+        other -> die' ("Unknown bootstrap style: " <> T.unpack other)
+
+bootstrapIcarusFromMnemonic :: Int -> T.Text -> Int -> Int -> Int -> IO ()
+bootstrapIcarusFromMnemonic protocolMagic mnemonicText accountIndex roleIndex addressIndex = do
+    let wrds = T.words mnemonicText
+    someMnemonic <- case mkSomeMnemonic @'[9, 12, 15, 18, 21, 24] wrds of
+        Left (MkSomeMnemonicError e) -> die' e >> error "unreachable"
+        Right mw -> pure mw
+    let rootK = Icarus.genMasterKeyFromMnemonic someMnemonic mempty
+    acctIx <- parseHardenedIndex' accountIndex
+    addrIx <- parseSoftIndex' addressIndex
+    let icarusRole = if roleIndex == 0 then Icarus.UTxOExternal else Icarus.UTxOInternal
+        acctK = Icarus.deriveAccountPrivateKey rootK acctIx
+        addrK = Icarus.deriveAddressPrivateKey acctK icarusRole addrIx
+        addrXPub = toXPub <$> addrK
+        networkDisc = icarusNetworkDiscriminant protocolMagic
+        addr = Icarus.paymentAddress networkDisc addrXPub
+    outputBase58Address addr
+
+bootstrapByronFromMnemonic :: Int -> T.Text -> Int -> Int -> IO ()
+bootstrapByronFromMnemonic protocolMagic mnemonicText accountIndex addressIndex = do
+    let wrds = T.words mnemonicText
+    someMnemonic <- case mkSomeMnemonic @'[9, 12, 15, 18, 21, 24] wrds of
+        Left (MkSomeMnemonicError e) -> die' e >> error "unreachable"
+        Right mw -> pure mw
+    let rootK = Byron.genMasterKeyFromMnemonic someMnemonic
+        acctIx = wholeDomainIndex (0x80000000 + fromIntegral accountIndex)
+        addrIx = wholeDomainIndex (fromIntegral addressIndex)
+        acctK = Byron.deriveAccountPrivateKey rootK acctIx
+        addrK = Byron.deriveAddressPrivateKey acctK addrIx
+        addrXPub = toXPub <$> addrK
+        networkDisc = byronNetworkDiscriminant protocolMagic
+        addr = Byron.paymentAddress networkDisc addrXPub
+    outputBase58Address addr
+
+bootstrapIcarusFromXPub :: Int -> T.Text -> IO ()
+bootstrapIcarusFromXPub protocolMagic xpubHex = do
+    xpub <- parseXPub xpubHex
+    let networkDisc = icarusNetworkDiscriminant protocolMagic
+        addr = Icarus.paymentAddress networkDisc (Icarus.liftXPub xpub)
+    outputBase58Address addr
+
+bootstrapByronFromXPub :: Int -> T.Text -> T.Text -> T.Text -> IO ()
+bootstrapByronFromXPub protocolMagic xpubHex rootXPubHex derivationPath = do
+    addrXPub <- parseXPub xpubHex
+    rootXPub <- parseXPub rootXPubHex
+    let segments = T.splitOn "/" derivationPath
+    case segments of
+        [acctT, addrT] -> do
+            let acctN = read (T.unpack (T.dropWhileEnd (== 'H') acctT)) :: Word32
+                addrN = read (T.unpack addrT) :: Word32
+                acctIx = wholeDomainIndex (0x80000000 + acctN)
+                addrIx = wholeDomainIndex addrN
+                byronKey = Byron.liftXPub rootXPub (acctIx, addrIx) addrXPub
+                networkDisc = byronNetworkDiscriminant protocolMagic
+                addr = Byron.paymentAddress networkDisc byronKey
+            outputBase58Address addr
+        _ -> die' ("Byron derivation path must have 2 segments: " <> T.unpack derivationPath)
+
+outputBase58Address :: Address -> IO ()
+outputBase58Address addr = BL8.putStrLn . Json.encodePretty . Json.Object $
+    KM.fromList
+        [ ("address_base58", Json.String (base58 addr))
+        ]
+
+icarusNetworkDiscriminant :: Int -> CA.NetworkDiscriminant Icarus.Icarus
+icarusNetworkDiscriminant pm = case pm of
+    764824073 -> Icarus.icarusMainnet
+    633343913 -> Icarus.icarusStaging
+    1097911063 -> Icarus.icarusTestnet
+    2 -> Icarus.icarusPreview
+    1 -> Icarus.icarusPreprod
+    _ -> error ("Unsupported Icarus protocol magic: " <> show pm)
+
+byronNetworkDiscriminant :: Int -> CA.NetworkDiscriminant Byron.Byron
+byronNetworkDiscriminant pm = case pm of
+    764824073 -> Byron.byronMainnet
+    633343913 -> Byron.byronStaging
+    1097911063 -> Byron.byronTestnet
+    2 -> Byron.byronPreview
+    1 -> Byron.byronPreprod
+    _ -> error ("Unsupported Byron protocol magic: " <> show pm)
+
+parseHardenedIndex' :: Int -> IO (Index 'Hardened 'AccountK)
+parseHardenedIndex' n = case indexFromWord32 (0x80000000 + fromIntegral n) of
+    Just ix -> pure ix
+    Nothing -> die' ("Index out of range: " <> show n) >> error "unreachable"
+
+parseSoftIndex' :: Int -> IO (Index 'Soft 'PaymentK)
+parseSoftIndex' n = case indexFromWord32 (fromIntegral n) of
+    Just ix -> pure ix
+    Nothing -> die' ("Index out of range: " <> show n) >> error "unreachable"
+
+------------------------------------------------------------------------
 -- helpers
 ------------------------------------------------------------------------
 
@@ -351,6 +477,12 @@ lookupText :: T.Text -> Json.Object -> Maybe T.Text
 lookupText key obj = case KM.lookup (Key.fromText key) obj of
     Just (Json.String v) -> Just v
     _ -> Nothing
+
+requireInt :: T.Text -> Json.Object -> IO Int
+requireInt key obj = case KM.lookup (Key.fromText key) obj of
+    Just (Json.Number n) -> pure (round n)
+    _ -> die' ("Missing required integer field: " <> T.unpack key)
+            >> error "unreachable"
 
 die' :: String -> IO ()
 die' msg = do
