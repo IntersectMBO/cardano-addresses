@@ -11,20 +11,32 @@ module Main (main) where
 import Prelude
 
 import Cardano.Address
-    ( unsafeMkAddress
+    ( Address
+    , bech32
+    , unsafeMkAddress
+    )
+import Cardano.Address.Crypto.Wallet
+    ( unXSignature
+    , xsignature
     )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
     , Index
     , XPrv
+    , XPub
     , indexFromWord32
+    , sign
     , toXPub
+    , verify
+    , xprvFromBytes
     , xprvToBytes
+    , xpubFromBytes
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Role (..)
+    ( Credential (..)
+    , Role (..)
     )
 import Cardano.Mnemonic
     ( MkSomeMnemonicError (..)
@@ -44,6 +56,7 @@ import System.Exit
     ( exitFailure
     )
 
+import qualified Cardano.Address as CA
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Data.Aeson as Json
 import qualified Data.Aeson.Encode.Pretty as Json
@@ -67,6 +80,9 @@ dispatch :: Json.Object -> IO ()
 dispatch obj = case lookupText "cmd" obj of
     Just "inspect" -> cmdInspect obj
     Just "derive" -> cmdDerive obj
+    Just "make-address" -> cmdMakeAddress obj
+    Just "sign" -> cmdSign obj
+    Just "verify" -> cmdVerify obj
     Just other -> die' ("Unknown command: " <> T.unpack other)
     Nothing -> die' "Missing \"cmd\" field"
 
@@ -169,8 +185,116 @@ deriveAlongPath rootK path = do
         _ -> die' ("Unsupported path format: " <> T.unpack path)
 
 ------------------------------------------------------------------------
+-- make-address
+------------------------------------------------------------------------
+
+cmdMakeAddress :: Json.Object -> IO ()
+cmdMakeAddress obj = do
+    addrType <- requireText "type" obj
+    networkText <- requireText "network" obj
+    network <- parseNetwork networkText
+
+    case addrType of
+        "enterprise" -> do
+            paymentKeyHex <- requireText "payment_key" obj
+            paymentXPub <- parseXPub paymentKeyHex
+            let addr = Shelley.paymentAddress network
+                    (PaymentFromExtendedKey (Shelley.liftXPub paymentXPub))
+            outputAddress addr
+
+        "base" -> do
+            paymentKeyHex <- requireText "payment_key" obj
+            stakeKeyHex <- requireText "stake_key" obj
+            paymentXPub <- parseXPub paymentKeyHex
+            stakeXPub <- parseXPub stakeKeyHex
+            let addr = Shelley.delegationAddress network
+                    (PaymentFromExtendedKey (Shelley.liftXPub paymentXPub))
+                    (DelegationFromExtendedKey (Shelley.liftXPub stakeXPub))
+            outputAddress addr
+
+        "reward" -> do
+            stakeKeyHex <- requireText "stake_key" obj
+            stakeXPub <- parseXPub stakeKeyHex
+            case Shelley.stakeAddress network
+                    (DelegationFromExtendedKey (Shelley.liftXPub stakeXPub)) of
+                Right addr -> outputAddress addr
+                Left e -> die' (show e)
+
+        other -> die' ("Unknown address type: " <> T.unpack other)
+
+outputAddress :: Address -> IO ()
+outputAddress addr = BL8.putStrLn . Json.encodePretty . Json.Object $
+    KM.fromList
+        [ ("address_bech32", Json.String (bech32 addr))
+        ]
+
+parseNetwork
+    :: T.Text
+    -> IO (CA.NetworkDiscriminant Shelley.Shelley)
+parseNetwork = \case
+    "mainnet" -> pure Shelley.shelleyMainnet
+    "testnet" -> pure Shelley.shelleyTestnet
+    other -> case Shelley.mkNetworkDiscriminant (read (T.unpack other)) of
+        Right n -> pure n
+        Left _ -> die' ("Invalid network: " <> T.unpack other)
+            >> error "unreachable"
+
+parseXPub :: T.Text -> IO XPub
+parseXPub hex = do
+    let bs = decodeHex hex
+    case xpubFromBytes bs of
+        Just xpub -> pure xpub
+        Nothing -> die' "Invalid xpub bytes (expected 64 bytes)"
+            >> error "unreachable"
+
+------------------------------------------------------------------------
+-- sign / verify
+------------------------------------------------------------------------
+
+cmdSign :: Json.Object -> IO ()
+cmdSign obj = do
+    keyHex <- requireText "key" obj
+    messageHex <- requireText "message" obj
+    let keyBytes = decodeHex keyHex
+        msgBytes = decodeHex messageHex
+    xprv <- case xprvFromBytes keyBytes of
+        Just k -> pure k
+        Nothing -> die' "Invalid signing key (expected 96 bytes xprv)"
+            >> error "unreachable"
+    let sig = sign xprv msgBytes
+        vk = toXPub xprv
+    outputKeys
+        [ ("signature", unXSignature sig)
+        , ("verification_key", xpubToBytes vk)
+        ]
+
+cmdVerify :: Json.Object -> IO ()
+cmdVerify obj = do
+    keyHex <- requireText "key" obj
+    messageHex <- requireText "message" obj
+    signatureHex <- requireText "signature" obj
+    let keyBytes = decodeHex keyHex
+        msgBytes = decodeHex messageHex
+        sigBytes = decodeHex signatureHex
+    xpub <- case xpubFromBytes keyBytes of
+        Just k -> pure k
+        Nothing -> die' "Invalid verification key (expected 64 bytes xpub)"
+            >> error "unreachable"
+    sig <- case xsignature sigBytes of
+        Right s -> pure s
+        Left e -> die' ("Invalid signature: " <> e) >> error "unreachable"
+    let result = verify xpub msgBytes sig
+    BL8.putStrLn . Json.encodePretty . Json.Object $
+        KM.fromList [("valid", Json.Bool result)]
+
+------------------------------------------------------------------------
 -- helpers
 ------------------------------------------------------------------------
+
+decodeHex :: T.Text -> BS.ByteString
+decodeHex hex = case Base16.decode (T.encodeUtf8 hex) of
+    Right bs -> bs
+    Left _ -> error ("Invalid hex: " <> T.unpack hex)
 
 outputKeys :: [(T.Text, BS.ByteString)] -> IO ()
 outputKeys pairs = BL8.putStrLn . Json.encodePretty . Json.Object $
