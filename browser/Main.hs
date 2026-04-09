@@ -12,6 +12,8 @@ import Prelude
 
 import Cardano.Address
     ( Address
+    , AddressDiscrimination (..)
+    , NetworkTag (..)
     , base58
     , bech32
     , unsafeMkAddress
@@ -67,7 +69,10 @@ import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.Aeson.Key as Key
 import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Base16 as Base16
+import Data.ByteArray.Encoding
+    ( Base (..)
+    , convertToBase
+    )
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.Text as T
@@ -392,7 +397,7 @@ icarusNetworkDiscriminant pm = case pm of
     1097911063 -> Icarus.icarusTestnet
     2 -> Icarus.icarusPreview
     1 -> Icarus.icarusPreprod
-    _ -> error ("Unsupported Icarus protocol magic: " <> show pm)
+    magic -> (CA.RequiresNetworkTag, CA.NetworkTag (fromIntegral magic))
 
 byronNetworkDiscriminant :: Int -> CA.NetworkDiscriminant Byron.Byron
 byronNetworkDiscriminant pm = case pm of
@@ -401,7 +406,7 @@ byronNetworkDiscriminant pm = case pm of
     1097911063 -> Byron.byronTestnet
     2 -> Byron.byronPreview
     1 -> Byron.byronPreprod
-    _ -> error ("Unsupported Byron protocol magic: " <> show pm)
+    magic -> (CA.RequiresNetworkTag, CA.NetworkTag (fromIntegral magic))
 
 parseHardenedIndex' :: Int -> IO (Index 'Hardened 'AccountK)
 parseHardenedIndex' n = case indexFromWord32 (0x80000000 + fromIntegral n) of
@@ -418,14 +423,29 @@ parseSoftIndex' n = case indexFromWord32 (fromIntegral n) of
 ------------------------------------------------------------------------
 
 decodeHex :: T.Text -> BS.ByteString
-decodeHex hex = case Base16.decode (T.encodeUtf8 hex) of
-    Right bs -> bs
-    Left _ -> error ("Invalid hex: " <> T.unpack hex)
+decodeHex = decodeHexStr . T.unpack . T.strip
+
+decodeHexStr :: String -> BS.ByteString
+decodeHexStr str = BS.pack (go str)
+  where
+    go [] = []
+    go [_] = error ("Odd-length hex: " <> str)
+    go (a:b:rest) = fromIntegral (digitToInt a * 16 + digitToInt b) : go rest
+
+digitToInt :: Char -> Int
+digitToInt c
+    | c >= '0' && c <= '9' = fromEnum c - fromEnum '0'
+    | c >= 'a' && c <= 'f' = fromEnum c - fromEnum 'a' + 10
+    | c >= 'A' && c <= 'F' = fromEnum c - fromEnum 'A' + 10
+    | otherwise = error ("Invalid hex character: " <> [c])
+
+toHex :: BS.ByteString -> T.Text
+toHex = T.decodeUtf8 . convertToBase Base16
 
 outputKeys :: [(T.Text, BS.ByteString)] -> IO ()
 outputKeys pairs = BL8.putStrLn . Json.encodePretty . Json.Object $
     KM.fromList
-        [ (Key.fromText k, Json.String (T.decodeUtf8 (Base16.encode v)))
+        [ (Key.fromText k, Json.String (toHex v))
         | (k, v) <- pairs
         ]
 
