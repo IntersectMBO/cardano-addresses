@@ -31,6 +31,11 @@ flag release
   manual: True
   default: False
 
+flag wasm
+  description: Build only the library and WASM executable, skip native CLI and tests.
+  manual: True
+  default: False
+
 library
   exposed-modules:
       Cardano.Address
@@ -165,6 +170,8 @@ executable cardano-addresses-wasm
   default-language: Haskell2010
 
 executable cardano-address
+  if flag(wasm)
+    buildable: False
   main-is: Main.hs
   other-modules:
       Paths_cardano_addresses
@@ -182,6 +189,8 @@ executable cardano-address
   default-language: Haskell2010
 
 test-suite unit
+  if flag(wasm)
+    buildable: False
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:

@@ -21,46 +21,22 @@ jobs:
           extra-substituters = https://cache.iog.io
           extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 
-    - name: Cache WASM cabal store
-      uses: actions/cache@v4
-      with:
-        path: ~/.ghc-wasm/.cabal/store
-        key: wasm-cabal-store-${{ hashFiles('cabal-wasm.project', 'cardano-addresses.cabal') }}
-        restore-keys: |
-          wasm-cabal-store-
-
-    - name: Get GHC WASM toolchain
+    - name: Build WASM binary
       run: |
-        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
-          --command bash -c "wasm32-wasi-ghc --version"
-
-    - name: Update cabal index
-      run: |
-        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
-          --command bash -c "wasm32-wasi-cabal update"
-
-    - name: Build library and inspector for WASM
-      run: |
-        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
-          --command bash -c "wasm32-wasi-cabal --project-file=cabal-wasm.project build cardano-addresses:lib:cardano-addresses inspect-address"
+        nix build .#wasm
+        ls -lh result/cardano-addresses.wasm
 
     - name: Test WASM binary with wasmtime
       run: |
-        WASM=$(find dist-newstyle -name "inspect-address.wasm" -type f | head -1)
         nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
-          --command bash -c "echo -n 'stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw' | wasmtime $WASM"
+          --command bash -c "
+            echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime result/cardano-addresses.wasm
+            echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime result/cardano-addresses.wasm | head -3
+          "
 
-    - name: Package browser app
-      run: |
-        mkdir -p artifacts/browser
-        WASM=$(find dist-newstyle -name "inspect-address.wasm" -type f | head -1)
-        cp "$WASM" artifacts/browser/inspect-address.wasm
-        cp browser/index.html artifacts/browser/
-        ls -lh artifacts/browser/
-
-    - name: Upload browser app
+    - name: Upload WASM artifact
       uses: actions/upload-artifact@v4
       with:
-        name: cardano-address-inspector-browser
-        path: artifacts/browser/
-        retention-days: 30
+        name: cardano-addresses-wasm
+        path: result/cardano-addresses.wasm
+        retention-days: 90

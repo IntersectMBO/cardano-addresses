@@ -18,8 +18,8 @@ active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 -- Bump index-state to get crypton >= 1.1 (uses ram, no basement)
 index-state:
-  , hackage.haskell.org 2026-04-01T00:00:00Z
-  , cardano-haskell-packages 2025-01-23T00:00:00Z
+  , hackage.haskell.org 2026-03-29T00:00:00Z
+  , cardano-haskell-packages 2025-01-22T00:00:00Z
 
 packages:
   cardano-addresses.cabal
@@ -40,6 +40,10 @@ source-repository-package
 
 -- Force crypton >= 1.1 which uses ram instead of memory (no basement)
 constraints: crypton >= 1.1
+
+-- Disable native CLI and tests (they have deps not needed for WASM)
+package cardano-addresses
+  flags: +wasm
 
 -- ram needs WASI mmap emulation; argon2 needs no-threads
 package ram
