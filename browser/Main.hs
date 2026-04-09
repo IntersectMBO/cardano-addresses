@@ -69,10 +69,6 @@ import qualified Data.Aeson.Encode.Pretty as Json
 import qualified Data.Aeson.Key as Key
 import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as BS
-import Data.ByteArray.Encoding
-    ( Base (..)
-    , convertToBase
-    )
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.Text as T
@@ -440,7 +436,11 @@ digitToInt c
     | otherwise = error ("Invalid hex character: " <> [c])
 
 toHex :: BS.ByteString -> T.Text
-toHex = T.decodeUtf8 . convertToBase Base16
+toHex = T.pack . concatMap (\w -> [hexDigit (w `div` 16), hexDigit (w `mod` 16)]) . BS.unpack
+  where
+    hexDigit n
+        | n < 10 = toEnum (fromEnum '0' + fromIntegral n)
+        | otherwise = toEnum (fromEnum 'a' + fromIntegral n - 10)
 
 outputKeys :: [(T.Text, BS.ByteString)] -> IO ()
 outputKeys pairs = BL8.putStrLn . Json.encodePretty . Json.Object $
