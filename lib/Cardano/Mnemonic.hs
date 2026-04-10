@@ -132,7 +132,7 @@ import Type.Reflection
 
 import qualified Basement.Compat.Base as Basement
 import qualified Basement.String as Basement
-import qualified Crypto.Random.Entropy as Crypto
+import qualified Cardano.Address.Crypto as Crypto
 import qualified Data.ByteArray as BA
 import qualified Data.Text as T
 

@@ -34,6 +34,7 @@ flag release
 library
   exposed-modules:
       Cardano.Address
+      Cardano.Address.Crypto
       Cardano.Address.Derivation
       Cardano.Address.Internal
       Cardano.Address.KeyHash
@@ -157,6 +158,7 @@ test-suite unit
   main-is: Main.hs
   other-modules:
       AutoDiscover
+      Cardano.Address.CryptoSpec
       Cardano.Address.DerivationSpec
       Cardano.Address.Script.ParserSpec
       Cardano.Address.ScriptSpec
