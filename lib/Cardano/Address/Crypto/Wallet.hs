@@ -6,7 +6,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators #-}
 
 -- | Vendored from @cardano-crypto@ (Apache-2.0).
 -- Original: Cardano.Crypto.Wallet
@@ -56,11 +55,11 @@ import qualified Crypto.MAC.HMAC as HMAC
 import qualified Crypto.PubKey.Ed25519 as Ed25519
 import Data.ByteArray
     ( ByteArrayAccess, convert )
-import qualified Data.ByteArray as B
+import qualified Data.ByteArray as BA
     ( append, length, splitAt )
 import Data.ByteString
     ( ByteString )
-import qualified Data.ByteString.Char8 as BC
+import qualified Data.ByteString.Char8 as B8
 import Data.Data
     ( Typeable )
 import Data.Hashable
@@ -115,13 +114,13 @@ generate
     :: (ByteArrayAccess passPhrase, ByteArrayAccess seed)
     => seed -> passPhrase -> XPrv
 generate seed passPhrase
-    | B.length seed < 32 =
+    | BA.length seed < 32 =
         error ("Wallet.generate: seed needs to be >= 32 bytes, got : "
-            ++ show (B.length seed))
+            ++ show (BA.length seed))
     | otherwise = loop 1
   where
     phrase :: Int -> ByteString
-    phrase i = "Root Seed Chain " `B.append` BC.pack (show i)
+    phrase i = "Root Seed Chain " `BA.append` B8.pack (show i)
 
     loop i
         | i > 1000 =
@@ -168,31 +167,31 @@ xprv bs =
 
 xpub :: ByteString -> Either String XPub
 xpub bs
-    | B.length bs /= 64 =
+    | BA.length bs /= 64 =
         Left ("error: xpub needs to be 64 bytes: got "
-            ++ show (B.length bs) ++ " bytes")
+            ++ show (BA.length bs) ++ " bytes")
     | otherwise =
-        let (b1, b2) = B.splitAt 32 bs
+        let (b1, b2) = BA.splitAt 32 bs
          in Right $ XPub b1 (ChainCode $ convert b2)
 
 unXPrv :: XPrv -> ByteString
 unXPrv (XPrv e) = unEncryptedKey e
 
 unXPub :: XPub -> ByteString
-unXPub (XPub pub (ChainCode cc)) = B.append pub cc
+unXPub (XPub pub (ChainCode cc)) = BA.append pub cc
 
 xsignature :: ByteString -> Either String XSignature
 xsignature bs
-    | B.length bs /= 64 =
+    | BA.length bs /= 64 =
         Left ("error: xsignature needs to be 64 bytes: got "
-            ++ show (B.length bs) ++ " bytes")
+            ++ show (BA.length bs) ++ " bytes")
     | otherwise = Right $ XSignature bs
 
 toXPub :: HasCallStack => XPrv -> XPub
 toXPub (XPrv ekey) = XPub pub (ChainCode cc)
   where
-    (_, r) = B.splitAt 64 $ convert ekey
-    (pub, cc) = B.splitAt 32 r
+    (_, r) = BA.splitAt 64 $ convert ekey
+    (pub, cc) = BA.splitAt 32 r
 
 xPubGetPublicKey :: XPub -> Ed25519.PublicKey
 xPubGetPublicKey (XPub pub _) =
@@ -237,5 +236,5 @@ hInitSeed = HMAC.initialize
 
 hFinalize :: HMAC.Context SHA512 -> (ByteString, ChainCode)
 hFinalize ctx =
-    let (b1, b2) = B.splitAt 32 $ convert $ HMAC.finalize ctx
+    let (b1, b2) = BA.splitAt 32 $ convert $ HMAC.finalize ctx
      in (b1, ChainCode b2)

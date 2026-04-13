@@ -82,7 +82,7 @@ wordIndex w = case tryWordIndex w of
     Just wi -> wi
 
 -- | Errors from dictionary lookup.
-data DictionaryError
+newtype DictionaryError
     = ErrInvalidDictionaryWord Text
     deriving Show
 

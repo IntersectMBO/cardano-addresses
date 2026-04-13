@@ -19,9 +19,7 @@ import Cardano.Address
     , unsafeMkAddress
     )
 import Cardano.Address.Crypto.Wallet
-    ( unXSignature
-    , xsignature
-    )
+    ( unXSignature, xsignature )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -30,22 +28,18 @@ import Cardano.Address.Derivation
     , XPub
     , indexFromWord32
     , sign
-    , wholeDomainIndex
     , toXPub
     , verify
+    , wholeDomainIndex
     , xprvFromBytes
     , xprvToBytes
     , xpubFromBytes
     , xpubToBytes
     )
 import Cardano.Address.Style.Shelley
-    ( Credential (..)
-    , Role (..)
-    )
+    ( Credential (..), Role (..) )
 import Cardano.Mnemonic
-    ( MkSomeMnemonicError (..)
-    , mkSomeMnemonic
-    )
+    ( MkSomeMnemonicError (..), mkSomeMnemonic )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..)
     , detectEncoding
@@ -53,12 +47,12 @@ import Codec.Binary.Encoding
     , fromBase58
     , fromBech32
     )
+import Data.Char
+    ( isDigit )
 import Data.Word
-    ( Word32
-    )
+    ( Word32 )
 import System.Exit
-    ( exitFailure
-    )
+    ( exitFailure )
 
 import qualified Cardano.Address as CA
 import qualified Cardano.Address.Style.Byron as Byron
@@ -430,7 +424,7 @@ decodeHexStr str = BS.pack (go str)
 
 digitToInt :: Char -> Int
 digitToInt c
-    | c >= '0' && c <= '9' = fromEnum c - fromEnum '0'
+    | isDigit c = fromEnum c - fromEnum '0'
     | c >= 'a' && c <= 'f' = fromEnum c - fromEnum 'a' + 10
     | c >= 'A' && c <= 'F' = fromEnum c - fromEnum 'A' + 10
     | otherwise = error ("Invalid hex character: " <> [c])

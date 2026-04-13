@@ -18,6 +18,8 @@ module Cardano.Address.Crypto.Wallet.Encrypted
     ) where
 
 import Control.DeepSeq
+import Control.Monad
+    ( when )
 import Data.Word
 import Foreign.C.Types
 import Foreign.Ptr
@@ -26,7 +28,7 @@ import Prelude
 import Crypto.Error
 import Data.ByteArray
     ( ByteArrayAccess, withByteArray )
-import qualified Data.ByteArray as B
+import qualified Data.ByteArray as BA
 import Data.ByteString
     ( ByteString )
 import System.IO.Unsafe
@@ -74,7 +76,7 @@ data PassPhrase
 -- If the binary is not of the right size, Nothing is returned
 encryptedKey :: ByteString -> Maybe EncryptedKey
 encryptedKey ba
-    | B.length ba == totalKeySize = Just $ EncryptedKey ba
+    | BA.length ba == totalKeySize = Just $ EncryptedKey ba
     | otherwise                   = Nothing
 
 unEncryptedKey :: EncryptedKey -> ByteString
@@ -88,13 +90,13 @@ encryptedCreate :: (ByteArrayAccess passphrase, ByteArrayAccess secret, ByteArra
                 -> cc
                 -> CryptoFailable EncryptedKey
 encryptedCreate sec pass cc
-    | B.length sec /= 32 = CryptoFailed CryptoError_SecretKeySizeInvalid
+    | BA.length sec /= 32 = CryptoFailed CryptoError_SecretKeySizeInvalid
     | otherwise          = unsafePerformIO $ do
-        (r, k) <- B.allocRet totalKeySize $ \ekey ->
+        (r, k) <- BA.allocRet totalKeySize $ \ekey ->
             withByteArray sec  $ \psec  ->
             withByteArray pass $ \ppass ->
             withByteArray cc   $ \pcc   ->
-                wallet_encrypted_from_secret ppass (fromIntegral $ B.length pass) psec pcc ekey
+                wallet_encrypted_from_secret ppass (fromIntegral $ BA.length pass) psec pcc ekey
         if r == 0
             then return $ CryptoPassed $ EncryptedKey k
             else return $ CryptoFailed CryptoError_SecretKeyStructureInvalid
@@ -106,10 +108,10 @@ encryptedCreateDirectWithTweak :: (ByteArrayAccess passphrase, ByteArrayAccess s
                                -> passphrase
                                -> EncryptedKey
 encryptedCreateDirectWithTweak sec pass =
-    EncryptedKey $ B.allocAndFreeze totalKeySize $ \ekey ->
+    EncryptedKey $ BA.allocAndFreeze totalKeySize $ \ekey ->
         withByteArray sec  $ \psec  ->
         withByteArray pass $ \ppass -> do
-            _ <- wallet_encrypted_new_from_mkg ppass (fromIntegral $ B.length pass) psec ekey
+            _ <- wallet_encrypted_new_from_mkg ppass (fromIntegral $ BA.length pass) psec ekey
             return ()
 
 -- | Create a new encrypted key that uses a different passphrase
@@ -119,13 +121,13 @@ encryptedChangePass :: (ByteArrayAccess oldPassPhrase, ByteArrayAccess newPassPh
                     -> EncryptedKey  -- ^ Key using the old pass phrase
                     -> EncryptedKey  -- ^ Key using the new pass phrase
 encryptedChangePass oldPass newPass (EncryptedKey okey) =
-    EncryptedKey $ B.allocAndFreeze totalKeySize $ \ekey ->
+    EncryptedKey $ BA.allocAndFreeze totalKeySize $ \ekey ->
         withByteArray oldPass $ \opass  ->
         withByteArray newPass $ \npass  ->
         withByteArray okey    $ \oldkey ->
             wallet_encrypted_change_pass oldkey
-                         opass (fromIntegral $ B.length oldPass)
-                         npass (fromIntegral $ B.length newPass)
+                         opass (fromIntegral $ BA.length oldPass)
+                         npass (fromIntegral $ BA.length newPass)
                          ekey
 
 -- | Sign using the encrypted keys and temporarly decrypt the secret in memory
@@ -136,11 +138,11 @@ encryptedSign :: (ByteArrayAccess passphrase, ByteArrayAccess msg)
               -> msg
               -> Signature
 encryptedSign (EncryptedKey ekey) pass msg =
-    Signature $ B.allocAndFreeze signatureSize $ \sig ->
+    Signature $ BA.allocAndFreeze signatureSize $ \sig ->
         withByteArray ekey $ \k ->
         withByteArray pass $ \p ->
         withByteArray msg  $ \m ->
-            wallet_encrypted_sign k p (fromIntegral $ B.length pass) m (fromIntegral $ B.length msg) sig
+            wallet_encrypted_sign k p (fromIntegral $ BA.length pass) m (fromIntegral $ BA.length msg) sig
 
 encryptedDerivePrivate :: (ByteArrayAccess passphrase)
                        => DerivationScheme
@@ -149,10 +151,10 @@ encryptedDerivePrivate :: (ByteArrayAccess passphrase)
                        -> DerivationIndex
                        -> EncryptedKey
 encryptedDerivePrivate dscheme (EncryptedKey parent) pass childIndex =
-    EncryptedKey $ B.allocAndFreeze totalKeySize $ \ekey ->
+    EncryptedKey $ BA.allocAndFreeze totalKeySize $ \ekey ->
         withByteArray pass   $ \ppass   ->
         withByteArray parent $ \pparent ->
-            wallet_encrypted_derive_private pparent ppass (fromIntegral $ B.length pass) childIndex ekey (dschemeToC dscheme)
+            wallet_encrypted_derive_private pparent ppass (fromIntegral $ BA.length pass) childIndex ekey (dschemeToC dscheme)
 
 encryptedDerivePublic :: DerivationScheme
                       -> (PublicKey, ChainCode)
@@ -162,12 +164,13 @@ encryptedDerivePublic dscheme (pub, cc) childIndex
     | childIndex >= 0x80000000 = error "cannot derive hardened in derive public"
     | otherwise                = unsafePerformIO $ do
         (newCC, newPub) <-
-                B.allocRet publicKeySize $ \outPub ->
-                B.alloc ccSize           $ \outCc  ->
+                BA.allocRet publicKeySize $ \outPub ->
+                BA.alloc ccSize           $ \outCc  ->
                 withByteArray pub        $ \ppub   ->
                 withByteArray cc         $ \pcc    -> do
                     r <- wallet_encrypted_derive_public ppub pcc childIndex outPub outCc (dschemeToC dscheme)
-                    if r /= 0 then error "encrypted derive public assumption about index failed" else return ()
+                    when (r /= 0) $
+                        error "encrypted derive public assumption about index failed"
         return (newPub, newCC)
 
 -- | Get the public part of an encrypted key
@@ -178,8 +181,8 @@ encryptedPublic (EncryptedKey ekey) = sub publicKeyOffset publicKeySize ekey
 encryptedChainCode :: EncryptedKey -> ByteString
 encryptedChainCode (EncryptedKey ekey) = sub ccOffset ccSize ekey
 
-sub :: B.ByteArray c => Int -> Int -> c -> c
-sub ofs sz = B.take sz . B.drop ofs
+sub :: BA.ByteArray c => Int -> Int -> c -> c
+sub ofs sz = BA.take sz . BA.drop ofs
 
 -- map to the C enum : derivation_scheme_mode
 type CDerivationScheme = CInt

@@ -32,7 +32,7 @@ english = Dictionary
         case Map.lookup word wordMap of
             Just x -> Right x
             Nothing -> Left $ ErrInvalidDictionaryWord word
-    , dictionaryTestWord = \word -> Map.member word wordMap
+    , dictionaryTestWord = (`Map.member` wordMap)
     , dictionaryIndexToWord = \ix -> wordsVec V.! fromIntegral (unWordIndex ix)
     , dictionaryWordSeparator = " "
     }

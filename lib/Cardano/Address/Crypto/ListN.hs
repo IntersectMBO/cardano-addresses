@@ -23,7 +23,7 @@ import Prelude hiding
 
 import Control.DeepSeq
     ( NFData )
-import qualified Data.List as List
+import qualified Data.List as L
 import Data.Proxy
     ( Proxy (..) )
 import GHC.Stack
@@ -70,7 +70,7 @@ toListN_ l
 
 -- | Map a function over a sized list.
 map :: (a -> b) -> ListN n a -> ListN n b
-map f (ListN l) = ListN (List.map f l)
+map f (ListN l) = ListN (L.map f l)
 
 -- | Monadic map over a sized list.
 mapM :: Monad m => (a -> m b) -> ListN n a -> m (ListN n b)
@@ -78,4 +78,4 @@ mapM f (ListN l) = ListN <$> M.mapM f l
 
 -- | Strict left fold over a sized list.
 foldl' :: (b -> a -> b) -> b -> ListN n a -> b
-foldl' f acc (ListN l) = List.foldl' f acc l
+foldl' f acc (ListN l) = L.foldl' f acc l
