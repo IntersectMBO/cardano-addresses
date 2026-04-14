@@ -74,43 +74,41 @@ module Cardano.Mnemonic
 
 import Prelude
 
-import Basement.NormalForm
-    ( NormalForm (..) )
-import Basement.Sized.List
-    ( unListN )
-import Cardano.Dictionary.English
+import Cardano.Address.Crypto.BIP39
+    ( CheckSumBits
+    , ConsistentEntropy
+    , Dictionary (..)
+    , DictionaryError (..)
+    , Entropy
+    , EntropyError (..)
+    , EntropySize
+    , MnemonicSentence (..)
+    , MnemonicWords
+    , MnemonicWordsError (..)
+    , ValidChecksumSize
+    , ValidEntropySize
+    , ValidMnemonicSentence
+    , entropyRaw
+    , entropyToWords
+    , mnemonicPhrase
+    , mnemonicPhraseToMnemonicSentence
+    , toEntropy
+    , wordsToEntropy
+    )
+import Cardano.Address.Crypto.BIP39.English
     ( english )
+import Cardano.Address.Crypto.ListN
+    ( unListN )
 import Cardano.Dictionary.Italian
     ( italian )
 import Control.Arrow
     ( left )
 import Control.DeepSeq
     ( NFData (..) )
+import Control.Exception
+    ( Exception )
 import Control.Monad.Catch
     ( throwM )
-import Crypto.Encoding.BIP39
-    ( CheckSumBits
-    , ConsistentEntropy
-    , Dictionary
-    , DictionaryError (..)
-    , Entropy
-    , EntropyError (..)
-    , EntropySize
-    , MnemonicSentence
-    , MnemonicWords
-    , MnemonicWordsError (..)
-    , ValidChecksumSize
-    , ValidEntropySize
-    , ValidMnemonicSentence
-    , dictionaryIndexToWord
-    , entropyRaw
-    , entropyToWords
-    , mnemonicPhrase
-    , mnemonicPhraseToMnemonicSentence
-    , mnemonicSentenceToListN
-    , toEntropy
-    , wordsToEntropy
-    )
 import Data.Bifunctor
     ( bimap )
 import Data.ByteArray
@@ -130,11 +128,8 @@ import GHC.TypeLits
 import Type.Reflection
     ( typeOf )
 
-import qualified Basement.Compat.Base as Basement
-import qualified Basement.String as Basement
 import qualified Cardano.Address.Crypto as Crypto
 import qualified Data.ByteArray as BA
-import qualified Data.Text as T
 
 -- $introduction
 --
@@ -202,14 +197,12 @@ deriving instance Eq DictionaryError
 
 -- | NFData instances
 instance NFData (Mnemonic mw) where
-    rnf (Mnemonic ent ws) = toNormalForm ent `seq` toNormalForm ws
+    rnf (Mnemonic ent ws) = rnf ent `seq` rnf ws
 instance NFData (EntropyError csz) where
     rnf (ErrInvalidEntropyLength a b) = rnf a `seq` rnf b
-    rnf (ErrInvalidEntropyChecksum a b) = toNormalForm a `seq` toNormalForm b
+    rnf (ErrInvalidEntropyChecksum a b) = rnf a `seq` rnf b
 instance NFData MnemonicWordsError where
     rnf (ErrWrongNumberOfWords a b) = rnf a `seq` rnf b
-instance NFData DictionaryError where
-    rnf (ErrInvalidDictionaryWord s) = toNormalForm s
 instance NFData (MkMnemonicError csz) where
     rnf (ErrMnemonicWords e) = rnf e
     rnf (ErrEntropy e) = rnf e
@@ -276,7 +269,7 @@ mkMnemonicWithDict
     -> Either (MkMnemonicError csz) (Mnemonic mw)
 mkMnemonicWithDict wordsm dictionary = do
     phrase <- left ErrMnemonicWords
-        $ mnemonicPhrase @mw (toUtf8String <$> wordsm)
+        $ mnemonicPhrase @mw wordsm
 
     sentence <- left ErrDictionary
         $ mnemonicPhraseToMnemonicSentence dictionary phrase
@@ -340,17 +333,7 @@ entropyToBytes
     -> ScrubbedBytes
 entropyToBytes = BA.convert . entropyRaw
 
-toUtf8String
-    :: Text
-    -> Basement.String
-toUtf8String = Basement.fromString . T.unpack
-
-fromUtf8String
-    :: Basement.String
-    -> Text
-fromUtf8String = T.pack . Basement.toList
-
-instance (KnownNat csz) => Basement.Exception (MnemonicException csz)
+instance (KnownNat csz, Typeable csz) => Exception (MnemonicException csz)
 
 -- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
 --
@@ -360,7 +343,7 @@ mnemonicToTextWithDict
     -> Dictionary
     -> [Text]
 mnemonicToTextWithDict mnemonic dictionary =
-    map (fromUtf8String . dictionaryIndexToWord dictionary)
+    map (dictionaryIndexToWord dictionary)
     . unListN
     . mnemonicSentenceToListN
     . mnemonicToSentence

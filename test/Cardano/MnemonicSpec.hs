@@ -12,6 +12,12 @@ module Cardano.MnemonicSpec
 
 import Prelude
 
+import Cardano.Address.Crypto.BIP39
+    ( DictionaryError (..)
+    , EntropyError (..)
+    , MnemonicWordsError (..)
+    , toEntropy
+    )
 import Cardano.Dictionary
     ( SupportedDictionary, dictionaryFromLanguage )
 import Cardano.Mnemonic
@@ -34,12 +40,6 @@ import Cardano.Mnemonic
     )
 import Control.Monad
     ( forM_ )
-import Crypto.Encoding.BIP39
-    ( DictionaryError (..)
-    , EntropyError (..)
-    , MnemonicWordsError (..)
-    , toEntropy
-    )
 import Data.ByteString
     ( ByteString )
 import Data.Either

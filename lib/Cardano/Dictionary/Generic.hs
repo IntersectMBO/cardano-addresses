@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
@@ -14,33 +12,41 @@ module Cardano.Dictionary.Generic
      toDictionary
     ) where
 
-import Basement.Imports
-    ( Bounded (..), Either (..), Maybe (..), error, flip, fromList, ($), (.) )
-import Basement.Sized.Vect
-    ( Vect (..), index, toVect )
-import Basement.String
-    ( String )
-import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary (..), DictionaryError (..), WordIndex, unWordIndex )
-import Data.Maybe
-    ( fromMaybe )
+import Prelude
+
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary (..)
+    , DictionaryError (..)
+    , WordIndex
+    , unWordIndex
+    , wordIndex
+    )
+import Data.Text
+    ( Text )
+import Data.Word
+    ( Word16 )
 
 import qualified Data.List as L
+import qualified Data.Map.Strict as Map
+import qualified Data.Vector as V
 
 
-toDictionary :: [String] -> Dictionary
+toDictionary :: [Text] -> Dictionary
 toDictionary wordList = Dictionary
     { dictionaryWordToIndex =
-          \word -> case L.lookup word wordsWithIxs of
-                     Just x  -> Right x
+          \word -> case Map.lookup word wordMap of
+                     Just x -> Right x
                      Nothing -> Left $ ErrInvalidDictionaryWord word
-    , dictionaryTestWord = flip L.elem wordList
-    , dictionaryIndexToWord = index words . unWordIndex
+    , dictionaryTestWord = (`Map.member` wordMap)
+    , dictionaryIndexToWord = \ix -> wordsVec V.! fromIntegral (unWordIndex ix)
     , dictionaryWordSeparator = " "
     }
   where
-    wordsWithIxs :: [(String, WordIndex)]
-    wordsWithIxs = L.zip wordList [minBound..maxBound]
+    wordMap :: Map.Map Text WordIndex
+    wordMap =
+        Map.fromList
+            $ L.zip wordList
+            $ L.map (wordIndex . fromIntegral) [0 :: Word16 .. 2047]
 
-    words :: Vect 2048 String
-    words = fromMaybe (error "invalid vector length") $ toVect $ fromList wordList
+    wordsVec :: V.Vector Text
+    wordsVec = V.fromList wordList

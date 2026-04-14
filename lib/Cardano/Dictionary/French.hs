@@ -16,17 +16,17 @@ module Cardano.Dictionary.French
      french
     ) where
 
-import Basement.String
-    ( String )
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary )
 import Cardano.Dictionary.Generic
     ( toDictionary )
-import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary )
+import Data.Text
+    ( Text )
 
 french :: Dictionary
 french = toDictionary wordList
   where
-  wordList :: [String]
+  wordList :: [Text]
   wordList =
       ["abaisser"
       ,"abandon"

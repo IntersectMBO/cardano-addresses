@@ -25,6 +25,8 @@ import Prelude
 
 import Cardano.Address
     ( AddressDiscrimination (..), ChainPointer (..), NetworkTag (..) )
+import Cardano.Address.Crypto.BIP39
+    ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
 import Cardano.Address.Derivation
     ( Depth (..)
     , GenMasterKey (..)
@@ -78,8 +80,6 @@ import Codec.Binary.Bech32.TH
     ( humanReadablePart )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
-import Crypto.Encoding.BIP39
-    ( ValidChecksumSize, ValidEntropySize, ValidMnemonicSentence )
 import Data.ByteArray.Encoding
     ( Base (..), convertFromBase )
 import Data.ByteString

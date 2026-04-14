@@ -20,6 +20,8 @@ module Cardano.Dictionary
 
 import Prelude
 
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary )
 import Cardano.Dictionary.English
     ( english )
 import Cardano.Dictionary.French
@@ -32,8 +34,6 @@ import Cardano.Dictionary.Korean
     ( korean )
 import Cardano.Dictionary.Spanish
     ( spanish )
-import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary )
 import GHC.Generics
     ( Generic )
 

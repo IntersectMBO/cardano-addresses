@@ -16,17 +16,17 @@ module Cardano.Dictionary.Spanish
      spanish
     ) where
 
-import Basement.String
-    ( String )
+import Cardano.Address.Crypto.BIP39.Dictionary
+    ( Dictionary )
 import Cardano.Dictionary.Generic
     ( toDictionary )
-import Crypto.Encoding.BIP39.Dictionary
-    ( Dictionary )
+import Data.Text
+    ( Text )
 
 spanish :: Dictionary
 spanish = toDictionary wordList
   where
-  wordList :: [String]
+  wordList :: [Text]
   wordList =
       ["ábaco"
       ,"abdomen"

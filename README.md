@@ -201,6 +201,79 @@ just generate-readme
 Pull requests are welcome.
 
 When creating a pull request, please make sure that your code adheres to our [coding standards](https://input-output-hk.github.io/adrestia/code/Coding-Standards).
+
+## WebAssembly
+
+The library compiles to WebAssembly via GHC's WASM backend, producing a single `cardano-addresses.wasm` binary that runs in the browser or any WASI runtime.
+
+### Build
+
+```bash
+nix build github:IntersectMBO/cardano-addresses#wasm
+ls result/cardano-addresses.wasm   # 7.0MB
+```
+
+### Commands
+
+The binary reads JSON from stdin and writes JSON to stdout. A `cmd` field selects the operation:
+
+```bash
+# Address inspection
+echo '{"cmd":"inspect","address":"addr1..."}' | wasmtime result/cardano-addresses.wasm
+
+# Key derivation (CIP-1852 Shelley)
+echo '{"cmd":"derive","mnemonic":"word1 word2 ...","path":"1852H/1815H/0H/0/0"}' | wasmtime result/cardano-addresses.wasm
+
+# Address construction
+echo '{"cmd":"make-address","type":"enterprise","network":"testnet","payment_key":"hex..."}' | wasmtime result/cardano-addresses.wasm
+
+# Ed25519 signing and verification
+echo '{"cmd":"sign","key":"hex...","message":"hex..."}' | wasmtime result/cardano-addresses.wasm
+echo '{"cmd":"verify","key":"hex...","message":"hex...","signature":"hex..."}' | wasmtime result/cardano-addresses.wasm
+
+# Legacy bootstrap addresses (Byron/Icarus)
+echo '{"cmd":"bootstrap-address","style":"icarus-from-mnemonic","protocol_magic":764824073,...}' | wasmtime result/cardano-addresses.wasm
+```
+
+### Browser integration
+
+Use [@bjorn3/browser_wasi_shim](https://www.npmjs.com/package/@bjorn3/browser_wasi_shim) to run the WASM binary client-side:
+
+```javascript
+import { WASI, File, OpenFile, ConsoleStdout } from "@bjorn3/browser_wasi_shim";
+
+const mod = await WebAssembly.compile(await (await fetch("cardano-addresses.wasm")).arrayBuffer());
+
+async function call(input) {
+  let out = "";
+  const fds = [
+    new OpenFile(new File(new TextEncoder().encode(input))),
+    ConsoleStdout.lineBuffered(l => out += l + "\n"),
+    ConsoleStdout.lineBuffered(() => {}),
+  ];
+  const wasi = new WASI([], [], fds, { debug: false });
+  wasi.start(await WebAssembly.instantiate(mod, { wasi_snapshot_preview1: wasi.wasiImport }));
+  return JSON.parse(out.trim());
+}
+```
+
+Benchmarked: ~9ms compile (one-time), ~3ms per Shelley call, ~13ms for legacy.
+
+### Nix integration
+
+Downstream flakes consume the WASM as a package:
+
+```nix
+{
+  inputs.cardano-addresses.url = "github:IntersectMBO/cardano-addresses";
+
+  outputs = { cardano-addresses, ... }: {
+    packages.wasm = cardano-addresses.packages.x86_64-linux.wasm;
+    # result/cardano-addresses.wasm
+  };
+}
+```
+
 <hr />
 
 <p align="center">
