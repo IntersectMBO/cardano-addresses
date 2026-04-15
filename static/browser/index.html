@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardano Address Inspector</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+    h1 { margin-bottom: 0.5rem; color: #58a6ff; }
+    .subtitle { color: #8b949e; margin-bottom: 2rem; font-size: 0.9rem; }
+    .container { width: 100%; max-width: 640px; }
+    label { display: block; margin-bottom: 0.5rem; color: #8b949e; font-size: 0.85rem; }
+    input { width: 100%; padding: 0.75rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; font-family: monospace; font-size: 0.9rem; }
+    input:focus { outline: none; border-color: #58a6ff; }
+    button { margin-top: 0.75rem; padding: 0.6rem 1.5rem; background: #238636; border: 1px solid #2ea043; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.9rem; }
+    button:hover { background: #2ea043; }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    #output { margin-top: 1.5rem; padding: 1rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; min-height: 3rem; }
+    .error { color: #f85149; }
+    .loading { color: #8b949e; font-style: italic; }
+    .tag { display: inline-block; background: #1f6feb22; color: #58a6ff; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.75rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Cardano Address Inspector</h1>
+  <p class="subtitle">Powered by cardano-addresses compiled to WebAssembly</p>
+  <div class="container">
+    <span class="tag">WASM &middot; client-side &middot; no server</span>
+    <label for="addr">Paste a Cardano address (bech32, base58, or hex)</label>
+    <input id="addr" type="text" placeholder="addr1q..., stake1u..., Ae2tdPwUPEZ..." autofocus>
+    <button id="btn" onclick="inspect()" disabled>Loading WASM...</button>
+    <div id="output" class="loading">Initializing WebAssembly runtime...</div>
+  </div>
+
+  <script type="module">
+    import { WASI, File, OpenFile, ConsoleStdout } from 'https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.4.2/dist/index.js';
+
+    let wasmModule = null;
+
+    async function initWasm() {
+      try {
+        const response = await fetch('inspect-address.wasm');
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const bytes = await response.arrayBuffer();
+        wasmModule = await WebAssembly.compile(bytes);
+        document.getElementById('btn').disabled = false;
+        document.getElementById('btn').textContent = 'Inspect';
+        document.getElementById('output').textContent = 'Ready. Paste an address and click Inspect.';
+        document.getElementById('output').className = '';
+      } catch (e) {
+        document.getElementById('output').textContent = 'Failed to load WASM: ' + e.message;
+        document.getElementById('output').className = 'error';
+      }
+    }
+
+    window.inspect = async function() {
+      const addr = document.getElementById('addr').value.trim();
+      if (!addr) return;
+
+      const output = document.getElementById('output');
+      output.className = 'loading';
+      output.textContent = 'Inspecting...';
+
+      try {
+        const encoder = new TextEncoder();
+        const stdinData = encoder.encode(addr);
+
+        let stdoutBuf = '';
+        let stderrBuf = '';
+
+        const fds = [
+          new OpenFile(new File(stdinData)),
+          ConsoleStdout.lineBuffered(line => { stdoutBuf += line + '\n'; }),
+          ConsoleStdout.lineBuffered(line => { stderrBuf += line + '\n'; }),
+        ];
+
+        const wasi = new WASI([], [], fds, { debug: false });
+        const instance = await WebAssembly.instantiate(wasmModule, {
+          wasi_snapshot_preview1: wasi.wasiImport,
+        });
+        wasi.start(instance);
+
+        if (stdoutBuf) {
+          output.className = '';
+          output.textContent = stdoutBuf.trim();
+        } else {
+          output.className = 'error';
+          output.textContent = (stderrBuf || 'No output').trim();
+        }
+      } catch (e) {
+        output.className = 'error';
+        output.textContent = 'Error: ' + e.message;
+      }
+    };
+
+    document.getElementById('addr').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !document.getElementById('btn').disabled) {
+        window.inspect();
+      }
+    });
+
+    initWasm();
+  </script>
+</body>
+</html>

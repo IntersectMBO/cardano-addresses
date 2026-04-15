@@ -224,6 +224,8 @@ async function call(input) {
 
 Benchmarked: ~9ms compile (one-time), ~3ms per Shelley call, ~13ms for legacy.
 
+A live demo is available at: https://IntersectMBO.github.io/cardano-addresses/browser/
+
 ### Nix integration
 
 Downstream flakes consume the WASM as a package:

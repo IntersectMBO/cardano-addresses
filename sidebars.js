@@ -3,6 +3,7 @@ const sidebars = {
   tutorialSidebar: [
     'index',
     'command-line',
+    'webassembly-app',
   ],
 };
 
