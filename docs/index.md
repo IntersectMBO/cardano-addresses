@@ -159,13 +159,6 @@ Javascript support was discontinued and dropped. One could look at the following
 
 Alternatively one could lean back on release [3.9.0](https://github.com/IntersectMBO/cardano-addresses/releases/tag/3.9.0) where Javascript was still present.
 
-## Docs generation
-
-The README.md is generated from this file using:
-```
-just generate-readme
-```
-
 ## WebAssembly
 
 The library compiles to WebAssembly via GHC's WASM backend, producing a single `cardano-addresses.wasm` binary that runs in the browser or any WASI runtime.
