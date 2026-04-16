@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   workflow_run:
-    workflows: [Haskell CI]
+    workflows: [Haskell CI, WASM CI]
     types: [completed]
     branches: [master]
   pull_request:
@@ -59,6 +59,21 @@ jobs:
             ls -la build/haddock/
           else
             echo "Haddock artifact not found"
+          fi
+
+      - name: Download inspect-address WASM artifact
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RUN_ID=${{ github.event.workflow_run.id }}
+          echo "Downloading inspect-address WASM from run: $RUN_ID"
+          mkdir -p build/browser
+          if gh run download "$RUN_ID" -n inspect-address-wasm --dir build/browser --repo ${{ github.repository }}; then
+            echo "Downloaded inspect-address.wasm"
+            ls -la build/browser/
+          else
+            echo "inspect-address WASM artifact not found"
           fi
 
       - name: Download Coverage artifact

@@ -2,6 +2,9 @@ name: WASM CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,9 +37,16 @@ jobs:
             echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime result/cardano-addresses.wasm | head -3
           "
 
-    - name: Upload WASM artifact
+    - name: Upload cardano-addresses WASM artifact
       uses: actions/upload-artifact@v4
       with:
         name: cardano-addresses-wasm
+        path: result/cardano-addresses.wasm
+        retention-days: 90
+
+    - name: Upload inspect-address WASM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inspect-address-wasm
         path: result/cardano-addresses.wasm
         retention-days: 90
