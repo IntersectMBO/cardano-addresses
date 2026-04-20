@@ -6,7 +6,6 @@ on:
   workflow_run:
     workflows: [Haskell CI, WASM CI]
     types: [completed]
-    branches: [master]
   pull_request:
 
 permissions:
@@ -64,7 +63,7 @@ jobs:
           fi
 
       - name: Download inspect-address WASM artifact
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -79,7 +78,7 @@ jobs:
           fi
 
       - name: Download Coverage artifact
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
