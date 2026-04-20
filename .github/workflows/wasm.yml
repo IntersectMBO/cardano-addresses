@@ -28,20 +28,21 @@ jobs:
     - name: Build WASM binary
       run: |
         nix build .#wasm
-        cp result/cardano-addresses.wasm result/inspect-address.wasm
-        ls -lh result/cardano-addresses.wasm result/inspect-address.wasm
+        cp result cardano-addresses.wasm
+        cp cardano-addresses.wasm inspect-address.wasm
+        ls -lh cardano-addresses.wasm inspect-address.wasm
 
     - name: Test WASM binary with wasmtime
       run: |
         nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
           --command bash -c "
-            echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime result/cardano-addresses.wasm
-            echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime result/cardano-addresses.wasm | head -3
+            echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime cardano-addresses.wasm
+            echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime cardano-addresses.wasm | head -3
           "
 
     - name: Upload WASM artifact
       uses: actions/upload-artifact@v4
       with:
         name: inspect-address-wasm
-        path: result/inspect-address.wasm
+        path: inspect-address.wasm
         retention-days: 90
