@@ -23,9 +23,6 @@ active-repositories:
 -- See CONTRIBUTING for information about these, including some Nix commands
 -- you need to run if you change them
 
-if impl(ghc>=9.8)
-  allow-newer: *:template-haskell, *:base, *:deepseq, *:ghc-prim, *:time
-
 active-repositories: hackage.haskell.org, cardano-haskell-packages
 
 index-state:
