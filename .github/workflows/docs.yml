@@ -53,15 +53,16 @@ jobs:
             RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
             echo "Downloading from latest successful Haskell CI run: $RUN_ID"
           fi
-          if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }}; then
+          if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock_html --repo ${{ github.repository }}; then
             echo "Downloaded haddock artifact"
-            ls -la build/haddock/
-            if [ -d build/haddock/html ]; then
-              if [ -d build/haddock/html/cardano-addresses ]; then
-                mv build/haddock/html/cardano-addresses/* build/haddock/
-                rm -rf build/haddock/html
-              fi
+            ls -la build/haddock_html/
+            mkdir -p build/haddock
+            if [ -d build/haddock_html/html/cardano-addresses ]; then
+              mv build/haddock_html/html/cardano-addresses/* build/haddock/
+            else
+              mv build/haddock_html/html/* build/haddock/
             fi
+            rm -rf build/haddock_html
             ls -la build/haddock/
           else
             echo "Haddock artifact not found"
@@ -101,10 +102,16 @@ jobs:
           if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }}; then
             echo "Downloaded coverage artifact"
             if [ -d build/coverage/coverage_html ]; then
-              mv build/coverage/coverage_html/* build/
-              rm -rf build/coverage/coverage_html
+              if [ -f build/coverage/coverage_html/hpc_index.html ]; then
+                mv build/coverage/coverage_html/hpc_index.html build/
+              else
+                echo "hpc_index.html not found in coverage artifact"
+              fi
+            else
+              echo "coverage_html directory not found in coverage artifact"
             fi
             if [ -d build/coverage/badges ]; then
+              mkdir -p build/badges
               mv build/coverage/badges/* build/badges/
               rm -rf build/coverage/badges
             fi
