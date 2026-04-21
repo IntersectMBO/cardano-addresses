@@ -39,6 +39,7 @@ jobs:
           --command bash -c "
             echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime -L cardano-addresses.wasm
             echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime -L cardano-addresses.wasm | head -3
+            echo '{\"cmd\":\"gen-mnemonic\",\"words\":12}' | wasmtime -L cardano-addresses.wasm
           "
 
     - name: Upload WASM artifact
