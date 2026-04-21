@@ -39,7 +39,22 @@ import Cardano.Address.Derivation
 import Cardano.Address.Style.Shelley
     ( Credential (..), Role (..) )
 import Cardano.Mnemonic
-    ( MkSomeMnemonicError (..), mkSomeMnemonic )
+    ( Entropy
+    , EntropySize
+    , Mnemonic
+    , MnemonicWords
+    , MkMnemonicError (..)
+    , MkSomeMnemonicError (..)
+    , ValidChecksumSize
+    , ValidEntropySize
+    , ValidMnemonicSentence
+    , entropyToBytes
+    , entropyToMnemonic
+    , genEntropy
+    , mkEntropy
+    , mnemonicToText
+    , mkSomeMnemonic
+    )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..)
     , detectEncoding
@@ -83,8 +98,42 @@ dispatch obj = case lookupText "cmd" obj of
     Just "sign" -> cmdSign obj
     Just "verify" -> cmdVerify obj
     Just "bootstrap-address" -> cmdBootstrapAddress obj
+    Just "gen-mnemonic" -> cmdGenMnemonic obj
     Just other -> die' ("Unknown command: " <> T.unpack other)
     Nothing -> die' "Missing \"cmd\" field"
+
+------------------------------------------------------------------------
+-- gen-mnemonic
+------------------------------------------------------------------------
+
+cmdGenMnemonic :: Json.Object -> IO ()
+cmdGenMnemonic obj = do
+    wordCount <- requireInt "words" obj
+    case wordCount of
+        9  -> generateMnemonic @96
+        12 -> generateMnemonic @128
+        15 -> generateMnemonic @160
+        18 -> generateMnemonic @192
+        21 -> generateMnemonic @224
+        24 -> generateMnemonic @256
+        _  -> die' "Invalid word count. Valid values: 9, 12, 15, 18, 21, 24"
+
+generateMnemonic :: forall (ent :: Nat) n csz.
+    ( ValidEntropySize ent
+    , ValidChecksumSize ent csz
+    , ent ~ EntropySize n
+    , n ~ MnemonicWords ent
+    , ValidMnemonicSentence n
+    ) => IO ()
+generateMnemonic = do
+    entropy <- genEntropy @ent
+    let mnemonic = entropyToMnemonic @n entropy
+    let words = T.unwords (mnemonicToText mnemonic)
+    BL8.putStrLn . Json.encodePretty . Json.Object $
+        KM.fromList
+            [ ("mnemonic", Json.String words)
+            , ("entropy", Json.String (toHex (entropyToBytes entropy)))
+            ]
 
 ------------------------------------------------------------------------
 -- inspect
