@@ -1,6 +1,8 @@
 name: Deploy Documentation
 
 on:
+  push:
+    branches: [ "master" ]
   workflow_run:
     workflows: [Haskell CI, WASM CI]
     types: [completed]
@@ -22,6 +24,7 @@ jobs:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
       || (github.event_name == 'pull_request')
+      || (github.event_name == 'push')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,12 +43,16 @@ jobs:
         run: npm run build
 
       - name: Download Haddock artifact
-        if: github.event_name == 'workflow_run'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RUN_ID=${{ github.event.workflow_run.id }}
-          echo "Downloading from run: $RUN_ID"
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            RUN_ID=${{ github.event.workflow_run.id }}
+            echo "Downloading from workflow_run trigger: $RUN_ID"
+          else
+            RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            echo "Downloading from latest successful Haskell CI run: $RUN_ID"
+          fi
           if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock --repo ${{ github.repository }}; then
             echo "Downloaded haddock artifact"
             ls -la build/haddock/
@@ -61,12 +68,16 @@ jobs:
           fi
 
       - name: Download inspect-address WASM artifact
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RUN_ID=${{ github.event.workflow_run.id }}
-          echo "Downloading inspect-address WASM from run: $RUN_ID"
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            RUN_ID=${{ github.event.workflow_run.id }}
+            echo "Downloading from workflow_run trigger: $RUN_ID"
+          else
+            RUN_ID=$(gh run list -w "WASM CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            echo "Downloading from latest successful WASM CI run: $RUN_ID"
+          fi
           mkdir -p build/browser
           if gh run download "$RUN_ID" -n inspect-address-wasm --dir build/browser --repo ${{ github.repository }}; then
             echo "Downloaded inspect-address.wasm"
@@ -76,12 +87,16 @@ jobs:
           fi
 
       - name: Download Coverage artifact
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RUN_ID=${{ github.event.workflow_run.id }}
-          echo "Downloading from run: $RUN_ID"
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            RUN_ID=${{ github.event.workflow_run.id }}
+            echo "Downloading from workflow_run trigger: $RUN_ID"
+          else
+            RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            echo "Downloading from latest successful Haskell CI run: $RUN_ID"
+          fi
           mkdir -p build/badges
           if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }}; then
             echo "Downloaded coverage artifact"
@@ -118,7 +133,9 @@ jobs:
   deploy:
     needs: docs-build
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run'
+    if: >-
+      github.event_name == 'workflow_run'
+      || github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
