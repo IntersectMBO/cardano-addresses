@@ -124,8 +124,6 @@ import Data.Function
     ( (&) )
 import Data.Maybe
     ( fromMaybe )
-import Data.Typeable
-    ( Typeable )
 import Data.Word
     ( Word32, Word8 )
 import Fmt
@@ -183,7 +181,7 @@ instance (NFData key) => NFData (Icarus depth key)
 data Role
     = UTxOExternal
     | UTxOInternal
-    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+    deriving (Generic, Show, Eq, Ord, Bounded)
 
 instance NFData Role
 

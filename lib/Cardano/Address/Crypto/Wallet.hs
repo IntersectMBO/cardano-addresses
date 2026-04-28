@@ -60,8 +60,6 @@ import qualified Data.ByteArray as BA
 import Data.ByteString
     ( ByteString )
 import qualified Data.ByteString.Char8 as B8
-import Data.Data
-    ( Typeable )
 import Data.Hashable
     ( Hashable )
 import Data.Word
@@ -92,12 +90,11 @@ import Cardano.Address.Crypto.Wallet.Types
 
 newtype XPrv = XPrv EncryptedKey
     deriving newtype (NFData, ByteArrayAccess)
-    deriving stock Typeable
 
 data XPub = XPub
     { xpubPublicKey :: !ByteString
     , xpubChaincode :: !ChainCode
-    } deriving (Eq, Show, Ord, Typeable, Generic)
+    } deriving (Eq, Show, Ord, Generic)
 
 instance NFData XPub
 instance Hashable XPub

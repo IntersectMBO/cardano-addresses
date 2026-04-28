@@ -121,8 +121,6 @@ import Data.Text
     ( Text )
 import Data.Type.Equality
     ( (:~:) (..), testEquality )
-import Data.Typeable
-    ( Typeable )
 import GHC.TypeLits
     ( KnownNat, Nat, natVal )
 import Type.Reflection
@@ -178,7 +176,7 @@ data Mnemonic (mw :: Nat) = Mnemonic
 newtype MnemonicException csz =
     UnexpectedEntropyError (EntropyError csz)
     -- ^ Invalid entropy length or checksum
-    deriving stock (Show, Typeable)
+    deriving stock (Show)
     deriving newtype NFData
 
 -- | This wraps errors from "Cardano.Encoding.BIP39"
@@ -333,7 +331,7 @@ entropyToBytes
     -> ScrubbedBytes
 entropyToBytes = BA.convert . entropyRaw
 
-instance (KnownNat csz, Typeable csz) => Exception (MnemonicException csz)
+instance KnownNat csz => Exception (MnemonicException csz)
 
 -- | Convert a 'Mnemonic' to a sentence of a specified dictionary mnemonic words.
 --

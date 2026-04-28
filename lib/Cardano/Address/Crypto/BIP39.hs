@@ -80,8 +80,6 @@ import Data.ByteArray
     ( ByteArray, ByteArrayAccess )
 import Data.ByteString
     ( ByteString )
-import Data.Data
-    ( Typeable )
 import Data.Kind
     ( Constraint )
 import Data.List
@@ -124,7 +122,7 @@ import qualified Data.Text.Encoding as T
 -- -------------------------------------------------------------------------- --
 
 newtype Checksum (bits :: Nat) = Checksum Word8
-    deriving (Show, Eq, Typeable)
+    deriving (Show, Eq)
 
 instance NFData (Checksum bits) where
     rnf (Checksum !_) = ()
@@ -158,7 +156,7 @@ data Entropy (n :: Nat) = Entropy
     { entropyRaw :: !ByteString
     , entropyChecksum :: !(Checksum (CheckSumBits n))
     }
-    deriving (Show, Eq, Typeable)
+    deriving (Show, Eq)
 
 instance NFData (Entropy n) where
     rnf (Entropy !_ cs) = rnf cs
@@ -271,7 +269,7 @@ entropyToWords (Entropy bs (Checksum w)) =
 -- -------------------------------------------------------------------------- --
 
 newtype Seed = Seed ByteString
-    deriving (Show, Eq, Ord, Typeable)
+    deriving (Show, Eq, Ord)
     deriving newtype (Semigroup, Monoid, ByteArrayAccess, ByteArray, NFData)
 
 type Passphrase = Text
@@ -306,7 +304,7 @@ phraseToSeed mw dic passphrase =
 newtype MnemonicSentence (mw :: Nat) = MnemonicSentence
     { mnemonicSentenceToListN :: ListN mw WordIndex
     }
-    deriving (Show, Eq, Typeable)
+    deriving (Show, Eq)
 
 instance NFData (MnemonicSentence mw) where
     rnf (MnemonicSentence l) = rnf l
@@ -319,7 +317,7 @@ type ValidMnemonicSentence (mw :: Nat) =
 newtype MnemonicPhrase (mw :: Nat) = MnemonicPhrase
     { mnemonicPhraseToListN :: ListN mw Text
     }
-    deriving (Show, Eq, Typeable)
+    deriving (Show, Eq)
 
 instance NFData (MnemonicPhrase mw) where
     rnf (MnemonicPhrase l) = rnf l
