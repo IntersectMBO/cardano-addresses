@@ -1,66 +1,57 @@
 {
-  description = "Cardano Addresses";
-
-  inputs = {
-    nixpkgs.follows = "devx/nixpkgs";
-    devx.url = "github:input-output-hk/devx";
-    flake-utils.url = "github:numtide/flake-utils";
-    haskellNix.url = "github:input-output-hk/haskell.nix";
-    ghc-wasm-meta = {
-      url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
-      flake = true;
-    };
+  nixConfig = {
+    extra-substituters = [
+      "https://cache.iog.io"
+    ];
+    extra-trusted-public-keys = [
+      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+    ];
+    allow-import-from-derivation = true;
   };
 
-  outputs = { self, nixpkgs, flake-utils, devx, haskellNix, ghc-wasm-meta, ... }:
+  inputs = {
+    haskellNix = {
+      url = "github:input-output-hk/haskell.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.hackage.follows = "hackageNix";
+    };
+    hackageNix = {
+      url = "github:input-output-hk/hackage.nix";
+      flake = false;
+    };
+    nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+    iohkNix.url = "github:input-output-hk/iohk-nix";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    CHaP = {
+      url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
+      flake = false;
+    };
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  outputs = inputs:
     let
-      inherit (nixpkgs) lib;
-      inherit (flake-utils.lib) eachSystem mkApp;
-      supportedSystems = import ./nix/supported-systems.nix;
+      inherit ((import ./flake/lib.nix { inherit inputs; }).flake.lib) recursiveImports;
     in
-    {
-      devShells = lib.genAttrs supportedSystems (system:
-        devx.outputs.devShells.${system}
-      );
-    } // eachSystem supportedSystems
-      (system:
-        let
-          pkgs = import nixpkgs {
-            inherit system;
-          };
-        in
-        {
-          devShells.default = devx.outputs.devShells.${system}.ghc96-iog;
-
-          packages =
-            let
-              # Limit haskell.nix to the WASM packaging path only.
-              pkgsWasm = import nixpkgs {
-                inherit system;
-                overlays = [ haskellNix.overlay ];
-              };
-              wasmBuild = import ./nix/wasm.nix {
-                pkgs = pkgsWasm;
-                ghcWasmToolchain = ghc-wasm-meta.packages.${system}.all_9_12;
-                src = ./.;
-                dependenciesHash = "sha256-tn90dlUhluIKWvHcxm8S8nBp06ysqHY5cUgKiLjmwJc=";
-              };
-            in
-            {
-              wasm = wasmBuild.wasm;
-              wasm-deps = wasmBuild.deps;
-            };
-
-          apps = {
-            repl = mkApp {
-              drv = pkgs.writeShellScriptBin "repl" ''
-                confnix=$(mktemp)
-                echo "builtins.getFlake (toString $(git rev-parse --show-toplevel))" >$confnix
-                trap "rm $confnix" EXIT
-                nix repl $confnix
-              '';
-            };
-          };
-        }
-      );
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports =
+        recursiveImports [ ./flake ./perSystem ]
+        ++ [
+          inputs.treefmt-nix.flakeModule
+        ];
+      systems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+      perSystem = { system, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          inherit (inputs.haskellNix) config;
+          overlays = [ inputs.haskellNix.overlay ];
+        };
+      };
+    };
 }

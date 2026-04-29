@@ -39,8 +39,13 @@ result*
 .stack-to-nix.cache
 .nix-shell-cabal.project
 tmp/
+.direnv
 
 ### Node/Docusaurus ###
 node_modules/
 .docusaurus/
 build/
+
+# Agents
+
+.claude/settings.local.json
