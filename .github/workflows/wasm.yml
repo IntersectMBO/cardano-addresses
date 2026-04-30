@@ -1,0 +1,69 @@
+name: WASM CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: DeterminateSystems/determinate-nix-action@v3
+
+    - name: Configure nix
+      run: |
+        mkdir -p ~/.config/nix
+        echo "extra-substituters = https://cache.iog.io" >> ~/.config/nix/nix.conf
+        echo "extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" >> ~/.config/nix/nix.conf
+
+    - name: Build WASM binary
+      run: |
+        nix build .#wasm --accept-flake-config
+        echo "=== Result ==="
+        ls -la result
+        TARGET=$(readlink -f result)
+        echo "=== Target: $TARGET ==="
+        ls -la "$TARGET/"
+        # The binary is likely in TARGET/bin/
+        if [ -f "$TARGET/bin/cardano-addresses-wasm" ]; then
+          cp "$TARGET/bin/cardano-addresses-wasm" inspect-address.wasm
+        elif [ -f "$TARGET/cardano-addresses-wasm" ]; then
+          cp "$TARGET/cardano-addresses-wasm" inspect-address.wasm
+        else
+          # Search for it
+          BINARY=$(find "$TARGET" -type f -name "*cardano-addresses*" 2>/dev/null | head -1)
+          if [ -n "$BINARY" ]; then
+            cp "$BINARY" inspect-address.wasm
+          else
+            echo "ERROR: WASM binary not found in $TARGET"
+            exit 1
+          fi
+        fi
+        ls -lh inspect-address.wasm
+
+    - name: Test WASM binary with wasmtime
+      run: |
+        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
+          --command bash -c "
+            echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime -L inspect-address.wasm
+            echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime -L inspect-address.wasm | head -3
+          "
+
+    - name: Upload WASM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inspect-address-wasm
+        path: inspect-address.wasm
+        retention-days: 90
