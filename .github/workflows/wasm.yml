@@ -31,14 +31,15 @@ jobs:
     - name: Build WASM binary
       run: |
         nix build .#wasm
-        ls -la result/
-        find result -name "*.wasm" -type f
-        WASM_FILE=$(find result -name "*.wasm" -type f | head -1)
-        if [ -n "$WASM_FILE" ]; then
-          cp "$WASM_FILE" inspect-address.wasm
+        echo "=== Result ==="
+        ls -la result
+        # For executable builds, result is a symlink to the binary
+        # Use cp -L to copy the actual file, not the symlink
+        if [ -e result ]; then
+          cp -L result inspect-address.wasm
           ls -lh inspect-address.wasm
         else
-          echo "No WASM file found in build output"
+          echo "ERROR: result not found after build"
           exit 1
         fi
 
