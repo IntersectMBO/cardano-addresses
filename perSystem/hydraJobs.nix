@@ -1,5 +1,5 @@
 { config, lib, withSystem, ... }: {
-  flake.hydraJobs = lib.genAttrs config.systems (lib.flip withSystem (
+  flake.hydraJobs = lib.genAttrs (lib.remove "x86_64-darwin" config.systems) (lib.flip withSystem (
     { config
     , pkgs
     , ...
