@@ -33,8 +33,24 @@ jobs:
         nix build .#wasm --accept-flake-config
         echo "=== Result ==="
         ls -la result
-        # Copy the symlink target (dereference)
-        cp -L result inspect-address.wasm
+        TARGET=$(readlink -f result)
+        echo "=== Target: $TARGET ==="
+        ls -la "$TARGET/"
+        # The binary is likely in TARGET/bin/
+        if [ -f "$TARGET/bin/cardano-addresses-wasm" ]; then
+          cp "$TARGET/bin/cardano-addresses-wasm" inspect-address.wasm
+        elif [ -f "$TARGET/cardano-addresses-wasm" ]; then
+          cp "$TARGET/cardano-addresses-wasm" inspect-address.wasm
+        else
+          # Search for it
+          BINARY=$(find "$TARGET" -type f -name "*cardano-addresses*" 2>/dev/null | head -1)
+          if [ -n "$BINARY" ]; then
+            cp "$BINARY" inspect-address.wasm
+          else
+            echo "ERROR: WASM binary not found in $TARGET"
+            exit 1
+          fi
+        fi
         ls -lh inspect-address.wasm
 
     - name: Test WASM binary with wasmtime
