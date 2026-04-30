@@ -57,7 +57,7 @@ const config = {
             label: 'Documentation',
           },
           {
-            href: '/haddock',
+            href: 'https://IntersectMBO.github.io/cardano-addresses/haddock/index.html',
             label: 'API Reference',
             position: 'right',
           },
