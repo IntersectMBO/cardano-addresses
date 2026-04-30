@@ -33,15 +33,27 @@ jobs:
         nix build .#wasm
         echo "=== Result ==="
         ls -la result
-        # For executable builds, result is a symlink to the binary
-        # Use cp -L to copy the actual file, not the symlink
-        if [ -e result ]; then
-          cp -L result inspect-address.wasm
-          ls -lh inspect-address.wasm
+        # result points to the package output directory
+        # The binary might be in result/bin/ or directly in result/
+        if [ -f result/bin/cardano-addresses-wasm ]; then
+          cp result/bin/cardano-addresses-wasm inspect-address.wasm
+        elif [ -f result/cardano-addresses-wasm ]; then
+          cp result/cardano-addresses-wasm inspect-address.wasm
         else
-          echo "ERROR: result not found after build"
-          exit 1
+          # Search for any executable file
+          BINARY=$(find result -type f -executable 2>/dev/null | head -1)
+          if [ -z "$BINARY" ]; then
+            BINARY=$(find result -type f -name "*cardano-addresses*" 2>/dev/null | head -1)
+          fi
+          if [ -n "$BINARY" ]; then
+            cp "$BINARY" inspect-address.wasm
+          else
+            echo "ERROR: WASM binary not found"
+            find result -type f 2>/dev/null | head -20
+            exit 1
+          fi
         fi
+        ls -lh inspect-address.wasm
 
     - name: Test WASM binary with wasmtime
       run: |
