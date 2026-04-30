@@ -1,0 +1,43 @@
+name: Coding Standards
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+
+jobs:
+  hlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.10'
+          cabal-version: '3.14'
+
+      - name: Install hlint
+        run: |
+          curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s .
+
+  stylish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check stylish-haskell
+        env:
+          VERSION: v0.11.0.0
+        run: |
+          curl -sSL https://raw.github.com/input-output-hk/adrestia/master/templates/haskell/stylish-haskell.sh | sh -s $(git ls-files '*.hs' | grep -v 'jsapi/.*/Main.hs') -i
+          if [ -z "$(git status --porcelain)" ]; then
+              echo "No style errors detected."
+          else
+              echo "Style errors detected:"
+              git diff
+              exit 1
+          fi

@@ -1,0 +1,55 @@
+name: WASM CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: DeterminateSystems/determinate-nix-action@v3
+
+    - name: Configure nix
+      run: |
+        mkdir -p ~/.config/nix
+        echo "extra-substituters = https://cache.iog.io" >> ~/.config/nix/nix.conf
+        echo "extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" >> ~/.config/nix/nix.conf
+
+    - name: Build WASM binary
+      run: |
+        nix build .#wasm
+        ls -la result/
+        find result -name "*.wasm" -type f
+        WASM_FILE=$(find result -name "*.wasm" -type f | head -1)
+        if [ -n "$WASM_FILE" ]; then
+          cp "$WASM_FILE" inspect-address.wasm
+          ls -lh inspect-address.wasm
+        else
+          echo "No WASM file found in build output"
+          exit 1
+        fi
+
+    - name: Test WASM binary with wasmtime
+      run: |
+        nix shell 'gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org#all_9_12' \
+          --command bash -c "
+            echo '{\"cmd\":\"inspect\",\"address\":\"stake1uyehkck0lajq8gr28t9uxnuvgcqrc6070x3k9r8048z8y5gh6ffgw\"}' | wasmtime -L inspect-address.wasm
+            echo '{\"cmd\":\"derive\",\"mnemonic\":\"message mask aunt wheel ten maze between tomato slow analyst ladder such report capital produce\",\"path\":\"1852H/1815H/0H/0/0\"}' | wasmtime -L inspect-address.wasm | head -3
+          "
+
+    - name: Upload WASM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inspect-address-wasm
+        path: inspect-address.wasm
+        retention-days: 90
