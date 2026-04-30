@@ -6,8 +6,8 @@ const config = {
   tagline: 'Utilities for constructing Cardano addresses',
   favicon: 'img/favicon.ico',
 
-  url: 'https://IntersectMBO.github.io',
-  baseUrl: '/cardano-addresses/',
+  url: 'https://cardano-addresses.cardano.intersectmbo.org',
+  baseUrl: '/',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -55,6 +55,11 @@ const config = {
             sidebarId: 'tutorialSidebar',
             position: 'left',
             label: 'Documentation',
+          },
+          {
+            href: 'https://IntersectMBO.github.io/cardano-addresses/haddock/index.html',
+            label: 'API Reference',
+            position: 'right',
           },
           {
             href: 'https://github.com/IntersectMBO/cardano-addresses',
