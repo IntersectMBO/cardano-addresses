@@ -8,7 +8,7 @@
       in
       {
         packages.cardano-address-windows =
-          windowsProject.projectCross.mingwW64.hsPkgs.cardano-addresses.components.exes.cardano-address;
+          windowsProject.projectCross.ucrt64.hsPkgs.cardano-addresses.components.exes.cardano-address;
       }
     );
 }
