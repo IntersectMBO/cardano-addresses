@@ -64,7 +64,8 @@
 
       try {
         const encoder = new TextEncoder();
-        const stdinData = encoder.encode(addr);
+        const jsonInput = JSON.stringify({cmd: "inspect", address: addr});
+        const stdinData = encoder.encode(jsonInput);
 
         let stdoutBuf = '';
         let stderrBuf = '';
