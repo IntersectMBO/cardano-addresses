@@ -7,7 +7,7 @@ const config = {
   favicon: 'img/favicon.ico',
 
   url: 'https://cardano-addresses.cardano.intersectmbo.org',
-  baseUrl: '/',
+  baseUrl: '/cardano-addresses/',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
