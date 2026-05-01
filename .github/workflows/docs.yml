@@ -87,6 +87,12 @@ jobs:
             echo "inspect-address WASM artifact not found"
           fi
 
+      - name: Copy browser HTML to build
+        run: |
+          mkdir -p build/browser
+          cp browser/index.html build/browser/
+          ls -la build/browser/
+
       - name: Download Coverage artifact
         env:
           GH_TOKEN: ${{ github.token }}
