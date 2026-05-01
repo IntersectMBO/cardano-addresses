@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Copyright: 2025 Intersect</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Options.Applicative.MnemonicLanguage</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">(</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Applicative Parser</span></span><span>
+</span><span id="line-13"></span><span>      </span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#mnemonicLanguageOpt"><span class="hs-identifier">mnemonicLanguageOpt</span></a></span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Helpers</span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier">supportedDictionaryToString</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryFromString"><span class="hs-identifier">supportedDictionaryFromString</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html"><span class="hs-identifier">Cardano.Dictionary</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier">SupportedDictionary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.List.html"><span class="hs-identifier">Data.List</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.OldList.html#intercalate"><span class="hs-identifier">intercalate</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List.Extra</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">enumerate</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Parser</span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">completer</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">eitherReader</span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">help</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">listCompleter</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">long</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">metavar</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">option</span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">showDefaultWith</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">value</span></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | SupportedDictionary displays according to two-letter [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)</span></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-type">supportedDictionaryToString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier hs-type">SupportedDictionary</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span>
+</span><span id="line-45"></span><span id="supportedDictionaryToString"><span class="annot"><span class="annottext">supportedDictionaryToString :: SupportedDictionary -&gt; String
+</span><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var hs-var">supportedDictionaryToString</span></a></span></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#English"><span class="hs-identifier hs-var">English</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;en&quot;</span></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Italian"><span class="hs-identifier hs-var">Italian</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;it&quot;</span></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Japanese"><span class="hs-identifier hs-var">Japanese</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ja&quot;</span></span><span>
+</span><span id="line-48"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#French"><span class="hs-identifier hs-var">French</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;fr&quot;</span></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Korean"><span class="hs-identifier hs-var">Korean</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ko&quot;</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Spanish"><span class="hs-identifier hs-var">Spanish</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;es&quot;</span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#languageStrs"><span class="hs-identifier hs-type">languageStrs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-53"></span><span id="languageStrs"><span class="annot"><span class="annottext">languageStrs :: [String]
+</span><a href="Options.Applicative.MnemonicLanguage.html#languageStrs"><span class="hs-identifier hs-var hs-var">languageStrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; String
+</span><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span> </span><span class="annot"><span class="annottext">(SupportedDictionary -&gt; String)
+-&gt; [SupportedDictionary] -&gt; [String]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[SupportedDictionary]
+forall a. (Enum a, Bounded a) =&gt; [a]
+</span><span class="hs-identifier hs-var">enumerate</span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryFromString"><span class="hs-identifier hs-type">supportedDictionaryFromString</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier hs-type">SupportedDictionary</span></a></span><span>
+</span><span id="line-56"></span><span id="supportedDictionaryFromString"><span class="annot"><span class="annottext">supportedDictionaryFromString :: String -&gt; Either String SupportedDictionary
+</span><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryFromString"><span class="hs-identifier hs-var hs-var">supportedDictionaryFromString</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-57"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;en&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#English"><span class="hs-identifier hs-var">English</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;it&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Italian"><span class="hs-identifier hs-var">Italian</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ja&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Japanese"><span class="hs-identifier hs-var">Japanese</span></a></span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;fr&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#French"><span class="hs-identifier hs-var">French</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ko&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Korean"><span class="hs-identifier hs-var">Korean</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;es&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Either String SupportedDictionary
+forall a b. b -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#Spanish"><span class="hs-identifier hs-var">Spanish</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String SupportedDictionary
+forall a b. a -&gt; Either a b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Either String SupportedDictionary)
+-&gt; String -&gt; Either String SupportedDictionary
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-64"></span><span>           </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Invalid supported dictionary. The following are available: &quot;</span></span><span>
+</span><span id="line-65"></span><span>           </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; String
+forall a. [a] -&gt; [[a]] -&gt; [a]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.OldList.html#intercalate"><span class="hs-identifier hs-var">intercalate</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;, &quot;</span></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="Options.Applicative.MnemonicLanguage.html#languageStrs"><span class="hs-identifier hs-var">languageStrs</span></a></span><span>
+</span><span id="line-66"></span><span>           </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.&quot;</span></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="hs-comment">--</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- Applicative Parser</span><span>
+</span><span id="line-70"></span><span class="hs-comment">--</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#mnemonicLanguageOpt"><span class="hs-identifier hs-type">mnemonicLanguageOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier hs-type">SupportedDictionary</span></a></span><span>
+</span><span id="line-73"></span><span id="mnemonicLanguageOpt"><span class="annot"><span class="annottext">mnemonicLanguageOpt :: Parser SupportedDictionary
+</span><a href="Options.Applicative.MnemonicLanguage.html#mnemonicLanguageOpt"><span class="hs-identifier hs-var hs-var">mnemonicLanguageOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Parser SupportedDictionary
+forall a. ReadM a -&gt; Mod OptionFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">option</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Either String SupportedDictionary)
+-&gt; ReadM SupportedDictionary
+forall a. (String -&gt; Either String a) -&gt; ReadM a
+</span><span class="hs-identifier hs-var">eitherReader</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String SupportedDictionary
+</span><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryFromString"><span class="hs-identifier hs-var">supportedDictionaryFromString</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Mod OptionFields SupportedDictionary
+ -&gt; Parser SupportedDictionary)
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Parser SupportedDictionary
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields SupportedDictionary
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;language&quot;</span></span><span>
+</span><span id="line-75"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields SupportedDictionary
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">metavar</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;STR&quot;</span></span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields SupportedDictionary
+forall (f :: * -&gt; *) a. String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Language of mnemonic words to generate. Must be one of: &quot;</span></span><span>
+</span><span id="line-77"></span><span>             </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; [String] -&gt; String
+forall a. [a] -&gt; [[a]] -&gt; [a]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.OldList.html#intercalate"><span class="hs-identifier hs-var">intercalate</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;, &quot;</span></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="Options.Applicative.MnemonicLanguage.html#languageStrs"><span class="hs-identifier hs-var">languageStrs</span></a></span><span>
+</span><span id="line-78"></span><span>             </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Mod OptionFields SupportedDictionary
+forall (f :: * -&gt; *) a. HasValue f =&gt; a -&gt; Mod f a
+</span><span class="hs-identifier hs-var">value</span></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Cardano.Dictionary.html#English"><span class="hs-identifier hs-var">English</span></a></span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">(SupportedDictionary -&gt; String)
+-&gt; Mod OptionFields SupportedDictionary
+forall a (f :: * -&gt; *). (a -&gt; String) -&gt; Mod f a
+</span><span class="hs-identifier hs-var">showDefaultWith</span></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; String
+</span><a href="Options.Applicative.MnemonicLanguage.html#supportedDictionaryToString"><span class="hs-identifier hs-var">supportedDictionaryToString</span></a></span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><span class="annottext">Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+-&gt; Mod OptionFields SupportedDictionary
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Completer -&gt; Mod OptionFields SupportedDictionary
+forall (f :: * -&gt; *) a. HasCompleter f =&gt; Completer -&gt; Mod f a
+</span><span class="hs-identifier hs-var">completer</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[String] -&gt; Completer
+</span><span class="hs-identifier hs-var">listCompleter</span></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="Options.Applicative.MnemonicLanguage.html#languageStrs"><span class="hs-identifier hs-var">languageStrs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span></pre></body></html>

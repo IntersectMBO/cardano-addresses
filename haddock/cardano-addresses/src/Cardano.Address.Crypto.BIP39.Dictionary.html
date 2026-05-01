@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- | Vendored from @cardano-crypto@ (Apache-2.0).</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Original: Crypto.Encoding.BIP39.Dictionary</span><span>
+</span><span id="line-7"></span><span class="hs-comment">--</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Basement types replaced:</span><span>
+</span><span id="line-9"></span><span class="hs-comment">--   Offset String -&gt; Word16</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--   NormalForm    -&gt; NFData</span><span>
+</span><span id="line-11"></span><span class="hs-comment">--   TryFrom      -&gt; Maybe-returning function</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Crypto.BIP39.Dictionary</span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- ** Dictionary</span></span><span>
+</span><span id="line-14"></span><span>      </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#Dictionary"><span class="hs-identifier">Dictionary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier">WordIndex</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#wordIndex"><span class="hs-identifier">wordIndex</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#unWordIndex"><span class="hs-identifier">unWordIndex</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#DictionaryError"><span class="hs-identifier">DictionaryError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html"><span class="hs-identifier">Control.DeepSeq</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier">NFData</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Data.html"><span class="hs-identifier">Data.Data</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Typeable.Internal.html#Typeable"><span class="hs-identifier">Typeable</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Word.html"><span class="hs-identifier">Data.Word</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word16"><span class="hs-identifier">Word16</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Describes the properties of a BIP39 word dictionary.</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="Dictionary"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#Dictionary"><span class="hs-identifier hs-var">Dictionary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Dictionary"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#Dictionary"><span class="hs-identifier hs-var">Dictionary</span></a></span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="dictionaryIndexToWord"><span class="annot"><span class="annottext">Dictionary -&gt; WordIndex -&gt; Text
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#dictionaryIndexToWord"><span class="hs-identifier hs-var hs-var">dictionaryIndexToWord</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="dictionaryWordToIndex"><span class="annot"><span class="annottext">Dictionary -&gt; Text -&gt; Either DictionaryError WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#dictionaryWordToIndex"><span class="hs-identifier hs-var hs-var">dictionaryWordToIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#DictionaryError"><span class="hs-identifier hs-type">DictionaryError</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="dictionaryTestWord"><span class="annot"><span class="annottext">Dictionary -&gt; Text -&gt; Bool
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#dictionaryTestWord"><span class="hs-identifier hs-var hs-var">dictionaryTestWord</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="dictionaryWordSeparator"><span class="annot"><span class="annottext">Dictionary -&gt; Text
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#dictionaryWordSeparator"><span class="hs-identifier hs-var hs-var">dictionaryWordSeparator</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Typeable.Internal.html#Typeable"><span class="hs-identifier hs-type">Typeable</span></a></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- | Index of a mnemonic word in the 'Dictionary'.</span><span>
+</span><span id="line-43"></span><span class="hs-comment">--</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- 'WordIndex' values are in the range @[0..2047]@.</span><span>
+</span><span id="line-45"></span><span class="hs-keyword">newtype</span><span> </span><span id="WordIndex"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WordIndex"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="_unWordIndex"><span class="annot"><span class="annottext">WordIndex -&gt; Word16
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#_unWordIndex"><span class="hs-identifier hs-var hs-var">_unWordIndex</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word16"><span class="hs-identifier hs-type">Word16</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195213"><span id="local-6989586621679195218"><span id="local-6989586621679195222"><span class="annot"><span class="annottext">Int -&gt; WordIndex -&gt; ShowS
+[WordIndex] -&gt; ShowS
+WordIndex -&gt; [Char]
+(Int -&gt; WordIndex -&gt; ShowS)
+-&gt; (WordIndex -&gt; [Char])
+-&gt; ([WordIndex] -&gt; ShowS)
+-&gt; Show WordIndex
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WordIndex -&gt; ShowS
+showsPrec :: Int -&gt; WordIndex -&gt; ShowS
+$cshow :: WordIndex -&gt; [Char]
+show :: WordIndex -&gt; [Char]
+$cshowList :: [WordIndex] -&gt; ShowS
+showList :: [WordIndex] -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195226"><span id="local-6989586621679195230"><span class="annot"><span class="annottext">WordIndex -&gt; WordIndex -&gt; Bool
+(WordIndex -&gt; WordIndex -&gt; Bool)
+-&gt; (WordIndex -&gt; WordIndex -&gt; Bool) -&gt; Eq WordIndex
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WordIndex -&gt; WordIndex -&gt; Bool
+== :: WordIndex -&gt; WordIndex -&gt; Bool
+$c/= :: WordIndex -&gt; WordIndex -&gt; Bool
+/= :: WordIndex -&gt; WordIndex -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195237"><span id="local-6989586621679195240"><span id="local-6989586621679195243"><span id="local-6989586621679195247"><span id="local-6989586621679195250"><span id="local-6989586621679195253"><span id="local-6989586621679195256"><span class="annot"><span class="annottext">Eq WordIndex
+Eq WordIndex =&gt;
+(WordIndex -&gt; WordIndex -&gt; Ordering)
+-&gt; (WordIndex -&gt; WordIndex -&gt; Bool)
+-&gt; (WordIndex -&gt; WordIndex -&gt; Bool)
+-&gt; (WordIndex -&gt; WordIndex -&gt; Bool)
+-&gt; (WordIndex -&gt; WordIndex -&gt; Bool)
+-&gt; (WordIndex -&gt; WordIndex -&gt; WordIndex)
+-&gt; (WordIndex -&gt; WordIndex -&gt; WordIndex)
+-&gt; Ord WordIndex
+WordIndex -&gt; WordIndex -&gt; Bool
+WordIndex -&gt; WordIndex -&gt; Ordering
+WordIndex -&gt; WordIndex -&gt; WordIndex
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: WordIndex -&gt; WordIndex -&gt; Ordering
+compare :: WordIndex -&gt; WordIndex -&gt; Ordering
+$c&lt; :: WordIndex -&gt; WordIndex -&gt; Bool
+&lt; :: WordIndex -&gt; WordIndex -&gt; Bool
+$c&lt;= :: WordIndex -&gt; WordIndex -&gt; Bool
+&lt;= :: WordIndex -&gt; WordIndex -&gt; Bool
+$c&gt; :: WordIndex -&gt; WordIndex -&gt; Bool
+&gt; :: WordIndex -&gt; WordIndex -&gt; Bool
+$c&gt;= :: WordIndex -&gt; WordIndex -&gt; Bool
+&gt;= :: WordIndex -&gt; WordIndex -&gt; Bool
+$cmax :: WordIndex -&gt; WordIndex -&gt; WordIndex
+max :: WordIndex -&gt; WordIndex -&gt; WordIndex
+$cmin :: WordIndex -&gt; WordIndex -&gt; WordIndex
+min :: WordIndex -&gt; WordIndex -&gt; WordIndex
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Typeable.Internal.html#Typeable"><span class="hs-identifier hs-type">Typeable</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span id="local-6989586621679195260"><span class="annot"><span class="annottext">WordIndex -&gt; ()
+(WordIndex -&gt; ()) -&gt; NFData WordIndex
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: WordIndex -&gt; ()
+rnf :: WordIndex -&gt; ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></a></span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Extract the raw index.</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#unWordIndex"><span class="hs-identifier hs-type">unWordIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word16"><span class="hs-identifier hs-type">Word16</span></a></span><span>
+</span><span id="line-51"></span><span id="unWordIndex"><span class="annot"><span class="annottext">unWordIndex :: WordIndex -&gt; Word16
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#unWordIndex"><span class="hs-identifier hs-var hs-var">unWordIndex</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span id="local-6989586621679195266"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195266"><span class="hs-identifier hs-var">w</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195266"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679195272"><span id="local-6989586621679195276"><span id="local-6989586621679195279"><span id="local-6989586621679195282"><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Enum"><span class="hs-identifier hs-type">Enum</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-54"></span><span>    </span><span id="local-6989586621679195288"><span class="annot"><span class="annottext">toEnum :: Int -&gt; WordIndex
+</span><a href="#local-6989586621679195288"><span class="hs-identifier hs-var hs-var hs-var hs-var">toEnum</span></a></span></span><span> </span><span id="local-6989586621679195290"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679195290"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#wordIndex"><span class="hs-identifier hs-var">wordIndex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word16
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679195290"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span id="local-6989586621679195295"><span class="annot"><span class="annottext">fromEnum :: WordIndex -&gt; Int
+</span><a href="#local-6989586621679195295"><span class="hs-identifier hs-var hs-var hs-var hs-var">fromEnum</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span id="local-6989586621679195297"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195297"><span class="hs-identifier hs-var">w</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Int
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195297"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span id="local-6989586621679195304"><span class="annot"><span class="annottext">succ :: WordIndex -&gt; WordIndex
+</span><a href="#local-6989586621679195304"><span class="hs-identifier hs-var hs-var hs-var hs-var">succ</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span id="local-6989586621679195306"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195306"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195306"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Word16 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3C"><span class="hs-operator hs-var">&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">2047</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word16 -&gt; Word16
+forall a. Enum a =&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#succ"><span class="hs-identifier hs-var">succ</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195306"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; WordIndex
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;WordIndex out of bound&quot;</span></span><span>
+</span><span id="line-59"></span><span>    </span><span id="local-6989586621679195314"><span class="annot"><span class="annottext">pred :: WordIndex -&gt; WordIndex
+</span><a href="#local-6989586621679195314"><span class="hs-identifier hs-var hs-var hs-var hs-var">pred</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span id="local-6989586621679195316"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195316"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195316"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Word16 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; WordIndex
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;WordIndex out of bound&quot;</span></span><span>
+</span><span id="line-61"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word16 -&gt; Word16
+forall a. Enum a =&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#pred"><span class="hs-identifier hs-var">pred</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195316"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-type">Bounded</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679195323"><span class="annot"><span class="annottext">minBound :: WordIndex
+</span><a href="#local-6989586621679195323"><span class="hs-identifier hs-var hs-var hs-var hs-var">minBound</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621679195326"><span class="annot"><span class="annottext">maxBound :: WordIndex
+</span><a href="#local-6989586621679195326"><span class="hs-identifier hs-var hs-var hs-var hs-var">maxBound</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">2047</span></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- | Smart constructor: create a 'WordIndex' from a 'Word16',</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- returning 'Nothing' if out of range.</span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#tryWordIndex"><span class="hs-identifier hs-type">tryWordIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word16"><span class="hs-identifier hs-type">Word16</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span>
+</span><span id="line-70"></span><span id="tryWordIndex"><span class="annot"><span class="annottext">tryWordIndex :: Word16 -&gt; Maybe WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#tryWordIndex"><span class="hs-identifier hs-var hs-var">tryWordIndex</span></a></span></span><span> </span><span id="local-6989586621679195329"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195329"><span class="hs-identifier hs-var">w</span></a></span></span><span>
+</span><span id="line-71"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195329"><span class="hs-identifier hs-var">w</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Word16 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3C"><span class="hs-operator hs-var">&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><span class="hs-number">2048</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">WordIndex -&gt; Maybe WordIndex
+forall a. a -&gt; Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-var">WordIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195329"><span class="hs-identifier hs-var">w</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe WordIndex
+forall a. Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="annot"><span class="hs-comment">-- | Create a 'WordIndex', erroring if out of range.</span></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#wordIndex"><span class="hs-identifier hs-type">wordIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word16"><span class="hs-identifier hs-type">Word16</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#WordIndex"><span class="hs-identifier hs-type">WordIndex</span></a></span><span>
+</span><span id="line-76"></span><span id="wordIndex"><span class="annot"><span class="annottext">wordIndex :: Word16 -&gt; WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#wordIndex"><span class="hs-identifier hs-var hs-var">wordIndex</span></a></span></span><span> </span><span id="local-6989586621679195330"><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195330"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; Maybe WordIndex
+</span><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#tryWordIndex"><span class="hs-identifier hs-var">tryWordIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195330"><span class="hs-identifier hs-var">w</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><span class="annottext">Maybe WordIndex
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-78"></span><span>        </span><span class="annot"><span class="annottext">[Char] -&gt; WordIndex
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span>
+</span><span id="line-79"></span><span>            </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;Error: word index should be between 0 to 2047. &quot;</span></span><span>
+</span><span id="line-80"></span><span>                </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word16 -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">Word16
+</span><a href="#local-6989586621679195330"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-81"></span><span>            </span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679195332"><span class="annot"><span class="annottext">WordIndex
+</span><a href="#local-6989586621679195332"><span class="hs-identifier hs-var">wi</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">WordIndex
+</span><a href="#local-6989586621679195332"><span class="hs-identifier hs-var">wi</span></a></span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><span class="hs-comment">-- | Errors from dictionary lookup.</span></span><span>
+</span><span id="line-85"></span><span class="hs-keyword">newtype</span><span> </span><span id="DictionaryError"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#DictionaryError"><span class="hs-identifier hs-var">DictionaryError</span></a></span></span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="ErrInvalidDictionaryWord"><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#ErrInvalidDictionaryWord"><span class="hs-identifier hs-var">ErrInvalidDictionaryWord</span></a></span></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679195335"><span id="local-6989586621679195340"><span id="local-6989586621679195344"><span class="annot"><span class="annottext">Int -&gt; DictionaryError -&gt; ShowS
+[DictionaryError] -&gt; ShowS
+DictionaryError -&gt; [Char]
+(Int -&gt; DictionaryError -&gt; ShowS)
+-&gt; (DictionaryError -&gt; [Char])
+-&gt; ([DictionaryError] -&gt; ShowS)
+-&gt; Show DictionaryError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DictionaryError -&gt; ShowS
+showsPrec :: Int -&gt; DictionaryError -&gt; ShowS
+$cshow :: DictionaryError -&gt; [Char]
+show :: DictionaryError -&gt; [Char]
+$cshowList :: [DictionaryError] -&gt; ShowS
+showList :: [DictionaryError] -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#DictionaryError"><span class="hs-identifier hs-type">DictionaryError</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-90"></span><span>    </span><span id="local-6989586621679195350"><span class="annot"><span class="annottext">rnf :: DictionaryError -&gt; ()
+</span><a href="#local-6989586621679195350"><span class="hs-identifier hs-var hs-var hs-var hs-var">rnf</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.BIP39.Dictionary.html#ErrInvalidDictionaryWord"><span class="hs-identifier hs-type">ErrInvalidDictionaryWord</span></a></span><span> </span><span id="local-6989586621679195352"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679195352"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ()
+forall a. NFData a =&gt; a -&gt; ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#rnf"><span class="hs-identifier hs-var">rnf</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679195352"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-91"></span></pre></body></html>

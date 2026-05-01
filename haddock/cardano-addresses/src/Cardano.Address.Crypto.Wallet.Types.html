@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679198492"><span id="local-6989586621679198493"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE PatternSynonyms #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- | Vendored from @cardano-crypto@ (Apache-2.0).</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Original: Cardano.Crypto.Wallet.Types</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Address.Crypto.Wallet.Types</span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier">ChainCode</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme"><span class="hs-identifier">DerivationScheme</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationIndex"><span class="hs-identifier">DerivationIndex</span></a></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#LatestScheme"><span class="hs-identifier">LatestScheme</span></a></span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html"><span class="hs-identifier">Control.DeepSeq</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier">NFData</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteArray</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">ByteArrayAccess</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html"><span class="hs-identifier">Data.ByteString</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier">ByteString</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Data.html"><span class="hs-identifier">Data.Data</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Typeable.Internal.html#Typeable"><span class="hs-identifier">Typeable</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Hashable</span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Hashable</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Word.html"><span class="hs-identifier">Data.Word</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier">Word32</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">type</span><span> </span><span id="DerivationIndex"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationIndex"><span class="hs-identifier hs-var">DerivationIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="DerivationScheme"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme"><span class="hs-identifier hs-var">DerivationScheme</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DerivationScheme1"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme1"><span class="hs-identifier hs-var">DerivationScheme1</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="DerivationScheme2"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679198499"><span id="local-6989586621679198501"><span id="local-6989586621679198505"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme -&gt; ShowS
+[DerivationScheme] -&gt; ShowS
+DerivationScheme -&gt; String
+(Int -&gt; DerivationScheme -&gt; ShowS)
+-&gt; (DerivationScheme -&gt; String)
+-&gt; ([DerivationScheme] -&gt; ShowS)
+-&gt; Show DerivationScheme
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DerivationScheme -&gt; ShowS
+showsPrec :: Int -&gt; DerivationScheme -&gt; ShowS
+$cshow :: DerivationScheme -&gt; String
+show :: DerivationScheme -&gt; String
+$cshowList :: [DerivationScheme] -&gt; ShowS
+showList :: [DerivationScheme] -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198509"><span id="local-6989586621679198511"><span class="annot"><span class="annottext">DerivationScheme -&gt; DerivationScheme -&gt; Bool
+(DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; Eq DerivationScheme
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+== :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+$c/= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+/= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198518"><span id="local-6989586621679198520"><span id="local-6989586621679198522"><span id="local-6989586621679198526"><span id="local-6989586621679198529"><span id="local-6989586621679198532"><span id="local-6989586621679198535"><span class="annot"><span class="annottext">Eq DerivationScheme
+Eq DerivationScheme =&gt;
+(DerivationScheme -&gt; DerivationScheme -&gt; Ordering)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme)
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme)
+-&gt; Ord DerivationScheme
+DerivationScheme -&gt; DerivationScheme -&gt; Bool
+DerivationScheme -&gt; DerivationScheme -&gt; Ordering
+DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: DerivationScheme -&gt; DerivationScheme -&gt; Ordering
+compare :: DerivationScheme -&gt; DerivationScheme -&gt; Ordering
+$c&lt; :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+&lt; :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+$c&lt;= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+&lt;= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+$c&gt; :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+&gt; :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+$c&gt;= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+&gt;= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
+$cmax :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
+max :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
+$cmin :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
+min :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198539"><span id="local-6989586621679198547"><span id="local-6989586621679198553"><span id="local-6989586621679198563"><span id="local-6989586621679198565"><span id="local-6989586621679198569"><span id="local-6989586621679198573"><span id="local-6989586621679198577"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme
+DerivationScheme -&gt; Int
+DerivationScheme -&gt; [DerivationScheme]
+DerivationScheme -&gt; DerivationScheme
+DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+DerivationScheme
+-&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+(DerivationScheme -&gt; DerivationScheme)
+-&gt; (DerivationScheme -&gt; DerivationScheme)
+-&gt; (Int -&gt; DerivationScheme)
+-&gt; (DerivationScheme -&gt; Int)
+-&gt; (DerivationScheme -&gt; [DerivationScheme])
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme])
+-&gt; (DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme])
+-&gt; (DerivationScheme
+    -&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme])
+-&gt; Enum DerivationScheme
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: DerivationScheme -&gt; DerivationScheme
+succ :: DerivationScheme -&gt; DerivationScheme
+$cpred :: DerivationScheme -&gt; DerivationScheme
+pred :: DerivationScheme -&gt; DerivationScheme
+$ctoEnum :: Int -&gt; DerivationScheme
+toEnum :: Int -&gt; DerivationScheme
+$cfromEnum :: DerivationScheme -&gt; Int
+fromEnum :: DerivationScheme -&gt; Int
+$cenumFrom :: DerivationScheme -&gt; [DerivationScheme]
+enumFrom :: DerivationScheme -&gt; [DerivationScheme]
+$cenumFromThen :: DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+enumFromThen :: DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+$cenumFromTo :: DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+enumFromTo :: DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+$cenumFromThenTo :: DerivationScheme
+-&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+enumFromThenTo :: DerivationScheme
+-&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198581"><span id="local-6989586621679198583"><span class="annot"><span class="annottext">DerivationScheme
+DerivationScheme -&gt; DerivationScheme -&gt; Bounded DerivationScheme
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: DerivationScheme
+minBound :: DerivationScheme
+$cmaxBound :: DerivationScheme
+maxBound :: DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Typeable.Internal.html#Typeable"><span class="hs-identifier hs-type">Typeable</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198587"><span id="local-6989586621679198589"><span class="annot"><span class="annottext">(forall x. DerivationScheme -&gt; Rep DerivationScheme x)
+-&gt; (forall x. Rep DerivationScheme x -&gt; DerivationScheme)
+-&gt; Generic DerivationScheme
+forall x. Rep DerivationScheme x -&gt; DerivationScheme
+forall x. DerivationScheme -&gt; Rep DerivationScheme x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DerivationScheme -&gt; Rep DerivationScheme x
+from :: forall x. DerivationScheme -&gt; Rep DerivationScheme x
+$cto :: forall x. Rep DerivationScheme x -&gt; DerivationScheme
+to :: forall x. Rep DerivationScheme x -&gt; DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span id="local-6989586621679198593"><span class="annot"><span class="annottext">DerivationScheme -&gt; ()
+(DerivationScheme -&gt; ()) -&gt; NFData DerivationScheme
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: DerivationScheme -&gt; ()
+rnf :: DerivationScheme -&gt; ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></a></span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">pattern</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#LatestScheme"><span class="hs-identifier hs-type">LatestScheme</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme"><span class="hs-identifier hs-type">DerivationScheme</span></a></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">pattern</span><span> </span><span id="LatestScheme"><span id="%24mLatestScheme"><span id="%24bLatestScheme"><span class="annot"><span class="annottext">$mLatestScheme :: forall {r}. DerivationScheme -&gt; ((# #) -&gt; r) -&gt; ((# #) -&gt; r) -&gt; r
+$bLatestScheme :: DerivationScheme
+</span><a href="Cardano.Address.Crypto.Wallet.Types.html#LatestScheme"><span class="hs-identifier hs-var hs-var hs-var">LatestScheme</span></a></span></span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-type">DerivationScheme2</span></a></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">newtype</span><span> </span><span id="ChainCode"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ChainCode"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679198611"><span id="local-6989586621679198616"><span id="local-6989586621679198620"><span class="annot"><span class="annottext">Int -&gt; ChainCode -&gt; ShowS
+[ChainCode] -&gt; ShowS
+ChainCode -&gt; String
+(Int -&gt; ChainCode -&gt; ShowS)
+-&gt; (ChainCode -&gt; String)
+-&gt; ([ChainCode] -&gt; ShowS)
+-&gt; Show ChainCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ChainCode -&gt; ShowS
+showsPrec :: Int -&gt; ChainCode -&gt; ShowS
+$cshow :: ChainCode -&gt; String
+show :: ChainCode -&gt; String
+$cshowList :: [ChainCode] -&gt; ShowS
+showList :: [ChainCode] -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198625"><span id="local-6989586621679198630"><span class="annot"><span class="annottext">ChainCode -&gt; ChainCode -&gt; Bool
+(ChainCode -&gt; ChainCode -&gt; Bool)
+-&gt; (ChainCode -&gt; ChainCode -&gt; Bool) -&gt; Eq ChainCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ChainCode -&gt; ChainCode -&gt; Bool
+== :: ChainCode -&gt; ChainCode -&gt; Bool
+$c/= :: ChainCode -&gt; ChainCode -&gt; Bool
+/= :: ChainCode -&gt; ChainCode -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198637"><span id="local-6989586621679198642"><span id="local-6989586621679198646"><span id="local-6989586621679198650"><span id="local-6989586621679198654"><span id="local-6989586621679198658"><span id="local-6989586621679198662"><span class="annot"><span class="annottext">Eq ChainCode
+Eq ChainCode =&gt;
+(ChainCode -&gt; ChainCode -&gt; Ordering)
+-&gt; (ChainCode -&gt; ChainCode -&gt; Bool)
+-&gt; (ChainCode -&gt; ChainCode -&gt; Bool)
+-&gt; (ChainCode -&gt; ChainCode -&gt; Bool)
+-&gt; (ChainCode -&gt; ChainCode -&gt; Bool)
+-&gt; (ChainCode -&gt; ChainCode -&gt; ChainCode)
+-&gt; (ChainCode -&gt; ChainCode -&gt; ChainCode)
+-&gt; Ord ChainCode
+ChainCode -&gt; ChainCode -&gt; Bool
+ChainCode -&gt; ChainCode -&gt; Ordering
+ChainCode -&gt; ChainCode -&gt; ChainCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ChainCode -&gt; ChainCode -&gt; Ordering
+compare :: ChainCode -&gt; ChainCode -&gt; Ordering
+$c&lt; :: ChainCode -&gt; ChainCode -&gt; Bool
+&lt; :: ChainCode -&gt; ChainCode -&gt; Bool
+$c&lt;= :: ChainCode -&gt; ChainCode -&gt; Bool
+&lt;= :: ChainCode -&gt; ChainCode -&gt; Bool
+$c&gt; :: ChainCode -&gt; ChainCode -&gt; Bool
+&gt; :: ChainCode -&gt; ChainCode -&gt; Bool
+$c&gt;= :: ChainCode -&gt; ChainCode -&gt; Bool
+&gt;= :: ChainCode -&gt; ChainCode -&gt; Bool
+$cmax :: ChainCode -&gt; ChainCode -&gt; ChainCode
+max :: ChainCode -&gt; ChainCode -&gt; ChainCode
+$cmin :: ChainCode -&gt; ChainCode -&gt; ChainCode
+min :: ChainCode -&gt; ChainCode -&gt; ChainCode
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198667"><span id="local-6989586621679198672"><span id="local-6989586621679198676"><span class="annot"><span class="annottext">ChainCode -&gt; Int
+(ChainCode -&gt; Int)
+-&gt; (forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a)
+-&gt; (forall p. ChainCode -&gt; Ptr p -&gt; IO ())
+-&gt; ByteArrayAccess ChainCode
+forall p. ChainCode -&gt; Ptr p -&gt; IO ()
+forall ba.
+(ba -&gt; Int)
+-&gt; (forall p a. ba -&gt; (Ptr p -&gt; IO a) -&gt; IO a)
+-&gt; (forall p. ba -&gt; Ptr p -&gt; IO ())
+-&gt; ByteArrayAccess ba
+forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a
+$clength :: ChainCode -&gt; Int
+length :: ChainCode -&gt; Int
+$cwithByteArray :: forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a
+withByteArray :: forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a
+$ccopyByteArrayToPtr :: forall p. ChainCode -&gt; Ptr p -&gt; IO ()
+copyByteArrayToPtr :: forall p. ChainCode -&gt; Ptr p -&gt; IO ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ByteArrayAccess</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198682"><span class="annot"><span class="annottext">ChainCode -&gt; ()
+(ChainCode -&gt; ()) -&gt; NFData ChainCode
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: ChainCode -&gt; ()
+rnf :: ChainCode -&gt; ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679198690"><span id="local-6989586621679198695"><span class="annot"><span class="annottext">Eq ChainCode
+Eq ChainCode =&gt;
+(Int -&gt; ChainCode -&gt; Int)
+-&gt; (ChainCode -&gt; Int) -&gt; Hashable ChainCode
+Int -&gt; ChainCode -&gt; Int
+ChainCode -&gt; Int
+forall a. Eq a =&gt; (Int -&gt; a -&gt; Int) -&gt; (a -&gt; Int) -&gt; Hashable a
+$chashWithSalt :: Int -&gt; ChainCode -&gt; Int
+hashWithSalt :: Int -&gt; ChainCode -&gt; Int
+$chash :: ChainCode -&gt; Int
+hash :: ChainCode -&gt; Int
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Hashable</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span></pre></body></html>

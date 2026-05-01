@@ -1,0 +1,1020 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK prune #-}</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-13"></span><span class="hs-comment">--</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- These are (partial) CBOR decoders for Byron binary types. Note that we</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- ignore most of the block's and header's content and only retrieve the pieces</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- of information relevant to us, wallet (we do assume a trusted node and</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- therefore, we needn't to care about verifying signatures and blocks</span><span>
+</span><span id="line-18"></span><span class="hs-comment">-- themselves).</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Codec.Cbor</span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Encoders</span></span><span>
+</span><span id="line-22"></span><span>      </span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeAddress"><span class="hs-identifier">encodeAddress</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeAttributes"><span class="hs-identifier">encodeAttributes</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeDerivationPathAttr"><span class="hs-identifier">encodeDerivationPathAttr</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeProtocolMagicAttr"><span class="hs-identifier">encodeProtocolMagicAttr</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span>     </span><span class="annot"><span class="hs-comment">-- * Decoders</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddress"><span class="hs-identifier">decodeAddress</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddressDerivationPath"><span class="hs-identifier">decodeAddressDerivationPath</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddressPayload"><span class="hs-identifier">decodeAddressPayload</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAllAttributes"><span class="hs-identifier">decodeAllAttributes</span></a></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeDerivationPathAttr"><span class="hs-identifier">decodeDerivationPathAttr</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeProtocolMagicAttr"><span class="hs-identifier">decodeProtocolMagicAttr</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier">deserialiseCbor</span></a></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Cbor.html#unsafeDeserialiseCbor"><span class="hs-identifier">unsafeDeserialiseCbor</span></a></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span>     </span><span class="annot"><span class="hs-comment">-- * Re-exports from CBOR</span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">CBOR.encodeBytes</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">CBOR.toStrictByteString</span></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">CBOR.toLazyByteString</span></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html"><span class="hs-identifier">Cardano.Address.Crypto</span></a></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier">ChainCode</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">CryptoFailable</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ScrubbedBytes</span></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier">XPub</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html#blake2b224"><span class="hs-identifier">blake2b224</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html#crc32"><span class="hs-identifier">crc32</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html#decryptChaChaPoly1305"><span class="hs-identifier">decryptChaChaPoly1305</span></a></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html#encryptChaChaPoly1305"><span class="hs-identifier">encryptChaChaPoly1305</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.html#sha3_256"><span class="hs-identifier">sha3_256</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.html"><span class="hs-identifier">Control.Monad</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.html#replicateM"><span class="hs-identifier">replicateM</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#when"><span class="hs-identifier">when</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html"><span class="hs-identifier">Data.ByteString</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier">ByteString</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.List.html"><span class="hs-identifier">Data.List</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Foldable.html#find"><span class="hs-identifier">find</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Word.html"><span class="hs-identifier">Data.Word</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier">Word32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word8"><span class="hs-identifier">Word8</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Stack.html"><span class="hs-identifier">GHC.Stack</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Stack.Types.html#HasCallStack"><span class="hs-identifier">HasCallStack</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Codec.CBOR.Decoding</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CBOR</span></span><span>
+</span><span id="line-68"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Codec.CBOR.Encoding</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CBOR</span></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Codec.CBOR.Read</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CBOR</span></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Codec.CBOR.Write</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CBOR</span></span><span>
+</span><span id="line-71"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Lazy.html"><span class="hs-identifier">Data.ByteString.Lazy</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BL</span></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--                        __Byron Address Binary Format__</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--</span><span>
+</span><span id="line-78"></span><span class="hs-comment">--</span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- In the composition of a Cardano address, the following functions concern the</span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- &quot;Derivation Path&quot; box.</span><span>
+</span><span id="line-81"></span><span class="hs-comment">--</span><span>
+</span><span id="line-82"></span><span class="hs-comment">-- +-------------------------------------------------------------------------------+</span><span>
+</span><span id="line-83"></span><span class="hs-comment">-- |                                                                               |</span><span>
+</span><span id="line-84"></span><span class="hs-comment">-- |                        CBOR-Serialized Object with CRC&#185;                       |</span><span>
+</span><span id="line-85"></span><span class="hs-comment">-- |                                                                               |</span><span>
+</span><span id="line-86"></span><span class="hs-comment">-- +-------------------------------------------------------------------------------+</span><span>
+</span><span id="line-87"></span><span class="hs-comment">--                                         |</span><span>
+</span><span id="line-88"></span><span class="hs-comment">--                                         |</span><span>
+</span><span id="line-89"></span><span class="hs-comment">--                                         v</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- +-------------------------------------------------------------------------------+</span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- |     Address Root    |     Address Attributes    |           AddrType          |</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- |                     |                           |                             |</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- |   Hash (224 bits)   |  Der. Path&#178; + Stake + NM  |  PubKey | (Script) | Redeem |</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- |                     |    (open for extension)   |     (open for extension)    |</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- +-------------------------------------------------------------------------------+</span><span>
+</span><span id="line-96"></span><span class="hs-comment">--              |                 |</span><span>
+</span><span id="line-97"></span><span class="hs-comment">--              |                 |     +----------------------------------+</span><span>
+</span><span id="line-98"></span><span class="hs-comment">--              v                 |     |        Derivation Path           |</span><span>
+</span><span id="line-99"></span><span class="hs-comment">-- +---------------------------+  |----&gt;|                                  |</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- | SHA3-256                  |  |     | ChaChaPoly&#8308; AccountIx/AddressIx  |</span><span>
+</span><span id="line-101"></span><span class="hs-comment">-- |   |&gt; Blake2b 224          |  |     +----------------------------------+</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- |   |&gt; CBOR                 |  |</span><span>
+</span><span id="line-103"></span><span class="hs-comment">-- |                           |  |</span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- |  -AddrType                |  |     +----------------------------------+</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- |  -ASD&#179; (~AddrType+PubKey) |  |     |       Stake Distribution         |</span><span>
+</span><span id="line-106"></span><span class="hs-comment">-- |  -Address Attributes      |  |     |                                  |</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- +---------------------------+  |----&gt;|  BootstrapEra | (Single | Multi) |</span><span>
+</span><span id="line-108"></span><span class="hs-comment">--                                |     +----------------------------------+</span><span>
+</span><span id="line-109"></span><span class="hs-comment">--                                |</span><span>
+</span><span id="line-110"></span><span class="hs-comment">--                                |</span><span>
+</span><span id="line-111"></span><span class="hs-comment">--                                |     +----------------------------------+</span><span>
+</span><span id="line-112"></span><span class="hs-comment">--                                |     |          Network Magic           |</span><span>
+</span><span id="line-113"></span><span class="hs-comment">--                                |----&gt;|                                  |</span><span>
+</span><span id="line-114"></span><span class="hs-comment">--                                      | Addr Discr: MainNet vs TestNet   |</span><span>
+</span><span id="line-115"></span><span class="hs-comment">--                                      +----------------------------------+</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-117"></span><span class="hs-comment">--</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- Encode a public key to a corresponding Cardano Address. The encoding of the</span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- attributes part of an address is left out to the caller; This allows for</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- distinguishing between Sequential and Random addresses (the former doesn't</span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- have any attributes to encode).</span><span>
+</span><span id="line-122"></span><span class="hs-comment">--</span><span>
+</span><span id="line-123"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-124"></span><span class="hs-comment">-- -- Old / Random Addresses</span><span>
+</span><span id="line-125"></span><span class="hs-comment">-- let encodeAddrAttributes = mempty</span><span>
+</span><span id="line-126"></span><span class="hs-comment">--      &lt;&gt; CBOR.encodeMapLen 1</span><span>
+</span><span id="line-127"></span><span class="hs-comment">--      &lt;&gt; CBOR.encodeWord8 1</span><span>
+</span><span id="line-128"></span><span class="hs-comment">--      &lt;&gt; encodeDerivationPath (hdPassphrase rootXPub) accIx addrIx</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- let addr = encodeAddress xpub encodeAddrAttributes</span><span>
+</span><span id="line-130"></span><span class="hs-comment">--</span><span>
+</span><span id="line-131"></span><span class="hs-comment">-- -- New / Sequential Addresses</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- let encodeAddrAttributes = mempty &lt;&gt; CBOR.encodeMapLen 0</span><span>
+</span><span id="line-133"></span><span class="hs-comment">-- let addr = encodeAddress xpub encodeAddrAttributes</span><span>
+</span><span id="line-134"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-135"></span><span class="hs-comment">--</span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- Note that we are passing the behavior to encode attributes as a parameter</span><span>
+</span><span id="line-137"></span><span class="hs-comment">-- here and do not handle multiple cases in 'encodeAddress' itself for multiple</span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- reasons:</span><span>
+</span><span id="line-139"></span><span class="hs-comment">--</span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- - Inversion of control gives us a nicer implementation overall</span><span>
+</span><span id="line-141"></span><span class="hs-comment">--</span><span>
+</span><span id="line-142"></span><span class="hs-comment">-- - Encoding attributes for Random addresses requires more context than just</span><span>
+</span><span id="line-143"></span><span class="hs-comment">--   the public key (like the wallet root id and some extra logic for encoding</span><span>
+</span><span id="line-144"></span><span class="hs-comment">--   passphrases). This is just scheme-specific and is better left out of this</span><span>
+</span><span id="line-145"></span><span class="hs-comment">--   particular function</span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeAddress"><span class="hs-identifier hs-type">encodeAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-147"></span><span id="encodeAddress"><span class="annot"><span class="annottext">encodeAddress :: XPub -&gt; [Encoding] -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAddress"><span class="hs-identifier hs-var hs-var">encodeAddress</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span id="local-6989586621679200445"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200445"><span class="hs-identifier hs-var">pub</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier hs-type">ChainCode</span></a></span><span> </span><span id="local-6989586621679200447"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200447"><span class="hs-identifier hs-var">cc</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679200448"><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200448"><span class="hs-identifier hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-148"></span><span>    </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAddressPayload"><span class="hs-identifier hs-var">encodeAddressPayload</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200450"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-150"></span><span>    </span><span id="local-6989586621679200450"><span class="annot"><span class="annottext">payload :: ByteString
+</span><a href="#local-6989586621679200450"><span class="hs-identifier hs-var hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">(Encoding -&gt; ByteString) -&gt; Encoding -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-151"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">3</span></span><span>
+</span><span id="line-152"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200452"><span class="hs-identifier hs-var">root</span></a></span><span>
+</span><span id="line-153"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding] -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAttributes"><span class="hs-identifier hs-var">encodeAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200448"><span class="hs-identifier hs-var">attrs</span></a></span><span>
+</span><span id="line-154"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-comment">-- Address Type, 0 = Public Key</span><span>
+</span><span id="line-155"></span><span>    </span><span id="local-6989586621679200452"><span class="annot"><span class="annottext">root :: ByteString
+</span><a href="#local-6989586621679200452"><span class="hs-identifier hs-var hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+forall a. ByteArrayAccess a =&gt; a -&gt; ByteString
+</span><a href="Cardano.Address.Crypto.html#blake2b224"><span class="hs-identifier hs-var">blake2b224</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString) -&gt; ByteString -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+forall a. ByteArrayAccess a =&gt; a -&gt; ByteString
+</span><a href="Cardano.Address.Crypto.html#sha3_256"><span class="hs-identifier hs-var">sha3_256</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString) -&gt; ByteString -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">(Encoding -&gt; ByteString) -&gt; Encoding -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-156"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">3</span></span><span>
+</span><span id="line-157"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-comment">-- Address Type, 0 = Public Key</span><span>
+</span><span id="line-158"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679200454"><span class="hs-identifier hs-var">encodeSpendingData</span></a></span><span>
+</span><span id="line-159"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding] -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAttributes"><span class="hs-identifier hs-var">encodeAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200448"><span class="hs-identifier hs-var">attrs</span></a></span><span>
+</span><span id="line-160"></span><span>    </span><span id="local-6989586621679200455"><span class="annot"><span class="annottext">encodeXPub :: Encoding
+</span><a href="#local-6989586621679200455"><span class="hs-identifier hs-var hs-var">encodeXPub</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-161"></span><span>        </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200445"><span class="hs-identifier hs-var">pub</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200447"><span class="hs-identifier hs-var">cc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-162"></span><span>    </span><span id="local-6989586621679200454"><span class="annot"><span class="annottext">encodeSpendingData :: Encoding
+</span><a href="#local-6989586621679200454"><span class="hs-identifier hs-var hs-var">encodeSpendingData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">2</span></span><span>
+</span><span id="line-163"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-164"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679200455"><span class="hs-identifier hs-var">encodeXPub</span></a></span><span>
+</span><span id="line-165"></span><span>
+</span><span id="line-166"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeAddressPayload"><span class="hs-identifier hs-type">encodeAddressPayload</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-167"></span><span id="encodeAddressPayload"><span class="annot"><span class="annottext">encodeAddressPayload :: ByteString -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAddressPayload"><span class="hs-identifier hs-var hs-var">encodeAddressPayload</span></a></span></span><span> </span><span id="local-6989586621679200456"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200456"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">2</span></span><span>
+</span><span id="line-169"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeTag</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">24</span></span><span> </span><span class="hs-comment">-- Hard-Coded Tag value in cardano-sl</span><span>
+</span><span id="line-170"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200456"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-171"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord32</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Word32
+</span><a href="Cardano.Address.Crypto.html#crc32"><span class="hs-identifier hs-var">crc32</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200456"><span class="hs-identifier hs-var">payload</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-172"></span><span>
+</span><span id="line-173"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeAttributes"><span class="hs-identifier hs-type">encodeAttributes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-174"></span><span id="encodeAttributes"><span class="annot"><span class="annottext">encodeAttributes :: [Encoding] -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeAttributes"><span class="hs-identifier hs-var hs-var">encodeAttributes</span></a></span></span><span> </span><span id="local-6989586621679200459"><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200459"><span class="hs-identifier hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeMapLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679200461"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding] -&gt; Encoding
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mconcat"><span class="hs-identifier hs-var">mconcat</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200459"><span class="hs-identifier hs-var">attrs</span></a></span><span>
+</span><span id="line-175"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-176"></span><span>    </span><span id="local-6989586621679200461"><span class="annot"><span class="annottext">l :: Word
+</span><a href="#local-6989586621679200461"><span class="hs-identifier hs-var hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Encoding] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Foldable.html#length"><span class="hs-identifier hs-var">length</span></a></span><span> </span><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679200459"><span class="hs-identifier hs-var">attrs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-177"></span><span>
+</span><span id="line-178"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeProtocolMagicAttr"><span class="hs-identifier hs-type">encodeProtocolMagicAttr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-179"></span><span id="encodeProtocolMagicAttr"><span class="annot"><span class="annottext">encodeProtocolMagicAttr :: Word32 -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeProtocolMagicAttr"><span class="hs-identifier hs-var hs-var">encodeProtocolMagicAttr</span></a></span></span><span> </span><span id="local-6989586621679200463"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200463"><span class="hs-identifier hs-var">pm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-180"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">2</span></span><span> </span><span class="hs-comment">-- Tag for 'ProtocolMagic' attribute</span><span>
+</span><span id="line-181"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">(Encoding -&gt; ByteString) -&gt; Encoding -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord32</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200463"><span class="hs-identifier hs-var">pm</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-182"></span><span>
+</span><span id="line-183"></span><span class="hs-comment">-- | This is the opposite of 'decodeDerivationPathAttr'.</span><span>
+</span><span id="line-184"></span><span class="hs-comment">--</span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- NOTE: The caller must ensure that the passphrase length is 32 bytes.</span><span>
+</span><span id="line-186"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeDerivationPathAttr"><span class="hs-identifier hs-type">encodeDerivationPathAttr</span></a></span><span>
+</span><span id="line-187"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-188"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
+</span><span id="line-189"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
+</span><span id="line-190"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-191"></span><span id="encodeDerivationPathAttr"><span class="annot"><span class="annottext">encodeDerivationPathAttr :: ScrubbedBytes -&gt; Word32 -&gt; Word32 -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeDerivationPathAttr"><span class="hs-identifier hs-var hs-var">encodeDerivationPathAttr</span></a></span></span><span> </span><span id="local-6989586621679200465"><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200465"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span id="local-6989586621679200466"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200466"><span class="hs-identifier hs-var">acctIx</span></a></span></span><span> </span><span id="local-6989586621679200467"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200467"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-192"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord8</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-comment">-- Tag for 'DerivationPath' attribute</span><span>
+</span><span id="line-193"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; Encoding -&gt; ByteString
+</span><a href="Cardano.Codec.Cbor.html#encryptDerivationPath"><span class="hs-identifier hs-var">encryptDerivationPath</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200465"><span class="hs-identifier hs-var">pwd</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679200469"><span class="hs-identifier hs-var">path</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-194"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-195"></span><span>    </span><span id="local-6989586621679200469"><span class="annot"><span class="annottext">path :: Encoding
+</span><a href="#local-6989586621679200469"><span class="hs-identifier hs-var hs-var">path</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Word32 -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeDerivationPath"><span class="hs-identifier hs-var">encodeDerivationPath</span></a></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200466"><span class="hs-identifier hs-var">acctIx</span></a></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200467"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><span id="line-196"></span><span>
+</span><span id="line-197"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encodeDerivationPath"><span class="hs-identifier hs-type">encodeDerivationPath</span></a></span><span>
+</span><span id="line-198"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
+</span><span id="line-199"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
+</span><span id="line-200"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-201"></span><span id="encodeDerivationPath"><span class="annot"><span class="annottext">encodeDerivationPath :: Word32 -&gt; Word32 -&gt; Encoding
+</span><a href="Cardano.Codec.Cbor.html#encodeDerivationPath"><span class="hs-identifier hs-var hs-var">encodeDerivationPath</span></a></span></span><span> </span><span id="local-6989586621679200471"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200471"><span class="hs-identifier hs-var">acctIx</span></a></span></span><span> </span><span id="local-6989586621679200472"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200472"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-202"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLenIndef</span></span><span>
+</span><span id="line-203"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord32</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200471"><span class="hs-identifier hs-var">acctIx</span></a></span><span>
+</span><span id="line-204"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord32</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200472"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><span id="line-205"></span><span>    </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBreak</span></span><span>
+</span><span id="line-206"></span><span>
+</span><span id="line-207"></span><span class="hs-comment">-- | ChaCha20/Poly1305 encrypting and signing the HD payload of addresses.</span><span>
+</span><span id="line-208"></span><span class="hs-comment">--</span><span>
+</span><span id="line-209"></span><span class="hs-comment">-- NOTE: The caller must ensure that the passphrase length is 32 bytes.</span><span>
+</span><span id="line-210"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#encryptDerivationPath"><span class="hs-identifier hs-type">encryptDerivationPath</span></a></span><span>
+</span><span id="line-211"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-212"></span><span>       </span><span class="annot"><span class="hs-comment">-- ^ Symmetric key / passphrase, 32-byte long</span></span><span>
+</span><span id="line-213"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Encoding</span></span><span>
+</span><span id="line-214"></span><span>        </span><span class="annot"><span class="hs-comment">-- ^ Payload to be encrypted</span></span><span>
+</span><span id="line-215"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-216"></span><span>        </span><span class="annot"><span class="hs-comment">-- ^ Ciphertext with a 128-bit crypto-tag appended.</span></span><span>
+</span><span id="line-217"></span><span id="encryptDerivationPath"><span class="annot"><span class="annottext">encryptDerivationPath :: ScrubbedBytes -&gt; Encoding -&gt; ByteString
+</span><a href="Cardano.Codec.Cbor.html#encryptDerivationPath"><span class="hs-identifier hs-var hs-var">encryptDerivationPath</span></a></span></span><span> </span><span id="local-6989586621679200475"><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200475"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span id="local-6989586621679200476"><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679200476"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CryptoFailable ByteString -&gt; ByteString
+</span><a href="#local-6989586621679200477"><span class="hs-identifier hs-var">unsafeSerialize</span></a></span><span> </span><span class="annot"><span class="annottext">(CryptoFailable ByteString -&gt; ByteString)
+-&gt; CryptoFailable ByteString -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-218"></span><span>    </span><span class="annot"><span class="annottext">ScrubbedBytes
+-&gt; ByteString -&gt; ByteString -&gt; CryptoFailable ByteString
+forall key.
+ByteArrayAccess key =&gt;
+key -&gt; ByteString -&gt; ByteString -&gt; CryptoFailable ByteString
+</span><a href="Cardano.Address.Crypto.html#encryptChaChaPoly1305"><span class="hs-identifier hs-var">encryptChaChaPoly1305</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200475"><span class="hs-identifier hs-var">pwd</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="Cardano.Codec.Cbor.html#cardanoNonce"><span class="hs-identifier hs-var">cardanoNonce</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">Encoding
+</span><a href="#local-6989586621679200476"><span class="hs-identifier hs-var">payload</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-219"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-220"></span><span>    </span><span class="annot"><a href="#local-6989586621679200477"><span class="hs-identifier hs-type">unsafeSerialize</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CryptoFailable</span></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-221"></span><span>    </span><span id="local-6989586621679200477"><span class="annot"><span class="annottext">unsafeSerialize :: CryptoFailable ByteString -&gt; ByteString
+</span><a href="#local-6989586621679200477"><span class="hs-identifier hs-var hs-var">unsafeSerialize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-222"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">(Encoding -&gt; ByteString)
+-&gt; (CryptoFailable ByteString -&gt; Encoding)
+-&gt; CryptoFailable ByteString
+-&gt; ByteString
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Encoding)
+-&gt; (CryptoFailable ByteString -&gt; ByteString)
+-&gt; CryptoFailable ByteString
+-&gt; Encoding
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">CryptoFailable ByteString -&gt; ByteString
+forall {a}. CryptoFailable a -&gt; a
+</span><a href="#local-6989586621679200480"><span class="hs-identifier hs-var">useInvariant</span></a></span><span>
+</span><span id="line-223"></span><span>
+</span><span id="line-224"></span><span>    </span><span class="hs-comment">-- Encryption will fail if the key is the wrong size, but that won't happen</span><span>
+</span><span id="line-225"></span><span>    </span><span class="hs-comment">-- if the key was created with 'generateKeyFromSeed'.</span><span>
+</span><span id="line-226"></span><span>    </span><span id="local-6989586621679200480"><span class="annot"><span class="annottext">useInvariant :: CryptoFailable a -&gt; a
+</span><a href="#local-6989586621679200480"><span class="hs-identifier hs-var hs-var">useInvariant</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-227"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">CryptoPassed</span></span><span> </span><span id="local-6989586621679200489"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679200489"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679200489"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-228"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">CryptoFailed</span></span><span> </span><span id="local-6989586621679200491"><span class="annot"><span class="annottext">CryptoError
+</span><a href="#local-6989586621679200491"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; a
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; a) -&gt; [Char] -&gt; a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;encodeAddressKey: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">CryptoError -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">CryptoError
+</span><a href="#local-6989586621679200491"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-229"></span><span>
+</span><span id="line-230"></span><span class="annot"><span class="hs-comment">-- | Hard-coded nonce from the legacy code-base.</span></span><span>
+</span><span id="line-231"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#cardanoNonce"><span class="hs-identifier hs-type">cardanoNonce</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-232"></span><span id="cardanoNonce"><span class="annot"><span class="annottext">cardanoNonce :: ByteString
+</span><a href="Cardano.Codec.Cbor.html#cardanoNonce"><span class="hs-identifier hs-var hs-var">cardanoNonce</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-string">&quot;serokellfore&quot;</span></span><span>
+</span><span id="line-233"></span><span>
+</span><span id="line-234"></span><span id="local-6989586621679200275"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddress"><span class="hs-identifier hs-type">decodeAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200275"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span></span><span>
+</span><span id="line-235"></span><span id="decodeAddress"><span class="annot"><span class="annottext">decodeAddress :: forall s. Decoder s ByteString
+</span><a href="Cardano.Codec.Cbor.html#decodeAddress"><span class="hs-identifier hs-var hs-var">decodeAddress</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-236"></span><span>    </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decoder s ()
+forall s. Int -&gt; Decoder s ()
+</span><span class="hs-identifier hs-var">CBOR.decodeListLenCanonicalOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span>
+</span><span id="line-237"></span><span>        </span><span class="hs-comment">-- CRC Protection Wrapper</span><span>
+</span><span id="line-238"></span><span>    </span><span id="local-6989586621679200513"><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679200513"><span class="hs-identifier hs-var">tag</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word
+forall s. Decoder s Word
+</span><span class="hs-identifier hs-var">CBOR.decodeTag</span></span><span>
+</span><span id="line-239"></span><span>        </span><span class="hs-comment">-- Mysterious hard-coded tag cardano-sl seems to so much like</span><span>
+</span><span id="line-240"></span><span>    </span><span id="local-6989586621679200515"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200515"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-241"></span><span>        </span><span class="hs-comment">-- Addr Root + Attributes + Type</span><span>
+</span><span id="line-242"></span><span>    </span><span id="local-6989586621679200517"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200517"><span class="hs-identifier hs-var">crc</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word32
+forall s. Decoder s Word32
+</span><span class="hs-identifier hs-var">CBOR.decodeWord32</span></span><span> </span><span class="hs-comment">-- CRC</span><span>
+</span><span id="line-243"></span><span>
+</span><span id="line-244"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; Decoder s () -&gt; Decoder s ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#when"><span class="hs-identifier hs-var">when</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200517"><span class="hs-identifier hs-var">crc</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Word32 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Word32
+</span><a href="Cardano.Address.Crypto.html#crc32"><span class="hs-identifier hs-var">crc32</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200515"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Decoder s () -&gt; Decoder s ()) -&gt; Decoder s () -&gt; Decoder s ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s ()
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;non-matching crc32.&quot;</span></span><span>
+</span><span id="line-245"></span><span>
+</span><span id="line-246"></span><span>    </span><span class="hs-comment">-- NOTE 1:</span><span>
+</span><span id="line-247"></span><span>    </span><span class="hs-comment">-- Treating addresses as a blob here, so we just re-encode them as such</span><span>
+</span><span id="line-248"></span><span>    </span><span class="hs-comment">-- Ultimately for us, addresses are nothing more than a bunch of bytes that</span><span>
+</span><span id="line-249"></span><span>    </span><span class="hs-comment">-- we display in a Base58 format when we have to.</span><span>
+</span><span id="line-250"></span><span>    </span><span class="annot"><span class="annottext">ByteString -&gt; Decoder s ByteString
+forall a. a -&gt; Decoder s a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Decoder s ByteString)
+-&gt; ByteString -&gt; Decoder s ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding -&gt; ByteString
+</span><span class="hs-identifier hs-var">CBOR.toStrictByteString</span></span><span> </span><span class="annot"><span class="annottext">(Encoding -&gt; ByteString) -&gt; Encoding -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-251"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeListLen</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">2</span></span><span>
+</span><span id="line-252"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeTag</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679200513"><span class="hs-identifier hs-var">tag</span></a></span><span>
+</span><span id="line-253"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeBytes</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200515"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><span id="line-254"></span><span>        </span><span class="annot"><span class="annottext">Encoding -&gt; Encoding -&gt; Encoding
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
+</span><span class="hs-identifier hs-var">CBOR.encodeWord32</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200517"><span class="hs-identifier hs-var">crc</span></a></span><span>
+</span><span id="line-255"></span><span>
+</span><span id="line-256"></span><span id="local-6989586621679200520"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddressPayload"><span class="hs-identifier hs-type">decodeAddressPayload</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200520"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span></span><span>
+</span><span id="line-257"></span><span id="decodeAddressPayload"><span class="annot"><span class="annottext">decodeAddressPayload :: forall s. Decoder s ByteString
+</span><a href="Cardano.Codec.Cbor.html#decodeAddressPayload"><span class="hs-identifier hs-var hs-var">decodeAddressPayload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-258"></span><span>    </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decoder s ()
+forall s. Int -&gt; Decoder s ()
+</span><span class="hs-identifier hs-var">CBOR.decodeListLenCanonicalOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span>
+</span><span id="line-259"></span><span>    </span><span class="annot"><span class="annottext">Word
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word
+forall s. Decoder s Word
+</span><span class="hs-identifier hs-var">CBOR.decodeTag</span></span><span>
+</span><span id="line-260"></span><span>    </span><span id="local-6989586621679200530"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200530"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-261"></span><span>    </span><span id="local-6989586621679200531"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200531"><span class="hs-identifier hs-var">crc</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word32
+forall s. Decoder s Word32
+</span><span class="hs-identifier hs-var">CBOR.decodeWord32</span></span><span>
+</span><span id="line-262"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; Decoder s () -&gt; Decoder s ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#when"><span class="hs-identifier hs-var">when</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200531"><span class="hs-identifier hs-var">crc</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Word32 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Word32
+</span><a href="Cardano.Address.Crypto.html#crc32"><span class="hs-identifier hs-var">crc32</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200530"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Decoder s () -&gt; Decoder s ()) -&gt; Decoder s () -&gt; Decoder s ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s ()
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;non-matching crc32.&quot;</span></span><span>
+</span><span id="line-263"></span><span>    </span><span class="annot"><span class="annottext">ByteString -&gt; Decoder s ByteString
+forall a. a -&gt; Decoder s a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200530"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><span id="line-264"></span><span>
+</span><span id="line-265"></span><span id="local-6989586621679200291"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAddressDerivationPath"><span class="hs-identifier hs-type">decodeAddressDerivationPath</span></a></span><span>
+</span><span id="line-266"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-267"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200291"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-268"></span><span id="decodeAddressDerivationPath"><span class="annot"><span class="annottext">decodeAddressDerivationPath :: forall s. ScrubbedBytes -&gt; Decoder s (Maybe (Word32, Word32))
+</span><a href="Cardano.Codec.Cbor.html#decodeAddressDerivationPath"><span class="hs-identifier hs-var hs-var">decodeAddressDerivationPath</span></a></span></span><span> </span><span id="local-6989586621679200550"><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200550"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-269"></span><span>    </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decoder s ()
+forall s. Int -&gt; Decoder s ()
+</span><span class="hs-identifier hs-var">CBOR.decodeListLenCanonicalOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span>
+</span><span id="line-270"></span><span>    </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-271"></span><span>    </span><span id="local-6989586621679200551"><span class="annot"><span class="annottext">Maybe (Word32, Word32)
+</span><a href="#local-6989586621679200551"><span class="hs-identifier hs-var">path</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s [(Word8, ByteString)]
+forall s. Decoder s [(Word8, ByteString)]
+</span><a href="Cardano.Codec.Cbor.html#decodeAllAttributes"><span class="hs-identifier hs-var">decodeAllAttributes</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s [(Word8, ByteString)]
+-&gt; ([(Word8, ByteString)] -&gt; Decoder s (Maybe (Word32, Word32)))
+-&gt; Decoder s (Maybe (Word32, Word32))
+forall a b. Decoder s a -&gt; (a -&gt; Decoder s b) -&gt; Decoder s b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3E%3E%3D"><span class="hs-operator hs-var">&gt;&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+-&gt; [(Word8, ByteString)] -&gt; Decoder s (Maybe (Word32, Word32))
+forall s.
+ScrubbedBytes
+-&gt; [(Word8, ByteString)] -&gt; Decoder s (Maybe (Word32, Word32))
+</span><a href="Cardano.Codec.Cbor.html#decodeDerivationPathAttr"><span class="hs-identifier hs-var">decodeDerivationPathAttr</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200550"><span class="hs-identifier hs-var">pwd</span></a></span><span>
+</span><span id="line-272"></span><span>    </span><span id="local-6989586621679200552"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679200552"><span class="hs-identifier hs-var">addrType</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word8
+forall s. Decoder s Word8
+</span><span class="hs-identifier hs-var">CBOR.decodeWord8</span></span><span> </span><span class="hs-comment">-- Type</span><span>
+</span><span id="line-273"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; Decoder s () -&gt; Decoder s ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#when"><span class="hs-identifier hs-var">when</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679200552"><span class="hs-identifier hs-var">addrType</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Decoder s () -&gt; Decoder s ()) -&gt; Decoder s () -&gt; Decoder s ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-274"></span><span>        </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s ()
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Decoder s ()) -&gt; [Char] -&gt; Decoder s ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[[Char]] -&gt; [Char]
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mconcat"><span class="hs-identifier hs-var">mconcat</span></a></span><span>
+</span><span id="line-275"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;decodeAddressDerivationPath: type is not 0 (public key), it is &quot;</span></span><span>
+</span><span id="line-276"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679200552"><span class="hs-identifier hs-var">addrType</span></a></span><span>
+</span><span id="line-277"></span><span>            </span><span class="hs-special">]</span><span>
+</span><span id="line-278"></span><span>    </span><span class="annot"><span class="annottext">Maybe (Word32, Word32) -&gt; Decoder s (Maybe (Word32, Word32))
+forall a. a -&gt; Decoder s a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe (Word32, Word32)
+</span><a href="#local-6989586621679200551"><span class="hs-identifier hs-var">path</span></a></span><span>
+</span><span id="line-279"></span><span>
+</span><span id="line-280"></span><span id="local-6989586621679200301"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeProtocolMagicAttr"><span class="hs-identifier hs-type">decodeProtocolMagicAttr</span></a></span><span>
+</span><span id="line-281"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200301"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-282"></span><span id="decodeProtocolMagicAttr"><span class="annot"><span class="annottext">decodeProtocolMagicAttr :: forall s. Decoder s (Maybe Word32)
+</span><a href="Cardano.Codec.Cbor.html#decodeProtocolMagicAttr"><span class="hs-identifier hs-var hs-var">decodeProtocolMagicAttr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-283"></span><span>    </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decoder s ()
+forall s. Int -&gt; Decoder s ()
+</span><span class="hs-identifier hs-var">CBOR.decodeListLenCanonicalOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span>
+</span><span id="line-284"></span><span>    </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-285"></span><span>    </span><span id="local-6989586621679200563"><span class="annot"><span class="annottext">[(Word8, ByteString)]
+</span><a href="#local-6989586621679200563"><span class="hs-identifier hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s [(Word8, ByteString)]
+forall s. Decoder s [(Word8, ByteString)]
+</span><a href="Cardano.Codec.Cbor.html#decodeAllAttributes"><span class="hs-identifier hs-var">decodeAllAttributes</span></a></span><span>
+</span><span id="line-286"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">((Word8, ByteString) -&gt; Bool)
+-&gt; [(Word8, ByteString)] -&gt; Maybe (Word8, ByteString)
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Foldable.html#find"><span class="hs-identifier hs-var">find</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Word8 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Word8 -&gt; Bool)
+-&gt; ((Word8, ByteString) -&gt; Word8) -&gt; (Word8, ByteString) -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">(Word8, ByteString) -&gt; Word8
+forall a b. (a, b) -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Tuple.html#fst"><span class="hs-identifier hs-var">fst</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Word8, ByteString)]
+</span><a href="#local-6989586621679200563"><span class="hs-identifier hs-var">attrs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-287"></span><span>        </span><span class="annot"><span class="annottext">Maybe (Word8, ByteString)
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Word32 -&gt; Decoder s (Maybe Word32)
+forall a. a -&gt; Decoder s a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Word32
+forall a. Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-288"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679200565"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200565"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(forall s. Decoder s Word32)
+-&gt; ByteString -&gt; Either DeserialiseFailure Word32
+forall a.
+(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure a
+</span><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier hs-var">deserialiseCbor</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s Word32
+forall s. Decoder s Word32
+</span><span class="hs-identifier hs-var">CBOR.decodeWord32</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200565"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-289"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="annot"><span class="annottext">DeserialiseFailure
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s (Maybe Word32)
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;unable to decode attribute into protocol magic&quot;</span></span><span>
+</span><span id="line-290"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span id="local-6989586621679200566"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200566"><span class="hs-identifier hs-var">pm</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Word32 -&gt; Decoder s (Maybe Word32)
+forall a. a -&gt; Decoder s a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32 -&gt; Maybe Word32
+forall a. a -&gt; Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200566"><span class="hs-identifier hs-var">pm</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-291"></span><span>
+</span><span id="line-292"></span><span class="hs-comment">-- | The attributes are pairs of numeric tags and bytes, where the bytes will be</span><span>
+</span><span id="line-293"></span><span class="hs-comment">-- CBOR-encoded stuff. This decoder does not enforce &quot;canonicity&quot; of entries.</span><span>
+</span><span id="line-294"></span><span id="local-6989586621679200294"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeAllAttributes"><span class="hs-identifier hs-type">decodeAllAttributes</span></a></span><span>
+</span><span id="line-295"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200294"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word8"><span class="hs-identifier hs-type">Word8</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span></span><span>
+</span><span id="line-296"></span><span id="decodeAllAttributes"><span class="annot"><span class="annottext">decodeAllAttributes :: forall s. Decoder s [(Word8, ByteString)]
+</span><a href="Cardano.Codec.Cbor.html#decodeAllAttributes"><span class="hs-identifier hs-var hs-var">decodeAllAttributes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-297"></span><span>    </span><span id="local-6989586621679200569"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679200569"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Int
+forall s. Decoder s Int
+</span><span class="hs-identifier hs-var">CBOR.decodeMapLenCanonical</span></span><span> </span><span class="hs-comment">-- Address Attributes length</span><span>
+</span><span id="line-298"></span><span>    </span><span class="annot"><span class="annottext">Int
+-&gt; Decoder s (Word8, ByteString) -&gt; Decoder s [(Word8, ByteString)]
+forall (m :: * -&gt; *) a. Applicative m =&gt; Int -&gt; m a -&gt; m [a]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.html#replicateM"><span class="hs-identifier hs-var">replicateM</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679200569"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s (Word8, ByteString)
+forall {s}. Decoder s (Word8, ByteString)
+</span><a href="#local-6989586621679200571"><span class="hs-identifier hs-var">decodeAttr</span></a></span><span>
+</span><span id="line-299"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-300"></span><span>    </span><span id="local-6989586621679200571"><span class="annot"><span class="annottext">decodeAttr :: Decoder s (Word8, ByteString)
+</span><a href="#local-6989586621679200571"><span class="hs-identifier hs-var hs-var">decodeAttr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">,</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Word8 -&gt; ByteString -&gt; (Word8, ByteString))
+-&gt; Decoder s Word8 -&gt; Decoder s (ByteString -&gt; (Word8, ByteString))
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s Word8
+forall s. Decoder s Word8
+</span><span class="hs-identifier hs-var">CBOR.decodeWord8</span></span><span> </span><span class="annot"><span class="annottext">Decoder s (ByteString -&gt; (Word8, ByteString))
+-&gt; Decoder s ByteString -&gt; Decoder s (Word8, ByteString)
+forall a b. Decoder s (a -&gt; b) -&gt; Decoder s a -&gt; Decoder s b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-301"></span><span>
+</span><span id="line-302"></span><span id="local-6989586621679200297"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeDerivationPathAttr"><span class="hs-identifier hs-type">decodeDerivationPathAttr</span></a></span><span>
+</span><span id="line-303"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-304"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word8"><span class="hs-identifier hs-type">Word8</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-305"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200297"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-306"></span><span id="decodeDerivationPathAttr"><span class="annot"><span class="annottext">decodeDerivationPathAttr :: forall s.
+ScrubbedBytes
+-&gt; [(Word8, ByteString)] -&gt; Decoder s (Maybe (Word32, Word32))
+</span><a href="Cardano.Codec.Cbor.html#decodeDerivationPathAttr"><span class="hs-identifier hs-var hs-var">decodeDerivationPathAttr</span></a></span></span><span> </span><span id="local-6989586621679200583"><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200583"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span id="local-6989586621679200584"><span class="annot"><span class="annottext">[(Word8, ByteString)]
+</span><a href="#local-6989586621679200584"><span class="hs-identifier hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-307"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; [(Word8, ByteString)] -&gt; Maybe ByteString
+forall a b. Eq a =&gt; a -&gt; [(a, b)] -&gt; Maybe b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.List.html#lookup"><span class="hs-identifier hs-var">lookup</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679200586"><span class="hs-identifier hs-var">derPathTag</span></a></span><span> </span><span class="annot"><span class="annottext">[(Word8, ByteString)]
+</span><a href="#local-6989586621679200584"><span class="hs-identifier hs-var">attrs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-308"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679200587"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200587"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(forall s. Decoder s (Maybe (Word32, Word32)))
+-&gt; ByteString -&gt; Decoder s (Maybe (Word32, Word32))
+forall (m :: * -&gt; *) r.
+MonadFail m =&gt;
+(forall s. Decoder s r) -&gt; ByteString -&gt; m r
+</span><a href="Cardano.Codec.Cbor.html#decodeNestedBytes"><span class="hs-identifier hs-var">decodeNestedBytes</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s (Maybe (Word32, Word32))
+forall s. Decoder s (Maybe (Word32, Word32))
+</span><a href="#local-6989586621679200589"><span class="hs-identifier hs-var">decoder</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200587"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-309"></span><span>        </span><span class="annot"><span class="annottext">Maybe ByteString
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s (Maybe (Word32, Word32))
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Decoder s (Maybe (Word32, Word32)))
+-&gt; [Char] -&gt; Decoder s (Maybe (Word32, Word32))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[[Char]] -&gt; [Char]
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mconcat"><span class="hs-identifier hs-var">mconcat</span></a></span><span>
+</span><span id="line-310"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;decodeDerivationPathAttr: Missing attribute &quot;</span></span><span>
+</span><span id="line-311"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679200586"><span class="hs-identifier hs-var">derPathTag</span></a></span><span>
+</span><span id="line-312"></span><span>            </span><span class="hs-special">]</span><span>
+</span><span id="line-313"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-314"></span><span>    </span><span id="local-6989586621679200586"><span class="annot"><span class="annottext">derPathTag :: Word8
+</span><a href="#local-6989586621679200586"><span class="hs-identifier hs-var hs-var">derPathTag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-315"></span><span>    </span><span id="local-6989586621679200591"><span class="annot"><a href="#local-6989586621679200589"><span class="hs-identifier hs-type">decoder</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200591"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-316"></span><span>    </span><span id="local-6989586621679200589"><span class="annot"><span class="annottext">decoder :: forall s. Decoder s (Maybe (Word32, Word32))
+</span><a href="#local-6989586621679200589"><span class="hs-identifier hs-var hs-var">decoder</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-317"></span><span>        </span><span id="local-6989586621679200596"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200596"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+forall s. Decoder s ByteString
+</span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
+</span><span id="line-318"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; ByteString -&gt; CryptoFailable ByteString
+</span><a href="Cardano.Codec.Cbor.html#decryptDerivationPath"><span class="hs-identifier hs-var">decryptDerivationPath</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200583"><span class="hs-identifier hs-var">pwd</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200596"><span class="hs-identifier hs-var">bytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-319"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">CryptoPassed</span></span><span> </span><span id="local-6989586621679200598"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200598"><span class="hs-identifier hs-var">plaintext</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-320"></span><span>                </span><span class="annot"><span class="annottext">(Word32, Word32) -&gt; Maybe (Word32, Word32)
+forall a. a -&gt; Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">((Word32, Word32) -&gt; Maybe (Word32, Word32))
+-&gt; Decoder s (Word32, Word32) -&gt; Decoder s (Maybe (Word32, Word32))
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">(forall s. Decoder s (Word32, Word32))
+-&gt; ByteString -&gt; Decoder s (Word32, Word32)
+forall (m :: * -&gt; *) r.
+MonadFail m =&gt;
+(forall s. Decoder s r) -&gt; ByteString -&gt; m r
+</span><a href="Cardano.Codec.Cbor.html#decodeNestedBytes"><span class="hs-identifier hs-var">decodeNestedBytes</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s (Word32, Word32)
+forall s. Decoder s (Word32, Word32)
+</span><a href="Cardano.Codec.Cbor.html#decodeDerivationPath"><span class="hs-identifier hs-var">decodeDerivationPath</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200598"><span class="hs-identifier hs-var">plaintext</span></a></span><span>
+</span><span id="line-321"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">CryptoFailed</span></span><span> </span><span class="annot"><span class="annottext">CryptoError
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-322"></span><span>                </span><span class="annot"><span class="annottext">Maybe (Word32, Word32) -&gt; Decoder s (Maybe (Word32, Word32))
+forall a. a -&gt; Decoder s a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe (Word32, Word32)
+forall a. Maybe a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-323"></span><span>
+</span><span id="line-324"></span><span class="hs-comment">-- | ChaCha20/Poly1305 decrypting and authenticating the HD payload of</span><span>
+</span><span id="line-325"></span><span class="hs-comment">-- addresses.</span><span>
+</span><span id="line-326"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#decryptDerivationPath"><span class="hs-identifier hs-type">decryptDerivationPath</span></a></span><span>
+</span><span id="line-327"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
+</span><span id="line-328"></span><span>       </span><span class="annot"><span class="hs-comment">-- ^ Symmetric key / passphrase, 32-byte long</span></span><span>
+</span><span id="line-329"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-330"></span><span>        </span><span class="annot"><span class="hs-comment">-- ^ Payload to be decrypted</span></span><span>
+</span><span id="line-331"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CryptoFailable</span></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-332"></span><span id="decryptDerivationPath"><span class="annot"><span class="annottext">decryptDerivationPath :: ScrubbedBytes -&gt; ByteString -&gt; CryptoFailable ByteString
+</span><a href="Cardano.Codec.Cbor.html#decryptDerivationPath"><span class="hs-identifier hs-var hs-var">decryptDerivationPath</span></a></span></span><span> </span><span id="local-6989586621679200600"><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200600"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+-&gt; ByteString -&gt; ByteString -&gt; CryptoFailable ByteString
+forall key.
+ByteArrayAccess key =&gt;
+key -&gt; ByteString -&gt; ByteString -&gt; CryptoFailable ByteString
+</span><a href="Cardano.Address.Crypto.html#decryptChaChaPoly1305"><span class="hs-identifier hs-var">decryptChaChaPoly1305</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679200600"><span class="hs-identifier hs-var">pwd</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="Cardano.Codec.Cbor.html#cardanoNonce"><span class="hs-identifier hs-var">cardanoNonce</span></a></span><span>
+</span><span id="line-333"></span><span>
+</span><span id="line-334"></span><span class="hs-comment">-- Opposite of 'encodeDerivationPath'.</span><span>
+</span><span id="line-335"></span><span id="local-6989586621679200601"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeDerivationPath"><span class="hs-identifier hs-type">decodeDerivationPath</span></a></span><span>
+</span><span id="line-336"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200601"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-337"></span><span id="decodeDerivationPath"><span class="annot"><span class="annottext">decodeDerivationPath :: forall s. Decoder s (Word32, Word32)
+</span><a href="Cardano.Codec.Cbor.html#decodeDerivationPath"><span class="hs-identifier hs-var hs-var">decodeDerivationPath</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-338"></span><span>    </span><span id="local-6989586621679200613"><span class="annot"><span class="annottext">[Word32]
+</span><a href="#local-6989586621679200613"><span class="hs-identifier hs-var">ixs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s Word32 -&gt; Decoder s [Word32]
+forall s a. Decoder s a -&gt; Decoder s [a]
+</span><a href="Cardano.Codec.Cbor.html#decodeListIndef"><span class="hs-identifier hs-var">decodeListIndef</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s Word32
+forall s. Decoder s Word32
+</span><span class="hs-identifier hs-var">CBOR.decodeWord32</span></span><span>
+</span><span id="line-339"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Word32]
+</span><a href="#local-6989586621679200613"><span class="hs-identifier hs-var">ixs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-340"></span><span>        </span><span class="hs-special">[</span><span id="local-6989586621679200615"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200615"><span class="hs-identifier hs-var">acctIx</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679200616"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200616"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-341"></span><span>            </span><span class="annot"><span class="annottext">(Word32, Word32) -&gt; Decoder s (Word32, Word32)
+forall a. a -&gt; Decoder s a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200615"><span class="hs-identifier hs-var">acctIx</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679200616"><span class="hs-identifier hs-var">addrIx</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-342"></span><span>        </span><span class="annot"><span class="annottext">[Word32]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-343"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; Decoder s (Word32, Word32)
+forall a. [Char] -&gt; Decoder s a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Decoder s (Word32, Word32))
+-&gt; [Char] -&gt; Decoder s (Word32, Word32)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[[Char]] -&gt; [Char]
+forall a. Monoid a =&gt; [a] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mconcat"><span class="hs-identifier hs-var">mconcat</span></a></span><span>
+</span><span id="line-344"></span><span>                </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;decodeDerivationPath: invalid derivation path payload: &quot;</span></span><span>
+</span><span id="line-345"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;expected two indexes but got: &quot;</span></span><span>
+</span><span id="line-346"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Word32] -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">[Word32]
+</span><a href="#local-6989586621679200613"><span class="hs-identifier hs-var">ixs</span></a></span><span>
+</span><span id="line-347"></span><span>                </span><span class="hs-special">]</span><span>
+</span><span id="line-348"></span><span class="hs-comment">-- | Decode an arbitrary long list. CBOR introduce a &quot;break&quot; character to</span><span>
+</span><span id="line-349"></span><span class="hs-comment">-- mark the end of the list, so we simply decode each item until we encounter</span><span>
+</span><span id="line-350"></span><span class="hs-comment">-- a break character.</span><span>
+</span><span id="line-351"></span><span class="hs-comment">--</span><span>
+</span><span id="line-352"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-353"></span><span class="hs-comment">--     myDecoder :: CBOR.Decoder s [MyType]</span><span>
+</span><span id="line-354"></span><span class="hs-comment">--     myDecoder = decodeListIndef decodeOne</span><span>
+</span><span id="line-355"></span><span class="hs-comment">--       where</span><span>
+</span><span id="line-356"></span><span class="hs-comment">--         decodeOne :: CBOR.Decoder s MyType</span><span>
+</span><span id="line-357"></span><span class="hs-comment">-- @</span><span>
+</span><span id="line-358"></span><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeListIndef"><span class="hs-identifier hs-type">decodeListIndef</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679200333"><span class="annot"><a href="#local-6989586621679200333"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679200334"><span class="annot"><a href="#local-6989586621679200334"><span class="hs-identifier hs-type">a</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200333"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200334"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200333"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679200334"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-359"></span><span id="decodeListIndef"><span class="annot"><span class="annottext">decodeListIndef :: forall s a. Decoder s a -&gt; Decoder s [a]
+</span><a href="Cardano.Codec.Cbor.html#decodeListIndef"><span class="hs-identifier hs-var hs-var">decodeListIndef</span></a></span></span><span> </span><span id="local-6989586621679200618"><span class="annot"><span class="annottext">Decoder s a
+</span><a href="#local-6989586621679200618"><span class="hs-identifier hs-var">decodeOne</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-360"></span><span>    </span><span class="annot"><span class="annottext">()
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ()
+forall s. Decoder s ()
+</span><span class="hs-identifier hs-var">CBOR.decodeListLenIndef</span></span><span>
+</span><span id="line-361"></span><span>    </span><span class="annot"><span class="annottext">([a] -&gt; a -&gt; [a])
+-&gt; [a] -&gt; ([a] -&gt; [a]) -&gt; Decoder s a -&gt; Decoder s [a]
+forall r a r' s.
+(r -&gt; a -&gt; r) -&gt; r -&gt; (r -&gt; r') -&gt; Decoder s a -&gt; Decoder s r'
+</span><span class="hs-identifier hs-var">CBOR.decodeSequenceLenIndef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(a -&gt; [a] -&gt; [a]) -&gt; [a] -&gt; a -&gt; [a]
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#flip"><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">:</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.List.html#reverse"><span class="hs-identifier hs-var">reverse</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s a
+</span><a href="#local-6989586621679200618"><span class="hs-identifier hs-var">decodeOne</span></a></span><span>
+</span><span id="line-362"></span><span>
+</span><span id="line-363"></span><span class="hs-comment">-- | Byron CBOR encodings often have CBOR nested in CBOR. This helps decoding</span><span>
+</span><span id="line-364"></span><span class="hs-comment">-- a particular 'ByteString' that represents a CBOR object.</span><span>
+</span><span id="line-365"></span><span id="local-6989586621679200326"><span id="local-6989586621679200327"><span class="annot"><a href="Cardano.Codec.Cbor.html#decodeNestedBytes"><span class="hs-identifier hs-type">decodeNestedBytes</span></a></span><span>
+</span><span id="line-366"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#MonadFail"><span class="hs-identifier hs-type">MonadFail</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200326"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-367"></span><span>    </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679200325"><span class="annot"><a href="#local-6989586621679200325"><span class="hs-identifier hs-type">s</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200325"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200327"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-368"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-369"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679200326"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200327"><span class="hs-identifier hs-type">r</span></a></span></span></span><span>
+</span><span id="line-370"></span><span id="decodeNestedBytes"><span class="annot"><span class="annottext">decodeNestedBytes :: forall (m :: * -&gt; *) r.
+MonadFail m =&gt;
+(forall s. Decoder s r) -&gt; ByteString -&gt; m r
+</span><a href="Cardano.Codec.Cbor.html#decodeNestedBytes"><span class="hs-identifier hs-var hs-var">decodeNestedBytes</span></a></span></span><span> </span><span id="local-6989586621679200635"><span class="annot"><span class="annottext">forall s. Decoder s r
+</span><a href="#local-6989586621679200635"><span class="hs-identifier hs-var">dec</span></a></span></span><span> </span><span id="local-6989586621679200636"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200636"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-371"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(forall s. Decoder s r)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, r)
+forall a.
+(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, a)
+</span><span class="hs-identifier hs-var">CBOR.deserialiseFromBytes</span></span><span> </span><span class="annot"><span class="annottext">Decoder s r
+forall s. Decoder s r
+</span><a href="#local-6989586621679200635"><span class="hs-identifier hs-var">dec</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Lazy.Internal.html#fromStrict"><span class="hs-identifier hs-var">BL.fromStrict</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200636"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-372"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-string">&quot;&quot;</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679200639"><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621679200639"><span class="hs-identifier hs-var">res</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-373"></span><span>            </span><span class="annot"><span class="annottext">r -&gt; m r
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621679200639"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-374"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString, r)
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-375"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; m r
+forall a. [Char] -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;Leftovers when decoding nested bytes&quot;</span></span><span>
+</span><span id="line-376"></span><span>        </span><span class="annot"><span class="annottext">Either DeserialiseFailure (ByteString, r)
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-377"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; m r
+forall a. [Char] -&gt; m a
+forall (m :: * -&gt; *) a. MonadFail m =&gt; [Char] -&gt; m a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;Could not decode nested bytes&quot;</span></span><span>
+</span><span id="line-378"></span><span>
+</span><span id="line-379"></span><span class="annot"><span class="hs-comment">-- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.</span></span><span>
+</span><span id="line-380"></span><span id="local-6989586621679200309"><span class="annot"><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier hs-type">deserialiseCbor</span></a></span><span>
+</span><span id="line-381"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679200308"><span class="annot"><a href="#local-6989586621679200308"><span class="hs-identifier hs-type">s</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200308"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200309"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-382"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-383"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.DeserialiseFailure</span></span><span> </span><span class="annot"><a href="#local-6989586621679200309"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-384"></span><span id="deserialiseCbor"><span class="annot"><span class="annottext">deserialiseCbor :: forall a.
+(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure a
+</span><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier hs-var hs-var">deserialiseCbor</span></a></span></span><span> </span><span id="local-6989586621679200642"><span class="annot"><span class="annottext">forall s. Decoder s a
+</span><a href="#local-6989586621679200642"><span class="hs-identifier hs-var">dec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-385"></span><span>  </span><span class="annot"><span class="annottext">((ByteString, a) -&gt; a)
+-&gt; Either DeserialiseFailure (ByteString, a)
+-&gt; Either DeserialiseFailure a
+forall a b.
+(a -&gt; b)
+-&gt; Either DeserialiseFailure a -&gt; Either DeserialiseFailure b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#fmap"><span class="hs-identifier hs-var">fmap</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString, a) -&gt; a
+forall a b. (a, b) -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Tuple.html#snd"><span class="hs-identifier hs-var">snd</span></a></span><span> </span><span class="annot"><span class="annottext">(Either DeserialiseFailure (ByteString, a)
+ -&gt; Either DeserialiseFailure a)
+-&gt; (ByteString -&gt; Either DeserialiseFailure (ByteString, a))
+-&gt; ByteString
+-&gt; Either DeserialiseFailure a
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, a)
+forall a.
+(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, a)
+</span><span class="hs-identifier hs-var">CBOR.deserialiseFromBytes</span></span><span> </span><span class="annot"><span class="annottext">Decoder s a
+forall s. Decoder s a
+</span><a href="#local-6989586621679200642"><span class="hs-identifier hs-var">dec</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Either DeserialiseFailure (ByteString, a))
+-&gt; (ByteString -&gt; ByteString)
+-&gt; ByteString
+-&gt; Either DeserialiseFailure (ByteString, a)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Lazy.Internal.html#fromStrict"><span class="hs-identifier hs-var">BL.fromStrict</span></a></span><span>
+</span><span id="line-386"></span><span>
+</span><span id="line-387"></span><span class="annot"><span class="hs-comment">-- | CBOR deserialise without error handling - handy for prototypes or testing.</span></span><span>
+</span><span id="line-388"></span><span id="local-6989586621679200361"><span class="annot"><a href="Cardano.Codec.Cbor.html#unsafeDeserialiseCbor"><span class="hs-identifier hs-type">unsafeDeserialiseCbor</span></a></span><span>
+</span><span id="line-389"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Stack.Types.html#HasCallStack"><span class="hs-identifier hs-type">HasCallStack</span></a></span><span>
+</span><span id="line-390"></span><span>    </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679200360"><span class="annot"><a href="#local-6989586621679200360"><span class="hs-identifier hs-type">s</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679200360"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679200361"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-391"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Lazy.Internal.html#ByteString"><span class="hs-identifier hs-type">BL.ByteString</span></a></span><span>
+</span><span id="line-392"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679200361"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-393"></span><span id="unsafeDeserialiseCbor"><span class="annot"><span class="annottext">unsafeDeserialiseCbor :: forall a.
+HasCallStack =&gt;
+(forall s. Decoder s a) -&gt; ByteString -&gt; a
+</span><a href="Cardano.Codec.Cbor.html#unsafeDeserialiseCbor"><span class="hs-identifier hs-var hs-var">unsafeDeserialiseCbor</span></a></span></span><span> </span><span id="local-6989586621679200653"><span class="annot"><span class="annottext">forall s. Decoder s a
+</span><a href="#local-6989586621679200653"><span class="hs-identifier hs-var">decoder</span></a></span></span><span> </span><span id="local-6989586621679200654"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200654"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; a)
+-&gt; ((ByteString, a) -&gt; a)
+-&gt; Either DeserialiseFailure (ByteString, a)
+-&gt; a
+forall a c b. (a -&gt; c) -&gt; (b -&gt; c) -&gt; Either a b -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#either"><span class="hs-identifier hs-var">either</span></a></span><span>
+</span><span id="line-394"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679200656"><span class="annot"><span class="annottext">DeserialiseFailure
+</span><a href="#local-6989586621679200656"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; a
+forall a. HasCallStack =&gt; [Char] -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; a) -&gt; [Char] -&gt; a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;unsafeSerializeCbor: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">DeserialiseFailure -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">DeserialiseFailure
+</span><a href="#local-6989586621679200656"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-395"></span><span>    </span><span class="annot"><span class="annottext">(ByteString, a) -&gt; a
+forall a b. (a, b) -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Tuple.html#snd"><span class="hs-identifier hs-var">snd</span></a></span><span>
+</span><span id="line-396"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, a)
+forall a.
+(forall s. Decoder s a)
+-&gt; ByteString -&gt; Either DeserialiseFailure (ByteString, a)
+</span><span class="hs-identifier hs-var">CBOR.deserialiseFromBytes</span></span><span> </span><span class="annot"><span class="annottext">Decoder s a
+forall s. Decoder s a
+</span><a href="#local-6989586621679200653"><span class="hs-identifier hs-var">decoder</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679200654"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-397"></span></pre></body></html>

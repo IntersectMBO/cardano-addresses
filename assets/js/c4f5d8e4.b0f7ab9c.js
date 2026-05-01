@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkcardano_addresses_docs=globalThis.webpackChunkcardano_addresses_docs||[]).push([[634],{192(a,s,e){e.r(s),e.d(s,{default:()=>c});var d=e(6540),r=e(6347);function c(){(0,r.zy)();return(0,d.useEffect)(()=>{window.location.replace("/cardano-addresses/intro")},[]),null}}}]);

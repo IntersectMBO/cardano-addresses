@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE NamedFieldPuns #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Command.RecoveryPhrase.Generate</span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier">Cmd</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier">mod</span></a></span><span>
+</span><span id="line-15"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier">run</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span> </span><span class="hs-keyword">hiding</span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Real.html#mod"><span class="hs-identifier">mod</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html"><span class="hs-identifier">Cardano.Dictionary</span></a></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier">SupportedDictionary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#dictionaryFromLanguage"><span class="hs-identifier">dictionaryFromLanguage</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html"><span class="hs-identifier">Cardano.Mnemonic</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier">entropyToMnemonic</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier">genEntropy</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">CommandFields</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Mod</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">command</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">helper</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">info</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">progDesc</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html"><span class="hs-identifier">Options.Applicative.MnemonicLanguage</span></a></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicLanguage.html#mnemonicLanguageOpt"><span class="hs-identifier">mnemonicLanguageOpt</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html"><span class="hs-identifier">Options.Applicative.MnemonicSize</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier">MnemonicSize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#mnemonicSizeOpt"><span class="hs-identifier">mnemonicSizeOpt</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Char8.html"><span class="hs-identifier">Data.ByteString.Char8</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">B8</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Encoding.html"><span class="hs-identifier">Data.Text.Encoding</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Generate"><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-var">Generate</span></a></span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="size"><span class="annot"><span class="annottext">Cmd -&gt; MnemonicSize
+</span><a href="Command.RecoveryPhrase.Generate.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier hs-type">MnemonicSize</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="language"><span class="annot"><span class="annottext">Cmd -&gt; SupportedDictionary
+</span><a href="Command.RecoveryPhrase.Generate.html#language"><span class="hs-identifier hs-var hs-var">language</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier hs-type">SupportedDictionary</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679223284"><span id="local-6989586621679223292"><span id="local-6989586621679223296"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+[Cmd] -&gt; ShowS
+Cmd -&gt; String
+(Int -&gt; Cmd -&gt; ShowS)
+-&gt; (Cmd -&gt; String) -&gt; ([Cmd] -&gt; ShowS) -&gt; Show Cmd
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Cmd -&gt; ShowS
+showsPrec :: Int -&gt; Cmd -&gt; ShowS
+$cshow :: Cmd -&gt; String
+show :: Cmd -&gt; String
+$cshowList :: [Cmd] -&gt; ShowS
+showList :: [Cmd] -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span id="local-6989586621679223090"><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679223090"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679223090"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-43"></span><span id="mod"><span class="annot"><span class="annottext">mod :: forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
+</span><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679223307"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679223307"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
+</span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;generate&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
+-&gt; ParserInfo parent -&gt; Mod CommandFields parent
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="annot"><span class="annottext">Parser parent -&gt; InfoMod parent -&gt; ParserInfo parent
+forall a. Parser a -&gt; InfoMod a -&gt; ParserInfo a
+</span><span class="hs-identifier hs-var">info</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (parent -&gt; parent)
+forall a. Parser (a -&gt; a)
+</span><span class="hs-identifier hs-var">helper</span></span><span> </span><span class="annot"><span class="annottext">Parser (parent -&gt; parent) -&gt; Parser parent -&gt; Parser parent
+forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">(Cmd -&gt; parent) -&gt; Parser Cmd -&gt; Parser parent
+forall a b. (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#fmap"><span class="hs-identifier hs-var">fmap</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679223307"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679223308"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+-&gt; InfoMod parent -&gt; ParserInfo parent
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
+forall a. Monoid a =&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#mempty"><span class="hs-identifier hs-var">mempty</span></a></span><span>
+</span><span id="line-45"></span><span>        </span><span class="annot"><span class="annottext">InfoMod parent -&gt; InfoMod parent -&gt; InfoMod parent
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; InfoMod parent
+forall a. String -&gt; InfoMod a
+</span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Generate a recovery phrase for a specified mnemonic size and language.&quot;</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-47"></span><span>    </span><span id="local-6989586621679223308"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679223308"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MnemonicSize -&gt; SupportedDictionary -&gt; Cmd
+</span><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-var">Generate</span></a></span><span>
+</span><span id="line-48"></span><span>        </span><span class="annot"><span class="annottext">(MnemonicSize -&gt; SupportedDictionary -&gt; Cmd)
+-&gt; Parser MnemonicSize -&gt; Parser (SupportedDictionary -&gt; Cmd)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#mnemonicSizeOpt"><span class="hs-identifier hs-var">mnemonicSizeOpt</span></a></span><span>
+</span><span id="line-49"></span><span>        </span><span class="annot"><span class="annottext">Parser (SupportedDictionary -&gt; Cmd)
+-&gt; Parser SupportedDictionary -&gt; Parser Cmd
+forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser SupportedDictionary
+</span><a href="Options.Applicative.MnemonicLanguage.html#mnemonicLanguageOpt"><span class="hs-identifier hs-var">mnemonicLanguageOpt</span></a></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
+</span><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-type">Generate</span></a></span><span class="hs-special">{</span><span id="local-6989586621679223312"><span class="annot"><span class="annottext">MnemonicSize
+size :: Cmd -&gt; MnemonicSize
+size :: MnemonicSize
+</span><a href="Command.RecoveryPhrase.Generate.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679223313"><span class="annot"><span class="annottext">SupportedDictionary
+language :: Cmd -&gt; SupportedDictionary
+language :: SupportedDictionary
+</span><a href="Command.RecoveryPhrase.Generate.html#language"><span class="hs-identifier hs-var hs-var">language</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-53"></span><span>    </span><span id="local-6989586621679223314"><span class="annot"><span class="annottext">Dictionary -&gt; [Text]
+</span><a href="#local-6989586621679223314"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="#local-6989586621679223312"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-54"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_9"><span class="hs-identifier hs-var">MS_9</span></a></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">9</span></span><span>  </span><span class="annot"><span class="annottext">(Mnemonic 9 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 96 -&gt; Mnemonic 9) -&gt; Entropy 96 -&gt; Dictionary -&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 96 -&gt; Mnemonic 9
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 96 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 96) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 96)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-55"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_12"><span class="hs-identifier hs-var">MS_12</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">12</span></span><span> </span><span class="annot"><span class="annottext">(Mnemonic 12 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 128 -&gt; Mnemonic 12)
+-&gt; Entropy 128
+-&gt; Dictionary
+-&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 128 -&gt; Mnemonic 12
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 128 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 128) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 128)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_15"><span class="hs-identifier hs-var">MS_15</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">15</span></span><span> </span><span class="annot"><span class="annottext">(Mnemonic 15 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 160 -&gt; Mnemonic 15)
+-&gt; Entropy 160
+-&gt; Dictionary
+-&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 160 -&gt; Mnemonic 15
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 160 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 160) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 160)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-57"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_18"><span class="hs-identifier hs-var">MS_18</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">18</span></span><span> </span><span class="annot"><span class="annottext">(Mnemonic 18 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 192 -&gt; Mnemonic 18)
+-&gt; Entropy 192
+-&gt; Dictionary
+-&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 192 -&gt; Mnemonic 18
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 192 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 192) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 192)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-58"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_21"><span class="hs-identifier hs-var">MS_21</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">21</span></span><span> </span><span class="annot"><span class="annottext">(Mnemonic 21 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 224 -&gt; Mnemonic 21)
+-&gt; Entropy 224
+-&gt; Dictionary
+-&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 224 -&gt; Mnemonic 21
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 224 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 224) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 224)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-59"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Options.Applicative.MnemonicSize.html#MS_24"><span class="hs-identifier hs-var">MS_24</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
+</span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">24</span></span><span> </span><span class="annot"><span class="annottext">(Mnemonic 24 -&gt; Dictionary -&gt; [Text])
+-&gt; (Entropy 256 -&gt; Mnemonic 24)
+-&gt; Entropy 256
+-&gt; Dictionary
+-&gt; [Text]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Entropy 256 -&gt; Mnemonic 24
+forall (mw :: Nat) (ent :: Nat) (csz :: Nat).
+(ValidMnemonicSentence mw, ValidEntropySize ent,
+ ValidChecksumSize ent csz, ent ~ EntropySize mw,
+ mw ~ MnemonicWords ent) =&gt;
+Entropy ent -&gt; Mnemonic mw
+</span><a href="Cardano.Mnemonic.html#entropyToMnemonic"><span class="hs-identifier hs-var">entropyToMnemonic</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy 256 -&gt; Dictionary -&gt; [Text])
+-&gt; IO (Entropy 256) -&gt; IO (Dictionary -&gt; [Text])
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Entropy 256)
+forall (ent :: Nat) (csz :: Nat).
+(ValidEntropySize ent, ValidChecksumSize ent csz) =&gt;
+IO (Entropy ent)
+</span><a href="Cardano.Mnemonic.html#genEntropy"><span class="hs-identifier hs-var">genEntropy</span></a></span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">ByteString -&gt; IO ()
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Char8.html#putStrLn"><span class="hs-identifier hs-var">B8.putStrLn</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; IO ()) -&gt; ByteString -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Encoding.html#encodeUtf8"><span class="hs-identifier hs-var">T.encodeUtf8</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Text
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.html#unwords"><span class="hs-identifier hs-var">T.unwords</span></a></span><span> </span><span class="annot"><span class="annottext">([Text] -&gt; Text) -&gt; [Text] -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Dictionary -&gt; [Text]
+</span><a href="#local-6989586621679223314"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">(Dictionary -&gt; [Text]) -&gt; Dictionary -&gt; [Text]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Dictionary
+</span><a href="Cardano.Dictionary.html#dictionaryFromLanguage"><span class="hs-identifier hs-var">dictionaryFromLanguage</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="#local-6989586621679223313"><span class="hs-identifier hs-var">language</span></a></span><span>
+</span><span id="line-61"></span></pre></body></html>

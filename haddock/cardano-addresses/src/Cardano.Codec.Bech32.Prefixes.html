@@ -1,0 +1,444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE QuasiQuotes #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}</span><span>
+</span><span id="line-5"></span><span class="hs-comment">{- HLINT ignore &quot;Use camelCase&quot; -}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- List common bech32 prefixes used for objects in the Cardano eco-systems.</span><span>
+</span><span id="line-12"></span><span class="hs-comment">--</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- As specified in [CIP-5](https://github.com/cardano-foundation/CIPs/tree/master/CIP5)</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- and in [CIP-0105](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0105)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Cardano.Codec.Bech32.Prefixes</span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Addresses</span></span><span>
+</span><span id="line-17"></span><span>      </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr"><span class="hs-identifier">addr</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_test"><span class="hs-identifier">addr_test</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#script"><span class="hs-identifier">script</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake"><span class="hs-identifier">stake</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_test"><span class="hs-identifier">stake_test</span></a></span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Hashes</span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vkh"><span class="hs-identifier">addr_vkh</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vkh"><span class="hs-identifier">stake_vkh</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vkh"><span class="hs-identifier">addr_shared_vkh</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vkh"><span class="hs-identifier">stake_shared_vkh</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Keys for 1852H</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vk"><span class="hs-identifier">addr_vk</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_sk"><span class="hs-identifier">addr_sk</span></a></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xvk"><span class="hs-identifier">addr_xvk</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xsk"><span class="hs-identifier">addr_xsk</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_vk"><span class="hs-identifier">acct_vk</span></a></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_sk"><span class="hs-identifier">acct_sk</span></a></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xvk"><span class="hs-identifier">acct_xvk</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xsk"><span class="hs-identifier">acct_xsk</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_vk"><span class="hs-identifier">root_vk</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_sk"><span class="hs-identifier">root_sk</span></a></span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_xvk"><span class="hs-identifier">root_xvk</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_xsk"><span class="hs-identifier">root_xsk</span></a></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vk"><span class="hs-identifier">stake_vk</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_sk"><span class="hs-identifier">stake_sk</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xvk"><span class="hs-identifier">stake_xvk</span></a></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xsk"><span class="hs-identifier">stake_xsk</span></a></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Keys for 1854H</span></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vk"><span class="hs-identifier">addr_shared_vk</span></a></span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_sk"><span class="hs-identifier">addr_shared_sk</span></a></span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xvk"><span class="hs-identifier">addr_shared_xvk</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xsk"><span class="hs-identifier">addr_shared_xsk</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_vk"><span class="hs-identifier">acct_shared_vk</span></a></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_sk"><span class="hs-identifier">acct_shared_sk</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xvk"><span class="hs-identifier">acct_shared_xvk</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xsk"><span class="hs-identifier">acct_shared_xsk</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_vk"><span class="hs-identifier">root_shared_vk</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_sk"><span class="hs-identifier">root_shared_sk</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xvk"><span class="hs-identifier">root_shared_xvk</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xsk"><span class="hs-identifier">root_shared_xsk</span></a></span><span>
+</span><span id="line-60"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vk"><span class="hs-identifier">stake_shared_vk</span></a></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_sk"><span class="hs-identifier">stake_shared_sk</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xvk"><span class="hs-identifier">stake_shared_xvk</span></a></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xsk"><span class="hs-identifier">stake_shared_xsk</span></a></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Keys for 1855H</span></span><span>
+</span><span id="line-66"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vk"><span class="hs-identifier">policy_vk</span></a></span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xvk"><span class="hs-identifier">policy_xvk</span></a></span><span>
+</span><span id="line-68"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vkh"><span class="hs-identifier">policy_vkh</span></a></span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xsk"><span class="hs-identifier">policy_xsk</span></a></span><span>
+</span><span id="line-70"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_sk"><span class="hs-identifier">policy_sk</span></a></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Keys/hashes for CIP-0105</span></span><span>
+</span><span id="line-73"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vk"><span class="hs-identifier">drep_vk</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_sk"><span class="hs-identifier">drep_sk</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xvk"><span class="hs-identifier">drep_xvk</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xsk"><span class="hs-identifier">drep_xsk</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vkh"><span class="hs-identifier">drep_vkh</span></a></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep"><span class="hs-identifier">drep</span></a></span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_script"><span class="hs-identifier">drep_script</span></a></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vk"><span class="hs-identifier">cc_cold_vk</span></a></span><span>
+</span><span id="line-82"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_sk"><span class="hs-identifier">cc_cold_sk</span></a></span><span>
+</span><span id="line-83"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xvk"><span class="hs-identifier">cc_cold_xvk</span></a></span><span>
+</span><span id="line-84"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xsk"><span class="hs-identifier">cc_cold_xsk</span></a></span><span>
+</span><span id="line-85"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vkh"><span class="hs-identifier">cc_cold_vkh</span></a></span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold"><span class="hs-identifier">cc_cold</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_script"><span class="hs-identifier">cc_cold_script</span></a></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vk"><span class="hs-identifier">cc_hot_vk</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_sk"><span class="hs-identifier">cc_hot_sk</span></a></span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xvk"><span class="hs-identifier">cc_hot_xvk</span></a></span><span>
+</span><span id="line-92"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xsk"><span class="hs-identifier">cc_hot_xsk</span></a></span><span>
+</span><span id="line-93"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vkh"><span class="hs-identifier">cc_hot_vkh</span></a></span><span>
+</span><span id="line-94"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot"><span class="hs-identifier">cc_hot</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_script"><span class="hs-identifier">cc_hot_script</span></a></span><span>
+</span><span id="line-96"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Codec.Binary.Bech32</span></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">HumanReadablePart</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Codec.Binary.Bech32.TH</span></span><span>
+</span><span id="line-101"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">humanReadablePart</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- Addresses</span><span>
+</span><span id="line-105"></span><span class="annot"><span class="hs-comment">-- | addr</span></span><span>
+</span><span id="line-106"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr"><span class="hs-identifier hs-type">addr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-107"></span><span id="addr"><span class="annot"><span class="annottext">addr :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr"><span class="hs-identifier hs-var hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr|]</span></span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="annot"><span class="hs-comment">-- | addr_test</span></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_test"><span class="hs-identifier hs-type">addr_test</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-111"></span><span id="addr_test"><span class="annot"><span class="annottext">addr_test :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_test"><span class="hs-identifier hs-var hs-var">addr_test</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_test|]</span></span><span>
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="annot"><span class="hs-comment">-- | script</span></span><span>
+</span><span id="line-114"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#script"><span class="hs-identifier hs-type">script</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-115"></span><span id="script"><span class="annot"><span class="annottext">script :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#script"><span class="hs-identifier hs-var hs-var">script</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|script|]</span></span><span>
+</span><span id="line-116"></span><span>
+</span><span id="line-117"></span><span class="annot"><span class="hs-comment">-- | stake</span></span><span>
+</span><span id="line-118"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake"><span class="hs-identifier hs-type">stake</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-119"></span><span id="stake"><span class="annot"><span class="annottext">stake :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake"><span class="hs-identifier hs-var hs-var">stake</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake|]</span></span><span>
+</span><span id="line-120"></span><span>
+</span><span id="line-121"></span><span class="annot"><span class="hs-comment">-- | stake_test</span></span><span>
+</span><span id="line-122"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_test"><span class="hs-identifier hs-type">stake_test</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-123"></span><span id="stake_test"><span class="annot"><span class="annottext">stake_test :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_test"><span class="hs-identifier hs-var hs-var">stake_test</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_test|]</span></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="hs-comment">-- Keys</span><span>
+</span><span id="line-127"></span><span class="annot"><span class="hs-comment">-- | addr_vk</span></span><span>
+</span><span id="line-128"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vk"><span class="hs-identifier hs-type">addr_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-129"></span><span id="addr_vk"><span class="annot"><span class="annottext">addr_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vk"><span class="hs-identifier hs-var hs-var">addr_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_vk|]</span></span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="annot"><span class="hs-comment">-- | addr_sk</span></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_sk"><span class="hs-identifier hs-type">addr_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-133"></span><span id="addr_sk"><span class="annot"><span class="annottext">addr_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_sk"><span class="hs-identifier hs-var hs-var">addr_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_sk|]</span></span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="annot"><span class="hs-comment">-- | addr_xvk</span></span><span>
+</span><span id="line-136"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xvk"><span class="hs-identifier hs-type">addr_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-137"></span><span id="addr_xvk"><span class="annot"><span class="annottext">addr_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xvk"><span class="hs-identifier hs-var hs-var">addr_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_xvk|]</span></span><span>
+</span><span id="line-138"></span><span>
+</span><span id="line-139"></span><span class="annot"><span class="hs-comment">-- | addr_xsk</span></span><span>
+</span><span id="line-140"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xsk"><span class="hs-identifier hs-type">addr_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-141"></span><span id="addr_xsk"><span class="annot"><span class="annottext">addr_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_xsk"><span class="hs-identifier hs-var hs-var">addr_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_xsk|]</span></span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="annot"><span class="hs-comment">-- | acct_vk</span></span><span>
+</span><span id="line-144"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_vk"><span class="hs-identifier hs-type">acct_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-145"></span><span id="acct_vk"><span class="annot"><span class="annottext">acct_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_vk"><span class="hs-identifier hs-var hs-var">acct_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_vk|]</span></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><span class="hs-comment">-- | acct_sk</span></span><span>
+</span><span id="line-148"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_sk"><span class="hs-identifier hs-type">acct_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-149"></span><span id="acct_sk"><span class="annot"><span class="annottext">acct_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_sk"><span class="hs-identifier hs-var hs-var">acct_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_sk|]</span></span><span>
+</span><span id="line-150"></span><span>
+</span><span id="line-151"></span><span class="annot"><span class="hs-comment">-- | acct_xvk</span></span><span>
+</span><span id="line-152"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xvk"><span class="hs-identifier hs-type">acct_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-153"></span><span id="acct_xvk"><span class="annot"><span class="annottext">acct_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xvk"><span class="hs-identifier hs-var hs-var">acct_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_xvk|]</span></span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="annot"><span class="hs-comment">-- | acct_xsk</span></span><span>
+</span><span id="line-156"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xsk"><span class="hs-identifier hs-type">acct_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-157"></span><span id="acct_xsk"><span class="annot"><span class="annottext">acct_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_xsk"><span class="hs-identifier hs-var hs-var">acct_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_xsk|]</span></span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span class="annot"><span class="hs-comment">-- | root_vk</span></span><span>
+</span><span id="line-160"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_vk"><span class="hs-identifier hs-type">root_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-161"></span><span id="root_vk"><span class="annot"><span class="annottext">root_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_vk"><span class="hs-identifier hs-var hs-var">root_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_vk|]</span></span><span>
+</span><span id="line-162"></span><span>
+</span><span id="line-163"></span><span class="annot"><span class="hs-comment">-- | root_sk</span></span><span>
+</span><span id="line-164"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_sk"><span class="hs-identifier hs-type">root_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-165"></span><span id="root_sk"><span class="annot"><span class="annottext">root_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_sk"><span class="hs-identifier hs-var hs-var">root_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_sk|]</span></span><span>
+</span><span id="line-166"></span><span>
+</span><span id="line-167"></span><span class="annot"><span class="hs-comment">-- | root_xvk</span></span><span>
+</span><span id="line-168"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_xvk"><span class="hs-identifier hs-type">root_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-169"></span><span id="root_xvk"><span class="annot"><span class="annottext">root_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_xvk"><span class="hs-identifier hs-var hs-var">root_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_xvk|]</span></span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="annot"><span class="hs-comment">-- | root_xsk</span></span><span>
+</span><span id="line-172"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_xsk"><span class="hs-identifier hs-type">root_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-173"></span><span id="root_xsk"><span class="annot"><span class="annottext">root_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_xsk"><span class="hs-identifier hs-var hs-var">root_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_xsk|]</span></span><span>
+</span><span id="line-174"></span><span>
+</span><span id="line-175"></span><span class="annot"><span class="hs-comment">-- | stake_vk</span></span><span>
+</span><span id="line-176"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vk"><span class="hs-identifier hs-type">stake_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-177"></span><span id="stake_vk"><span class="annot"><span class="annottext">stake_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vk"><span class="hs-identifier hs-var hs-var">stake_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_vk|]</span></span><span>
+</span><span id="line-178"></span><span>
+</span><span id="line-179"></span><span class="annot"><span class="hs-comment">-- | stake_sk</span></span><span>
+</span><span id="line-180"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_sk"><span class="hs-identifier hs-type">stake_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-181"></span><span id="stake_sk"><span class="annot"><span class="annottext">stake_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_sk"><span class="hs-identifier hs-var hs-var">stake_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_sk|]</span></span><span>
+</span><span id="line-182"></span><span>
+</span><span id="line-183"></span><span class="annot"><span class="hs-comment">-- | stake_xvk</span></span><span>
+</span><span id="line-184"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xvk"><span class="hs-identifier hs-type">stake_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-185"></span><span id="stake_xvk"><span class="annot"><span class="annottext">stake_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xvk"><span class="hs-identifier hs-var hs-var">stake_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_xvk|]</span></span><span>
+</span><span id="line-186"></span><span>
+</span><span id="line-187"></span><span class="annot"><span class="hs-comment">-- | stake_xsk</span></span><span>
+</span><span id="line-188"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xsk"><span class="hs-identifier hs-type">stake_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-189"></span><span id="stake_xsk"><span class="annot"><span class="annottext">stake_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_xsk"><span class="hs-identifier hs-var hs-var">stake_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_xsk|]</span></span><span>
+</span><span id="line-190"></span><span>
+</span><span id="line-191"></span><span class="annot"><span class="hs-comment">-- | addr_shared_vk</span></span><span>
+</span><span id="line-192"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vk"><span class="hs-identifier hs-type">addr_shared_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-193"></span><span id="addr_shared_vk"><span class="annot"><span class="annottext">addr_shared_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vk"><span class="hs-identifier hs-var hs-var">addr_shared_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_shared_vk|]</span></span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="annot"><span class="hs-comment">-- | addr_shared_sk</span></span><span>
+</span><span id="line-196"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_sk"><span class="hs-identifier hs-type">addr_shared_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-197"></span><span id="addr_shared_sk"><span class="annot"><span class="annottext">addr_shared_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_sk"><span class="hs-identifier hs-var hs-var">addr_shared_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_shared_sk|]</span></span><span>
+</span><span id="line-198"></span><span>
+</span><span id="line-199"></span><span class="annot"><span class="hs-comment">-- | addr_shared_xvk</span></span><span>
+</span><span id="line-200"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xvk"><span class="hs-identifier hs-type">addr_shared_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-201"></span><span id="addr_shared_xvk"><span class="annot"><span class="annottext">addr_shared_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xvk"><span class="hs-identifier hs-var hs-var">addr_shared_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_shared_xvk|]</span></span><span>
+</span><span id="line-202"></span><span>
+</span><span id="line-203"></span><span class="annot"><span class="hs-comment">-- | addr_shared_xsk</span></span><span>
+</span><span id="line-204"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xsk"><span class="hs-identifier hs-type">addr_shared_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-205"></span><span id="addr_shared_xsk"><span class="annot"><span class="annottext">addr_shared_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_xsk"><span class="hs-identifier hs-var hs-var">addr_shared_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_shared_xsk|]</span></span><span>
+</span><span id="line-206"></span><span>
+</span><span id="line-207"></span><span class="annot"><span class="hs-comment">-- | acct_shared_vk</span></span><span>
+</span><span id="line-208"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_vk"><span class="hs-identifier hs-type">acct_shared_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-209"></span><span id="acct_shared_vk"><span class="annot"><span class="annottext">acct_shared_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_vk"><span class="hs-identifier hs-var hs-var">acct_shared_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_shared_vk|]</span></span><span>
+</span><span id="line-210"></span><span>
+</span><span id="line-211"></span><span class="annot"><span class="hs-comment">-- | acct_shared_sk</span></span><span>
+</span><span id="line-212"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_sk"><span class="hs-identifier hs-type">acct_shared_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-213"></span><span id="acct_shared_sk"><span class="annot"><span class="annottext">acct_shared_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_sk"><span class="hs-identifier hs-var hs-var">acct_shared_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_shared_sk|]</span></span><span>
+</span><span id="line-214"></span><span>
+</span><span id="line-215"></span><span class="annot"><span class="hs-comment">-- | acct_shared_xvk</span></span><span>
+</span><span id="line-216"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xvk"><span class="hs-identifier hs-type">acct_shared_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-217"></span><span id="acct_shared_xvk"><span class="annot"><span class="annottext">acct_shared_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xvk"><span class="hs-identifier hs-var hs-var">acct_shared_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_shared_xvk|]</span></span><span>
+</span><span id="line-218"></span><span>
+</span><span id="line-219"></span><span class="annot"><span class="hs-comment">-- | acct_shared_xsk</span></span><span>
+</span><span id="line-220"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xsk"><span class="hs-identifier hs-type">acct_shared_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-221"></span><span id="acct_shared_xsk"><span class="annot"><span class="annottext">acct_shared_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#acct_shared_xsk"><span class="hs-identifier hs-var hs-var">acct_shared_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|acct_shared_xsk|]</span></span><span>
+</span><span id="line-222"></span><span>
+</span><span id="line-223"></span><span class="annot"><span class="hs-comment">-- | root_shared_vk</span></span><span>
+</span><span id="line-224"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_vk"><span class="hs-identifier hs-type">root_shared_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-225"></span><span id="root_shared_vk"><span class="annot"><span class="annottext">root_shared_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_vk"><span class="hs-identifier hs-var hs-var">root_shared_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_shared_vk|]</span></span><span>
+</span><span id="line-226"></span><span>
+</span><span id="line-227"></span><span class="annot"><span class="hs-comment">-- | root_shared_sk</span></span><span>
+</span><span id="line-228"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_sk"><span class="hs-identifier hs-type">root_shared_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-229"></span><span id="root_shared_sk"><span class="annot"><span class="annottext">root_shared_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_sk"><span class="hs-identifier hs-var hs-var">root_shared_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_shared_sk|]</span></span><span>
+</span><span id="line-230"></span><span>
+</span><span id="line-231"></span><span class="annot"><span class="hs-comment">-- | root_shared_xvk</span></span><span>
+</span><span id="line-232"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xvk"><span class="hs-identifier hs-type">root_shared_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-233"></span><span id="root_shared_xvk"><span class="annot"><span class="annottext">root_shared_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xvk"><span class="hs-identifier hs-var hs-var">root_shared_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_shared_xvk|]</span></span><span>
+</span><span id="line-234"></span><span>
+</span><span id="line-235"></span><span class="annot"><span class="hs-comment">-- | root_shared_xsk</span></span><span>
+</span><span id="line-236"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xsk"><span class="hs-identifier hs-type">root_shared_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-237"></span><span id="root_shared_xsk"><span class="annot"><span class="annottext">root_shared_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#root_shared_xsk"><span class="hs-identifier hs-var hs-var">root_shared_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|root_shared_xsk|]</span></span><span>
+</span><span id="line-238"></span><span>
+</span><span id="line-239"></span><span class="annot"><span class="hs-comment">-- | stake_shared_vk</span></span><span>
+</span><span id="line-240"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vk"><span class="hs-identifier hs-type">stake_shared_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-241"></span><span id="stake_shared_vk"><span class="annot"><span class="annottext">stake_shared_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vk"><span class="hs-identifier hs-var hs-var">stake_shared_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_shared_vk|]</span></span><span>
+</span><span id="line-242"></span><span>
+</span><span id="line-243"></span><span class="annot"><span class="hs-comment">-- | stake_shared_sk</span></span><span>
+</span><span id="line-244"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_sk"><span class="hs-identifier hs-type">stake_shared_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-245"></span><span id="stake_shared_sk"><span class="annot"><span class="annottext">stake_shared_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_sk"><span class="hs-identifier hs-var hs-var">stake_shared_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_shared_sk|]</span></span><span>
+</span><span id="line-246"></span><span>
+</span><span id="line-247"></span><span class="annot"><span class="hs-comment">-- | stake_shared_xvk</span></span><span>
+</span><span id="line-248"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xvk"><span class="hs-identifier hs-type">stake_shared_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-249"></span><span id="stake_shared_xvk"><span class="annot"><span class="annottext">stake_shared_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xvk"><span class="hs-identifier hs-var hs-var">stake_shared_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_shared_xvk|]</span></span><span>
+</span><span id="line-250"></span><span>
+</span><span id="line-251"></span><span class="annot"><span class="hs-comment">-- | stake_shared_xsk</span></span><span>
+</span><span id="line-252"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xsk"><span class="hs-identifier hs-type">stake_shared_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-253"></span><span id="stake_shared_xsk"><span class="annot"><span class="annottext">stake_shared_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_xsk"><span class="hs-identifier hs-var hs-var">stake_shared_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_shared_xsk|]</span></span><span>
+</span><span id="line-254"></span><span>
+</span><span id="line-255"></span><span class="hs-comment">-- Hashes</span><span>
+</span><span id="line-256"></span><span class="annot"><span class="hs-comment">-- | addr_vkh</span></span><span>
+</span><span id="line-257"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vkh"><span class="hs-identifier hs-type">addr_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-258"></span><span id="addr_vkh"><span class="annot"><span class="annottext">addr_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_vkh"><span class="hs-identifier hs-var hs-var">addr_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_vkh|]</span></span><span>
+</span><span id="line-259"></span><span>
+</span><span id="line-260"></span><span class="annot"><span class="hs-comment">-- | stake_vkh</span></span><span>
+</span><span id="line-261"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vkh"><span class="hs-identifier hs-type">stake_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-262"></span><span id="stake_vkh"><span class="annot"><span class="annottext">stake_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_vkh"><span class="hs-identifier hs-var hs-var">stake_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_vkh|]</span></span><span>
+</span><span id="line-263"></span><span>
+</span><span id="line-264"></span><span class="annot"><span class="hs-comment">-- | addr_shared_vkh</span></span><span>
+</span><span id="line-265"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vkh"><span class="hs-identifier hs-type">addr_shared_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-266"></span><span id="addr_shared_vkh"><span class="annot"><span class="annottext">addr_shared_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#addr_shared_vkh"><span class="hs-identifier hs-var hs-var">addr_shared_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|addr_shared_vkh|]</span></span><span>
+</span><span id="line-267"></span><span>
+</span><span id="line-268"></span><span class="annot"><span class="hs-comment">-- | stake_shared_vkh</span></span><span>
+</span><span id="line-269"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vkh"><span class="hs-identifier hs-type">stake_shared_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-270"></span><span id="stake_shared_vkh"><span class="annot"><span class="annottext">stake_shared_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#stake_shared_vkh"><span class="hs-identifier hs-var hs-var">stake_shared_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|stake_shared_vkh|]</span></span><span>
+</span><span id="line-271"></span><span>
+</span><span id="line-272"></span><span class="hs-comment">-- Policy</span><span>
+</span><span id="line-273"></span><span class="annot"><span class="hs-comment">-- | policy_vk</span></span><span>
+</span><span id="line-274"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vk"><span class="hs-identifier hs-type">policy_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-275"></span><span id="policy_vk"><span class="annot"><span class="annottext">policy_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vk"><span class="hs-identifier hs-var hs-var">policy_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|policy_vk|]</span></span><span>
+</span><span id="line-276"></span><span>
+</span><span id="line-277"></span><span class="annot"><span class="hs-comment">-- | policy_xvk</span></span><span>
+</span><span id="line-278"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xvk"><span class="hs-identifier hs-type">policy_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-279"></span><span id="policy_xvk"><span class="annot"><span class="annottext">policy_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xvk"><span class="hs-identifier hs-var hs-var">policy_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|policy_xvk|]</span></span><span>
+</span><span id="line-280"></span><span>
+</span><span id="line-281"></span><span class="annot"><span class="hs-comment">-- | policy_vkh</span></span><span>
+</span><span id="line-282"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vkh"><span class="hs-identifier hs-type">policy_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-283"></span><span id="policy_vkh"><span class="annot"><span class="annottext">policy_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#policy_vkh"><span class="hs-identifier hs-var hs-var">policy_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|policy_vkh|]</span></span><span>
+</span><span id="line-284"></span><span>
+</span><span id="line-285"></span><span class="annot"><span class="hs-comment">-- | policy_xsk</span></span><span>
+</span><span id="line-286"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xsk"><span class="hs-identifier hs-type">policy_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-287"></span><span id="policy_xsk"><span class="annot"><span class="annottext">policy_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#policy_xsk"><span class="hs-identifier hs-var hs-var">policy_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|policy_xsk|]</span></span><span>
+</span><span id="line-288"></span><span>
+</span><span id="line-289"></span><span class="annot"><span class="hs-comment">-- | policy_sk</span></span><span>
+</span><span id="line-290"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#policy_sk"><span class="hs-identifier hs-type">policy_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-291"></span><span id="policy_sk"><span class="annot"><span class="annottext">policy_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#policy_sk"><span class="hs-identifier hs-var hs-var">policy_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|policy_sk|]</span></span><span>
+</span><span id="line-292"></span><span>
+</span><span id="line-293"></span><span class="hs-comment">-- Keys/hashes for CIP-0105</span><span>
+</span><span id="line-294"></span><span class="annot"><span class="hs-comment">-- | drep_vk</span></span><span>
+</span><span id="line-295"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vk"><span class="hs-identifier hs-type">drep_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-296"></span><span id="drep_vk"><span class="annot"><span class="annottext">drep_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vk"><span class="hs-identifier hs-var hs-var">drep_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_vk|]</span></span><span>
+</span><span id="line-297"></span><span>
+</span><span id="line-298"></span><span class="annot"><span class="hs-comment">-- | drep_sk</span></span><span>
+</span><span id="line-299"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_sk"><span class="hs-identifier hs-type">drep_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-300"></span><span id="drep_sk"><span class="annot"><span class="annottext">drep_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_sk"><span class="hs-identifier hs-var hs-var">drep_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_sk|]</span></span><span>
+</span><span id="line-301"></span><span>
+</span><span id="line-302"></span><span class="annot"><span class="hs-comment">-- | drep_xvk</span></span><span>
+</span><span id="line-303"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xvk"><span class="hs-identifier hs-type">drep_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-304"></span><span id="drep_xvk"><span class="annot"><span class="annottext">drep_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xvk"><span class="hs-identifier hs-var hs-var">drep_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_xvk|]</span></span><span>
+</span><span id="line-305"></span><span>
+</span><span id="line-306"></span><span class="annot"><span class="hs-comment">-- | drep_xsk</span></span><span>
+</span><span id="line-307"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xsk"><span class="hs-identifier hs-type">drep_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-308"></span><span id="drep_xsk"><span class="annot"><span class="annottext">drep_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_xsk"><span class="hs-identifier hs-var hs-var">drep_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_xsk|]</span></span><span>
+</span><span id="line-309"></span><span>
+</span><span id="line-310"></span><span class="annot"><span class="hs-comment">-- | drep_vkh</span></span><span>
+</span><span id="line-311"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vkh"><span class="hs-identifier hs-type">drep_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-312"></span><span id="drep_vkh"><span class="annot"><span class="annottext">drep_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_vkh"><span class="hs-identifier hs-var hs-var">drep_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_vkh|]</span></span><span>
+</span><span id="line-313"></span><span>
+</span><span id="line-314"></span><span class="annot"><span class="hs-comment">-- | drep</span></span><span>
+</span><span id="line-315"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep"><span class="hs-identifier hs-type">drep</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-316"></span><span id="drep"><span class="annot"><span class="annottext">drep :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep"><span class="hs-identifier hs-var hs-var">drep</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep|]</span></span><span>
+</span><span id="line-317"></span><span>
+</span><span id="line-318"></span><span class="annot"><span class="hs-comment">-- | drep_script</span></span><span>
+</span><span id="line-319"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#drep_script"><span class="hs-identifier hs-type">drep_script</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-320"></span><span id="drep_script"><span class="annot"><span class="annottext">drep_script :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#drep_script"><span class="hs-identifier hs-var hs-var">drep_script</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|drep_script|]</span></span><span>
+</span><span id="line-321"></span><span>
+</span><span id="line-322"></span><span class="annot"><span class="hs-comment">-- | cc_cold_vk</span></span><span>
+</span><span id="line-323"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vk"><span class="hs-identifier hs-type">cc_cold_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-324"></span><span id="cc_cold_vk"><span class="annot"><span class="annottext">cc_cold_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vk"><span class="hs-identifier hs-var hs-var">cc_cold_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_vk|]</span></span><span>
+</span><span id="line-325"></span><span>
+</span><span id="line-326"></span><span class="annot"><span class="hs-comment">-- | cc_cold_sk</span></span><span>
+</span><span id="line-327"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_sk"><span class="hs-identifier hs-type">cc_cold_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-328"></span><span id="cc_cold_sk"><span class="annot"><span class="annottext">cc_cold_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_sk"><span class="hs-identifier hs-var hs-var">cc_cold_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_sk|]</span></span><span>
+</span><span id="line-329"></span><span>
+</span><span id="line-330"></span><span class="annot"><span class="hs-comment">-- | cc_cold_xvk</span></span><span>
+</span><span id="line-331"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xvk"><span class="hs-identifier hs-type">cc_cold_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-332"></span><span id="cc_cold_xvk"><span class="annot"><span class="annottext">cc_cold_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xvk"><span class="hs-identifier hs-var hs-var">cc_cold_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_xvk|]</span></span><span>
+</span><span id="line-333"></span><span>
+</span><span id="line-334"></span><span class="annot"><span class="hs-comment">-- | cc_cold_vkh</span></span><span>
+</span><span id="line-335"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vkh"><span class="hs-identifier hs-type">cc_cold_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-336"></span><span id="cc_cold_vkh"><span class="annot"><span class="annottext">cc_cold_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_vkh"><span class="hs-identifier hs-var hs-var">cc_cold_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_vkh|]</span></span><span>
+</span><span id="line-337"></span><span>
+</span><span id="line-338"></span><span class="annot"><span class="hs-comment">-- | cc_cold_xsk</span></span><span>
+</span><span id="line-339"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xsk"><span class="hs-identifier hs-type">cc_cold_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-340"></span><span id="cc_cold_xsk"><span class="annot"><span class="annottext">cc_cold_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_xsk"><span class="hs-identifier hs-var hs-var">cc_cold_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_xsk|]</span></span><span>
+</span><span id="line-341"></span><span>
+</span><span id="line-342"></span><span class="annot"><span class="hs-comment">-- | cc_cold</span></span><span>
+</span><span id="line-343"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold"><span class="hs-identifier hs-type">cc_cold</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-344"></span><span id="cc_cold"><span class="annot"><span class="annottext">cc_cold :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold"><span class="hs-identifier hs-var hs-var">cc_cold</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold|]</span></span><span>
+</span><span id="line-345"></span><span>
+</span><span id="line-346"></span><span class="annot"><span class="hs-comment">-- | cc_cold_script</span></span><span>
+</span><span id="line-347"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_script"><span class="hs-identifier hs-type">cc_cold_script</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-348"></span><span id="cc_cold_script"><span class="annot"><span class="annottext">cc_cold_script :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_cold_script"><span class="hs-identifier hs-var hs-var">cc_cold_script</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_cold_script|]</span></span><span>
+</span><span id="line-349"></span><span>
+</span><span id="line-350"></span><span class="annot"><span class="hs-comment">-- | cc_hot_vk</span></span><span>
+</span><span id="line-351"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vk"><span class="hs-identifier hs-type">cc_hot_vk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-352"></span><span id="cc_hot_vk"><span class="annot"><span class="annottext">cc_hot_vk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vk"><span class="hs-identifier hs-var hs-var">cc_hot_vk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_vk|]</span></span><span>
+</span><span id="line-353"></span><span>
+</span><span id="line-354"></span><span class="annot"><span class="hs-comment">-- | cc_hot_sk</span></span><span>
+</span><span id="line-355"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_sk"><span class="hs-identifier hs-type">cc_hot_sk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-356"></span><span id="cc_hot_sk"><span class="annot"><span class="annottext">cc_hot_sk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_sk"><span class="hs-identifier hs-var hs-var">cc_hot_sk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_sk|]</span></span><span>
+</span><span id="line-357"></span><span>
+</span><span id="line-358"></span><span class="annot"><span class="hs-comment">-- | cc_hot_xvk</span></span><span>
+</span><span id="line-359"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xvk"><span class="hs-identifier hs-type">cc_hot_xvk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-360"></span><span id="cc_hot_xvk"><span class="annot"><span class="annottext">cc_hot_xvk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xvk"><span class="hs-identifier hs-var hs-var">cc_hot_xvk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_xvk|]</span></span><span>
+</span><span id="line-361"></span><span>
+</span><span id="line-362"></span><span class="annot"><span class="hs-comment">-- | cc_hot_xsk</span></span><span>
+</span><span id="line-363"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xsk"><span class="hs-identifier hs-type">cc_hot_xsk</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-364"></span><span id="cc_hot_xsk"><span class="annot"><span class="annottext">cc_hot_xsk :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_xsk"><span class="hs-identifier hs-var hs-var">cc_hot_xsk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_xsk|]</span></span><span>
+</span><span id="line-365"></span><span>
+</span><span id="line-366"></span><span class="annot"><span class="hs-comment">-- | cc_hot_vkh</span></span><span>
+</span><span id="line-367"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vkh"><span class="hs-identifier hs-type">cc_hot_vkh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-368"></span><span id="cc_hot_vkh"><span class="annot"><span class="annottext">cc_hot_vkh :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_vkh"><span class="hs-identifier hs-var hs-var">cc_hot_vkh</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_vkh|]</span></span><span>
+</span><span id="line-369"></span><span>
+</span><span id="line-370"></span><span class="annot"><span class="hs-comment">-- | cc_hot</span></span><span>
+</span><span id="line-371"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot"><span class="hs-identifier hs-type">cc_hot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-372"></span><span id="cc_hot"><span class="annot"><span class="annottext">cc_hot :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot"><span class="hs-identifier hs-var hs-var">cc_hot</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot|]</span></span><span>
+</span><span id="line-373"></span><span>
+</span><span id="line-374"></span><span class="annot"><span class="hs-comment">-- | cc_hot_script</span></span><span>
+</span><span id="line-375"></span><span class="annot"><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_script"><span class="hs-identifier hs-type">cc_hot_script</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HumanReadablePart</span></span><span>
+</span><span id="line-376"></span><span id="cc_hot_script"><span class="annot"><span class="annottext">cc_hot_script :: HumanReadablePart
+</span><a href="Cardano.Codec.Bech32.Prefixes.html#cc_hot_script"><span class="hs-identifier hs-var hs-var">cc_hot_script</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="">[humanReadablePart|cc_hot_script|]</span></span><span>
+</span><span id="line-377"></span></pre></body></html>

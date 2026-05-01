@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK hide #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- |</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- License: Apache-2.0</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Options.Applicative.Governance</span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">(</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Applicative Parser</span></span><span>
+</span><span id="line-12"></span><span>      </span><span class="annot"><a href="Options.Applicative.Governance.html#governanceOpt"><span class="hs-identifier">governanceOpt</span></a></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Cardano.Address.KeyHash.html"><span class="hs-identifier">Cardano.Address.KeyHash</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Cardano.Address.KeyHash.html#GovernanceType"><span class="hs-identifier">GovernanceType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Applicative.html"><span class="hs-identifier">Control.Applicative</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%7C%3E"><span class="hs-operator">(&lt;|&gt;)</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Options.Applicative</span></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Parser</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">flag'</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">long</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-comment">--</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- Applicative Parser</span><span>
+</span><span id="line-26"></span><span class="hs-comment">--</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Parse an 'GovernanceType' from the command-line, if there is proper flag then 'cip-0105' is set.</span></span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Options.Applicative.Governance.html#governanceOpt"><span class="hs-identifier hs-type">governanceOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Cardano.Address.KeyHash.html#GovernanceType"><span class="hs-identifier hs-type">GovernanceType</span></a></span><span>
+</span><span id="line-30"></span><span id="governanceOpt"><span class="annot"><span class="annottext">governanceOpt :: Parser GovernanceType
+</span><a href="Options.Applicative.Governance.html#governanceOpt"><span class="hs-identifier hs-var hs-var">governanceOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser GovernanceType
+</span><a href="#local-6989586621679222778"><span class="hs-identifier hs-var">deprecated</span></a></span><span> </span><span class="annot"><span class="annottext">Parser GovernanceType
+-&gt; Parser GovernanceType -&gt; Parser GovernanceType
+forall a. Parser a -&gt; Parser a -&gt; Parser a
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%7C%3E"><span class="hs-operator hs-var">&lt;|&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">GovernanceType -&gt; Parser GovernanceType
+forall a. a -&gt; Parser a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">GovernanceType
+</span><a href="Cardano.Address.KeyHash.html#CIP0129"><span class="hs-identifier hs-var">CIP0129</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-32"></span><span>    </span><span id="local-6989586621679222778"><span class="annot"><span class="annottext">deprecated :: Parser GovernanceType
+</span><a href="#local-6989586621679222778"><span class="hs-identifier hs-var hs-var">deprecated</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GovernanceType
+-&gt; Mod FlagFields GovernanceType -&gt; Parser GovernanceType
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">GovernanceType
+</span><a href="Cardano.Address.KeyHash.html#CIP0105"><span class="hs-identifier hs-var">CIP0105</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields GovernanceType
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;cip-0105&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span></pre></body></html>
