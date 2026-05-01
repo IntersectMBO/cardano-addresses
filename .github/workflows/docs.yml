@@ -107,10 +107,17 @@ jobs:
             echo "inspect-address WASM artifact not found"
           fi
 
-      - name: Copy browser HTML to build
+      - name: Copy browser files to build
         run: |
           mkdir -p build/browser
           cp browser/index.html build/browser/
+          # Copy .nojekyll to build root to disable Jekyll processing
+          cp .nojekyll build/.nojekyll
+          # Copy _headers for GitHub Pages MIME type configuration
+          cp static/_headers build/_headers 2>/dev/null || true
+          echo "build/ contents:"
+          ls -la build/
+          echo "build/browser/ contents:"
           ls -la build/browser/
 
       - name: Download Coverage artifact
