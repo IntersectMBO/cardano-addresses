@@ -155,8 +155,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Maybe
     ( fromMaybe, isNothing )
-import Data.Typeable
-    ( Typeable )
 import Data.Word
     ( Word32, Word8 )
 import Data.Word7
@@ -226,7 +224,7 @@ data Role
       -- ^Used for constitutional committee cold key derivation
     | CCHot
       -- ^Used for constitutional committee hot key derivation
-    deriving (Generic, Typeable, Show, Eq, Ord, Bounded)
+    deriving (Generic, Show, Eq, Ord, Bounded)
 
 instance NFData Role
 

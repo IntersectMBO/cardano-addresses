@@ -21,8 +21,6 @@ import Data.ByteArray
     ( ByteArrayAccess )
 import Data.ByteString
     ( ByteString )
-import Data.Data
-    ( Typeable )
 import Data.Hashable
     ( Hashable )
 import Data.Word
@@ -33,7 +31,7 @@ import GHC.Generics
 type DerivationIndex = Word32
 
 data DerivationScheme = DerivationScheme1 | DerivationScheme2
-    deriving (Show, Eq, Ord, Enum, Bounded, Typeable, Generic)
+    deriving (Show, Eq, Ord, Enum, Bounded, Generic)
     deriving anyclass NFData
 
 pattern LatestScheme :: DerivationScheme

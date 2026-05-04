@@ -23,8 +23,6 @@ import Prelude
 
 import Control.DeepSeq
     ( NFData (..) )
-import Data.Data
-    ( Typeable )
 import Data.Text
     ( Text )
 import Data.Word
@@ -37,13 +35,12 @@ data Dictionary = Dictionary
     , dictionaryTestWord :: Text -> Bool
     , dictionaryWordSeparator :: Text
     }
-    deriving Typeable
 
 -- | Index of a mnemonic word in the 'Dictionary'.
 --
 -- 'WordIndex' values are in the range @[0..2047]@.
 newtype WordIndex = WordIndex { _unWordIndex :: Word16 }
-    deriving stock (Show, Eq, Ord, Typeable)
+    deriving stock (Show, Eq, Ord)
     deriving newtype NFData
 
 -- | Extract the raw index.
