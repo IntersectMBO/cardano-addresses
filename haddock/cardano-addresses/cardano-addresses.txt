@@ -964,7 +964,7 @@ instance (n GHC.Types.~ Cardano.Address.Crypto.BIP39.EntropySize mw, csz GHC.Typ
 instance GHC.Classes.Eq Cardano.Mnemonic.SomeMnemonic
 instance Control.DeepSeq.NFData Cardano.Mnemonic.SomeMnemonic
 instance Control.DeepSeq.NFData (Cardano.Mnemonic.MkMnemonicError csz)
-instance (GHC.TypeNats.KnownNat csz, Data.Typeable.Internal.Typeable csz) => GHC.Exception.Type.Exception (Cardano.Mnemonic.MnemonicException csz)
+instance GHC.TypeNats.KnownNat csz => GHC.Exception.Type.Exception (Cardano.Mnemonic.MnemonicException csz)
 instance Control.DeepSeq.NFData (Cardano.Mnemonic.Mnemonic mw)
 instance Control.DeepSeq.NFData (Cardano.Address.Crypto.BIP39.EntropyError csz)
 instance Control.DeepSeq.NFData Cardano.Address.Crypto.BIP39.MnemonicWordsError

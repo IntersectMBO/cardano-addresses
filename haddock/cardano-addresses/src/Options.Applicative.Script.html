@@ -109,8 +109,8 @@ ReadP (Script a) -&gt; String -&gt; Either ErrValidateScript (Script a)
 </span><span id="line-62"></span><span>
 </span><span id="line-63"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-type">scriptHashArg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#ScriptHash"><span class="hs-identifier hs-type">ScriptHash</span></a></span><span>
 </span><span id="line-64"></span><span id="scriptHashArg"><span class="annot"><span class="annottext">scriptHashArg :: String -&gt; Parser ScriptHash
-</span><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-var hs-var">scriptHashArg</span></a></span></span><span> </span><span id="local-6989586621679223593"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679223593"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Script.html#scriptHashArg"><span class="hs-identifier hs-var hs-var">scriptHashArg</span></a></span></span><span> </span><span id="local-6989586621679223416"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679223416"><span class="hs-identifier hs-var">helpDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-65"></span><span>    </span><span class="annot"><span class="annottext">ReadM ScriptHash
 -&gt; Mod ArgumentFields ScriptHash -&gt; Parser ScriptHash
 forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
@@ -136,12 +136,12 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields ScriptHash
 forall (f :: * -&gt; *) a. String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">help</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679223593"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
+</span><a href="#local-6989586621679223416"><span class="hs-identifier hs-var">helpDoc</span></a></span><span>
 </span><span id="line-68"></span><span>
 </span><span id="line-69"></span><span class="annot"><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-type">scriptHashReader</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#ScriptHash"><span class="hs-identifier hs-type">ScriptHash</span></a></span><span>
 </span><span id="line-70"></span><span id="scriptHashReader"><span class="annot"><span class="annottext">scriptHashReader :: String -&gt; Either String ScriptHash
-</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var hs-var">scriptHashReader</span></a></span></span><span> </span><span id="local-6989586621679223594"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679223594"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="Options.Applicative.Script.html#scriptHashReader"><span class="hs-identifier hs-var hs-var">scriptHashReader</span></a></span></span><span> </span><span id="local-6989586621679223417"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679223417"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-71"></span><span>    </span><span class="annot"><span class="annottext">(ErrScriptHashFromText -&gt; String)
 -&gt; Either ErrScriptHashFromText ScriptHash
 -&gt; Either String ScriptHash
@@ -161,20 +161,20 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 -&gt; String -&gt; Either ErrScriptHashFromText ScriptHash
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679223594"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679223417"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-72"></span><span>
 </span><span id="line-73"></span><span class="annot"><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-type">levelOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Cardano.Address.Script.html#ValidationLevel"><span class="hs-identifier hs-type">ValidationLevel</span></a></span><span>
 </span><span id="line-74"></span><span id="levelOpt"><span class="annot"><span class="annottext">levelOpt :: Parser ValidationLevel
 </span><a href="Options.Applicative.Script.html#levelOpt"><span class="hs-identifier hs-var hs-var">levelOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
-</span><a href="#local-6989586621679223596"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
+</span><a href="#local-6989586621679223419"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
 -&gt; Parser ValidationLevel -&gt; Parser ValidationLevel
 forall a. Parser a -&gt; Parser a -&gt; Parser a
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%7C%3E"><span class="hs-operator hs-var">&lt;|&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser ValidationLevel
-</span><a href="#local-6989586621679223597"><span class="hs-identifier hs-var">recommended</span></a></span><span>
+</span><a href="#local-6989586621679223420"><span class="hs-identifier hs-var">recommended</span></a></span><span>
 </span><span id="line-75"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-76"></span><span>    </span><span id="local-6989586621679223596"><span class="annot"><span class="annottext">required :: Parser ValidationLevel
-</span><a href="#local-6989586621679223596"><span class="hs-identifier hs-var hs-var">required</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span id="line-76"></span><span>    </span><span id="local-6989586621679223419"><span class="annot"><span class="annottext">required :: Parser ValidationLevel
+</span><a href="#local-6989586621679223419"><span class="hs-identifier hs-var hs-var">required</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
 -&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel
@@ -182,8 +182,8 @@ forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;required&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-77"></span><span>    </span><span id="local-6989586621679223597"><span class="annot"><span class="annottext">recommended :: Parser ValidationLevel
-</span><a href="#local-6989586621679223597"><span class="hs-identifier hs-var hs-var">recommended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
+</span><span id="line-77"></span><span>    </span><span id="local-6989586621679223420"><span class="annot"><span class="annottext">recommended :: Parser ValidationLevel
+</span><a href="#local-6989586621679223420"><span class="hs-identifier hs-var hs-var">recommended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValidationLevel
 -&gt; Mod FlagFields ValidationLevel -&gt; Parser ValidationLevel
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">ValidationLevel

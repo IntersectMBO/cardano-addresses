@@ -24,7 +24,7 @@
 </span><span id="line-24"></span><span>
 </span><span id="line-25"></span><span>
 </span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="PrivateType"><span class="annot"><a href="Options.Applicative.Private.html#PrivateType"><span class="hs-identifier hs-var">PrivateType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ChainCode"><span class="annot"><a href="Options.Applicative.Private.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SigningKey"><span class="annot"><a href="Options.Applicative.Private.html#SigningKey"><span class="hs-identifier hs-var">SigningKey</span></a></span></span><span>
-</span><span id="line-27"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679223418"><span id="local-6989586621679223420"><span class="annot"><span class="annottext">PrivateType -&gt; PrivateType -&gt; Bool
+</span><span id="line-27"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679223241"><span id="local-6989586621679223243"><span class="annot"><span class="annottext">PrivateType -&gt; PrivateType -&gt; Bool
 (PrivateType -&gt; PrivateType -&gt; Bool)
 -&gt; (PrivateType -&gt; PrivateType -&gt; Bool) -&gt; Eq PrivateType
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -32,7 +32,7 @@ $c== :: PrivateType -&gt; PrivateType -&gt; Bool
 == :: PrivateType -&gt; PrivateType -&gt; Bool
 $c/= :: PrivateType -&gt; PrivateType -&gt; Bool
 /= :: PrivateType -&gt; PrivateType -&gt; Bool
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679223425"><span id="local-6989586621679223427"><span id="local-6989586621679223431"><span class="annot"><span class="annottext">Int -&gt; PrivateType -&gt; ShowS
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679223248"><span id="local-6989586621679223250"><span id="local-6989586621679223254"><span class="annot"><span class="annottext">Int -&gt; PrivateType -&gt; ShowS
 [PrivateType] -&gt; ShowS
 PrivateType -&gt; String
 (Int -&gt; PrivateType -&gt; ShowS)
@@ -57,22 +57,22 @@ showList :: [PrivateType] -&gt; ShowS
 </span><span id="line-34"></span><span class="annot"><a href="Options.Applicative.Private.html#privateOpt"><span class="hs-identifier hs-type">privateOpt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Parser</span></span><span> </span><span class="annot"><a href="Options.Applicative.Private.html#PrivateType"><span class="hs-identifier hs-type">PrivateType</span></a></span><span>
 </span><span id="line-35"></span><span id="privateOpt"><span class="annot"><span class="annottext">privateOpt :: Parser PrivateType
 </span><a href="Options.Applicative.Private.html#privateOpt"><span class="hs-identifier hs-var hs-var">privateOpt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser PrivateType
-</span><a href="#local-6989586621679223434"><span class="hs-identifier hs-var">cc</span></a></span><span> </span><span class="annot"><span class="annottext">Parser PrivateType -&gt; Parser PrivateType -&gt; Parser PrivateType
+</span><a href="#local-6989586621679223257"><span class="hs-identifier hs-var">cc</span></a></span><span> </span><span class="annot"><span class="annottext">Parser PrivateType -&gt; Parser PrivateType -&gt; Parser PrivateType
 forall a. Parser a -&gt; Parser a -&gt; Parser a
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%7C%3E"><span class="hs-operator hs-var">&lt;|&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser PrivateType
-</span><a href="#local-6989586621679223435"><span class="hs-identifier hs-var">signing</span></a></span><span>
+</span><a href="#local-6989586621679223258"><span class="hs-identifier hs-var">signing</span></a></span><span>
 </span><span id="line-36"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-37"></span><span>    </span><span id="local-6989586621679223434"><span class="annot"><span class="annottext">cc :: Parser PrivateType
-</span><a href="#local-6989586621679223434"><span class="hs-identifier hs-var hs-var">cc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PrivateType -&gt; Mod FlagFields PrivateType -&gt; Parser PrivateType
+</span><span id="line-37"></span><span>    </span><span id="local-6989586621679223257"><span class="annot"><span class="annottext">cc :: Parser PrivateType
+</span><a href="#local-6989586621679223257"><span class="hs-identifier hs-var hs-var">cc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PrivateType -&gt; Mod FlagFields PrivateType -&gt; Parser PrivateType
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">PrivateType
 </span><a href="Options.Applicative.Private.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields PrivateType
 forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
 </span><span class="hs-identifier hs-var">long</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;chain-code&quot;</span></span><span class="hs-special">)</span><span>
-</span><span id="line-38"></span><span>    </span><span id="local-6989586621679223435"><span class="annot"><span class="annottext">signing :: Parser PrivateType
-</span><a href="#local-6989586621679223435"><span class="hs-identifier hs-var hs-var">signing</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PrivateType -&gt; Mod FlagFields PrivateType -&gt; Parser PrivateType
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621679223258"><span class="annot"><span class="annottext">signing :: Parser PrivateType
+</span><a href="#local-6989586621679223258"><span class="hs-identifier hs-var hs-var">signing</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PrivateType -&gt; Mod FlagFields PrivateType -&gt; Parser PrivateType
 forall a. a -&gt; Mod FlagFields a -&gt; Parser a
 </span><span class="hs-identifier hs-var">flag'</span></span><span> </span><span class="annot"><span class="annottext">PrivateType
 </span><a href="Options.Applicative.Private.html#SigningKey"><span class="hs-identifier hs-var">SigningKey</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields PrivateType
