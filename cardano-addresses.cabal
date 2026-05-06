@@ -130,7 +130,7 @@ library
     , binary
     , bytestring >= 0.10.6 && < 0.13
     , cborg >= 0.2.1 && <0.3
-    , containers >= 0.5 && < 0.8
+    , containers >= 0.5 && < 0.9
     , crypton >= 0.32
     , deepseq >= 1.4.4.0 && < 1.6
     , either
@@ -142,7 +142,7 @@ library
     , optparse-applicative >= 0.18.1.0 && < 0.20
     , process >= 1.6.13.2 && < 1.7
     , safe >= 0.3.19 && < 0.4
-    , template-haskell >= 2.16.0.0 && < 2.24
+    , template-haskell >= 2.16.0.0 && < 2.25
     , text >= 1.2 && < 2.2
     , transformers >= 0.5.6.2 && < 0.7
     , unordered-containers
@@ -243,7 +243,7 @@ test-suite unit
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      QuickCheck >= 2.14 && < 2.16
+      QuickCheck >= 2.14 && < 2.19
     , aeson >= 2.0
     , aeson-pretty
     , base >= 4.7 && < 5
@@ -253,7 +253,7 @@ test-suite unit
     , bytestring >= 0.10.6 && < 0.13
     , cardano-addresses
     , crypton
-    , containers >= 0.5 && < 0.8
+    , containers >= 0.5 && < 0.9
     , hspec >= 2.11.0 && < 2.12
     , hspec-golden >=0.1.0.3 && <0.2
     , memory
