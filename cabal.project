@@ -14,3 +14,13 @@ extra-packages: hsc2hs
 
 tests: True
 test-show-details: direct
+
+-- cabal-allow-newer begin
+if impl(ghc >= 9.14)
+  allow-newer:
+    , cborg:base
+    , cborg:containers
+    , time-locale-compat:time
+    , with-utf8:base
+-- cabal-allow-newer end
+

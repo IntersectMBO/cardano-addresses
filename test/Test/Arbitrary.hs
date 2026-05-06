@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -100,8 +101,10 @@ import GHC.Stack
     ( HasCallStack )
 import GHC.TypeLits
     ( natVal )
+#if !MIN_VERSION_QuickCheck(2,18,0)
 import Numeric.Natural
     ( Natural )
+#endif
 import Options.Applicative.Derivation
     ( DerivationIndex
     , DerivationPath
@@ -151,9 +154,11 @@ instance Arbitrary (AbstractEncoding HumanReadablePart) where
         , EBech32 [humanReadablePart|bech32|]
         ]
 
+#if !MIN_VERSION_QuickCheck(2,18,0)
 instance Arbitrary Natural where
     arbitrary =
         fromIntegral <$> choose (1 :: Word64, 10000000000)
+#endif
 
 instance Arbitrary ChainPointer where
     arbitrary = do
