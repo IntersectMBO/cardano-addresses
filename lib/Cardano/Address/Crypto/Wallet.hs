@@ -66,8 +66,6 @@ import Data.Word
     ( Word32 )
 import GHC.Generics
     ( Generic )
-import GHC.Stack
-    ( HasCallStack )
 
 import Cardano.Address.Crypto.Wallet.Encrypted
     ( EncryptedKey
@@ -184,7 +182,7 @@ xsignature bs
             ++ show (BA.length bs) ++ " bytes")
     | otherwise = Right $ XSignature bs
 
-toXPub :: HasCallStack => XPrv -> XPub
+toXPub :: XPrv -> XPub
 toXPub (XPrv ekey) = XPub pub (ChainCode cc)
   where
     (_, r) = BA.splitAt 64 $ convert ekey

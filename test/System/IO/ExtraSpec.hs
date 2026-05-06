@@ -58,7 +58,7 @@ import Test.QuickCheck
     , forAllShrink
     , property
     , vector
-    , withMaxSuccess
+    , withNumTests
     , (===)
     , (==>)
     )
@@ -95,15 +95,15 @@ spec = do
 
     describe "hGetXPrv" $ do
         prop "roundtrip: hGetXPrv vs hPutBytes" $
-            withMaxSuccess 1000 propGetPrvRoundtrip
+            withNumTests 1000 propGetPrvRoundtrip
 
     describe "hGetXPub" $ do
         prop "roundtrip: hGetXPub vs hPutBytes" $
-            withMaxSuccess 1000 propGetPubRoundtrip
+            withNumTests 1000 propGetPubRoundtrip
 
     describe "hGetXP__" $ do
         prop "roundtrip: hGetXP__ vs hPutBytes" $
-            withMaxSuccess 1000 propGetAnyRoundtrip
+            withNumTests 1000 propGetAnyRoundtrip
 
 specRoundtrip
     :: String

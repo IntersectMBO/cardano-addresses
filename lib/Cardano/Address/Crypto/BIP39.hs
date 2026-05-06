@@ -47,7 +47,6 @@ module Cardano.Address.Crypto.BIP39
     , mnemonicPhraseToMnemonicSentence
     , mnemonicSentenceToMnemonicPhrase
     , mnemonicSentenceToString
-    , mnemonicSentenceToListN
     , mnemonicPhraseToString
     , mnemonicPhraseToListN
     , translateTo
@@ -82,8 +81,6 @@ import Data.ByteString
     ( ByteString )
 import Data.Kind
     ( Constraint )
-import Data.List
-    ( intersperse, reverse )
 import Data.Maybe
     ( fromMaybe )
 import Data.Proxy
@@ -113,7 +110,6 @@ import Cardano.Address.Crypto.BIP39.Dictionary
     )
 
 import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 

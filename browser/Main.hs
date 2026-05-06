@@ -11,13 +11,7 @@ module Main (main) where
 import Prelude
 
 import Cardano.Address
-    ( Address
-    , AddressDiscrimination (..)
-    , NetworkTag (..)
-    , base58
-    , bech32
-    , unsafeMkAddress
-    )
+    ( Address, base58, bech32, unsafeMkAddress )
 import Cardano.Address.Crypto.Wallet
     ( unXSignature, xsignature )
 import Cardano.Address.Derivation
@@ -389,7 +383,7 @@ icarusNetworkDiscriminant pm = case pm of
     1 -> Icarus.icarusPreprod
     magic -> (CA.RequiresNetworkTag, CA.NetworkTag (fromIntegral magic))
 
-byronNetworkDiscriminant :: Int -> CA.NetworkDiscriminant Byron.Byron
+byronNetworkDiscriminant :: Int -> CA.NetworkDiscriminant Icarus.Icarus
 byronNetworkDiscriminant pm = case pm of
     764824073 -> Byron.byronMainnet
     633343913 -> Byron.byronStaging
