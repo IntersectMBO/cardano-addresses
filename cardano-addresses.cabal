@@ -130,8 +130,8 @@ library
     , binary
     , bytestring >= 0.10.6 && < 0.13
     , cborg >= 0.2.1 && <0.3
-    , containers >= 0.5 && < 0.8
-    , crypton >= 0.32
+    , containers >= 0.5 && < 0.9
+    , crypton >= 1.1 && < 1.2
     , deepseq >= 1.4.4.0 && < 1.6
     , either
     , exceptions
@@ -142,15 +142,13 @@ library
     , optparse-applicative >= 0.18.1.0 && < 0.20
     , process >= 1.6.13.2 && < 1.7
     , safe >= 0.3.19 && < 0.4
-    , template-haskell >= 2.16.0.0 && < 2.24
+    , template-haskell >= 2.16.0.0 && < 2.25
     , text >= 1.2 && < 2.2
     , transformers >= 0.5.6.2 && < 0.7
     , unordered-containers
     , vector
-  if arch(wasm32)
-    build-depends: ram >= 0.22 && < 0.23
-  else
-    build-depends: memory >= 0.18.0 && < 0.19
+    , ram >= 0.22 && < 0.23
+
   if flag(release)
     ghc-options: -Werror
   default-language: Haskell2010
@@ -243,7 +241,7 @@ test-suite unit
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      QuickCheck >= 2.14 && < 2.16
+      QuickCheck >= 2.14 && < 2.19
     , aeson >= 2.0
     , aeson-pretty
     , base >= 4.7 && < 5
@@ -253,10 +251,10 @@ test-suite unit
     , bytestring >= 0.10.6 && < 0.13
     , cardano-addresses
     , crypton
-    , containers >= 0.5 && < 0.8
+    , containers >= 0.5 && < 0.9
     , hspec >= 2.11.0 && < 2.12
     , hspec-golden >=0.1.0.3 && <0.2
-    , memory
+    , ram
     , pretty-simple
     , process
     , string-interpolate

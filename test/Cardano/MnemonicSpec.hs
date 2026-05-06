@@ -22,7 +22,6 @@ import Cardano.Dictionary
     ( SupportedDictionary, dictionaryFromLanguage )
 import Cardano.Mnemonic
     ( Entropy
-    , EntropyError
     , EntropySize
     , MkMnemonicError (..)
     , MkSomeMnemonicError (..)

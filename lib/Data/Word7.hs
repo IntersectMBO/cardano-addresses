@@ -28,8 +28,7 @@ import Data.Binary.Put
     ( Put, putWord8 )
 import Data.Bits
     ( shiftL, shiftR, (.&.), (.|.) )
-import Data.List
-    ( foldl' )
+import qualified Data.List as L
 import Data.Word
     ( Word8 )
 import Numeric.Natural
@@ -72,7 +71,7 @@ toWord7s = reverse . go
         | otherwise = (toWord7 . fromIntegral) n : go (shiftR n 7)
 
 word7sToNat :: [Word7] -> Natural
-word7sToNat = foldl' f 0
+word7sToNat = L.foldl' f 0
   where
     f n (Word7 r) = shiftL n 7 .|. (fromIntegral r)
 
