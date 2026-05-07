@@ -112,7 +112,6 @@ checkMnemonicPhrase :: forall mw. ValidMnemonicSentence mw => Dictionary -> Mnem
 mnemonicPhraseToMnemonicSentence :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicSentence mw)
 mnemonicSentenceToMnemonicPhrase :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicSentence mw -> MnemonicPhrase mw
 mnemonicSentenceToString :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicSentence mw -> Text
-mnemonicSentenceToListN :: MnemonicSentence mw -> ListN mw WordIndex
 mnemonicPhraseToString :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicPhrase mw -> Text
 mnemonicPhraseToListN :: MnemonicPhrase mw -> ListN mw Text
 translateTo :: forall mw. ValidMnemonicSentence mw => Dictionary -> Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicPhrase mw)
@@ -269,7 +268,7 @@ xsignature :: ByteString -> Either String XSignature
 unXPrv :: XPrv -> ByteString
 unXPub :: XPub -> ByteString
 unXSignature :: XSignature -> ByteString
-toXPub :: HasCallStack => XPrv -> XPub
+toXPub :: XPrv -> XPub
 xPubGetPublicKey :: XPub -> PublicKey
 xPrvChangePass :: (ByteArrayAccess oldPassPhrase, ByteArrayAccess newPassPhrase) => oldPassPhrase -> newPassPhrase -> XPrv -> XPrv
 deriveXPrv :: ByteArrayAccess passPhrase => DerivationScheme -> passPhrase -> XPrv -> Word32 -> XPrv
