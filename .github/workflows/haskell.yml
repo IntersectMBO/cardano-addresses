@@ -3,6 +3,8 @@ name: Haskell CI
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - '*'
   pull_request:
 
 jobs:
@@ -247,8 +249,9 @@ jobs:
     - name: Setting Release variables
       run: |
         echo "release-ghc=9.6" >> $GITHUB_ENV
-        echo "release-ghc-exact=9.6.7" >> $GITHUB_ENV        
-        echo "release-tag=4.0.3" >> $GITHUB_ENV
+        echo "release-ghc-exact=9.6.7" >> $GITHUB_ENV
+        release_tag="${GITHUB_REF#refs/tags/}"
+        echo "release-tag=$release_tag" >> $GITHUB_ENV
 
     - uses: actions/download-artifact@v4
 
@@ -284,7 +287,11 @@ jobs:
         Pawel Jakubas @paweljakubas        | Software Engineer |          
         EOF
         
-        awk 'BEGIN{RS="## \\[4.0.3"; FS="4.0.4\\]"}NF>1{print $NF}' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
+        awk -v tag="${{ env.release-tag }}" '
+          $0 ~ "^## \\[" tag "\\]" {found=1; next}
+          /^## \\[/ {found=0}
+          found {print}
+        ' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
         cat bodyInfo.txt > release-body.txt
         cat bodyConst.txt >> release-body.txt
 
