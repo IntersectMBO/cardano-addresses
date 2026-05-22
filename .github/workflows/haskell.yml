@@ -215,19 +215,27 @@ jobs:
         artifactFile: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
         artifactName: "cardano-address.tar.gz"
       run: |
-        mkdir artifacts
+        mkdir -p artifacts
 
         for exe in $(cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style == "local" and (."component-name" | startswith("exe:"))) | ."bin-file"'); do
-          if [ -f $exe ]; then
+          if [ -f "$exe" ]; then
             echo "Including artifact $exe"
-            
-            ( cd artifacts
-              tar -C "$(dirname $exe)" -czf ${{ env.artifactName}} $exe
-            )
+            cp "$exe" artifacts/
           else
             echo "Skipping artifact $exe"
           fi
         done
+
+        ls -la artifacts/
+
+        if [ -f "artifacts/cardano-address" ]; then
+          ( cd artifacts && tar -czf "${{ env.artifactName }}" cardano-address )
+          echo "Created ${{ env.artifactName }}"
+          ls -la artifacts/
+        else
+          echo "ERROR: No cardano-address executable found for artifact"
+          exit 1
+        fi
 
         echo "artifactPath=artifacts/" >> $GITHUB_ENV
         echo "artifactFile=${{ env.artifactFile }}" >> $GITHUB_ENV
@@ -237,7 +245,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "${{ env.artifactFile }}"
-        path: ${{ env.artifactPath }}
+        path: artifacts/${{ env.artifactName }}
         retention-days: 1
 
   release:
@@ -257,15 +265,45 @@ jobs:
 
     - name: Pick artifacts to publish and change names
       run: |
+        echo "=== Downloaded artifacts ==="
+        ls -la
+        find . -maxdepth 2 -type f | head -30
+
         sha256sums_filename="cardano-address-${{ env.release-tag }}-sha256sums.txt"
 
-        windows_exe="cardano-address-${{ env.release-ghc }}-windows-latest/dist-newstyle/build/x86_64-windows/ghc-${{ env.release-ghc-exact }}/cardano-addresses-${{ env.release-tag }}/x/cardano-address/build/cardano-address/cardano-address.exe"
+        windows_dir="cardano-address-${{ env.release-ghc }}-windows-latest"
+        windows_exe=$(find "$windows_dir" -name "cardano-address.exe" | head -1)
+        if [ -z "$windows_exe" ]; then
+          echo "ERROR: cardano-address.exe not found in $windows_dir"
+          find "$windows_dir" -type f | head -20 || true
+          exit 1
+        fi
+        echo "Found Windows exe: $windows_exe"
         zip cardano-address-${{ env.release-tag }}-win64.zip "$windows_exe"
-        
-        mv cardano-address-${{ env.release-ghc }}-macos-latest/cardano-address.tar.gz cardano-address-${{ env.release-tag }}-macos.tar.gz
-        mv cardano-address-${{ env.release-ghc }}-ubuntu-latest/cardano-address.tar.gz cardano-address-${{ env.release-tag }}-linux.tar.gz
 
-        sha256sum cardano-address-${{ env.release-tag }}-win64.zip cardano-address-${{ env.release-tag }}-macos.tar.gz  cardano-address-${{ env.release-tag }}-linux.tar.gz > "$sha256sums_filename"
+        macos_dir="cardano-address-${{ env.release-ghc }}-macos-latest"
+        linux_dir="cardano-address-${{ env.release-ghc }}-ubuntu-latest"
+
+        if [ ! -f "$macos_dir/cardano-address.tar.gz" ]; then
+          echo "ERROR: $macos_dir/cardano-address.tar.gz not found"
+          ls -la "$macos_dir/" || true
+          exit 1
+        fi
+        if [ ! -f "$linux_dir/cardano-address.tar.gz" ]; then
+          echo "ERROR: $linux_dir/cardano-address.tar.gz not found"
+          ls -la "$linux_dir/" || true
+          exit 1
+        fi
+
+        mv "$macos_dir/cardano-address.tar.gz" cardano-address-${{ env.release-tag }}-macos.tar.gz
+        mv "$linux_dir/cardano-address.tar.gz" cardano-address-${{ env.release-tag }}-linux.tar.gz
+
+        echo "=== Artifacts prepared ==="
+        ls -lh cardano-address-${{ env.release-tag }}-win64.zip cardano-address-${{ env.release-tag }}-macos.tar.gz cardano-address-${{ env.release-tag }}-linux.tar.gz
+
+        sha256sum cardano-address-${{ env.release-tag }}-win64.zip cardano-address-${{ env.release-tag }}-macos.tar.gz cardano-address-${{ env.release-tag }}-linux.tar.gz > "$sha256sums_filename"
+        echo "=== SHA256 checksums ==="
+        cat "$sha256sums_filename"
 
     - name: Checkout the repo
       uses: actions/checkout@v4
