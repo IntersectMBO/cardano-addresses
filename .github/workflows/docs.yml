@@ -47,11 +47,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            RUN_ID=${{ github.event.workflow_run.id }}
-            echo "Downloading from workflow_run trigger: $RUN_ID"
+            TRIGGERING_WORKFLOW="${{ github.event.workflow_run.name }}"
+            if [ "$TRIGGERING_WORKFLOW" == "Haskell CI" ]; then
+              RUN_ID=${{ github.event.workflow_run.id }}
+              echo "Downloading haddock from triggering Haskell CI run: $RUN_ID"
+            else
+              RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              echo "Downloading haddock from latest successful Haskell CI run: $RUN_ID"
+            fi
           else
             RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
-            echo "Downloading from latest successful Haskell CI run: $RUN_ID"
+            echo "Downloading haddock from latest successful Haskell CI run: $RUN_ID"
           fi
           mkdir -p build/haddock_html
           if gh run download "$RUN_ID" -n haddock-9.10-ubuntu-latest --dir build/haddock_html --repo ${{ github.repository }}; then
@@ -80,11 +86,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            RUN_ID=${{ github.event.workflow_run.id }}
-            echo "Downloading from workflow_run trigger: $RUN_ID"
+            TRIGGERING_WORKFLOW="${{ github.event.workflow_run.name }}"
+            if [ "$TRIGGERING_WORKFLOW" == "WASM CI" ]; then
+              RUN_ID=${{ github.event.workflow_run.id }}
+              echo "Downloading WASM artifact from triggering WASM CI run: $RUN_ID"
+            else
+              RUN_ID=$(gh run list -w "WASM CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              echo "Downloading WASM artifact from latest successful WASM CI run: $RUN_ID"
+            fi
           else
             RUN_ID=$(gh run list -w "WASM CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
-            echo "Downloading from latest successful WASM CI run: $RUN_ID"
+            echo "Downloading WASM artifact from latest successful WASM CI run: $RUN_ID"
           fi
           mkdir -p build/browser
           if gh run download "$RUN_ID" -n inspect-address-wasm --dir build/browser --repo ${{ github.repository }}; then
@@ -125,11 +137,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            RUN_ID=${{ github.event.workflow_run.id }}
-            echo "Downloading from workflow_run trigger: $RUN_ID"
+            TRIGGERING_WORKFLOW="${{ github.event.workflow_run.name }}"
+            if [ "$TRIGGERING_WORKFLOW" == "Haskell CI" ]; then
+              RUN_ID=${{ github.event.workflow_run.id }}
+              echo "Downloading coverage from triggering Haskell CI run: $RUN_ID"
+            else
+              RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              echo "Downloading coverage from latest successful Haskell CI run: $RUN_ID"
+            fi
           else
             RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
-            echo "Downloading from latest successful Haskell CI run: $RUN_ID"
+            echo "Downloading coverage from latest successful Haskell CI run: $RUN_ID"
           fi
           mkdir -p build/coverage
           if gh run download "$RUN_ID" -n coverage-9.10-ubuntu-latest --dir build/coverage --repo ${{ github.repository }}; then
@@ -181,7 +199,6 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_run'
-      || github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
