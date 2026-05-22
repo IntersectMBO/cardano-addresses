@@ -289,7 +289,7 @@ jobs:
         
         awk -v tag="${{ env.release-tag }}" '
           $0 ~ "^## \\[" tag "\\]" {found=1; next}
-          /^## \\[/ {found=0}
+          /^## \[/ {found=0}
           found {print}
         ' ${{ github.workspace }}/ChangeLog.md > bodyInfo.txt
         cat bodyInfo.txt > release-body.txt
