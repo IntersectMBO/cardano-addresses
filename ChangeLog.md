@@ -1,4 +1,6 @@
-## [4.0.3]
+## [4.0.4]
+	
+## [4.0.3] - 2026-05-22
 
 ### Added
 
@@ -9,8 +11,10 @@
 - Integrate `Docusaurus` with README
 - Fixed Haddock and Tests Coverage deployment and presentation
 - Many stylistic improvements to docs, badges, etc.
-- Significant improvements to workflow pipelines
-- Fixing caching	
+- Significant improvements to workflow pipelines, start basing on devX
+- Fix CI caching
+- Add WASM support, add CI checks and an [example app](https://intersectmbo.github.io/cardano-addresses/browser/)
+- Add [web docs](https://intersectmbo.github.io/cardano-addresses/)
 
 ## [4.0.2] - 2025-12-30
 
