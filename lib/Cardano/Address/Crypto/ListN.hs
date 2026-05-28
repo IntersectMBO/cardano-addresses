@@ -19,7 +19,7 @@ module Cardano.Address.Crypto.ListN
     ) where
 
 import Prelude hiding
-    ( foldl', map, mapM )
+    ( map, mapM )
 
 import Control.DeepSeq
     ( NFData )

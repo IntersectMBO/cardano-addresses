@@ -34,8 +34,6 @@ import Data.Char
     ( isDigit, isLetter )
 import Data.Text
     ( Text )
-import Data.Word
-    ( Word )
 import Numeric.Natural
     ( Natural )
 import Text.ParserCombinators.ReadP

@@ -105,8 +105,6 @@ import Data.Text
     ( Text )
 import Data.Traversable
     ( for )
-import Data.Word
-    ( Word )
 import GHC.Generics
     ( Generic )
 import Numeric.Natural
