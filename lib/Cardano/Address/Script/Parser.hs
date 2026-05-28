@@ -35,7 +35,7 @@ import Data.Char
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word8 )
+    ( Word )
 import Numeric.Natural
     ( Natural )
 import Text.ParserCombinators.ReadP
@@ -164,7 +164,7 @@ activeUntilSlotParser = do
     _identifier <- P.string "active_until"
     ActiveUntilSlot <$> slotParser
 
-naturalParser :: ReadP Word8
+naturalParser :: ReadP Word
 naturalParser = do
     P.skipSpaces
     fromInteger . read <$> P.munch1 isDigit

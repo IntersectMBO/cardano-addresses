@@ -106,7 +106,7 @@ import Data.Text
 import Data.Traversable
     ( for )
 import Data.Word
-    ( Word8 )
+    ( Word )
 import GHC.Generics
     ( Generic )
 import Numeric.Natural
@@ -134,7 +134,7 @@ data Script (elem :: Type)
     = RequireSignatureOf !elem
     | RequireAllOf ![Script elem]
     | RequireAnyOf ![Script elem]
-    | RequireSomeOf Word8 ![Script elem]
+    | RequireSomeOf Word ![Script elem]
     | ActiveFromSlot Natural
     | ActiveUntilSlot Natural
     deriving stock (Generic, Show, Eq)
@@ -190,7 +190,7 @@ serializeScript script =
 -- | Represents the cosigner of the script, ie., party that co-shares the script.
 --
 -- @since 3.2.0
-newtype Cosigner = Cosigner Word8
+newtype Cosigner = Cosigner Word
     deriving (Generic, Ord, Eq)
 instance Hashable Cosigner
 instance NFData Cosigner
@@ -791,11 +791,12 @@ instance ToJSON Cosigner where
 
 instance FromJSON Cosigner where
     parseJSON = withText "Cosigner" $ \txt -> case T.splitOn "cosigner#" txt of
-        ["",numTxt] ->  case T.decimal numTxt of
+        ["",numTxt] ->  case T.decimal @Integer numTxt of
             Right (num,"") -> do
-                when (num < minBound @Word8 || num > maxBound @Word8) $
-                        fail "Cosigner number should be between '0' and '255'"
-                pure $ Cosigner num
+                let maxWord = toInteger (maxBound @Word)
+                when (num > maxWord) $
+                        fail "Cosigner number is out of bounds"
+                pure $ Cosigner (fromInteger num)
             _ -> fail "Cosigner should be enumerated with number"
         _ -> fail "Cosigner should be of the form: cosigner#num"
 
