@@ -1,4 +1,9 @@
 ## [4.0.4]
+
+### Added
+
+- Relax N in RequiredSomeOf in Script to accommodate the possible number of participants above 255. Add data constructor `BigNInRequiredSomeOf` to `ErrRecommendedValidateScrip`
+- Relax the number of `Cosigner` to accommodate the possible number of participants above 255. Add `BigCosignerNumber` constructor to `ErrValidateScriptTemplate`
 	
 ## [4.0.3] - 2026-05-22
 

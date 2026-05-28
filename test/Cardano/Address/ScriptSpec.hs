@@ -386,6 +386,10 @@ spec = do
                     ]
             validateScript RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
+        it "big N in RequireSomeOf" $ do
+            let script = RequireSomeOf 275 (replicate 300 verKeyHash1)
+            validateScript RecommendedValidation script `shouldBe` Left (NotRecommended BigNInRequiredSomeOf)
+
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [verKeyHash1]
             validateScript RecommendedValidation script `shouldBe` Right ()
@@ -592,6 +596,13 @@ spec = do
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
 
+        it "big cosigner number in script template" $ do
+            let bigCosigner = Cosigner 300
+            let bigCosignerScript = RequireSignatureOf bigCosigner
+            let cosignersBig = Map.singleton bigCosigner (encodeXPubFromTxtUnsafe accXpub0)
+            let scriptTemplate = ScriptTemplate cosignersBig (RequireAllOf [bigCosignerScript])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left BigCosignerNumber
+
     describe "validateScriptOfTemplate - errors" $ do
         let cosigner0 = RequireSignatureOf (Cosigner 0)
         let cosigner1 = RequireSignatureOf (Cosigner 1)
@@ -678,6 +689,10 @@ spec = do
                                    ]
                     ]
             validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
+
+        it "big N in RequireSomeOf" $ do
+            let script = RequireSomeOf 275 (replicate 300 cosigner0)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended BigNInRequiredSomeOf)
 
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [cosigner0]

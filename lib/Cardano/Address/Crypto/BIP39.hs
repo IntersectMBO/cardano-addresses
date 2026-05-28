@@ -271,8 +271,7 @@ newtype Seed = Seed ByteString
 type Passphrase = Text
 
 sentenceToSeed
-    :: ValidMnemonicSentence mw
-    => MnemonicSentence mw
+    :: MnemonicSentence mw
     -> Dictionary
     -> Passphrase
     -> Seed
@@ -280,8 +279,7 @@ sentenceToSeed mw dic =
     phraseToSeed (mnemonicSentenceToMnemonicPhrase dic mw) dic
 
 phraseToSeed
-    :: ValidMnemonicSentence mw
-    => MnemonicPhrase mw
+    :: MnemonicPhrase mw
     -> Dictionary
     -> Passphrase
     -> Seed
@@ -337,8 +335,7 @@ mnemonicPhrase l =
 
 checkMnemonicPhrase
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> MnemonicPhrase mw
     -> Bool
 checkMnemonicPhrase dic (MnemonicPhrase ln) =
@@ -346,8 +343,7 @@ checkMnemonicPhrase dic (MnemonicPhrase ln) =
 
 mnemonicPhraseToMnemonicSentence
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> MnemonicPhrase mw
     -> Either DictionaryError (MnemonicSentence mw)
 mnemonicPhraseToMnemonicSentence dic (MnemonicPhrase ln) =
@@ -355,8 +351,7 @@ mnemonicPhraseToMnemonicSentence dic (MnemonicPhrase ln) =
 
 mnemonicSentenceToMnemonicPhrase
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> MnemonicSentence mw
     -> MnemonicPhrase mw
 mnemonicSentenceToMnemonicPhrase dic (MnemonicSentence ln) =
@@ -364,8 +359,7 @@ mnemonicSentenceToMnemonicPhrase dic (MnemonicSentence ln) =
 
 mnemonicPhraseToString
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> MnemonicPhrase mw
     -> Text
 mnemonicPhraseToString dic (MnemonicPhrase ln) =
@@ -375,8 +369,7 @@ mnemonicPhraseToString dic (MnemonicPhrase ln) =
 
 mnemonicSentenceToString
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> MnemonicSentence mw
     -> Text
 mnemonicSentenceToString dic =
@@ -385,8 +378,7 @@ mnemonicSentenceToString dic =
 
 translateTo
     :: forall mw
-     . ValidMnemonicSentence mw
-    => Dictionary
+     . Dictionary
     -> Dictionary
     -> MnemonicPhrase mw
     -> Either DictionaryError (MnemonicPhrase mw)
