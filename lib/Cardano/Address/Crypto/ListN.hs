@@ -17,7 +17,7 @@ module Cardano.Address.Crypto.ListN
     , toListN_
     , map
     , mapM
-    , foldl'
+    , Cardano.Address.Crypto.ListN.foldl'
     ) where
 
 import Prelude hiding

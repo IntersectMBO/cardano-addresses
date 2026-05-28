@@ -536,6 +536,8 @@ validateScriptTemplate level (ScriptTemplate cosigners_ script) = do
     check DuplicateXPubs (Set.size cosignerKeys == Map.size cosigners_)
     check UnknownCosigner (cosignerSet `Set.isSubsetOf` scriptCosigners)
     check MissingCosignerXPub (scriptCosigners `Set.isSubsetOf` cosignerSet)
+    when (level == RecommendedValidation) $
+        check BigCosignerNumber (all (\(Cosigner n) -> n <= 255) scriptCosigners)
   where
     scriptCosigners = Set.fromList $ foldScript (:) [] script
     cosignerKeys = Set.fromList $ Map.elems cosigners_
@@ -591,6 +593,7 @@ data ErrValidateScriptTemplate
     | MissingCosignerXPub
     | NoCosignerInScript
     | NoCosignerXPub
+    | BigCosignerNumber
     deriving (Eq, Show)
 
 -- | Pretty-print a script validation error.
@@ -649,6 +652,8 @@ prettyErrValidateScriptTemplate = \case
         "The script template must have at least one cosigner with an extended public key."
     UnknownCosigner ->
         "The specified cosigner must be present in the script of the template."
+    BigCosignerNumber ->
+        "The script template contains a cosigner number greater than 255. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
 --
 -- Internal
 --

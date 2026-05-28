@@ -596,6 +596,13 @@ spec = do
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
 
+        it "big cosigner number in script template" $ do
+            let bigCosigner = Cosigner 300
+            let bigCosignerScript = RequireSignatureOf bigCosigner
+            let cosignersBig = Map.singleton bigCosigner (encodeXPubFromTxtUnsafe accXpub0)
+            let scriptTemplate = ScriptTemplate cosignersBig (RequireAllOf [bigCosignerScript])
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left BigCosignerNumber
+
     describe "validateScriptOfTemplate - errors" $ do
         let cosigner0 = RequireSignatureOf (Cosigner 0)
         let cosigner1 = RequireSignatureOf (Cosigner 1)
