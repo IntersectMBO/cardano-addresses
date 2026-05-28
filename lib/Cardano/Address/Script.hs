@@ -472,6 +472,7 @@ recommendedValidation = \case
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
+        when (m > 255) $ Left BigNInRequiredSomeOf
         when (length (omitTimelocks script) < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (redundantTimelocks script) $ Left RedundantTimelocks
@@ -577,6 +578,7 @@ data ErrRecommendedValidateScript
     | DuplicateSignatures
     | RedundantTimelocks
     | TimelockTrap
+    | BigNInRequiredSomeOf
     deriving (Eq, Show)
 
 -- | Possible validation errors when validating a script template
@@ -626,6 +628,8 @@ prettyErrValidateScript = \case
         "Some timelocks used are redundant (which is not recommended)."
     NotRecommended TimelockTrap ->
         "The timelocks used are contradictory when used with 'all' (which is not recommended)."
+    NotRecommended BigNInRequiredSomeOf ->
+        "The script requires more than 255 signatures. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
 
 -- | Pretty-print a script template validation error.
 --

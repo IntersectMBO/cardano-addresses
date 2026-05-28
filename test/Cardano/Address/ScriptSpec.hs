@@ -386,6 +386,10 @@ spec = do
                     ]
             validateScript RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
+        it "big N in RequireSomeOf" $ do
+            let script = RequireSomeOf 275 (replicate 300 verKeyHash1)
+            validateScript RecommendedValidation script `shouldBe` Left (NotRecommended BigNInRequiredSomeOf)
+
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [verKeyHash1]
             validateScript RecommendedValidation script `shouldBe` Right ()
@@ -678,6 +682,10 @@ spec = do
                                    ]
                     ]
             validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
+
+        it "big N in RequireSomeOf" $ do
+            let script = RequireSomeOf 275 (replicate 300 cosigner0)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended BigNInRequiredSomeOf)
 
         it "content in RequireAllOf - 1" $ do
             let script = RequireAllOf [cosigner0]

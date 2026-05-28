@@ -6,6 +6,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
+{-# OPTIONS_GHC -Wno-dodgy-imports #-}
+
 -- | Vendored minimal sized-list from @basement@ (BSD-3-Clause).
 -- Only the subset used by BIP39 encoding.
 module Cardano.Address.Crypto.ListN
@@ -19,7 +21,7 @@ module Cardano.Address.Crypto.ListN
     ) where
 
 import Prelude hiding
-    ( map, mapM )
+    ( foldl', map, mapM )
 
 import Control.DeepSeq
     ( NFData )
