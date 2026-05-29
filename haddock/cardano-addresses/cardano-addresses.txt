@@ -5,7 +5,7 @@
 -- | Please see the README on GitHub at
 --   <a>https://github.com/IntersectMBO/cardano-addresses</a>
 @package cardano-addresses
-@version 4.0.3
+@version 4.0.4
 
 
 -- | Vendored from <tt>cardano-crypto</tt> (Apache-2.0). Original:
@@ -100,21 +100,21 @@ entropyToWords :: forall n csz mw. ConsistentEntropy n mw csz => Entropy n -> Mn
 wordsToEntropy :: forall ent csz mw. ConsistentEntropy ent mw csz => MnemonicSentence mw -> Either (EntropyError csz) (Entropy ent)
 data Seed
 type Passphrase = Text
-sentenceToSeed :: ValidMnemonicSentence mw => MnemonicSentence mw -> Dictionary -> Passphrase -> Seed
-phraseToSeed :: ValidMnemonicSentence mw => MnemonicPhrase mw -> Dictionary -> Passphrase -> Seed
+sentenceToSeed :: MnemonicSentence mw -> Dictionary -> Passphrase -> Seed
+phraseToSeed :: MnemonicPhrase mw -> Dictionary -> Passphrase -> Seed
 newtype MnemonicSentence (mw :: Nat)
 MnemonicSentence :: ListN mw WordIndex -> MnemonicSentence (mw :: Nat)
 [mnemonicSentenceToListN] :: MnemonicSentence (mw :: Nat) -> ListN mw WordIndex
 data MnemonicPhrase (mw :: Nat)
 type ValidMnemonicSentence (mw :: Nat) = (KnownNat mw, Elem mw '[9, 12, 15, 18, 21, 24])
 mnemonicPhrase :: forall mw. ValidMnemonicSentence mw => [Text] -> Either MnemonicWordsError (MnemonicPhrase mw)
-checkMnemonicPhrase :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicPhrase mw -> Bool
-mnemonicPhraseToMnemonicSentence :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicSentence mw)
-mnemonicSentenceToMnemonicPhrase :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicSentence mw -> MnemonicPhrase mw
-mnemonicSentenceToString :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicSentence mw -> Text
-mnemonicPhraseToString :: forall mw. ValidMnemonicSentence mw => Dictionary -> MnemonicPhrase mw -> Text
+checkMnemonicPhrase :: forall mw. Dictionary -> MnemonicPhrase mw -> Bool
+mnemonicPhraseToMnemonicSentence :: forall mw. Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicSentence mw)
+mnemonicSentenceToMnemonicPhrase :: forall mw. Dictionary -> MnemonicSentence mw -> MnemonicPhrase mw
+mnemonicSentenceToString :: forall mw. Dictionary -> MnemonicSentence mw -> Text
+mnemonicPhraseToString :: forall mw. Dictionary -> MnemonicPhrase mw -> Text
 mnemonicPhraseToListN :: MnemonicPhrase mw -> ListN mw Text
-translateTo :: forall mw. ValidMnemonicSentence mw => Dictionary -> Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicPhrase mw)
+translateTo :: forall mw. Dictionary -> Dictionary -> MnemonicPhrase mw -> Either DictionaryError (MnemonicPhrase mw)
 
 -- | Describes the properties of a BIP39 word dictionary.
 data Dictionary
@@ -1293,7 +1293,7 @@ data Script (elem :: Type)
 RequireSignatureOf :: !elem -> Script (elem :: Type)
 RequireAllOf :: ![Script elem] -> Script (elem :: Type)
 RequireAnyOf :: ![Script elem] -> Script (elem :: Type)
-RequireSomeOf :: Word8 -> ![Script elem] -> Script (elem :: Type)
+RequireSomeOf :: Word -> ![Script elem] -> Script (elem :: Type)
 ActiveFromSlot :: Natural -> Script (elem :: Type)
 ActiveUntilSlot :: Natural -> Script (elem :: Type)
 
@@ -1316,7 +1316,7 @@ ScriptTemplate :: Map Cosigner XPub -> Script Cosigner -> ScriptTemplate
 -- | Represents the cosigner of the script, ie., party that co-shares the
 --   script.
 newtype Cosigner
-Cosigner :: Word8 -> Cosigner
+Cosigner :: Word -> Cosigner
 
 -- | Validation level. Required level does basic check that will make sure
 --   the script is accepted in ledger. Recommended level collects a number
@@ -1342,6 +1342,7 @@ MZero :: ErrRecommendedValidateScript
 DuplicateSignatures :: ErrRecommendedValidateScript
 RedundantTimelocks :: ErrRecommendedValidateScript
 TimelockTrap :: ErrRecommendedValidateScript
+BigNInRequiredSomeOf :: ErrRecommendedValidateScript
 
 -- | Possible validation errors when validating a script template
 data ErrValidateScriptTemplate
@@ -1351,6 +1352,7 @@ UnknownCosigner :: ErrValidateScriptTemplate
 MissingCosignerXPub :: ErrValidateScriptTemplate
 NoCosignerInScript :: ErrValidateScriptTemplate
 NoCosignerXPub :: ErrValidateScriptTemplate
+BigCosignerNumber :: ErrValidateScriptTemplate
 
 -- | Validate a <a>Script</a>, semantically
 validateScript :: ValidationLevel -> Script KeyHash -> Either ErrValidateScript ()
