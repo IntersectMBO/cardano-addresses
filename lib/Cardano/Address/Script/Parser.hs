@@ -27,12 +27,12 @@ module Cardano.Address.Script.Parser
 
 import Prelude
 
-import Control.Monad
-    ( when )
 import Cardano.Address.KeyHash
     ( KeyHash, keyHashFromText, prettyErrKeyHashFromText )
 import Cardano.Address.Script
     ( Cosigner (..), ErrValidateScript (..), Script (..) )
+import Control.Monad
+    ( when )
 import Data.Char
     ( isDigit, isLetter )
 import Data.Text
