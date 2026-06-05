@@ -1,4 +1,10 @@
-## [4.0.5]
+## [4.0.6]
+
+## [4.0.5] - 2026-06-05
+
+### Fixed
+	
+- Full Word domain is no longer allowed for RequireSomeOf coefficient and Cosigner number — the upper bound is now maxBound @Int everywhere	
 	
 ## [4.0.4] - 2026-05-28
 
