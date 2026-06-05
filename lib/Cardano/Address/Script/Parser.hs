@@ -2,6 +2,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 
@@ -30,6 +31,8 @@ import Cardano.Address.KeyHash
     ( KeyHash, keyHashFromText, prettyErrKeyHashFromText )
 import Cardano.Address.Script
     ( Cosigner (..), ErrValidateScript (..), Script (..) )
+import Control.Monad
+    ( when )
 import Data.Char
     ( isDigit, isLetter )
 import Data.Text
@@ -130,6 +133,9 @@ requireCosignerOfParser = do
     P.skipSpaces
     _identifier <- P.string "cosigner#"
     cosignerid <- fromInteger . read <$> P.munch1 isDigit
+    let maxInt = fromIntegral (maxBound @Int)
+    when (cosignerid > maxInt) $
+        fail $ "Cosigner number exceeds maxBound Int: " <> show maxInt
     pure $ RequireSignatureOf $ Cosigner cosignerid
 
 requireAllOfParser :: ReadP (Script a) -> ReadP (Script a)
@@ -165,7 +171,11 @@ activeUntilSlotParser = do
 naturalParser :: ReadP Word
 naturalParser = do
     P.skipSpaces
-    fromInteger . read <$> P.munch1 isDigit
+    num <- fromInteger . read <$> P.munch1 isDigit
+    let maxInt = fromIntegral (maxBound @Int)
+    when (num > maxInt) $
+        fail $ "Number exceeds maxBound Int: " <> show maxInt
+    pure num
 
 slotParser :: ReadP Natural
 slotParser = do
