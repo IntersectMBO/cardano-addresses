@@ -472,7 +472,7 @@ recommendedValidation = \case
 
     RequireSomeOf m script -> do
         when (m == 0) $ Left MZero
-        when (m > 255) $ Left BigNInRequiredSomeOf
+        when (m > fromIntegral (maxBound @Int)) $ Left BigNInRequiredSomeOf
         when (length (omitTimelocks script) < fromIntegral m) $ Left ListTooSmall
         when (hasDuplicate script) $ Left DuplicateSignatures
         when (redundantTimelocks script) $ Left RedundantTimelocks
@@ -537,7 +537,7 @@ validateScriptTemplate level (ScriptTemplate cosigners_ script) = do
     check UnknownCosigner (cosignerSet `Set.isSubsetOf` scriptCosigners)
     check MissingCosignerXPub (scriptCosigners `Set.isSubsetOf` cosignerSet)
     when (level == RecommendedValidation) $
-        check BigCosignerNumber (all (\(Cosigner n) -> n <= 255) scriptCosigners)
+        check BigCosignerNumber (all (\(Cosigner n) -> n <= fromIntegral (maxBound @Int)) scriptCosigners)
   where
     scriptCosigners = Set.fromList $ foldScript (:) [] script
     cosignerKeys = Set.fromList $ Map.elems cosigners_
@@ -632,7 +632,7 @@ prettyErrValidateScript = \case
     NotRecommended TimelockTrap ->
         "The timelocks used are contradictory when used with 'all' (which is not recommended)."
     NotRecommended BigNInRequiredSomeOf ->
-        "The script requires more than 255 signatures. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
+        "The script requires more than maxBound Int signatures. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
 
 -- | Pretty-print a script template validation error.
 --
@@ -653,7 +653,7 @@ prettyErrValidateScriptTemplate = \case
     UnknownCosigner ->
         "The specified cosigner must be present in the script of the template."
     BigCosignerNumber ->
-        "The script template contains a cosigner number greater than 255. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
+        "The script template contains a cosigner number greater than maxBound Int. Such scripts might result in transactions exceeding the possible transaction size limit (which is not recommended)."
 --
 -- Internal
 --
@@ -800,8 +800,8 @@ instance FromJSON Cosigner where
     parseJSON = withText "Cosigner" $ \txt -> case T.splitOn "cosigner#" txt of
         ["",numTxt] ->  case T.decimal @Integer numTxt of
             Right (num,"") -> do
-                let maxWord = toInteger (maxBound @Word)
-                when (num > maxWord) $
+                let maxBoundInt = toInteger (maxBound @Int)
+                when (num > maxBoundInt) $
                         fail "Cosigner number is out of bounds"
                 pure $ Cosigner (fromInteger num)
             _ -> fail "Cosigner should be enumerated with number"
