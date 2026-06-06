@@ -5,7 +5,7 @@
 -- | Please see the README on GitHub at
 --   <a>https://github.com/IntersectMBO/cardano-addresses</a>
 @package cardano-addresses
-@version 4.0.4
+@version 4.0.5
 
 
 -- | Vendored from <tt>cardano-crypto</tt> (Apache-2.0). Original:
