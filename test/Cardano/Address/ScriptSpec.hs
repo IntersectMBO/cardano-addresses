@@ -61,6 +61,8 @@ import Data.Maybe
     ( fromJust )
 import Data.Text
     ( Text )
+import Data.Word
+    ( Word64 )
 import Numeric.Natural
     ( Natural )
 import Test.Arbitrary
@@ -83,8 +85,6 @@ import Test.QuickCheck
     , vectorOf
     , (===)
     )
-import Data.Word
-    ( Word64 )
 
 import qualified Cardano.Address.Style.Shared as Shared
 import qualified Cardano.Address.Style.Shelley as Shelley

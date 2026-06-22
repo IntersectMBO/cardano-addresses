@@ -37,10 +37,10 @@ import Data.Char
     ( isDigit, isLetter )
 import Data.Text
     ( Text )
-import Numeric.Natural
-    ( Natural )
 import Data.Word
     ( Word64 )
+import Numeric.Natural
+    ( Natural )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 

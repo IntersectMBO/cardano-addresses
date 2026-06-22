@@ -105,12 +105,12 @@ import Data.Text
     ( Text )
 import Data.Traversable
     ( for )
+import Data.Word
+    ( Word64 )
 import GHC.Generics
     ( Generic )
 import Numeric.Natural
     ( Natural )
-import Data.Word
-    ( Word64 )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Cardano.Codec.Cbor as CBOR
