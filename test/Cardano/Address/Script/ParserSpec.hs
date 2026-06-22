@@ -13,7 +13,7 @@ import Prelude
 import Cardano.Address.KeyHash
     ( KeyHash (..), KeyRole (..) )
 import Cardano.Address.Script
-    ( Cosigner (..), Script (..) )
+    ( Cosigner (..), ErrValidateScript (..), Script (..) )
 import Cardano.Address.Script.Parser
     ( requireAllOfParser
     , requireAnyOfParser
@@ -21,6 +21,7 @@ import Cardano.Address.Script.Parser
     , requireCosignerOfParser
     , requireCosignerOfParser
     , requireSignatureOfParser
+    , scriptFromString
     , scriptParser
     )
 import Data.ByteString
@@ -61,6 +62,11 @@ spec = do
     timelockParserTests @KeyHash requireSignatureOfParser
         (kh1,verKeyH1)
     timelockParserTests @Cosigner requireCosignerOfParser
+        (cosigner0,cosigner0Txt)
+
+    slotBoundaryTests @KeyHash requireSignatureOfParser
+        (kh1,verKeyH1)
+    slotBoundaryTests @Cosigner requireCosignerOfParser
         (cosigner0,cosigner0Txt)
   where
     verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
@@ -237,6 +243,50 @@ spec = do
                    , ActiveFromSlot 120
                    , ActiveUntilSlot 125 ]
            valuesParserUnitTest (scriptParser parser) (script16 txt) expected
+
+    slotBoundaryTests
+        :: (Eq a, Show a)
+        => ReadP (Script a)
+        -> (a, Text)
+        -> SpecWith ()
+    slotBoundaryTests parser (obj,txt) = do
+       describe "active_from maxBound Word64 accepted" $ do
+           let maxWord64 = "18446744073709551615"
+           let expected = RequireAllOf
+                   [ RequireSignatureOf obj
+                   , ActiveFromSlot 18446744073709551615 ]
+           valuesParserUnitTest (scriptParser parser) ("all ["<>txt<>", active_from "<>maxWord64<>"]") expected
+
+       describe "active_from maxBound Word64 + 1 rejected" $ do
+           let tooBig = "18446744073709551616"
+           let inp = "all ["<>txt<>", active_from "<>tooBig<>"]"
+           it ("input=" <> show inp) $
+               scriptFromString (scriptParser parser) (T.unpack inp) `shouldBe` Left Malformed
+
+       describe "active_until maxBound Word64 accepted" $ do
+           let maxWord64 = "18446744073709551615"
+           let expected = RequireAllOf
+                   [ RequireSignatureOf obj
+                   , ActiveUntilSlot 18446744073709551615 ]
+           valuesParserUnitTest (scriptParser parser) ("all ["<>txt<>", active_until "<>maxWord64<>"]") expected
+
+       describe "active_until maxBound Word64 + 1 rejected" $ do
+           let tooBig = "18446744073709551616"
+           let inp = "all ["<>txt<>", active_until "<>tooBig<>"]"
+           it ("input=" <> show inp) $
+               scriptFromString (scriptParser parser) (T.unpack inp) `shouldBe` Left Malformed
+
+       describe "active_from maxBound Word64 + 2 rejected" $ do
+           let tooBig = "18446744073709551617"
+           let inp = "all ["<>txt<>", active_from "<>tooBig<>"]"
+           it ("input=" <> show inp) $
+               scriptFromString (scriptParser parser) (T.unpack inp) `shouldBe` Left Malformed
+
+       describe "active_until maxBound Word64 + 2 rejected" $ do
+           let tooBig = "18446744073709551617"
+           let inp = "all ["<>txt<>", active_until "<>tooBig<>"]"
+           it ("input=" <> show inp) $
+               scriptFromString (scriptParser parser) (T.unpack inp) `shouldBe` Left Malformed
 
 valuesParserUnitTest
     :: (Eq s, Show s)
