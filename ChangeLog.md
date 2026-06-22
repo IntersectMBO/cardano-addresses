@@ -1,5 +1,11 @@
-## [4.0.6]
+## [4.0.7]
 
+## [4.0.6] - 2026-06-22
+
+### Fixed
+
+- Handle timelock script boundaries in the secure way	
+	
 ## [4.0.5] - 2026-06-05
 
 ### Fixed
