@@ -109,6 +109,8 @@ import GHC.Generics
     ( Generic )
 import Numeric.Natural
     ( Natural )
+import Data.Word
+    ( Word64 )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Cardano.Codec.Cbor as CBOR
@@ -616,7 +618,7 @@ prettyErrValidateScript = \case
         \lists, the verification keys should be bech32-encoded with prefix \
         \'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared', 'policy', \
         \'drep', 'cc_cold' or 'cc_hot' and timelocks must use non-negative \
-        \numbers as slots."
+        \numbers not exceeding maxBound Word64 as slots."
     NotRecommended EmptyList ->
         "The list inside a script is empty or only contains timelocks \
         \(which is not recommended)."
@@ -781,14 +783,22 @@ parseAtLeast = withObject "Script SomeOf" $ \o -> do
 parseActiveFrom
     :: Value
     -> Parser (Script elem)
-parseActiveFrom = withObject "Script ActiveFrom" $ \o ->
-    ActiveFromSlot <$> o .: "active_from"
+parseActiveFrom = withObject "Script ActiveFrom" $ \o -> do
+    slot <- o .: "active_from"
+    let maxWord64 = fromIntegral (maxBound @Word64)
+    when (slot > maxWord64) $
+        fail "active_from slot exceeds maxBound Word64"
+    pure $ ActiveFromSlot slot
 
 parseActiveUntil
     :: Value
     -> Parser (Script elem)
-parseActiveUntil = withObject "Script ActiveUntil" $ \o ->
-    ActiveUntilSlot <$> o .: "active_until"
+parseActiveUntil = withObject "Script ActiveUntil" $ \o -> do
+    slot <- o .: "active_until"
+    let maxWord64 = fromIntegral (maxBound @Word64)
+    when (slot > maxWord64) $
+        fail "active_until slot exceeds maxBound Word64"
+    pure $ ActiveUntilSlot slot
 
 cosignerToText :: Cosigner -> Text
 cosignerToText (Cosigner ix) = "cosigner#"<> T.pack (show ix)

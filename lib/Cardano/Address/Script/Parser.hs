@@ -39,6 +39,8 @@ import Data.Text
     ( Text )
 import Numeric.Natural
     ( Natural )
+import Data.Word
+    ( Word64 )
 import Text.ParserCombinators.ReadP
     ( ReadP, readP_to_S, (<++) )
 
@@ -180,7 +182,11 @@ naturalParser = do
 slotParser :: ReadP Natural
 slotParser = do
     P.skipSpaces
-    fromInteger . read <$> P.munch1 isDigit
+    num <- fromInteger . read <$> P.munch1 isDigit
+    let maxWord64 = fromIntegral (maxBound @Word64)
+    when (num > maxWord64) $
+        fail $ "Slot number exceeds maxBound Word64: " <> show maxWord64
+    pure num
 
 commonPart :: ReadP (Script a) -> ReadP [Script a]
 commonPart parser = do

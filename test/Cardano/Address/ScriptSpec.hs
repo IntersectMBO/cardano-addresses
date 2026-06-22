@@ -61,6 +61,8 @@ import Data.Maybe
     ( fromJust )
 import Data.Text
     ( Text )
+import Numeric.Natural
+    ( Natural )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -81,6 +83,8 @@ import Test.QuickCheck
     , vectorOf
     , (===)
     )
+import Data.Word
+    ( Word64 )
 
 import qualified Cardano.Address.Style.Shared as Shared
 import qualified Cardano.Address.Style.Shelley as Shelley
@@ -736,6 +740,41 @@ spec = do
     describe "can perform text roundtrip - Script Cosigner" $
         it "scriptFromString . T.unpack . scriptToText === pure" $ property prop_scriptTextRoundtrip
 
+    describe "timelock slot boundary tests" $ do
+        let maxWord64 = 18446744073709551615 :: Natural
+        it "JSON active_from maxBound Word64 accepted" $ do
+            let json = "{\"active_from\": " <> T.pack (show maxWord64) <> "}"
+            Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json)
+                `shouldBe` Right (ActiveFromSlot maxWord64)
+
+        it "JSON active_from maxBound Word64 + 1 rejected" $ do
+            let json = "{\"active_from\": 18446744073709551616}"
+            case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                Left _ -> pure ()
+                Right _ -> expectationFailure "Expected JSON parse failure"
+
+        it "JSON active_until maxBound Word64 accepted" $ do
+            let json = "{\"active_until\": " <> T.pack (show maxWord64) <> "}"
+            Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json)
+                `shouldBe` Right (ActiveUntilSlot maxWord64)
+
+        it "JSON active_until maxBound Word64 + 1 rejected" $ do
+            let json = "{\"active_until\": 18446744073709551616}"
+            case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                Left _ -> pure ()
+                Right _ -> expectationFailure "Expected JSON parse failure"
+
+        it "JSON active_from maxBound Word64 + 2 rejected" $ do
+            let json = "{\"active_from\": 18446744073709551617}"
+            case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                Left _ -> pure ()
+                Right _ -> expectationFailure "Expected JSON parse failure"
+
+        it "JSON active_until maxBound Word64 + 2 rejected" $ do
+            let json = "{\"active_until\": 18446744073709551617}"
+            case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                Left _ -> pure ()
+                Right _ -> expectationFailure "Expected JSON parse failure"
 
     describe "some JSON parsing error" $ do
         it "Invalid type" $ do
@@ -799,10 +838,11 @@ instance Arbitrary (Script Cosigner) where
 genScript :: Gen (Script elem) -> Gen (Script elem)
 genScript elemGen = scale (`div` 3) $ sized scriptTree
     where
+        genSlot = fromIntegral <$> arbitrary @Word64
         scriptTree 0 = oneof
             [ elemGen
-            , ActiveFromSlot <$> arbitrary
-            , ActiveUntilSlot <$> arbitrary
+            , ActiveFromSlot <$> genSlot
+            , ActiveUntilSlot <$> genSlot
             ]
         scriptTree n = do
             Positive m <- arbitrary
