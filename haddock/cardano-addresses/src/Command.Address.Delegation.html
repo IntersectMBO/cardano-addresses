@@ -46,7 +46,7 @@
 </span><span id="line-46"></span><span class="hs-keyword">newtype</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Cmd"><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span></span><span>
 </span><span id="line-47"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="credential"><span class="annot"><span class="annottext">Cmd -&gt; Credential 'DelegationK
 </span><a href="Command.Address.Delegation.html#credential"><span class="hs-identifier hs-var hs-var">credential</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#Credential"><span class="hs-identifier hs-type">Credential</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#DelegationK"><span class="hs-identifier hs-type">DelegationK</span></a></span><span>
-</span><span id="line-48"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679225711"><span id="local-6989586621679225717"><span id="local-6989586621679225721"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-48"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679225871"><span id="local-6989586621679225877"><span id="local-6989586621679225881"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -61,10 +61,10 @@ $cshowList :: [Cmd] -&gt; ShowS
 showList :: [Cmd] -&gt; ShowS
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span>
 </span><span id="line-49"></span><span>
-</span><span id="line-50"></span><span id="local-6989586621679225630"><span class="annot"><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679225630"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679225630"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-50"></span><span id="local-6989586621679225790"><span class="annot"><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679225790"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679225790"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-51"></span><span id="mod"><span class="annot"><span class="annottext">mod :: forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679225790"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679225790"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.Address.Delegation.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679225950"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679225950"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;delegation&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -82,8 +82,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 forall a b. (a -&gt; b) -&gt; Parser a -&gt; Parser b
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#fmap"><span class="hs-identifier hs-var">fmap</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679225790"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679225791"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679225950"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679225951"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -107,13 +107,13 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall ann. [Doc ann] -&gt; Doc ann
 </span><span class="hs-identifier hs-var">vsep</span></span><span>
 </span><span id="line-55"></span><span>            </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;The payment address is read from stdin.&quot;</span></span><span>
 </span><span id="line-56"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
 </span><span id="line-57"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;Example:&quot;</span></span><span>
 </span><span id="line-58"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -167,7 +167,7 @@ forall ann. Int -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
 </span><span id="line-61"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -180,7 +180,7 @@ forall ann. ann -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;$ cat root.prv \\&quot;</span></span><span>
 </span><span id="line-62"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -211,7 +211,7 @@ forall ann. Int -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
 </span><span id="line-64"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -224,7 +224,7 @@ forall ann. ann -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;$ cat root.prv \\&quot;</span></span><span>
 </span><span id="line-65"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -255,7 +255,7 @@ forall ann. Int -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;&quot;</span></span><span>
 </span><span id="line-67"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -268,7 +268,7 @@ forall ann. ann -&gt; Doc ann -&gt; Doc ann
 </span><span class="hs-identifier hs-var">bold</span></span><span> </span><span class="annot"><span class="annottext">(Doc -&gt; Doc) -&gt; Doc -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var">prettyText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;$ cat addr.prv \\&quot;</span></span><span>
 </span><span id="line-68"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Doc -&gt; Doc
 forall ann. Int -&gt; Doc ann -&gt; Doc ann
@@ -357,67 +357,67 @@ forall a ann. Pretty a =&gt; a -&gt; Doc ann
 </span><span class="hs-string">&quot;addr1qpj2d4dqzds5p3mmlu95v9pex2d72cdvyjh2u3dtj4yqesv27k...&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-72"></span><span>            </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-73"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679225794"><span class="annot"><span class="annottext">msg :: String
-</span><a href="#local-6989586621679225794"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679225954"><span class="annot"><span class="annottext">msg :: String
+</span><a href="#local-6989586621679225954"><span class="hs-identifier hs-var hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;An extended stake public key, a non-extended stake public key, a script or a script hash.&quot;</span></span><span>
-</span><span id="line-75"></span><span>    </span><span id="local-6989586621679225791"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679225791"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK -&gt; Cmd
+</span><span id="line-75"></span><span>    </span><span id="local-6989586621679225951"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679225951"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK -&gt; Cmd
 </span><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-var">Cmd</span></a></span><span>
 </span><span id="line-76"></span><span>        </span><span class="annot"><span class="annottext">(Credential 'DelegationK -&gt; Cmd)
 -&gt; Parser (Credential 'DelegationK) -&gt; Parser Cmd
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Parser (Credential 'DelegationK)
 </span><a href="Options.Applicative.Credential.html#delegationCredentialArg"><span class="hs-identifier hs-var">delegationCredentialArg</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225794"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><a href="#local-6989586621679225954"><span class="hs-identifier hs-var">msg</span></a></span><span>
 </span><span id="line-77"></span><span>
-</span><span id="line-78"></span><span>    </span><span class="annot"><a href="#local-6989586621679225792"><span class="hs-identifier hs-type">prettyText</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span>
-</span><span id="line-79"></span><span>    </span><span id="local-6989586621679225792"><span class="annot"><span class="annottext">prettyText :: Text -&gt; Doc
-</span><a href="#local-6989586621679225792"><span class="hs-identifier hs-var hs-var">prettyText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><span id="line-78"></span><span>    </span><span class="annot"><a href="#local-6989586621679225952"><span class="hs-identifier hs-type">prettyText</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679225952"><span class="annot"><span class="annottext">prettyText :: Text -&gt; Doc
+</span><a href="#local-6989586621679225952"><span class="hs-identifier hs-var hs-var">prettyText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall ann. Text -&gt; Doc ann
 forall a ann. Pretty a =&gt; a -&gt; Doc ann
 </span><span class="hs-identifier hs-var">pretty</span></span><span>
 </span><span id="line-80"></span><span>
 </span><span id="line-81"></span><span class="annot"><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-82"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
-</span><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679225797"><span class="annot"><span class="annottext">Credential 'DelegationK
+</span><a href="Command.Address.Delegation.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.Delegation.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span class="hs-special">{</span><span id="local-6989586621679225957"><span class="annot"><span class="annottext">Credential 'DelegationK
 credential :: Cmd -&gt; Credential 'DelegationK
 credential :: Credential 'DelegationK
 </span><a href="Command.Address.Delegation.html#credential"><span class="hs-identifier hs-var hs-var">credential</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-83"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HumanReadablePart
-</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679225798"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679225798"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, ByteString)
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679225958"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679225958"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Handle -&gt; [HumanReadablePart] -&gt; IO (HumanReadablePart, ByteString)
 </span><a href="System.IO.Extra.html#hGetBech32"><span class="hs-identifier hs-var">hGetBech32</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.StdHandles.html#stdin"><span class="hs-identifier hs-var">stdin</span></a></span><span> </span><span class="annot"><span class="annottext">[HumanReadablePart]
-</span><a href="#local-6989586621679225799"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span>
+</span><a href="#local-6989586621679225959"><span class="hs-identifier hs-var">allowedPrefixes</span></a></span><span>
 </span><span id="line-84"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Address
 -&gt; Credential 'DelegationK -&gt; Either ErrExtendAddress Address
 </span><a href="Cardano.Address.Style.Shelley.html#extendAddress"><span class="hs-identifier hs-var">Shelley.extendAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Address
 </span><a href="Cardano.Address.html#unsafeMkAddress"><span class="hs-identifier hs-var">unsafeMkAddress</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679225798"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK
-</span><a href="#local-6989586621679225797"><span class="hs-identifier hs-var">credential</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-85"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidAddressStyle"><span class="hs-identifier hs-type">ErrInvalidAddressStyle</span></a></span><span> </span><span id="local-6989586621679225802"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225802"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679225958"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Credential 'DelegationK
+</span><a href="#local-6989586621679225957"><span class="hs-identifier hs-var">credential</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-85"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidAddressStyle"><span class="hs-identifier hs-type">ErrInvalidAddressStyle</span></a></span><span> </span><span id="local-6989586621679225962"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679225962"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-86"></span><span>            </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall a. String -&gt; IO a
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225802"><span class="hs-identifier hs-var">msg</span></a></span><span>
-</span><span id="line-87"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidAddressType"><span class="hs-identifier hs-type">ErrInvalidAddressType</span></a></span><span>  </span><span id="local-6989586621679225804"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225804"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679225962"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-87"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidAddressType"><span class="hs-identifier hs-type">ErrInvalidAddressType</span></a></span><span>  </span><span id="local-6989586621679225964"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679225964"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-88"></span><span>            </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall a. String -&gt; IO a
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225804"><span class="hs-identifier hs-var">msg</span></a></span><span>
-</span><span id="line-89"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidKeyHashType"><span class="hs-identifier hs-type">ErrInvalidKeyHashType</span></a></span><span> </span><span id="local-6989586621679225806"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225806"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679225964"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-89"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-type">Left</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Shelley.html#ErrInvalidKeyHashType"><span class="hs-identifier hs-type">ErrInvalidKeyHashType</span></a></span><span> </span><span id="local-6989586621679225966"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679225966"><span class="hs-identifier hs-var">msg</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-90"></span><span>            </span><span class="annot"><span class="annottext">String -&gt; IO ()
 forall a. String -&gt; IO a
 forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Control.Monad.Fail.html#fail"><span class="hs-identifier hs-var">fail</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679225806"><span class="hs-identifier hs-var">msg</span></a></span><span>
-</span><span id="line-91"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span id="local-6989586621679225807"><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679225807"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621679225966"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-91"></span><span>        </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span id="local-6989586621679225967"><span class="annot"><span class="annottext">Address
+</span><a href="#local-6989586621679225967"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-92"></span><span>            </span><span class="annot"><span class="annottext">Handle -&gt; ByteString -&gt; IO ()
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#hPutStr"><span class="hs-identifier hs-var">B8.hPutStr</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.StdHandles.html#stdout"><span class="hs-identifier hs-var">stdout</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; IO ()) -&gt; ByteString -&gt; IO ()
@@ -427,10 +427,10 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Address -&gt; Text
 </span><a href="Cardano.Address.html#bech32"><span class="hs-identifier hs-var">bech32</span></a></span><span> </span><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679225807"><span class="hs-identifier hs-var">addr</span></a></span><span>
+</span><a href="#local-6989586621679225967"><span class="hs-identifier hs-var">addr</span></a></span><span>
 </span><span id="line-93"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-94"></span><span>    </span><span id="local-6989586621679225799"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
-</span><a href="#local-6989586621679225799"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621679225959"><span class="annot"><span class="annottext">allowedPrefixes :: [HumanReadablePart]
+</span><a href="#local-6989586621679225959"><span class="hs-identifier hs-var hs-var">allowedPrefixes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-95"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart
 </span><a href="Cardano.Codec.Bech32.Prefixes.html#addr"><span class="hs-identifier hs-var">CIP5.addr</span></a></span><span>
 </span><span id="line-96"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">HumanReadablePart

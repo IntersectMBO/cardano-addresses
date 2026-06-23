@@ -55,7 +55,7 @@
 </span><span id="line-55"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Address"><span class="annot"><a href="Command.html#Address"><span class="hs-identifier hs-var">Address</span></a></span></span><span> </span><span class="annot"><a href="Command.Address.html#Cmd"><span class="hs-identifier hs-type">Address.Cmd</span></a></span><span>
 </span><span id="line-56"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Script"><span class="annot"><a href="Command.html#Script"><span class="hs-identifier hs-var">Script</span></a></span></span><span> </span><span class="annot"><a href="Command.Script.html#Cmd"><span class="hs-identifier hs-type">Script.Cmd</span></a></span><span>
 </span><span id="line-57"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Version"><span class="annot"><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span></span><span>
-</span><span id="line-58"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679226328"><span id="local-6989586621679226343"><span id="local-6989586621679226347"><span class="annot"><span class="annottext">Int -&gt; CLI -&gt; ShowS
+</span><span id="line-58"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679226488"><span id="local-6989586621679226503"><span id="local-6989586621679226507"><span class="annot"><span class="annottext">Int -&gt; CLI -&gt; ShowS
 [CLI] -&gt; ShowS
 CLI -&gt; String
 (Int -&gt; CLI -&gt; ShowS)
@@ -80,7 +80,7 @@ forall a. Parser (a -&gt; a)
 forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%2A%3E"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser CLI
-</span><a href="#local-6989586621679226351"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod CLI -&gt; ParserInfo CLI) -&gt; InfoMod CLI -&gt; ParserInfo CLI
+</span><a href="#local-6989586621679226511"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod CLI -&gt; ParserInfo CLI) -&gt; InfoMod CLI -&gt; ParserInfo CLI
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">InfoMod CLI
 forall a. Monoid a =&gt; a
@@ -197,8 +197,8 @@ forall a ann. Pretty a =&gt; a -&gt; Doc ann
 </span><span class="hs-string">&quot;/etc/bash_completion.d&quot;</span></span><span class="hs-special">]</span><span>
 </span><span id="line-77"></span><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-78"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-79"></span><span>    </span><span id="local-6989586621679226351"><span class="annot"><span class="annottext">parser :: Parser CLI
-</span><a href="#local-6989586621679226351"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CLI -&gt; Parser CLI
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679226511"><span class="annot"><span class="annottext">parser :: Parser CLI
+</span><a href="#local-6989586621679226511"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CLI -&gt; Parser CLI
 forall a. a -&gt; Parser a
 </span><a href="Command.Version.html#opt"><span class="hs-identifier hs-var">Version.opt</span></a></span><span> </span><span class="annot"><span class="annottext">CLI
 </span><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span><span> </span><span class="annot"><span class="annottext">Parser CLI -&gt; Parser CLI -&gt; Parser CLI
@@ -237,22 +237,22 @@ forall a. IOException -&gt; IO a
 </span><a href="System.IO.Extra.html#prettyIOException"><span class="hs-identifier hs-var">prettyIOException</span></a></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; (CLI -&gt; IO ()) -&gt; CLI -&gt; IO ()
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
-</span><span id="line-89"></span><span>    </span><span class="annot"><a href="Command.html#RecoveryPhrase"><span class="hs-identifier hs-type">RecoveryPhrase</span></a></span><span> </span><span id="local-6989586621679226362"><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226362"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><span id="line-89"></span><span>    </span><span class="annot"><a href="Command.html#RecoveryPhrase"><span class="hs-identifier hs-type">RecoveryPhrase</span></a></span><span> </span><span id="local-6989586621679226522"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679226522"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
 </span><a href="Command.RecoveryPhrase.html#run"><span class="hs-identifier hs-var">RecoveryPhrase.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226362"><span class="hs-identifier hs-var">sub</span></a></span><span>
-</span><span id="line-90"></span><span>    </span><span class="annot"><a href="Command.html#Key"><span class="hs-identifier hs-type">Key</span></a></span><span> </span><span id="local-6989586621679226364"><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226364"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="#local-6989586621679226522"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><a href="Command.html#Key"><span class="hs-identifier hs-type">Key</span></a></span><span> </span><span id="local-6989586621679226524"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679226524"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
 </span><a href="Command.Key.html#run"><span class="hs-identifier hs-var">Key.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226364"><span class="hs-identifier hs-var">sub</span></a></span><span>
-</span><span id="line-91"></span><span>    </span><span class="annot"><a href="Command.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span id="local-6989586621679226366"><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226366"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="#local-6989586621679226524"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-91"></span><span>    </span><span class="annot"><a href="Command.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span id="local-6989586621679226526"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679226526"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
 </span><a href="Command.Address.html#run"><span class="hs-identifier hs-var">Address.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226366"><span class="hs-identifier hs-var">sub</span></a></span><span>
-</span><span id="line-92"></span><span>    </span><span class="annot"><a href="Command.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span id="local-6989586621679226368"><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226368"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
+</span><a href="#local-6989586621679226526"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-92"></span><span>    </span><span class="annot"><a href="Command.html#Script"><span class="hs-identifier hs-type">Script</span></a></span><span> </span><span id="local-6989586621679226528"><span class="annot"><span class="annottext">Cmd
+</span><a href="#local-6989586621679226528"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; IO ()
 </span><a href="Command.Script.html#run"><span class="hs-identifier hs-var">Script.run</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd
-</span><a href="#local-6989586621679226368"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><a href="#local-6989586621679226528"><span class="hs-identifier hs-var">sub</span></a></span><span>
 </span><span id="line-93"></span><span>    </span><span class="annot"><span class="annottext">CLI
 </span><a href="Command.html#Version"><span class="hs-identifier hs-var">Version</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO ()
 </span><a href="Command.Version.html#run"><span class="hs-identifier hs-var">Version.run</span></a></span><span>
@@ -276,24 +276,24 @@ forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Foldable t, Monad m) =&gt;
 (a -&gt; m b) -&gt; t a -&gt; m ()
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Foldable.html#mapM_"><span class="hs-identifier hs-var">mapM_</span></a></span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO ()
-</span><a href="#local-6989586621679226372"><span class="hs-identifier hs-var">hSetup</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Handle
+</span><a href="#local-6989586621679226532"><span class="hs-identifier hs-var">hSetup</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Handle
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.StdHandles.html#stderr"><span class="hs-identifier hs-var">stderr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.StdHandles.html#stdout"><span class="hs-identifier hs-var">stdout</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Handle
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.StdHandles.html#stdin"><span class="hs-identifier hs-var">stdin</span></a></span><span class="hs-special">]</span><span>
 </span><span id="line-103"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-104"></span><span>    </span><span class="annot"><a href="#local-6989586621679226372"><span class="hs-identifier hs-type">hSetup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.Handle.Types.html#Handle"><span class="hs-identifier hs-type">Handle</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-105"></span><span>    </span><span id="local-6989586621679226372"><span class="annot"><span class="annottext">hSetup :: Handle -&gt; IO ()
-</span><a href="#local-6989586621679226372"><span class="hs-identifier hs-var hs-var">hSetup</span></a></span></span><span> </span><span id="local-6989586621679226373"><span class="annot"><span class="annottext">Handle
-</span><a href="#local-6989586621679226373"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-104"></span><span>    </span><span class="annot"><a href="#local-6989586621679226532"><span class="hs-identifier hs-type">hSetup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.Handle.Types.html#Handle"><span class="hs-identifier hs-type">Handle</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>    </span><span id="local-6989586621679226532"><span class="annot"><span class="annottext">hSetup :: Handle -&gt; IO ()
+</span><a href="#local-6989586621679226532"><span class="hs-identifier hs-var hs-var">hSetup</span></a></span></span><span> </span><span id="local-6989586621679226533"><span class="annot"><span class="annottext">Handle
+</span><a href="#local-6989586621679226533"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-106"></span><span>      </span><span class="annot"><span class="annottext">IO Bool -&gt; IO ()
 forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#void"><span class="hs-identifier hs-var">void</span></a></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Handle -&gt; IO Bool
 </span><span class="hs-identifier hs-var">hSupportsANSI</span></span><span> </span><span class="annot"><span class="annottext">Handle
-</span><a href="#local-6989586621679226373"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><a href="#local-6989586621679226533"><span class="hs-identifier hs-var">h</span></a></span><span>
 </span><span id="line-107"></span><span>      </span><span class="annot"><span class="annottext">Handle -&gt; BufferMode -&gt; IO ()
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.Handle.html#hSetBuffering"><span class="hs-identifier hs-var">hSetBuffering</span></a></span><span> </span><span class="annot"><span class="annottext">Handle
-</span><a href="#local-6989586621679226373"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">BufferMode
+</span><a href="#local-6989586621679226533"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">BufferMode
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.IO.Handle.Types.html#NoBuffering"><span class="hs-identifier hs-var">NoBuffering</span></a></span><span>
 </span><span id="line-108"></span></pre></body></html>

@@ -164,14 +164,14 @@
 </span><span id="line-164"></span><span class="hs-comment">-- @</span><span>
 </span><span id="line-165"></span><span class="hs-comment">--</span><span>
 </span><span id="line-166"></span><span class="hs-comment">-- @since 1.0.0</span><span>
-</span><span id="line-167"></span><span class="hs-keyword">newtype</span><span> </span><span id="Icarus"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215285"><span class="annot"><a href="#local-6989586621679215285"><span class="hs-identifier hs-type">depth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier hs-type">Depth</span></a></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215286"><span class="annot"><a href="#local-6989586621679215286"><span class="hs-identifier hs-type">key</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Icarus"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span></span><span>
+</span><span id="line-167"></span><span class="hs-keyword">newtype</span><span> </span><span id="Icarus"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215445"><span class="annot"><a href="#local-6989586621679215445"><span class="hs-identifier hs-type">depth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Depth"><span class="hs-identifier hs-type">Depth</span></a></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215446"><span class="annot"><a href="#local-6989586621679215446"><span class="hs-identifier hs-type">key</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Icarus"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span></span><span>
 </span><span id="line-168"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="getKey"><span class="annot"><span class="annottext">forall (depth :: Depth) key. Icarus depth key -&gt; key
-</span><a href="Cardano.Address.Style.Icarus.html#getKey"><span class="hs-identifier hs-var hs-var">getKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679215286"><span class="hs-identifier hs-type">key</span></a></span><span>
+</span><a href="Cardano.Address.Style.Icarus.html#getKey"><span class="hs-identifier hs-var hs-var">getKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679215446"><span class="hs-identifier hs-type">key</span></a></span><span>
 </span><span id="line-169"></span><span>        </span><span class="hs-comment">-- ^ Extract the raw 'XPrv' or 'XPub' wrapped by this type.</span><span>
 </span><span id="line-170"></span><span>        </span><span class="hs-comment">--</span><span>
 </span><span id="line-171"></span><span>        </span><span class="hs-comment">-- @since 1.0.0</span><span>
 </span><span id="line-172"></span><span>    </span><span class="hs-special">}</span><span>
-</span><span id="line-173"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215711"><span id="local-6989586621679215713"><span class="annot"><span class="annottext">(forall x. Icarus depth key -&gt; Rep (Icarus depth key) x)
+</span><span id="line-173"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215871"><span id="local-6989586621679215873"><span class="annot"><span class="annottext">(forall x. Icarus depth key -&gt; Rep (Icarus depth key) x)
 -&gt; (forall x. Rep (Icarus depth key) x -&gt; Icarus depth key)
 -&gt; Generic (Icarus depth key)
 forall x. Rep (Icarus depth key) x -&gt; Icarus depth key
@@ -188,7 +188,7 @@ from :: forall x. Icarus depth key -&gt; Rep (Icarus depth key) x
 $cto :: forall (depth :: Depth) key x.
 Rep (Icarus depth key) x -&gt; Icarus depth key
 to :: forall x. Rep (Icarus depth key) x -&gt; Icarus depth key
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215718"><span id="local-6989586621679215723"><span id="local-6989586621679215727"><span class="annot"><span class="annottext">Int -&gt; Icarus depth key -&gt; String -&gt; String
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215878"><span id="local-6989586621679215883"><span id="local-6989586621679215887"><span class="annot"><span class="annottext">Int -&gt; Icarus depth key -&gt; String -&gt; String
 [Icarus depth key] -&gt; String -&gt; String
 Icarus depth key -&gt; String
 (Int -&gt; Icarus depth key -&gt; String -&gt; String)
@@ -215,7 +215,7 @@ $cshowList :: forall (depth :: Depth) key.
 Show key =&gt;
 [Icarus depth key] -&gt; String -&gt; String
 showList :: [Icarus depth key] -&gt; String -&gt; String
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215732"><span id="local-6989586621679215735"><span class="annot"><span class="annottext">Icarus depth key -&gt; Icarus depth key -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215892"><span id="local-6989586621679215895"><span class="annot"><span class="annottext">Icarus depth key -&gt; Icarus depth key -&gt; Bool
 (Icarus depth key -&gt; Icarus depth key -&gt; Bool)
 -&gt; (Icarus depth key -&gt; Icarus depth key -&gt; Bool)
 -&gt; Eq (Icarus depth key)
@@ -233,8 +233,8 @@ Icarus depth key -&gt; Icarus depth key -&gt; Bool
 /= :: Icarus depth key -&gt; Icarus depth key -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-174"></span><span>
-</span><span id="line-175"></span><span id="local-6989586621679215312"><span id="local-6989586621679215740"><span id="local-6989586621679215742"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#Functor"><span class="hs-identifier hs-type">Functor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215312"><span class="hs-identifier hs-type">depth</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span></span><span>
-</span><span id="line-176"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679215327"><span id="local-6989586621679215328"><span id="local-6989586621679215747"><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215327"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215328"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215327"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-175"></span><span id="local-6989586621679215472"><span id="local-6989586621679215900"><span id="local-6989586621679215902"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#Functor"><span class="hs-identifier hs-type">Functor</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215472"><span class="hs-identifier hs-type">depth</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-176"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679215487"><span id="local-6989586621679215488"><span id="local-6989586621679215907"><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215487"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215488"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215487"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span></span></span></span><span>
 </span><span id="line-177"></span><span>
 </span><span id="line-178"></span><span class="hs-comment">-- | Role the key assumes</span><span>
 </span><span id="line-179"></span><span class="hs-comment">--</span><span>
@@ -242,7 +242,7 @@ Icarus depth key -&gt; Icarus depth key -&gt; Bool
 </span><span id="line-181"></span><span class="hs-keyword">data</span><span> </span><span id="Role"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-var">Role</span></a></span></span><span>
 </span><span id="line-182"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="UTxOExternal"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#UTxOExternal"><span class="hs-identifier hs-var">UTxOExternal</span></a></span></span><span>
 </span><span id="line-183"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="UTxOInternal"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#UTxOInternal"><span class="hs-identifier hs-var">UTxOInternal</span></a></span></span><span>
-</span><span id="line-184"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215762"><span id="local-6989586621679215764"><span class="annot"><span class="annottext">(forall x. Role -&gt; Rep Role x)
+</span><span id="line-184"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215922"><span id="local-6989586621679215924"><span class="annot"><span class="annottext">(forall x. Role -&gt; Rep Role x)
 -&gt; (forall x. Rep Role x -&gt; Role) -&gt; Generic Role
 forall x. Rep Role x -&gt; Role
 forall x. Role -&gt; Rep Role x
@@ -252,7 +252,7 @@ $cfrom :: forall x. Role -&gt; Rep Role x
 from :: forall x. Role -&gt; Rep Role x
 $cto :: forall x. Rep Role x -&gt; Role
 to :: forall x. Rep Role x -&gt; Role
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215767"><span id="local-6989586621679215769"><span id="local-6989586621679215773"><span class="annot"><span class="annottext">Int -&gt; Role -&gt; String -&gt; String
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215927"><span id="local-6989586621679215929"><span id="local-6989586621679215933"><span class="annot"><span class="annottext">Int -&gt; Role -&gt; String -&gt; String
 [Role] -&gt; String -&gt; String
 Role -&gt; String
 (Int -&gt; Role -&gt; String -&gt; String)
@@ -266,14 +266,14 @@ $cshow :: Role -&gt; String
 show :: Role -&gt; String
 $cshowList :: [Role] -&gt; String -&gt; String
 showList :: [Role] -&gt; String -&gt; String
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215776"><span id="local-6989586621679215778"><span class="annot"><span class="annottext">Role -&gt; Role -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215936"><span id="local-6989586621679215938"><span class="annot"><span class="annottext">Role -&gt; Role -&gt; Bool
 (Role -&gt; Role -&gt; Bool) -&gt; (Role -&gt; Role -&gt; Bool) -&gt; Eq Role
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 $c== :: Role -&gt; Role -&gt; Bool
 == :: Role -&gt; Role -&gt; Bool
 $c/= :: Role -&gt; Role -&gt; Bool
 /= :: Role -&gt; Role -&gt; Bool
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215784"><span id="local-6989586621679215786"><span id="local-6989586621679215788"><span id="local-6989586621679215792"><span id="local-6989586621679215795"><span id="local-6989586621679215798"><span id="local-6989586621679215801"><span class="annot"><span class="annottext">Eq Role
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215944"><span id="local-6989586621679215946"><span id="local-6989586621679215948"><span id="local-6989586621679215952"><span id="local-6989586621679215955"><span id="local-6989586621679215958"><span id="local-6989586621679215961"><span class="annot"><span class="annottext">Eq Role
 Eq Role =&gt;
 (Role -&gt; Role -&gt; Ordering)
 -&gt; (Role -&gt; Role -&gt; Bool)
@@ -310,7 +310,7 @@ $cmax :: Role -&gt; Role -&gt; Role
 max :: Role -&gt; Role -&gt; Role
 $cmin :: Role -&gt; Role -&gt; Role
 min :: Role -&gt; Role -&gt; Role
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215805"><span id="local-6989586621679215807"><span class="annot"><span class="annottext">Role
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215965"><span id="local-6989586621679215967"><span class="annot"><span class="annottext">Role
 Role -&gt; Role -&gt; Bounded Role
 forall a. a -&gt; a -&gt; Bounded a
 $cminBound :: Role
@@ -319,16 +319,16 @@ $cmaxBound :: Role
 maxBound :: Role
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-185"></span><span>
-</span><span id="line-186"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679215811"><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span></span><span>
+</span><span id="line-186"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679215971"><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-type">NFData</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span></span><span>
 </span><span id="line-187"></span><span>
-</span><span id="line-188"></span><span id="local-6989586621679215337"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#roleFromIndex"><span class="hs-identifier hs-type">roleFromIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215337"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span></span><span>
+</span><span id="line-188"></span><span id="local-6989586621679215497"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#roleFromIndex"><span class="hs-identifier hs-type">roleFromIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215497"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span></span><span>
 </span><span id="line-189"></span><span id="roleFromIndex"><span class="annot"><span class="annottext">roleFromIndex :: forall (depth :: Depth). Index 'Soft depth -&gt; Maybe Role
-</span><a href="Cardano.Address.Style.Icarus.html#roleFromIndex"><span class="hs-identifier hs-var hs-var">roleFromIndex</span></a></span></span><span> </span><span id="local-6989586621679215828"><span class="annot"><span class="annottext">Index 'Soft depth
-</span><a href="#local-6989586621679215828"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Index 'Soft depth -&gt; Word32
+</span><a href="Cardano.Address.Style.Icarus.html#roleFromIndex"><span class="hs-identifier hs-var hs-var">roleFromIndex</span></a></span></span><span> </span><span id="local-6989586621679215988"><span class="annot"><span class="annottext">Index 'Soft depth
+</span><a href="#local-6989586621679215988"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Index 'Soft depth -&gt; Word32
 forall (derivationType :: DerivationType) (depth :: Depth).
 Index derivationType depth -&gt; Word32
 </span><a href="Cardano.Address.Derivation.html#indexToWord32"><span class="hs-identifier hs-var">indexToWord32</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft depth
-</span><a href="#local-6989586621679215828"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679215988"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-190"></span><span>    </span><span class="annot"><span class="annottext">Word32
 </span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Role -&gt; Maybe Role
 forall a. a -&gt; Maybe a
@@ -344,7 +344,7 @@ forall a. a -&gt; Maybe a
 forall a. Maybe a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
 </span><span id="line-193"></span><span>
-</span><span id="line-194"></span><span id="local-6989586621679215343"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#roleToIndex"><span class="hs-identifier hs-type">roleToIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215343"><span class="hs-identifier hs-type">depth</span></a></span></span><span>
+</span><span id="line-194"></span><span id="local-6989586621679215503"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#roleToIndex"><span class="hs-identifier hs-type">roleToIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215503"><span class="hs-identifier hs-type">depth</span></a></span></span><span>
 </span><span id="line-195"></span><span id="roleToIndex"><span class="annot"><span class="annottext">roleToIndex :: forall (depth :: Depth). Role -&gt; Index 'Soft depth
 </span><a href="Cardano.Address.Style.Icarus.html#roleToIndex"><span class="hs-identifier hs-var hs-var">roleToIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Index 'Soft depth
 forall (ty :: DerivationType) (depth :: Depth).
@@ -402,17 +402,17 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span id="line-238"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#GenMasterKey"><span class="hs-identifier hs-type">Internal.GenMasterKey</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-239"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="SecondFactor"><span class="annot"><a href="Cardano.Address.Derivation.html#SecondFactor"><span class="hs-identifier hs-var">SecondFactor</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ScrubbedBytes</span></span><span>
 </span><span id="line-240"></span><span>
-</span><span id="line-241"></span><span>    </span><span id="local-6989586621679215837"><span class="annot"><span class="annottext">genMasterKeyFromXPrv :: XPrv -&gt; Icarus 'RootK XPrv
-</span><a href="#local-6989586621679215837"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'RootK XPrv
+</span><span id="line-241"></span><span>    </span><span id="local-6989586621679215997"><span class="annot"><span class="annottext">genMasterKeyFromXPrv :: XPrv -&gt; Icarus 'RootK XPrv
+</span><a href="#local-6989586621679215997"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'RootK XPrv
 forall (depth :: Depth). XPrv -&gt; Icarus depth XPrv
 </span><a href="Cardano.Address.Style.Icarus.html#liftXPrv"><span class="hs-identifier hs-var">liftXPrv</span></a></span><span>
-</span><span id="line-242"></span><span>    </span><span id="local-6989586621679215839"><span class="annot"><span class="annottext">genMasterKeyFromMnemonic :: SomeMnemonic -&gt; SecondFactor Icarus -&gt; Icarus 'RootK XPrv
-</span><a href="#local-6989586621679215839"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromMnemonic</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a></span><span> </span><span id="local-6989586621679215853"><span class="annot"><span class="annottext">Mnemonic mw
-</span><a href="#local-6989586621679215853"><span class="hs-identifier hs-var">mw</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215854"><span class="annot"><span class="annottext">SecondFactor Icarus
-</span><a href="#local-6989586621679215854"><span class="hs-identifier hs-var">sndFactor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-242"></span><span>    </span><span id="local-6989586621679215999"><span class="annot"><span class="annottext">genMasterKeyFromMnemonic :: SomeMnemonic -&gt; SecondFactor Icarus -&gt; Icarus 'RootK XPrv
+</span><a href="#local-6989586621679215999"><span class="hs-identifier hs-var hs-var hs-var hs-var">genMasterKeyFromMnemonic</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a></span><span> </span><span id="local-6989586621679216013"><span class="annot"><span class="annottext">Mnemonic mw
+</span><a href="#local-6989586621679216013"><span class="hs-identifier hs-var">mw</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679216014"><span class="annot"><span class="annottext">SecondFactor Icarus
+</span><a href="#local-6989586621679216014"><span class="hs-identifier hs-var">sndFactor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-243"></span><span>        </span><span class="hs-keyword">let</span><span>
-</span><span id="line-244"></span><span>            </span><span id="local-6989586621679215855"><span class="annot"><span class="annottext">seed :: ScrubbedBytes
-</span><a href="#local-6989586621679215855"><span class="hs-identifier hs-var hs-var">seed</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Entropy (EntropySize mw) -&gt; ScrubbedBytes
+</span><span id="line-244"></span><span>            </span><span id="local-6989586621679216015"><span class="annot"><span class="annottext">seed :: ScrubbedBytes
+</span><a href="#local-6989586621679216015"><span class="hs-identifier hs-var hs-var">seed</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Entropy (EntropySize mw) -&gt; ScrubbedBytes
 forall (n :: Nat). Entropy n -&gt; ScrubbedBytes
 </span><a href="Cardano.Mnemonic.html#entropyToBytes"><span class="hs-identifier hs-var">entropyToBytes</span></a></span><span> </span><span class="annot"><span class="annottext">(Entropy (EntropySize mw) -&gt; ScrubbedBytes)
 -&gt; Entropy (EntropySize mw) -&gt; ScrubbedBytes
@@ -420,27 +420,27 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Mnemonic mw -&gt; Entropy (EntropySize mw)
 forall (mw :: Nat). Mnemonic mw -&gt; Entropy (EntropySize mw)
 </span><a href="Cardano.Mnemonic.html#mnemonicToEntropy"><span class="hs-identifier hs-var">mnemonicToEntropy</span></a></span><span> </span><span class="annot"><span class="annottext">Mnemonic mw
-</span><a href="#local-6989586621679215853"><span class="hs-identifier hs-var">mw</span></a></span><span>
-</span><span id="line-245"></span><span>            </span><span id="local-6989586621679215856"><span class="annot"><span class="annottext">seedValidated :: ScrubbedBytes
-</span><a href="#local-6989586621679215856"><span class="hs-identifier hs-var hs-var">seedValidated</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ScrubbedBytes -&gt; ScrubbedBytes
+</span><a href="#local-6989586621679216013"><span class="hs-identifier hs-var">mw</span></a></span><span>
+</span><span id="line-245"></span><span>            </span><span id="local-6989586621679216016"><span class="annot"><span class="annottext">seedValidated :: ScrubbedBytes
+</span><a href="#local-6989586621679216016"><span class="hs-identifier hs-var hs-var">seedValidated</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ScrubbedBytes -&gt; ScrubbedBytes
 forall a. HasCallStack =&gt; Bool -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#assert"><span class="hs-identifier hs-var hs-var">assert</span></a></span><span>
 </span><span id="line-246"></span><span>                </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; Int
 forall ba. ByteArrayAccess ba =&gt; ba -&gt; Int
 </span><span class="hs-identifier hs-var">BA.length</span></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
-</span><a href="#local-6989586621679215855"><span class="hs-identifier hs-var">seed</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679216015"><span class="hs-identifier hs-var">seed</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><a href="Cardano.Address.Style.Icarus.html#minSeedLengthBytes"><span class="hs-identifier hs-var">minSeedLengthBytes</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; Int
 forall ba. ByteArrayAccess ba =&gt; ba -&gt; Int
 </span><span class="hs-identifier hs-var">BA.length</span></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
-</span><a href="#local-6989586621679215855"><span class="hs-identifier hs-var">seed</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679216015"><span class="hs-identifier hs-var">seed</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">255</span></span><span class="hs-special">)</span><span>
 </span><span id="line-247"></span><span>                </span><span class="annot"><span class="annottext">ScrubbedBytes
-</span><a href="#local-6989586621679215855"><span class="hs-identifier hs-var">seed</span></a></span><span>
+</span><a href="#local-6989586621679216015"><span class="hs-identifier hs-var">seed</span></a></span><span>
 </span><span id="line-248"></span><span>        </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'RootK XPrv
 forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">(XPrv -&gt; Icarus 'RootK XPrv) -&gt; XPrv -&gt; Icarus 'RootK XPrv
@@ -450,149 +450,149 @@ forall seed sndFactor.
 (ByteArrayAccess seed, ByteArrayAccess sndFactor) =&gt;
 seed -&gt; sndFactor -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#generateNew"><span class="hs-identifier hs-var">generateNew</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
-</span><a href="#local-6989586621679215856"><span class="hs-identifier hs-var">seedValidated</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
+</span><a href="#local-6989586621679216016"><span class="hs-identifier hs-var">seedValidated</span></a></span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes
 SecondFactor Icarus
-</span><a href="#local-6989586621679215854"><span class="hs-identifier hs-var">sndFactor</span></a></span><span>
+</span><a href="#local-6989586621679216014"><span class="hs-identifier hs-var">sndFactor</span></a></span><span>
 </span><span id="line-249"></span><span>
 </span><span id="line-250"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#HardDerivation"><span class="hs-identifier hs-type">Internal.HardDerivation</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-251"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="AccountIndexDerivationType"><span class="annot"><a href="Cardano.Address.Derivation.html#AccountIndexDerivationType"><span class="hs-identifier hs-var">AccountIndexDerivationType</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a></span><span>
 </span><span id="line-252"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="AddressIndexDerivationType"><span class="annot"><a href="Cardano.Address.Derivation.html#AddressIndexDerivationType"><span class="hs-identifier hs-var">AddressIndexDerivationType</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Soft"><span class="hs-identifier hs-type">Soft</span></a></span><span>
 </span><span id="line-253"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="WithRole"><span class="annot"><a href="Cardano.Address.Derivation.html#WithRole"><span class="hs-identifier hs-var">WithRole</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Role"><span class="hs-identifier hs-type">Role</span></a></span><span>
 </span><span id="line-254"></span><span>
-</span><span id="line-255"></span><span>    </span><span id="local-6989586621679215863"><span class="annot"><span class="annottext">deriveAccountPrivateKey :: Icarus 'RootK XPrv
+</span><span id="line-255"></span><span>    </span><span id="local-6989586621679216023"><span class="annot"><span class="annottext">deriveAccountPrivateKey :: Icarus 'RootK XPrv
 -&gt; Index (AccountIndexDerivationType Icarus) 'AccountK
 -&gt; Icarus 'AccountK XPrv
-</span><a href="#local-6989586621679215863"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAccountPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679215865"><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215865"><span class="hs-identifier hs-var">rootXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215866"><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Icarus) 'AccountK
-</span><a href="#local-6989586621679215866"><span class="hs-identifier hs-var">accIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679216023"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAccountPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679216025"><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679216025"><span class="hs-identifier hs-var">rootXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679216026"><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Icarus) 'AccountK
+</span><a href="#local-6989586621679216026"><span class="hs-identifier hs-var">accIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-256"></span><span>        </span><span class="hs-keyword">let</span><span>
-</span><span id="line-257"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679215870"><span class="annot"><span class="annottext">Index 'Hardened depth
-</span><a href="#local-6989586621679215870"><span class="hs-identifier hs-var">purposeIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-257"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679216030"><span class="annot"><span class="annottext">Index 'Hardened depth
+</span><a href="#local-6989586621679216030"><span class="hs-identifier hs-var">purposeIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-258"></span><span>                </span><span class="annot"><span class="annottext">forall ix (derivationType :: DerivationType) (depth :: Depth).
 (ix ~ Index derivationType depth, Bounded ix) =&gt;
 Word32 -&gt; Maybe ix
 </span><a href="Cardano.Address.Derivation.html#indexFromWord32"><span class="hs-identifier hs-var">indexFromWord32</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word32
 </span><a href="Cardano.Address.Style.Icarus.html#purposeIndex"><span class="hs-identifier hs-var">purposeIndex</span></a></span><span>
-</span><span id="line-259"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679215874"><span class="annot"><span class="annottext">Index 'Hardened depth
-</span><a href="#local-6989586621679215874"><span class="hs-identifier hs-var">coinTypeIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-259"></span><span>            </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679216034"><span class="annot"><span class="annottext">Index 'Hardened depth
+</span><a href="#local-6989586621679216034"><span class="hs-identifier hs-var">coinTypeIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-260"></span><span>                </span><span class="annot"><span class="annottext">forall ix (derivationType :: DerivationType) (depth :: Depth).
 (ix ~ Index derivationType depth, Bounded ix) =&gt;
 Word32 -&gt; Maybe ix
 </span><a href="Cardano.Address.Derivation.html#indexFromWord32"><span class="hs-identifier hs-var">indexFromWord32</span></a></span><span> </span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Derivation.html#Index"><span class="hs-identifier hs-type">Index</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#Hardened"><span class="hs-identifier hs-type">Hardened</span></a></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word32
 </span><a href="Cardano.Address.Style.Icarus.html#coinTypeIndex"><span class="hs-identifier hs-var">coinTypeIndex</span></a></span><span>
-</span><span id="line-261"></span><span>            </span><span id="local-6989586621679215876"><span class="annot"><span class="annottext">purposeXPrv :: XPrv
-</span><a href="#local-6989586621679215876"><span class="hs-identifier hs-var hs-var">purposeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl1 derivation; hardened derivation of purpose'</span><span>
+</span><span id="line-261"></span><span>            </span><span id="local-6989586621679216036"><span class="annot"><span class="annottext">purposeXPrv :: XPrv
+</span><a href="#local-6989586621679216036"><span class="hs-identifier hs-var hs-var">purposeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl1 derivation; hardened derivation of purpose'</span><span>
 </span><span id="line-262"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPrv -&gt; Index 'Hardened Any -&gt; XPrv
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme -&gt; XPrv -&gt; Index derivationType depth -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#deriveXPrv"><span class="hs-identifier hs-var">deriveXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215865"><span class="hs-identifier hs-var">rootXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Hardened Any
+</span><a href="#local-6989586621679216025"><span class="hs-identifier hs-var">rootXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Hardened Any
 forall {depth :: Depth}. Index 'Hardened depth
-</span><a href="#local-6989586621679215870"><span class="hs-identifier hs-var">purposeIx</span></a></span><span>
-</span><span id="line-263"></span><span>            </span><span id="local-6989586621679215878"><span class="annot"><span class="annottext">coinTypeXPrv :: XPrv
-</span><a href="#local-6989586621679215878"><span class="hs-identifier hs-var hs-var">coinTypeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl2 derivation; hardened derivation of coin_type'</span><span>
+</span><a href="#local-6989586621679216030"><span class="hs-identifier hs-var">purposeIx</span></a></span><span>
+</span><span id="line-263"></span><span>            </span><span id="local-6989586621679216038"><span class="annot"><span class="annottext">coinTypeXPrv :: XPrv
+</span><a href="#local-6989586621679216038"><span class="hs-identifier hs-var hs-var">coinTypeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl2 derivation; hardened derivation of coin_type'</span><span>
 </span><span id="line-264"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPrv -&gt; Index 'Hardened Any -&gt; XPrv
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme -&gt; XPrv -&gt; Index derivationType depth -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#deriveXPrv"><span class="hs-identifier hs-var">deriveXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215876"><span class="hs-identifier hs-var">purposeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Hardened Any
+</span><a href="#local-6989586621679216036"><span class="hs-identifier hs-var">purposeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Hardened Any
 forall {depth :: Depth}. Index 'Hardened depth
-</span><a href="#local-6989586621679215874"><span class="hs-identifier hs-var">coinTypeIx</span></a></span><span>
-</span><span id="line-265"></span><span>            </span><span id="local-6989586621679215879"><span class="annot"><span class="annottext">acctXPrv :: XPrv
-</span><a href="#local-6989586621679215879"><span class="hs-identifier hs-var hs-var">acctXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl3 derivation; hardened derivation of account' index</span><span>
+</span><a href="#local-6989586621679216034"><span class="hs-identifier hs-var">coinTypeIx</span></a></span><span>
+</span><span id="line-265"></span><span>            </span><span id="local-6989586621679216039"><span class="annot"><span class="annottext">acctXPrv :: XPrv
+</span><a href="#local-6989586621679216039"><span class="hs-identifier hs-var hs-var">acctXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl3 derivation; hardened derivation of account' index</span><span>
 </span><span id="line-266"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPrv -&gt; Index 'Hardened 'AccountK -&gt; XPrv
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme -&gt; XPrv -&gt; Index derivationType depth -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#deriveXPrv"><span class="hs-identifier hs-var">deriveXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215878"><span class="hs-identifier hs-var">coinTypeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Icarus) 'AccountK
+</span><a href="#local-6989586621679216038"><span class="hs-identifier hs-var">coinTypeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AccountIndexDerivationType Icarus) 'AccountK
 Index 'Hardened 'AccountK
-</span><a href="#local-6989586621679215866"><span class="hs-identifier hs-var">accIx</span></a></span><span>
+</span><a href="#local-6989586621679216026"><span class="hs-identifier hs-var">accIx</span></a></span><span>
 </span><span id="line-267"></span><span>        </span><span class="hs-keyword">in</span><span>
 </span><span id="line-268"></span><span>            </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'AccountK XPrv
 forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215879"><span class="hs-identifier hs-var">acctXPrv</span></a></span><span>
+</span><a href="#local-6989586621679216039"><span class="hs-identifier hs-var">acctXPrv</span></a></span><span>
 </span><span id="line-269"></span><span>
-</span><span id="line-270"></span><span>    </span><span id="local-6989586621679215880"><span class="annot"><span class="annottext">deriveAddressPrivateKey :: Icarus 'AccountK XPrv
+</span><span id="line-270"></span><span>    </span><span id="local-6989586621679216040"><span class="annot"><span class="annottext">deriveAddressPrivateKey :: Icarus 'AccountK XPrv
 -&gt; WithRole Icarus
 -&gt; Index (AddressIndexDerivationType Icarus) 'PaymentK
 -&gt; Icarus 'PaymentK XPrv
-</span><a href="#local-6989586621679215880"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679215882"><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215882"><span class="hs-identifier hs-var">accXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215883"><span class="annot"><span class="annottext">WithRole Icarus
-</span><a href="#local-6989586621679215883"><span class="hs-keyword hs-var">role</span></a></span></span><span> </span><span id="local-6989586621679215884"><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Icarus) 'PaymentK
-</span><a href="#local-6989586621679215884"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679216040"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPrivateKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679216042"><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679216042"><span class="hs-identifier hs-var">accXPrv</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679216043"><span class="annot"><span class="annottext">WithRole Icarus
+</span><a href="#local-6989586621679216043"><span class="hs-keyword hs-var">role</span></a></span></span><span> </span><span id="local-6989586621679216044"><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Icarus) 'PaymentK
+</span><a href="#local-6989586621679216044"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-271"></span><span>        </span><span class="hs-keyword">let</span><span>
-</span><span id="line-272"></span><span>            </span><span id="local-6989586621679215885"><span class="annot"><span class="annottext">changeXPrv :: XPrv
-</span><a href="#local-6989586621679215885"><span class="hs-identifier hs-var hs-var">changeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl4 derivation; soft derivation of change chain</span><span>
+</span><span id="line-272"></span><span>            </span><span id="local-6989586621679216045"><span class="annot"><span class="annottext">changeXPrv :: XPrv
+</span><a href="#local-6989586621679216045"><span class="hs-identifier hs-var hs-var">changeXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl4 derivation; soft derivation of change chain</span><span>
 </span><span id="line-273"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPrv -&gt; Index 'Soft Any -&gt; XPrv
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme -&gt; XPrv -&gt; Index derivationType depth -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#deriveXPrv"><span class="hs-identifier hs-var">deriveXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215882"><span class="hs-identifier hs-var">accXPrv</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Role -&gt; Index 'Soft Any
+</span><a href="#local-6989586621679216042"><span class="hs-identifier hs-var">accXPrv</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Role -&gt; Index 'Soft Any
 forall (depth :: Depth). Role -&gt; Index 'Soft depth
 </span><a href="Cardano.Address.Style.Icarus.html#roleToIndex"><span class="hs-identifier hs-var">roleToIndex</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Icarus
 Role
-</span><a href="#local-6989586621679215883"><span class="hs-keyword hs-var">role</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-274"></span><span>            </span><span id="local-6989586621679215886"><span class="annot"><span class="annottext">addrXPrv :: XPrv
-</span><a href="#local-6989586621679215886"><span class="hs-identifier hs-var hs-var">addrXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl5 derivation; soft derivation of address index</span><span>
+</span><a href="#local-6989586621679216043"><span class="hs-keyword hs-var">role</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-274"></span><span>            </span><span id="local-6989586621679216046"><span class="annot"><span class="annottext">addrXPrv :: XPrv
+</span><a href="#local-6989586621679216046"><span class="hs-identifier hs-var hs-var">addrXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- lvl5 derivation; soft derivation of address index</span><span>
 </span><span id="line-275"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPrv -&gt; Index 'Soft 'PaymentK -&gt; XPrv
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme -&gt; XPrv -&gt; Index derivationType depth -&gt; XPrv
 </span><a href="Cardano.Address.Derivation.html#deriveXPrv"><span class="hs-identifier hs-var">deriveXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215885"><span class="hs-identifier hs-var">changeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Icarus) 'PaymentK
+</span><a href="#local-6989586621679216045"><span class="hs-identifier hs-var">changeXPrv</span></a></span><span> </span><span class="annot"><span class="annottext">Index (AddressIndexDerivationType Icarus) 'PaymentK
 Index 'Soft 'PaymentK
-</span><a href="#local-6989586621679215884"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><a href="#local-6989586621679216044"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
 </span><span id="line-276"></span><span>        </span><span class="hs-keyword">in</span><span>
 </span><span id="line-277"></span><span>            </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'PaymentK XPrv
 forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679215886"><span class="hs-identifier hs-var">addrXPrv</span></a></span><span>
+</span><a href="#local-6989586621679216046"><span class="hs-identifier hs-var">addrXPrv</span></a></span><span>
 </span><span id="line-278"></span><span>
 </span><span id="line-279"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.Derivation.html#SoftDerivation"><span class="hs-identifier hs-type">Internal.SoftDerivation</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-280"></span><span>    </span><span id="local-6989586621679215903"><span class="annot"><span class="annottext">deriveAddressPublicKey :: Icarus 'AccountK XPub
+</span><span id="line-280"></span><span>    </span><span id="local-6989586621679216063"><span class="annot"><span class="annottext">deriveAddressPublicKey :: Icarus 'AccountK XPub
 -&gt; WithRole Icarus
 -&gt; Index 'Soft 'PaymentK
 -&gt; Icarus 'PaymentK XPub
-</span><a href="#local-6989586621679215903"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPublicKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679215905"><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215905"><span class="hs-identifier hs-var">accXPub</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679215906"><span class="annot"><span class="annottext">WithRole Icarus
-</span><a href="#local-6989586621679215906"><span class="hs-keyword hs-var">role</span></a></span></span><span> </span><span id="local-6989586621679215907"><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
-</span><a href="#local-6989586621679215907"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679216063"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveAddressPublicKey</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span id="local-6989586621679216065"><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679216065"><span class="hs-identifier hs-var">accXPub</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679216066"><span class="annot"><span class="annottext">WithRole Icarus
+</span><a href="#local-6989586621679216066"><span class="hs-keyword hs-var">role</span></a></span></span><span> </span><span id="local-6989586621679216067"><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
+</span><a href="#local-6989586621679216067"><span class="hs-identifier hs-var">addrIx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-281"></span><span>        </span><span class="annot"><span class="annottext">Icarus 'PaymentK XPub
 -&gt; Maybe (Icarus 'PaymentK XPub) -&gt; Icarus 'PaymentK XPub
 forall a. a -&gt; Maybe a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Maybe.html#fromMaybe"><span class="hs-identifier hs-var">fromMaybe</span></a></span><span> </span><span class="annot"><span class="annottext">Icarus 'PaymentK XPub
-</span><a href="#local-6989586621679215908"><span class="hs-identifier hs-var">errWrongIndex</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe (Icarus 'PaymentK XPub) -&gt; Icarus 'PaymentK XPub)
+</span><a href="#local-6989586621679216068"><span class="hs-identifier hs-var">errWrongIndex</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe (Icarus 'PaymentK XPub) -&gt; Icarus 'PaymentK XPub)
 -&gt; Maybe (Icarus 'PaymentK XPub) -&gt; Icarus 'PaymentK XPub
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-282"></span><span>            </span><span id="local-6989586621679215909"><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215909"><span class="hs-identifier hs-var">changeXPub</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-comment">-- lvl4 derivation in bip44 is derivation of change chain</span><span>
+</span><span id="line-282"></span><span>            </span><span id="local-6989586621679216069"><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679216069"><span class="hs-identifier hs-var">changeXPub</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-comment">-- lvl4 derivation in bip44 is derivation of change chain</span><span>
 </span><span id="line-283"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPub -&gt; Index 'Soft Any -&gt; Maybe XPub
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme
 -&gt; XPub -&gt; Index derivationType depth -&gt; Maybe XPub
 </span><a href="Cardano.Address.Derivation.html#deriveXPub"><span class="hs-identifier hs-var">deriveXPub</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215905"><span class="hs-identifier hs-var">accXPub</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Role -&gt; Index 'Soft Any
+</span><a href="#local-6989586621679216065"><span class="hs-identifier hs-var">accXPub</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Role -&gt; Index 'Soft Any
 forall (depth :: Depth). Role -&gt; Index 'Soft depth
 </span><a href="Cardano.Address.Style.Icarus.html#roleToIndex"><span class="hs-identifier hs-var">roleToIndex</span></a></span><span> </span><span class="annot"><span class="annottext">WithRole Icarus
 Role
-</span><a href="#local-6989586621679215906"><span class="hs-keyword hs-var">role</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-284"></span><span>            </span><span id="local-6989586621679215910"><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215910"><span class="hs-identifier hs-var">addrXPub</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-comment">-- lvl5 derivation in bip44 is derivation of address chain</span><span>
+</span><a href="#local-6989586621679216066"><span class="hs-keyword hs-var">role</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-284"></span><span>            </span><span id="local-6989586621679216070"><span class="annot"><span class="annottext">XPub
+</span><a href="#local-6989586621679216070"><span class="hs-identifier hs-var">addrXPub</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-comment">-- lvl5 derivation in bip44 is derivation of address chain</span><span>
 </span><span id="line-285"></span><span>                </span><span class="annot"><span class="annottext">DerivationScheme -&gt; XPub -&gt; Index 'Soft 'PaymentK -&gt; Maybe XPub
 forall (derivationType :: DerivationType) (depth :: Depth).
 DerivationScheme
 -&gt; XPub -&gt; Index derivationType depth -&gt; Maybe XPub
 </span><a href="Cardano.Address.Derivation.html#deriveXPub"><span class="hs-identifier hs-var">deriveXPub</span></a></span><span> </span><span class="annot"><span class="annottext">DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span><span> </span><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215909"><span class="hs-identifier hs-var">changeXPub</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
-</span><a href="#local-6989586621679215907"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
+</span><a href="#local-6989586621679216069"><span class="hs-identifier hs-var">changeXPub</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
+</span><a href="#local-6989586621679216067"><span class="hs-identifier hs-var">addrIx</span></a></span><span>
 </span><span id="line-286"></span><span>            </span><span class="annot"><span class="annottext">Icarus 'PaymentK XPub -&gt; Maybe (Icarus 'PaymentK XPub)
 forall a. a -&gt; Maybe a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -602,10 +602,10 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Icarus 'PaymentK XPub
 forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">XPub
-</span><a href="#local-6989586621679215910"><span class="hs-identifier hs-var">addrXPub</span></a></span><span>
+</span><a href="#local-6989586621679216070"><span class="hs-identifier hs-var">addrXPub</span></a></span><span>
 </span><span id="line-287"></span><span>      </span><span class="hs-keyword">where</span><span>
-</span><span id="line-288"></span><span>        </span><span id="local-6989586621679215908"><span class="annot"><span class="annottext">errWrongIndex :: Icarus 'PaymentK XPub
-</span><a href="#local-6989586621679215908"><span class="hs-identifier hs-var hs-var">errWrongIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Icarus 'PaymentK XPub
+</span><span id="line-288"></span><span>        </span><span id="local-6989586621679216068"><span class="annot"><span class="annottext">errWrongIndex :: Icarus 'PaymentK XPub
+</span><a href="#local-6989586621679216068"><span class="hs-identifier hs-var hs-var">errWrongIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Icarus 'PaymentK XPub
 forall a. HasCallStack =&gt; String -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Err.html#error"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Icarus 'PaymentK XPub)
 -&gt; String -&gt; Icarus 'PaymentK XPub
@@ -618,7 +618,7 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft 'PaymentK -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">Index 'Soft 'PaymentK
-</span><a href="#local-6989586621679215907"><span class="hs-identifier hs-var">addrIx</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+</span><a href="#local-6989586621679216067"><span class="hs-identifier hs-var">addrIx</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;). This is \
@@ -745,7 +745,7 @@ key 'AccountK XPub
 </span><span id="line-362"></span><span class="hs-keyword">data</span><span> </span><span id="ErrInspectAddress"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#ErrInspectAddress"><span class="hs-identifier hs-var">ErrInspectAddress</span></a></span></span><span>
 </span><span id="line-363"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="UnexpectedDerivationPath"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#UnexpectedDerivationPath"><span class="hs-identifier hs-var">UnexpectedDerivationPath</span></a></span></span><span>
 </span><span id="line-364"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="DeserialiseError"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#DeserialiseError"><span class="hs-identifier hs-var">DeserialiseError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">DeserialiseFailure</span></span><span>
-</span><span id="line-365"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679215916"><span id="local-6989586621679215918"><span class="annot"><span class="annottext">(forall x. ErrInspectAddress -&gt; Rep ErrInspectAddress x)
+</span><span id="line-365"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679216076"><span id="local-6989586621679216078"><span class="annot"><span class="annottext">(forall x. ErrInspectAddress -&gt; Rep ErrInspectAddress x)
 -&gt; (forall x. Rep ErrInspectAddress x -&gt; ErrInspectAddress)
 -&gt; Generic ErrInspectAddress
 forall x. Rep ErrInspectAddress x -&gt; ErrInspectAddress
@@ -756,7 +756,7 @@ $cfrom :: forall x. ErrInspectAddress -&gt; Rep ErrInspectAddress x
 from :: forall x. ErrInspectAddress -&gt; Rep ErrInspectAddress x
 $cto :: forall x. Rep ErrInspectAddress x -&gt; ErrInspectAddress
 to :: forall x. Rep ErrInspectAddress x -&gt; ErrInspectAddress
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215921"><span id="local-6989586621679215925"><span id="local-6989586621679215929"><span class="annot"><span class="annottext">Int -&gt; ErrInspectAddress -&gt; String -&gt; String
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216081"><span id="local-6989586621679216085"><span id="local-6989586621679216089"><span class="annot"><span class="annottext">Int -&gt; ErrInspectAddress -&gt; String -&gt; String
 [ErrInspectAddress] -&gt; String -&gt; String
 ErrInspectAddress -&gt; String
 (Int -&gt; ErrInspectAddress -&gt; String -&gt; String)
@@ -772,7 +772,7 @@ $cshow :: ErrInspectAddress -&gt; String
 show :: ErrInspectAddress -&gt; String
 $cshowList :: [ErrInspectAddress] -&gt; String -&gt; String
 showList :: [ErrInspectAddress] -&gt; String -&gt; String
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679215932"><span id="local-6989586621679215936"><span class="annot"><span class="annottext">ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216092"><span id="local-6989586621679216096"><span class="annot"><span class="annottext">ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool
 (ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool)
 -&gt; (ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool)
 -&gt; Eq ErrInspectAddress
@@ -782,7 +782,7 @@ $c== :: ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool
 $c/= :: ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool
 /= :: ErrInspectAddress -&gt; ErrInspectAddress -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-366"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679215940"><span id="local-6989586621679215948"><span id="local-6989586621679215955"><span id="local-6989586621679215962"><span id="local-6989586621679215969"><span class="annot"><span class="annottext">[ErrInspectAddress] -&gt; Encoding
+</span><span id="line-366"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679216100"><span id="local-6989586621679216108"><span id="local-6989586621679216115"><span id="local-6989586621679216122"><span id="local-6989586621679216129"><span class="annot"><span class="annottext">[ErrInspectAddress] -&gt; Encoding
 [ErrInspectAddress] -&gt; Value
 ErrInspectAddress -&gt; Bool
 ErrInspectAddress -&gt; Encoding
@@ -812,8 +812,8 @@ $comitField :: ErrInspectAddress -&gt; Bool
 omitField :: ErrInspectAddress -&gt; Bool
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span> </span><span class="hs-keyword">via</span><span> </span><span class="annot"><a href="Cardano.Address.Internal.html#WithErrorMessage"><span class="hs-identifier hs-type">WithErrorMessage</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#ErrInspectAddress"><span class="hs-identifier hs-type">ErrInspectAddress</span></a></span><span>
 </span><span id="line-367"></span><span>
-</span><span id="line-368"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679216284"><span id="local-6989586621679216287"><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Exception.Type.html#Exception"><span class="hs-identifier hs-type">Exception</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#ErrInspectAddress"><span class="hs-identifier hs-type">ErrInspectAddress</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-369"></span><span>  </span><span id="local-6989586621679216291"><span class="annot"><span class="annottext">displayException :: ErrInspectAddress -&gt; String
+</span><span id="line-368"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679216444"><span id="local-6989586621679216447"><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Exception.Type.html#Exception"><span class="hs-identifier hs-type">Exception</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#ErrInspectAddress"><span class="hs-identifier hs-type">ErrInspectAddress</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-369"></span><span>  </span><span id="local-6989586621679216451"><span class="annot"><span class="annottext">displayException :: ErrInspectAddress -&gt; String
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Exception.Type.html#displayException"><span class="hs-identifier hs-var hs-var hs-var hs-var">displayException</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ErrInspectAddress -&gt; String
 </span><a href="Cardano.Address.Style.Icarus.html#prettyErrInspectAddress"><span class="hs-identifier hs-var">prettyErrInspectAddress</span></a></span><span>
 </span><span id="line-370"></span><span>
@@ -827,15 +827,15 @@ omitField :: ErrInspectAddress -&gt; Bool
 </span><a href="Cardano.Address.Style.Icarus.html#UnexpectedDerivationPath"><span class="hs-identifier hs-var">UnexpectedDerivationPath</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-377"></span><span>        </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;Unexpected derivation path&quot;</span></span><span>
-</span><span id="line-378"></span><span>    </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#DeserialiseError"><span class="hs-identifier hs-type">DeserialiseError</span></a></span><span> </span><span id="local-6989586621679216292"><span class="annot"><span class="annottext">DeserialiseFailure
-</span><a href="#local-6989586621679216292"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-378"></span><span>    </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#DeserialiseError"><span class="hs-identifier hs-type">DeserialiseError</span></a></span><span> </span><span id="local-6989586621679216452"><span class="annot"><span class="annottext">DeserialiseFailure
+</span><a href="#local-6989586621679216452"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-379"></span><span>        </span><span class="annot"><span class="annottext">Format -&gt; String -&gt; String
 forall r. (HasCallStack, FormatType r) =&gt; Format -&gt; r
 </span><span class="hs-identifier hs-var">format</span></span><span> </span><span class="annot"><span class="annottext">Format
 </span><span class="hs-string">&quot;Deserialisation error (was: {})&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">DeserialiseFailure -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">DeserialiseFailure
-</span><a href="#local-6989586621679216292"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679216452"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-380"></span><span>
 </span><span id="line-381"></span><span class="hs-comment">-- | Determines whether an 'Address' is an Icarus address.</span><span>
 </span><span id="line-382"></span><span class="hs-comment">--</span><span>
@@ -843,7 +843,7 @@ forall a. Show a =&gt; a -&gt; String
 </span><span id="line-384"></span><span class="hs-comment">-- 'ErrInspectAddress' if the address isn't an icarus address.</span><span>
 </span><span id="line-385"></span><span class="hs-comment">--</span><span>
 </span><span id="line-386"></span><span class="hs-comment">-- @since 2.0.0</span><span>
-</span><span id="line-387"></span><span id="local-6989586621679215519"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#inspectIcarusAddress"><span class="hs-identifier hs-type">inspectIcarusAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/exceptions-0.10.7/src/Control.Monad.Catch.html#MonadThrow"><span class="hs-identifier hs-type">MonadThrow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215519"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679215519"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
+</span><span id="line-387"></span><span id="local-6989586621679215679"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#inspectIcarusAddress"><span class="hs-identifier hs-type">inspectIcarusAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/exceptions-0.10.7/src/Control.Monad.Catch.html#MonadThrow"><span class="hs-identifier hs-type">MonadThrow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215679"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679215679"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
 </span><span id="line-388"></span><span id="inspectIcarusAddress"><span class="annot"><span class="annottext">inspectIcarusAddress :: forall (m :: * -&gt; *). MonadThrow m =&gt; Address -&gt; m Value
 </span><a href="Cardano.Address.Style.Icarus.html#inspectIcarusAddress"><span class="hs-identifier hs-var hs-var">inspectIcarusAddress</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Address -&gt; m Value
 forall (m :: * -&gt; *). MonadThrow m =&gt; Address -&gt; m Value
@@ -908,7 +908,7 @@ forall (m :: * -&gt; *). MonadThrow m =&gt; Address -&gt; m Value
 </span><span id="line-446"></span><span class="hs-comment">-- Returns a JSON object with information about the address, or throws</span><span>
 </span><span id="line-447"></span><span class="hs-comment">-- 'ErrInspectAddress' if the address isn't an icarus address.</span><span>
 </span><span id="line-448"></span><span class="hs-comment">-- @since 2.0.0</span><span>
-</span><span id="line-449"></span><span id="local-6989586621679216295"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#inspectAddress"><span class="hs-identifier hs-type">inspectAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/exceptions-0.10.7/src/Control.Monad.Catch.html#MonadThrow"><span class="hs-identifier hs-type">MonadThrow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679216295"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679216295"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
+</span><span id="line-449"></span><span id="local-6989586621679216455"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#inspectAddress"><span class="hs-identifier hs-type">inspectAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/exceptions-0.10.7/src/Control.Monad.Catch.html#MonadThrow"><span class="hs-identifier hs-type">MonadThrow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679216455"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679216455"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Json.Value</span></span></span><span>
 </span><span id="line-450"></span><span id="inspectAddress"><span class="annot"><span class="annottext">inspectAddress :: forall (m :: * -&gt; *). MonadThrow m =&gt; Address -&gt; m Value
 </span><a href="Cardano.Address.Style.Icarus.html#inspectAddress"><span class="hs-identifier hs-var hs-var">inspectAddress</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ErrInspectAddress -&gt; m Value)
 -&gt; (AddressInfo -&gt; m Value)
@@ -944,10 +944,10 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span id="line-457"></span><span class="hs-comment">-- @since 3.4.0</span><span>
 </span><span id="line-458"></span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#eitherInspectAddress"><span class="hs-identifier hs-type">eitherInspectAddress</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.html#Address"><span class="hs-identifier hs-type">Address</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#ErrInspectAddress"><span class="hs-identifier hs-type">ErrInspectAddress</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span><span>
 </span><span id="line-459"></span><span id="eitherInspectAddress"><span class="annot"><span class="annottext">eitherInspectAddress :: Address -&gt; Either ErrInspectAddress AddressInfo
-</span><a href="Cardano.Address.Style.Icarus.html#eitherInspectAddress"><span class="hs-identifier hs-var hs-var">eitherInspectAddress</span></a></span></span><span> </span><span id="local-6989586621679216310"><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679216310"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-460"></span><span>    </span><span id="local-6989586621679216311"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216311"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
+</span><a href="Cardano.Address.Style.Icarus.html#eitherInspectAddress"><span class="hs-identifier hs-var hs-var">eitherInspectAddress</span></a></span></span><span> </span><span id="local-6989586621679216470"><span class="annot"><span class="annottext">Address
+</span><a href="#local-6989586621679216470"><span class="hs-identifier hs-var">addr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-460"></span><span>    </span><span id="local-6989586621679216471"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216471"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
 -&gt; Either DeserialiseFailure ByteString
 -&gt; Either ErrInspectAddress ByteString
 forall a b c. (a -&gt; b) -&gt; Either a c -&gt; Either b c
@@ -974,9 +974,9 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
 </span><span id="line-462"></span><span>        </span><span class="annot"><span class="annottext">Address -&gt; ByteString
 </span><a href="Cardano.Address.html#unAddress"><span class="hs-identifier hs-var">unAddress</span></a></span><span> </span><span class="annot"><span class="annottext">Address
-</span><a href="#local-6989586621679216310"><span class="hs-identifier hs-var">addr</span></a></span><span>
-</span><span id="line-463"></span><span>    </span><span id="local-6989586621679216314"><span class="annot"><span class="annottext">Maybe NetworkTag
-</span><a href="#local-6989586621679216314"><span class="hs-identifier hs-var">ntwrk</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
+</span><a href="#local-6989586621679216470"><span class="hs-identifier hs-var">addr</span></a></span><span>
+</span><span id="line-463"></span><span>    </span><span id="local-6989586621679216474"><span class="annot"><span class="annottext">Maybe NetworkTag
+</span><a href="#local-6989586621679216474"><span class="hs-identifier hs-var">ntwrk</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
 -&gt; (Maybe Word32 -&gt; Maybe NetworkTag)
 -&gt; Either DeserialiseFailure (Maybe Word32)
 -&gt; Either ErrInspectAddress (Maybe NetworkTag)
@@ -1003,10 +1003,10 @@ forall a.
 </span><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier hs-var">CBOR.deserialiseCbor</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s (Maybe Word32)
 forall s. Decoder s (Maybe Word32)
 </span><a href="Cardano.Codec.Cbor.html#decodeProtocolMagicAttr"><span class="hs-identifier hs-var">CBOR.decodeProtocolMagicAttr</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216311"><span class="hs-identifier hs-var">payload</span></a></span><span>
-</span><span id="line-465"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679216317"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216317"><span class="hs-identifier hs-var">root</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216318"><span class="annot"><span class="annottext">[(Word8, ByteString)]
-</span><a href="#local-6989586621679216318"><span class="hs-identifier hs-var">attrs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
+</span><a href="#local-6989586621679216471"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-465"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679216477"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216477"><span class="hs-identifier hs-var">root</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216478"><span class="annot"><span class="annottext">[(Word8, ByteString)]
+</span><a href="#local-6989586621679216478"><span class="hs-identifier hs-var">attrs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(DeserialiseFailure -&gt; ErrInspectAddress)
 -&gt; Either DeserialiseFailure (ByteString, [(Word8, ByteString)])
 -&gt; Either ErrInspectAddress (ByteString, [(Word8, ByteString)])
 forall a b c. (a -&gt; b) -&gt; Either a c -&gt; Either b c
@@ -1028,8 +1028,8 @@ forall a.
 -&gt; ByteString -&gt; Either DeserialiseFailure a
 </span><a href="Cardano.Codec.Cbor.html#deserialiseCbor"><span class="hs-identifier hs-var">CBOR.deserialiseCbor</span></a></span><span> </span><span class="annot"><span class="annottext">Decoder s (ByteString, [(Word8, ByteString)])
 forall s. Decoder s (ByteString, [(Word8, ByteString)])
-</span><a href="#local-6989586621679216319"><span class="hs-identifier hs-var">decodePayload</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216311"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><a href="#local-6989586621679216479"><span class="hs-identifier hs-var">decodePayload</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216471"><span class="hs-identifier hs-var">payload</span></a></span><span>
 </span><span id="line-467"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; [Word8] -&gt; Bool
 forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
 forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
@@ -1041,7 +1041,7 @@ forall a b. (a, b) -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Tuple.html#fst"><span class="hs-identifier hs-var">fst</span></a></span><span> </span><span class="annot"><span class="annottext">((Word8, ByteString) -&gt; Word8) -&gt; [(Word8, ByteString)] -&gt; [Word8]
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Functor.html#%3C%24%3E"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">[(Word8, ByteString)]
-</span><a href="#local-6989586621679216318"><span class="hs-identifier hs-var">attrs</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679216478"><span class="hs-identifier hs-var">attrs</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-468"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">ErrInspectAddress -&gt; Either ErrInspectAddress AddressInfo
 forall a b. a -&gt; Either a b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">ErrInspectAddress
@@ -1051,26 +1051,26 @@ forall a b. b -&gt; Either a b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span><span>
 </span><span id="line-470"></span><span>            </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">infoAddressRoot :: ByteString
 </span><a href="Cardano.Address.Style.Icarus.html#infoAddressRoot"><span class="hs-identifier hs-var">infoAddressRoot</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216317"><span class="hs-identifier hs-var">root</span></a></span><span>
+</span><a href="#local-6989586621679216477"><span class="hs-identifier hs-var">root</span></a></span><span>
 </span><span id="line-471"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">infoNetworkTag :: Maybe NetworkTag
 </span><a href="Cardano.Address.Style.Icarus.html#infoNetworkTag"><span class="hs-identifier hs-var">infoNetworkTag</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe NetworkTag
-</span><a href="#local-6989586621679216314"><span class="hs-identifier hs-var">ntwrk</span></a></span><span>
+</span><a href="#local-6989586621679216474"><span class="hs-identifier hs-var">ntwrk</span></a></span><span>
 </span><span id="line-472"></span><span>            </span><span class="hs-special">}</span><span>
 </span><span id="line-473"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-474"></span><span>    </span><span class="annot"><a href="#local-6989586621679216319"><span class="hs-identifier hs-type">decodePayload</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679216326"><span class="annot"><a href="#local-6989586621679216326"><span class="hs-identifier hs-type">s</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679216326"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word8"><span class="hs-identifier hs-type">Word8</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
-</span><span id="line-475"></span><span>    </span><span id="local-6989586621679216319"><span class="annot"><span class="annottext">decodePayload :: forall s. Decoder s (ByteString, [(Word8, ByteString)])
-</span><a href="#local-6989586621679216319"><span class="hs-identifier hs-var hs-var">decodePayload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-474"></span><span>    </span><span class="annot"><a href="#local-6989586621679216479"><span class="hs-identifier hs-type">decodePayload</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679216486"><span class="annot"><a href="#local-6989586621679216486"><span class="hs-identifier hs-type">s</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CBOR.Decoder</span></span><span> </span><span class="annot"><a href="#local-6989586621679216486"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word8"><span class="hs-identifier hs-type">Word8</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-475"></span><span>    </span><span id="local-6989586621679216479"><span class="annot"><span class="annottext">decodePayload :: forall s. Decoder s (ByteString, [(Word8, ByteString)])
+</span><a href="#local-6989586621679216479"><span class="hs-identifier hs-var hs-var">decodePayload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-476"></span><span>        </span><span class="annot"><span class="annottext">()
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decoder s ()
 forall s. Int -&gt; Decoder s ()
 </span><span class="hs-identifier hs-var">CBOR.decodeListLenCanonicalOf</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span>
-</span><span id="line-477"></span><span>        </span><span id="local-6989586621679216333"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216333"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
+</span><span id="line-477"></span><span>        </span><span id="local-6989586621679216493"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216493"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Decoder s ByteString
 forall s. Decoder s ByteString
 </span><span class="hs-identifier hs-var">CBOR.decodeBytes</span></span><span>
 </span><span id="line-478"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216333"><span class="hs-identifier hs-var">root</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(Word8, ByteString)] -&gt; (ByteString, [(Word8, ByteString)]))
+</span><a href="#local-6989586621679216493"><span class="hs-identifier hs-var">root</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(Word8, ByteString)] -&gt; (ByteString, [(Word8, ByteString)]))
 -&gt; Decoder s [(Word8, ByteString)]
 -&gt; Decoder s (ByteString, [(Word8, ByteString)])
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
@@ -1086,7 +1086,7 @@ forall s. Decoder s [(Word8, ByteString)]
 </span><a href="Cardano.Address.Style.Icarus.html#infoAddressRoot"><span class="hs-identifier hs-var hs-var">infoAddressRoot</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
 </span><span id="line-485"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="infoNetworkTag"><span class="annot"><span class="annottext">AddressInfo -&gt; Maybe NetworkTag
 </span><a href="Cardano.Address.Style.Icarus.html#infoNetworkTag"><span class="hs-identifier hs-var hs-var">infoNetworkTag</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.html#NetworkTag"><span class="hs-identifier hs-type">NetworkTag</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-486"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679216337"><span id="local-6989586621679216339"><span class="annot"><span class="annottext">(forall x. AddressInfo -&gt; Rep AddressInfo x)
+</span><span id="line-486"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679216497"><span id="local-6989586621679216499"><span class="annot"><span class="annottext">(forall x. AddressInfo -&gt; Rep AddressInfo x)
 -&gt; (forall x. Rep AddressInfo x -&gt; AddressInfo)
 -&gt; Generic AddressInfo
 forall x. Rep AddressInfo x -&gt; AddressInfo
@@ -1097,7 +1097,7 @@ $cfrom :: forall x. AddressInfo -&gt; Rep AddressInfo x
 from :: forall x. AddressInfo -&gt; Rep AddressInfo x
 $cto :: forall x. Rep AddressInfo x -&gt; AddressInfo
 to :: forall x. Rep AddressInfo x -&gt; AddressInfo
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216342"><span id="local-6989586621679216350"><span id="local-6989586621679216354"><span class="annot"><span class="annottext">Int -&gt; AddressInfo -&gt; String -&gt; String
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216502"><span id="local-6989586621679216510"><span id="local-6989586621679216514"><span class="annot"><span class="annottext">Int -&gt; AddressInfo -&gt; String -&gt; String
 [AddressInfo] -&gt; String -&gt; String
 AddressInfo -&gt; String
 (Int -&gt; AddressInfo -&gt; String -&gt; String)
@@ -1113,7 +1113,7 @@ $cshow :: AddressInfo -&gt; String
 show :: AddressInfo -&gt; String
 $cshowList :: [AddressInfo] -&gt; String -&gt; String
 showList :: [AddressInfo] -&gt; String -&gt; String
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216358"><span id="local-6989586621679216365"><span class="annot"><span class="annottext">AddressInfo -&gt; AddressInfo -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216518"><span id="local-6989586621679216525"><span class="annot"><span class="annottext">AddressInfo -&gt; AddressInfo -&gt; Bool
 (AddressInfo -&gt; AddressInfo -&gt; Bool)
 -&gt; (AddressInfo -&gt; AddressInfo -&gt; Bool) -&gt; Eq AddressInfo
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -1123,9 +1123,9 @@ $c/= :: AddressInfo -&gt; AddressInfo -&gt; Bool
 /= :: AddressInfo -&gt; AddressInfo -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-487"></span><span>
-</span><span id="line-488"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679216371"><span id="local-6989586621679216374"><span id="local-6989586621679216377"><span id="local-6989586621679216380"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-489"></span><span>    </span><span id="local-6989586621679216402"><span class="annot"><span class="annottext">toJSON :: AddressInfo -&gt; Value
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679216403"><span id="local-6989586621679216404"><span class="annot"><span class="annottext">Maybe NetworkTag
+</span><span id="line-488"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679216531"><span id="local-6989586621679216534"><span id="local-6989586621679216537"><span id="local-6989586621679216540"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-489"></span><span>    </span><span id="local-6989586621679216562"><span class="annot"><span class="annottext">toJSON :: AddressInfo -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#AddressInfo"><span class="hs-identifier hs-type">AddressInfo</span></a></span><span class="hs-special">{</span><span id="local-6989586621679216563"><span id="local-6989586621679216564"><span class="annot"><span class="annottext">Maybe NetworkTag
 ByteString
 infoAddressRoot :: AddressInfo -&gt; ByteString
 infoNetworkTag :: AddressInfo -&gt; Maybe NetworkTag
@@ -1143,7 +1143,7 @@ forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
 </span><span class="hs-identifier hs-var">Json.Null</span></span><span> </span><span class="annot"><span class="annottext">NetworkTag -&gt; Value
 forall a. ToJSON a =&gt; a -&gt; Value
 </span><span class="hs-identifier hs-var">toJSON</span></span><span> </span><span class="annot"><span class="annottext">Maybe NetworkTag
-</span><a href="#local-6989586621679216404"><span class="hs-identifier hs-var">infoNetworkTag</span></a></span><span>
+</span><a href="#local-6989586621679216564"><span class="hs-identifier hs-var">infoNetworkTag</span></a></span><span>
 </span><span id="line-491"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Key
 </span><span class="hs-string">&quot;address_root&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Text -&gt; Pair
 forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
@@ -1153,7 +1153,7 @@ forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
 </span><a href="Codec.Binary.Encoding.html#encode"><span class="hs-identifier hs-var">encode</span></a></span><span> </span><span class="annot"><span class="annottext">Encoding
 forall a. AbstractEncoding a
 </span><a href="Codec.Binary.Encoding.html#EBase16"><span class="hs-identifier hs-var">EBase16</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216403"><span class="hs-identifier hs-var">infoAddressRoot</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679216563"><span class="hs-identifier hs-var">infoAddressRoot</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-492"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Key
 </span><span class="hs-string">&quot;address_type&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Value -&gt; Pair
 forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
@@ -1164,10 +1164,10 @@ forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
 </span><span id="line-493"></span><span>        </span><span class="hs-special">]</span><span>
 </span><span id="line-494"></span><span>
 </span><span id="line-495"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.html#PaymentAddress"><span class="hs-identifier hs-type">Internal.PaymentAddress</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-496"></span><span>    </span><span id="local-6989586621679216417"><span class="annot"><span class="annottext">paymentAddress :: NetworkDiscriminant Icarus -&gt; Icarus 'PaymentK XPub -&gt; Address
-</span><a href="#local-6989586621679216417"><span class="hs-identifier hs-var hs-var hs-var hs-var">paymentAddress</span></a></span></span><span> </span><span id="local-6989586621679216419"><span class="annot"><span class="annottext">NetworkDiscriminant Icarus
-</span><a href="#local-6989586621679216419"><span class="hs-identifier hs-var">discrimination</span></a></span></span><span> </span><span id="local-6989586621679216420"><span class="annot"><span class="annottext">Icarus 'PaymentK XPub
-</span><a href="#local-6989586621679216420"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Address
+</span><span id="line-496"></span><span>    </span><span id="local-6989586621679216577"><span class="annot"><span class="annottext">paymentAddress :: NetworkDiscriminant Icarus -&gt; Icarus 'PaymentK XPub -&gt; Address
+</span><a href="#local-6989586621679216577"><span class="hs-identifier hs-var hs-var hs-var hs-var">paymentAddress</span></a></span></span><span> </span><span id="local-6989586621679216579"><span class="annot"><span class="annottext">NetworkDiscriminant Icarus
+</span><a href="#local-6989586621679216579"><span class="hs-identifier hs-var">discrimination</span></a></span></span><span> </span><span id="local-6989586621679216580"><span class="annot"><span class="annottext">Icarus 'PaymentK XPub
+</span><a href="#local-6989586621679216580"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Address
 </span><a href="Cardano.Address.html#unsafeMkAddress"><span class="hs-identifier hs-var">unsafeMkAddress</span></a></span><span>
 </span><span id="line-497"></span><span>        </span><span class="annot"><span class="annottext">(ByteString -&gt; Address) -&gt; ByteString -&gt; Address
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -1179,26 +1179,26 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="Cardano.Codec.Cbor.html#encodeAddress"><span class="hs-identifier hs-var">CBOR.encodeAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Icarus 'PaymentK XPub -&gt; XPub
 forall (depth :: Depth) key. Icarus depth key -&gt; key
 </span><a href="Cardano.Address.Style.Icarus.html#getKey"><span class="hs-identifier hs-var">getKey</span></a></span><span> </span><span class="annot"><span class="annottext">Icarus 'PaymentK XPub
-</span><a href="#local-6989586621679216420"><span class="hs-identifier hs-var">k</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Encoding]
-</span><a href="#local-6989586621679216423"><span class="hs-identifier hs-var">attrs</span></a></span><span>
+</span><a href="#local-6989586621679216580"><span class="hs-identifier hs-var">k</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Encoding]
+</span><a href="#local-6989586621679216583"><span class="hs-identifier hs-var">attrs</span></a></span><span>
 </span><span id="line-499"></span><span>      </span><span class="hs-keyword">where</span><span>
-</span><span id="line-500"></span><span>        </span><span class="annot"><a href="Cardano.Address.html#NetworkTag"><span class="hs-identifier hs-type">NetworkTag</span></a></span><span> </span><span id="local-6989586621679216424"><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679216424"><span class="hs-identifier hs-var">magic</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall (key :: Depth -&gt; * -&gt; *).
+</span><span id="line-500"></span><span>        </span><span class="annot"><a href="Cardano.Address.html#NetworkTag"><span class="hs-identifier hs-type">NetworkTag</span></a></span><span> </span><span id="local-6989586621679216584"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679216584"><span class="hs-identifier hs-var">magic</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall (key :: Depth -&gt; * -&gt; *).
 HasNetworkDiscriminant key =&gt;
 NetworkDiscriminant key -&gt; NetworkTag
 </span><a href="Cardano.Address.html#networkTag"><span class="hs-identifier hs-var">networkTag</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">NetworkDiscriminant Icarus
-</span><a href="#local-6989586621679216419"><span class="hs-identifier hs-var">discrimination</span></a></span><span>
-</span><span id="line-501"></span><span>        </span><span id="local-6989586621679216423"><span class="annot"><span class="annottext">attrs :: [Encoding]
-</span><a href="#local-6989586621679216423"><span class="hs-identifier hs-var hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">forall (key :: Depth -&gt; * -&gt; *).
+</span><a href="#local-6989586621679216579"><span class="hs-identifier hs-var">discrimination</span></a></span><span>
+</span><span id="line-501"></span><span>        </span><span id="local-6989586621679216583"><span class="annot"><span class="annottext">attrs :: [Encoding]
+</span><a href="#local-6989586621679216583"><span class="hs-identifier hs-var hs-var">attrs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">forall (key :: Depth -&gt; * -&gt; *).
 HasNetworkDiscriminant key =&gt;
 NetworkDiscriminant key -&gt; AddressDiscrimination
 </span><a href="Cardano.Address.html#addressDiscrimination"><span class="hs-identifier hs-var">addressDiscrimination</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">NetworkDiscriminant Icarus
-</span><a href="#local-6989586621679216419"><span class="hs-identifier hs-var">discrimination</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679216579"><span class="hs-identifier hs-var">discrimination</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-502"></span><span>            </span><span class="annot"><span class="annottext">AddressDiscrimination
 </span><a href="Cardano.Address.html#RequiresNetworkTag"><span class="hs-identifier hs-var">RequiresNetworkTag</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-503"></span><span>                </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Encoding
 </span><a href="Cardano.Codec.Cbor.html#encodeProtocolMagicAttr"><span class="hs-identifier hs-var">CBOR.encodeProtocolMagicAttr</span></a></span><span> </span><span class="annot"><span class="annottext">Word32
-</span><a href="#local-6989586621679216424"><span class="hs-identifier hs-var">magic</span></a></span><span>
+</span><a href="#local-6989586621679216584"><span class="hs-identifier hs-var">magic</span></a></span><span>
 </span><span id="line-504"></span><span>                </span><span class="hs-special">]</span><span>
 </span><span id="line-505"></span><span>            </span><span class="annot"><span class="annottext">AddressDiscrimination
 </span><a href="Cardano.Address.html#RequiresNoTag"><span class="hs-identifier hs-var">RequiresNoTag</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
@@ -1228,12 +1228,12 @@ NetworkDiscriminant key -&gt; key 'PaymentK XPub -&gt; Address
 </span><span id="line-524"></span><span>
 </span><span id="line-525"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Cardano.Address.html#HasNetworkDiscriminant"><span class="hs-identifier hs-type">HasNetworkDiscriminant</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-526"></span><span>    </span><span class="hs-keyword">type</span><span> </span><span id="NetworkDiscriminant"><span class="annot"><a href="Cardano.Address.html#NetworkDiscriminant"><span class="hs-identifier hs-var">NetworkDiscriminant</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Address.html#AddressDiscrimination"><span class="hs-identifier hs-type">AddressDiscrimination</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Cardano.Address.html#NetworkTag"><span class="hs-identifier hs-type">NetworkTag</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-527"></span><span>    </span><span id="local-6989586621679216433"><span class="annot"><span class="annottext">addressDiscrimination :: NetworkDiscriminant Icarus -&gt; AddressDiscrimination
+</span><span id="line-527"></span><span>    </span><span id="local-6989586621679216593"><span class="annot"><span class="annottext">addressDiscrimination :: NetworkDiscriminant Icarus -&gt; AddressDiscrimination
 </span><a href="Cardano.Address.html#addressDiscrimination"><span class="hs-identifier hs-var hs-var hs-var hs-var">addressDiscrimination</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(AddressDiscrimination, NetworkTag) -&gt; AddressDiscrimination
 NetworkDiscriminant Icarus -&gt; AddressDiscrimination
 forall a b. (a, b) -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Tuple.html#fst"><span class="hs-identifier hs-var">fst</span></a></span><span>
-</span><span id="line-528"></span><span>    </span><span id="local-6989586621679216434"><span class="annot"><span class="annottext">networkTag :: NetworkDiscriminant Icarus -&gt; NetworkTag
+</span><span id="line-528"></span><span>    </span><span id="local-6989586621679216594"><span class="annot"><span class="annottext">networkTag :: NetworkDiscriminant Icarus -&gt; NetworkTag
 </span><a href="Cardano.Address.html#networkTag"><span class="hs-identifier hs-var hs-var hs-var hs-var">networkTag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(AddressDiscrimination, NetworkTag) -&gt; NetworkTag
 NetworkDiscriminant Icarus -&gt; NetworkTag
 forall a b. (a, b) -&gt; b
@@ -1296,7 +1296,7 @@ NetworkDiscriminant Icarus
 </span><span id="line-569"></span><span class="hs-comment">-- key down to an address key for instance).</span><span>
 </span><span id="line-570"></span><span class="hs-comment">--</span><span>
 </span><span id="line-571"></span><span class="hs-comment">-- @since 1.0.0</span><span>
-</span><span id="line-572"></span><span id="local-6989586621679215355"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#liftXPrv"><span class="hs-identifier hs-type">liftXPrv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215355"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span></span><span>
+</span><span id="line-572"></span><span id="local-6989586621679215515"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#liftXPrv"><span class="hs-identifier hs-type">liftXPrv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215515"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span></span><span>
 </span><span id="line-573"></span><span id="liftXPrv"><span class="annot"><span class="annottext">liftXPrv :: forall (depth :: Depth). XPrv -&gt; Icarus depth XPrv
 </span><a href="Cardano.Address.Style.Icarus.html#liftXPrv"><span class="hs-identifier hs-var hs-var">liftXPrv</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus depth XPrv
 forall (depth :: Depth) key. key -&gt; Icarus depth key
@@ -1310,7 +1310,7 @@ forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><span id="line-580"></span><span class="hs-comment">-- key down to an address key for instance).</span><span>
 </span><span id="line-581"></span><span class="hs-comment">--</span><span>
 </span><span id="line-582"></span><span class="hs-comment">-- @since 2.0.0</span><span>
-</span><span id="line-583"></span><span id="local-6989586621679215588"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#liftXPub"><span class="hs-identifier hs-type">liftXPub</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215588"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span></span><span>
+</span><span id="line-583"></span><span id="local-6989586621679215748"><span class="annot"><a href="Cardano.Address.Style.Icarus.html#liftXPub"><span class="hs-identifier hs-type">liftXPub</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215748"><span class="hs-identifier hs-type">depth</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPub"><span class="hs-identifier hs-type">XPub</span></a></span></span><span>
 </span><span id="line-584"></span><span id="liftXPub"><span class="annot"><span class="annottext">liftXPub :: forall (depth :: Depth). XPub -&gt; Icarus depth XPub
 </span><a href="Cardano.Address.Style.Icarus.html#liftXPub"><span class="hs-identifier hs-var hs-var">liftXPub</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">XPub -&gt; Icarus depth XPub
 forall (depth :: Depth) key. key -&gt; Icarus depth key
@@ -1371,15 +1371,15 @@ forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><span id="line-632"></span><span>        </span><span class="annot"><span class="hs-comment">-- ^ The root mnemonic</span></span><span>
 </span><span id="line-633"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-type">Icarus</span></a></span><span> </span><span class="hs-special">'</span><span class="annot"><a href="Cardano.Address.Derivation.html#RootK"><span class="hs-identifier hs-type">RootK</span></a></span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.html#XPrv"><span class="hs-identifier hs-type">XPrv</span></a></span><span>
 </span><span id="line-634"></span><span id="unsafeGenerateKeyFromHardwareLedger"><span class="annot"><span class="annottext">unsafeGenerateKeyFromHardwareLedger :: SomeMnemonic -&gt; Icarus 'RootK XPrv
-</span><a href="Cardano.Address.Style.Icarus.html#unsafeGenerateKeyFromHardwareLedger"><span class="hs-identifier hs-var hs-var">unsafeGenerateKeyFromHardwareLedger</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a></span><span> </span><span id="local-6989586621679216481"><span class="annot"><span class="annottext">Mnemonic mw
-</span><a href="#local-6989586621679216481"><span class="hs-identifier hs-var">mw</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String (Icarus 'RootK XPrv) -&gt; Icarus 'RootK XPrv
+</span><a href="Cardano.Address.Style.Icarus.html#unsafeGenerateKeyFromHardwareLedger"><span class="hs-identifier hs-var hs-var">unsafeGenerateKeyFromHardwareLedger</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Cardano.Mnemonic.html#SomeMnemonic"><span class="hs-identifier hs-type">SomeMnemonic</span></a></span><span> </span><span id="local-6989586621679216641"><span class="annot"><span class="annottext">Mnemonic mw
+</span><a href="#local-6989586621679216641"><span class="hs-identifier hs-var">mw</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String (Icarus 'RootK XPrv) -&gt; Icarus 'RootK XPrv
 forall a. Either String a -&gt; a
-</span><a href="#local-6989586621679216482"><span class="hs-identifier hs-var">unsafeFromRight</span></a></span><span> </span><span class="annot"><span class="annottext">(Either String (Icarus 'RootK XPrv) -&gt; Icarus 'RootK XPrv)
+</span><a href="#local-6989586621679216642"><span class="hs-identifier hs-var">unsafeFromRight</span></a></span><span> </span><span class="annot"><span class="annottext">(Either String (Icarus 'RootK XPrv) -&gt; Icarus 'RootK XPrv)
 -&gt; Either String (Icarus 'RootK XPrv) -&gt; Icarus 'RootK XPrv
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-635"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679216483"><span class="annot"><span class="annottext">seed :: ByteString
-</span><a href="#local-6989586621679216483"><span class="hs-identifier hs-var hs-var">seed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; ByteString
+</span><span id="line-635"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679216643"><span class="annot"><span class="annottext">seed :: ByteString
+</span><a href="#local-6989586621679216643"><span class="hs-identifier hs-var hs-var">seed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ScrubbedBytes -&gt; ByteString
 forall bin bout.
 (ByteArrayAccess bin, ByteArray bout) =&gt;
 bin -&gt; bout
@@ -1404,7 +1404,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Mnemonic mw -&gt; Dictionary -&gt; [Text]
 forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
 </span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="annot"><span class="annottext">Mnemonic mw
-</span><a href="#local-6989586621679216481"><span class="hs-identifier hs-var">mw</span></a></span><span> </span><span class="annot"><span class="annottext">Dictionary
+</span><a href="#local-6989586621679216641"><span class="hs-identifier hs-var">mw</span></a></span><span> </span><span class="annot"><span class="annottext">Dictionary
 </span><a href="Cardano.Address.Crypto.BIP39.English.html#english"><span class="hs-identifier hs-var">english</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-639"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;mnemonic&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span>
@@ -1413,36 +1413,36 @@ forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
 </span><span id="line-642"></span><span>    </span><span class="hs-comment">-- SLIP-0010 refers to `iR` as the chain code. Here however, the chain code</span><span>
 </span><span id="line-643"></span><span>    </span><span class="hs-comment">-- is obtained as a hash of the initial seed whereas iR is used to make part</span><span>
 </span><span id="line-644"></span><span>    </span><span class="hs-comment">-- of the root private key itself.</span><span>
-</span><span id="line-645"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679216487"><span class="annot"><span class="annottext">cc :: ByteString
-</span><a href="#local-6989586621679216487"><span class="hs-identifier hs-var hs-var">cc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+</span><span id="line-645"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679216647"><span class="annot"><span class="annottext">cc :: ByteString
+</span><a href="#local-6989586621679216647"><span class="hs-identifier hs-var hs-var">cc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall key msg.
 (ByteArrayAccess key, ByteArrayAccess msg) =&gt;
 key -&gt; msg -&gt; ByteString
 </span><a href="Cardano.Address.Crypto.html#hmacSha256"><span class="hs-identifier hs-var">hmacSha256</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216488"><span class="hs-identifier hs-var">salt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Word8] -&gt; ByteString
+</span><a href="#local-6989586621679216648"><span class="hs-identifier hs-var">salt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Word8] -&gt; ByteString
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#pack"><span class="hs-identifier hs-var">BS.pack</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Word8
 </span><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216483"><span class="hs-identifier hs-var">seed</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-646"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679216490"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216490"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216491"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216491"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString)
+</span><a href="#local-6989586621679216643"><span class="hs-identifier hs-var">seed</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-646"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679216650"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216650"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216651"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216651"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString)
 -&gt; (ByteString, ByteString) -&gt; (ByteString, ByteString)
 forall a b c. (a -&gt; b) -&gt; (a, c) -&gt; (b, c)
 forall (p :: * -&gt; * -&gt; *) a b c.
 Bifunctor p =&gt;
 (a -&gt; b) -&gt; p a c -&gt; p b c
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Bifunctor.html#first"><span class="hs-identifier hs-var">first</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
-</span><a href="#local-6989586621679216492"><span class="hs-identifier hs-var">pruneBuffer</span></a></span><span> </span><span class="annot"><span class="annottext">((ByteString, ByteString) -&gt; (ByteString, ByteString))
+</span><a href="#local-6989586621679216652"><span class="hs-identifier hs-var">pruneBuffer</span></a></span><span> </span><span class="annot"><span class="annottext">((ByteString, ByteString) -&gt; (ByteString, ByteString))
 -&gt; (ByteString, ByteString) -&gt; (ByteString, ByteString)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (ByteString, ByteString)
-</span><a href="#local-6989586621679216493"><span class="hs-identifier hs-var">hashRepeatedly</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216483"><span class="hs-identifier hs-var">seed</span></a></span><span>
+</span><a href="#local-6989586621679216653"><span class="hs-identifier hs-var">hashRepeatedly</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216643"><span class="hs-identifier hs-var">seed</span></a></span><span>
 </span><span id="line-647"></span><span>
-</span><span id="line-648"></span><span>    </span><span id="local-6989586621679216494"><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679216494"><span class="hs-identifier hs-var">prv</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either String XPrv
+</span><span id="line-648"></span><span>    </span><span id="local-6989586621679216654"><span class="annot"><span class="annottext">XPrv
+</span><a href="#local-6989586621679216654"><span class="hs-identifier hs-var">prv</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Either String XPrv
 -&gt; (XPrv -&gt; Either String XPrv) -&gt; Maybe XPrv -&gt; Either String XPrv
 forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Maybe.html#maybe"><span class="hs-identifier hs-var">maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Either String XPrv
@@ -1458,13 +1458,13 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="Cardano.Address.Derivation.html#xprvFromBytes"><span class="hs-identifier hs-var">xprvFromBytes</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Maybe XPrv) -&gt; ByteString -&gt; Maybe XPrv
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216490"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679216650"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216491"><span class="hs-identifier hs-var">iR</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679216651"><span class="hs-identifier hs-var">iR</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216487"><span class="hs-identifier hs-var">cc</span></a></span><span>
+</span><a href="#local-6989586621679216647"><span class="hs-identifier hs-var">cc</span></a></span><span>
 </span><span id="line-649"></span><span>    </span><span class="annot"><span class="annottext">Icarus 'RootK XPrv -&gt; Either String (Icarus 'RootK XPrv)
 forall a. a -&gt; Either String a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
@@ -1474,14 +1474,14 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv -&gt; Icarus 'RootK XPrv
 forall (depth :: Depth) key. key -&gt; Icarus depth key
 </span><a href="Cardano.Address.Style.Icarus.html#Icarus"><span class="hs-identifier hs-var">Icarus</span></a></span><span> </span><span class="annot"><span class="annottext">XPrv
-</span><a href="#local-6989586621679216494"><span class="hs-identifier hs-var">prv</span></a></span><span>
+</span><a href="#local-6989586621679216654"><span class="hs-identifier hs-var">prv</span></a></span><span>
 </span><span id="line-650"></span><span>  </span><span class="hs-keyword">where</span><span>
 </span><span id="line-651"></span><span>    </span><span class="hs-comment">-- Errors yielded in the body of 'unsafeGenerateKeyFromHardwareLedger' are</span><span>
 </span><span id="line-652"></span><span>    </span><span class="hs-comment">-- programmer errors (out-of-range byte buffer access or, invalid length for</span><span>
 </span><span id="line-653"></span><span>    </span><span class="hs-comment">-- cryptographic operations). Therefore, we throw badly if we encounter any.</span><span>
-</span><span id="line-654"></span><span>    </span><span id="local-6989586621679215594"><span class="annot"><a href="#local-6989586621679216482"><span class="hs-identifier hs-type">unsafeFromRight</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215594"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679215594"><span class="hs-identifier hs-type">a</span></a></span></span><span>
-</span><span id="line-655"></span><span>    </span><span id="local-6989586621679216482"><span class="annot"><span class="annottext">unsafeFromRight :: forall a. Either String a -&gt; a
-</span><a href="#local-6989586621679216482"><span class="hs-identifier hs-var hs-var">unsafeFromRight</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; a) -&gt; (a -&gt; a) -&gt; Either String a -&gt; a
+</span><span id="line-654"></span><span>    </span><span id="local-6989586621679215754"><span class="annot"><a href="#local-6989586621679216642"><span class="hs-identifier hs-type">unsafeFromRight</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679215754"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679215754"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-655"></span><span>    </span><span id="local-6989586621679216642"><span class="annot"><span class="annottext">unsafeFromRight :: forall a. Either String a -&gt; a
+</span><a href="#local-6989586621679216642"><span class="hs-identifier hs-var hs-var">unsafeFromRight</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; a) -&gt; (a -&gt; a) -&gt; Either String a -&gt; a
 forall a c b. (a -&gt; c) -&gt; (b -&gt; c) -&gt; Either a b -&gt; c
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Either.html#either"><span class="hs-identifier hs-var">either</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; a
 forall a. HasCallStack =&gt; String -&gt; a
@@ -1508,40 +1508,40 @@ forall a. a -&gt; a
 </span><span id="line-673"></span><span>    </span><span class="hs-comment">-- *************************************************************************</span><span>
 </span><span id="line-674"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-675"></span><span>    </span><span class="hs-comment">--      4. Use parse256(IL) as master secret key, and IR as master chain code.</span><span>
-</span><span id="line-676"></span><span>    </span><span class="annot"><a href="#local-6989586621679216493"><span class="hs-identifier hs-type">hashRepeatedly</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-677"></span><span>    </span><span id="local-6989586621679216493"><span class="annot"><span class="annottext">hashRepeatedly :: ByteString -&gt; (ByteString, ByteString)
-</span><a href="#local-6989586621679216493"><span class="hs-identifier hs-var hs-var">hashRepeatedly</span></a></span></span><span> </span><span id="local-6989586621679216498"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216498"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; (ByteString, ByteString)
+</span><span id="line-676"></span><span>    </span><span class="annot"><a href="#local-6989586621679216653"><span class="hs-identifier hs-type">hashRepeatedly</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-677"></span><span>    </span><span id="local-6989586621679216653"><span class="annot"><span class="annottext">hashRepeatedly :: ByteString -&gt; (ByteString, ByteString)
+</span><a href="#local-6989586621679216653"><span class="hs-identifier hs-var hs-var">hashRepeatedly</span></a></span></span><span> </span><span id="local-6989586621679216658"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216658"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; (ByteString, ByteString)
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#splitAt"><span class="hs-identifier hs-var">BS.splitAt</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">32</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall key msg.
 (ByteArrayAccess key, ByteArrayAccess msg) =&gt;
 key -&gt; msg -&gt; ByteString
 </span><a href="Cardano.Address.Crypto.html#hmacSha512"><span class="hs-identifier hs-var">hmacSha512</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216488"><span class="hs-identifier hs-var">salt</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216498"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-678"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679216500"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216500"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216501"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216501"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
-</span><a href="#local-6989586621679216502"><span class="hs-identifier hs-var">isInvalidKey</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216500"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (ByteString, ByteString)
-</span><a href="#local-6989586621679216493"><span class="hs-identifier hs-var">hashRepeatedly</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216500"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679216648"><span class="hs-identifier hs-var">salt</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216658"><span class="hs-identifier hs-var">bytes</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-678"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679216660"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216660"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216661"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216661"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><a href="#local-6989586621679216662"><span class="hs-identifier hs-var">isInvalidKey</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216660"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (ByteString, ByteString)
+</span><a href="#local-6989586621679216653"><span class="hs-identifier hs-var">hashRepeatedly</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216660"><span class="hs-identifier hs-var">iL</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216501"><span class="hs-identifier hs-var">iR</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-679"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679216503"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216503"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216504"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216504"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216503"><span class="hs-identifier hs-var">iL</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216504"><span class="hs-identifier hs-var">iR</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679216661"><span class="hs-identifier hs-var">iR</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-679"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679216663"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216663"><span class="hs-identifier hs-var">iL</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216664"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216664"><span class="hs-identifier hs-var">iR</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216663"><span class="hs-identifier hs-var">iL</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216664"><span class="hs-identifier hs-var">iR</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-680"></span><span>      </span><span class="hs-keyword">where</span><span>
-</span><span id="line-681"></span><span>        </span><span id="local-6989586621679216502"><span class="annot"><span class="annottext">isInvalidKey :: ByteString -&gt; Bool
-</span><a href="#local-6989586621679216502"><span class="hs-identifier hs-var hs-var">isInvalidKey</span></a></span></span><span> </span><span id="local-6989586621679216508"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216508"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Int -&gt; Bool
+</span><span id="line-681"></span><span>        </span><span id="local-6989586621679216662"><span class="annot"><span class="annottext">isInvalidKey :: ByteString -&gt; Bool
+</span><a href="#local-6989586621679216662"><span class="hs-identifier hs-var hs-var">isInvalidKey</span></a></span></span><span> </span><span id="local-6989586621679216668"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216668"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; Int -&gt; Bool
 forall a. Bits a =&gt; a -&gt; Int -&gt; Bool
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Bits.html#testBit"><span class="hs-identifier hs-var">testBit</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216508"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; ByteString -&gt; Int -&gt; Word8
+</span><a href="#local-6989586621679216668"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; ByteString -&gt; Int -&gt; Word8
 ByteString -&gt; Int -&gt; Word8
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#index"><span class="hs-operator hs-var">`BS.index`</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">31</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
@@ -1552,14 +1552,14 @@ ByteString -&gt; Int -&gt; Word8
 </span><span id="line-685"></span><span>    </span><span class="hs-comment">-- - Set the second highest bit of the last byte</span><span>
 </span><span id="line-686"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-687"></span><span>    </span><span class="hs-comment">-- As described in [RFC 8032 - 5.1.5](https://tools.ietf.org/html/rfc8032#section-5.1.5)</span><span>
-</span><span id="line-688"></span><span>    </span><span class="annot"><a href="#local-6989586621679216492"><span class="hs-identifier hs-type">pruneBuffer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
-</span><span id="line-689"></span><span>    </span><span id="local-6989586621679216492"><span class="annot"><span class="annottext">pruneBuffer :: ByteString -&gt; ByteString
-</span><a href="#local-6989586621679216492"><span class="hs-identifier hs-var hs-var">pruneBuffer</span></a></span></span><span> </span><span id="local-6989586621679216510"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216510"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-688"></span><span>    </span><span class="annot"><a href="#local-6989586621679216652"><span class="hs-identifier hs-type">pruneBuffer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-689"></span><span>    </span><span id="local-6989586621679216652"><span class="annot"><span class="annottext">pruneBuffer :: ByteString -&gt; ByteString
+</span><a href="#local-6989586621679216652"><span class="hs-identifier hs-var hs-var">pruneBuffer</span></a></span></span><span> </span><span id="local-6989586621679216670"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216670"><span class="hs-identifier hs-var">bytes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-690"></span><span>        </span><span class="hs-keyword">let</span><span>
-</span><span id="line-691"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679216511"><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216511"><span class="hs-identifier hs-var">firstByte</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216512"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216512"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word8, ByteString)
+</span><span id="line-691"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679216671"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679216671"><span class="hs-identifier hs-var">firstByte</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216672"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216672"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word8, ByteString)
 -&gt; Maybe (Word8, ByteString) -&gt; (Word8, ByteString)
 forall a. a -&gt; Maybe a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Maybe.html#fromMaybe"><span class="hs-identifier hs-var">fromMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; (Word8, ByteString)
@@ -1571,11 +1571,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
 </span><span id="line-692"></span><span>                </span><span class="annot"><span class="annottext">ByteString -&gt; Maybe (Word8, ByteString)
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#uncons"><span class="hs-identifier hs-var">BS.uncons</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216510"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><a href="#local-6989586621679216670"><span class="hs-identifier hs-var">bytes</span></a></span><span>
 </span><span id="line-693"></span><span>
-</span><span id="line-694"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679216514"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216514"><span class="hs-identifier hs-var">rest'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216515"><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216515"><span class="hs-identifier hs-var">lastByte</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ByteString, Word8)
+</span><span id="line-694"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621679216674"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679216674"><span class="hs-identifier hs-var">rest'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679216675"><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679216675"><span class="hs-identifier hs-var">lastByte</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(ByteString, Word8)
 -&gt; Maybe (ByteString, Word8) -&gt; (ByteString, Word8)
 forall a. a -&gt; Maybe a -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Maybe.html#fromMaybe"><span class="hs-identifier hs-var">fromMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; (ByteString, Word8)
@@ -1587,11 +1587,11 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
 </span><span id="line-695"></span><span>                </span><span class="annot"><span class="annottext">ByteString -&gt; Maybe (ByteString, Word8)
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#unsnoc"><span class="hs-identifier hs-var">BS.unsnoc</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216512"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><a href="#local-6989586621679216672"><span class="hs-identifier hs-var">rest</span></a></span><span>
 </span><span id="line-696"></span><span>
-</span><span id="line-697"></span><span>            </span><span id="local-6989586621679216517"><span class="annot"><span class="annottext">firstPruned :: Word8
-</span><a href="#local-6989586621679216517"><span class="hs-identifier hs-var hs-var">firstPruned</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216511"><span class="hs-identifier hs-var">firstByte</span></a></span><span>
+</span><span id="line-697"></span><span>            </span><span id="local-6989586621679216677"><span class="annot"><span class="annottext">firstPruned :: Word8
+</span><a href="#local-6989586621679216677"><span class="hs-identifier hs-var hs-var">firstPruned</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679216671"><span class="hs-identifier hs-var">firstByte</span></a></span><span>
 </span><span id="line-698"></span><span>                </span><span class="annot"><span class="annottext">Word8 -&gt; (Word8 -&gt; Word8) -&gt; Word8
 forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Function.html#%26"><span class="hs-operator hs-var">&amp;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Int -&gt; Word8
@@ -1611,9 +1611,9 @@ forall a. Bits a =&gt; a -&gt; Int -&gt; a
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Bits.html#clearBit"><span class="hs-operator hs-var">`clearBit`</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
 </span><span id="line-701"></span><span>
-</span><span id="line-702"></span><span>            </span><span id="local-6989586621679216518"><span class="annot"><span class="annottext">lastPruned :: Word8
-</span><a href="#local-6989586621679216518"><span class="hs-identifier hs-var hs-var">lastPruned</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216515"><span class="hs-identifier hs-var">lastByte</span></a></span><span>
+</span><span id="line-702"></span><span>            </span><span id="local-6989586621679216678"><span class="annot"><span class="annottext">lastPruned :: Word8
+</span><a href="#local-6989586621679216678"><span class="hs-identifier hs-var hs-var">lastPruned</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679216675"><span class="hs-identifier hs-var">lastByte</span></a></span><span>
 </span><span id="line-703"></span><span>                </span><span class="annot"><span class="annottext">Word8 -&gt; (Word8 -&gt; Word8) -&gt; Word8
 forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/Data.Function.html#%26"><span class="hs-operator hs-var">&amp;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8 -&gt; Int -&gt; Word8
@@ -1628,14 +1628,14 @@ forall a. Bits a =&gt; a -&gt; Int -&gt; a
 </span><span class="hs-number">7</span></span><span class="hs-special">)</span><span>
 </span><span id="line-705"></span><span>        </span><span class="hs-keyword">in</span><span>
 </span><span id="line-706"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216517"><span class="hs-identifier hs-var">firstPruned</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679216677"><span class="hs-identifier hs-var">firstPruned</span></a></span><span> </span><span class="annot"><span class="annottext">Word8 -&gt; ByteString -&gt; ByteString
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#cons"><span class="hs-operator hs-var">`BS.cons`</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Word8 -&gt; ByteString
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.html#snoc"><span class="hs-identifier hs-var">BS.snoc</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679216514"><span class="hs-identifier hs-var">rest'</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
-</span><a href="#local-6989586621679216518"><span class="hs-identifier hs-var">lastPruned</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679216674"><span class="hs-identifier hs-var">rest'</span></a></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><a href="#local-6989586621679216678"><span class="hs-identifier hs-var">lastPruned</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-707"></span><span>
-</span><span id="line-708"></span><span>    </span><span class="annot"><a href="#local-6989586621679216488"><span class="hs-identifier hs-type">salt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
-</span><span id="line-709"></span><span>    </span><span id="local-6989586621679216488"><span class="annot"><span class="annottext">salt :: ByteString
-</span><a href="#local-6989586621679216488"><span class="hs-identifier hs-var hs-var">salt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span id="line-708"></span><span>    </span><span class="annot"><a href="#local-6989586621679216648"><span class="hs-identifier hs-type">salt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
+</span><span id="line-709"></span><span>    </span><span id="local-6989586621679216648"><span class="annot"><span class="annottext">salt :: ByteString
+</span><a href="#local-6989586621679216648"><span class="hs-identifier hs-var hs-var">salt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;ed25519 seed&quot;</span></span><span>
 </span><span id="line-710"></span></pre></body></html>
