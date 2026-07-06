@@ -118,9 +118,24 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZ\
         \q2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"
 
-    -- Invalid CRC
+    -- Invalid CRC (negative control)
     specInspectInvalid "non-matching crc32" []
         "Ae2tdPwUPEZ5QJkfzoJgarugsX3rUVbTjg8nqTYmuy2c2msy5augpnm91ZR"
+
+    -- CVE-2025-XXXX regression controls:
+    -- Valid legacy addresses must inspect successfully.
+    specInspectAddress ["Icarus", "none", "\"address_type\": 8"] []
+        "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
+
+    specInspectAddress ["Byron", "none", "\"address_type\": 8"] []
+        "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZq2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"
+
+    -- Mutated addresses with trailing bytes must be rejected.
+    specInspectInvalid "Leftovers when decoding CBOR" []
+        "FHnt4NHDYS3mWHPRvgbJio3nHma3qW76bo7z9oYfDsie9GpqdUT5VFrQrVkhie5"
+
+    specInspectInvalid "Leftovers when decoding CBOR" []
+        "KjgoiXEdBrKbPJXtVLzpChsXvvj5FDS3jnjBLuPPRSQcTpbNEme4QBbvQCopCDNKVunvXRibDdSgk9pzKpX9Vz8QnyhCsoCBpDujrYqXaRpD"
 
 specInspectAddress :: [String] -> [String] -> String -> SpecWith ()
 specInspectAddress mustHave args addr = it addr $ do
