@@ -20,11 +20,7 @@ module Cardano.Address.Style.IcarusSpec
 import Prelude
 
 import Cardano.Address
-    ( PaymentAddress (..)
-    , base58
-    , unsafeMkAddress
-    , unAddress
-    )
+    ( PaymentAddress (..), base58, unAddress, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -38,8 +34,8 @@ import Cardano.Address.Derivation
     , unsafeMkIndex
     )
 import Cardano.Address.Style.Icarus
-    ( Icarus (..)
-    , ErrInspectAddress (..)
+    ( ErrInspectAddress (..)
+    , Icarus (..)
     , Role (..)
     , eitherInspectAddress
     , icarusMainnet

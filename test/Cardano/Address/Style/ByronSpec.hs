@@ -20,11 +20,7 @@ module Cardano.Address.Style.ByronSpec
 import Prelude
 
 import Cardano.Address
-    ( Address
-    , PaymentAddress (..)
-    , unsafeMkAddress
-    , unAddress
-    )
+    ( Address, PaymentAddress (..), unAddress, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -38,8 +34,8 @@ import Cardano.Address.Derivation
 import Cardano.Address.Style.Byron
     ( Byron (..)
     , ErrInspectAddress (..)
-    , eitherInspectAddress
     , byronMainnet
+    , eitherInspectAddress
     , minSeedLengthBytes
     )
 import Cardano.Mnemonic
