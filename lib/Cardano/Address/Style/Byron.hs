@@ -407,7 +407,9 @@ eitherInspectAddress mRootPub addr = do
     decodePayload = do
         _ <- CBOR.decodeListLenCanonicalOf 3
         root <- CBOR.decodeBytes
-        (root,) <$> CBOR.decodeAllAttributes
+        attrs <- CBOR.decodeAllAttributes
+        _ <- CBOR.decodeWord8
+        pure (root, attrs)
 
     decryptPath :: (Word8, ByteString) -> XPub -> Either ErrInspectAddress PayloadInfo
     decryptPath attr rootPub = do

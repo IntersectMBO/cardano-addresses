@@ -20,7 +20,11 @@ module Cardano.Address.Style.IcarusSpec
 import Prelude
 
 import Cardano.Address
-    ( PaymentAddress (..), base58 )
+    ( PaymentAddress (..)
+    , base58
+    , unsafeMkAddress
+    , unAddress
+    )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -35,7 +39,9 @@ import Cardano.Address.Derivation
     )
 import Cardano.Address.Style.Icarus
     ( Icarus (..)
+    , ErrInspectAddress (..)
     , Role (..)
+    , eitherInspectAddress
     , icarusMainnet
     , roleToIndex
     , unsafeGenerateKeyFromHardwareLedger
@@ -71,6 +77,10 @@ spec = do
             property prop_accountKeyDerivation
         it "N(CKDpriv((kpar, cpar), i)) === CKDpub(N(kpar, cpar), i)" $
             property prop_publicChildKeyDerivation
+
+    describe "Address Inspection" $ do
+        it "eitherInspectAddress rejects trailing bytes" $
+            property prop_rejectTrailingBytes
 
     describe "Golden Tests - Icarus' style addresses" $ do
         let seed0 = unsafeMkSomeMnemonicFromEntropy (Proxy @15)
@@ -202,6 +212,23 @@ prop_accountKeyDerivation mw ix =
   where
     rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
     accXPrv = deriveAccountPrivateKey rootXPrv ix
+
+prop_rejectTrailingBytes
+    :: SomeMnemonic
+    -> Role
+    -> Index 'Soft 'PaymentK
+    -> Property
+prop_rejectTrailingBytes mw role ix =
+    isLeftDeserialiseError $ eitherInspectAddress malformed
+  where
+    rootXPrv = genMasterKeyFromMnemonic mw mempty :: Icarus 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey rootXPrv minBound
+    addrXPrv = deriveAddressPrivateKey accXPrv role ix
+    address = paymentAddress icarusMainnet $ toXPub <$> addrXPrv
+    malformed = unsafeMkAddress $ unAddress address <> "\NUL"
+
+    isLeftDeserialiseError (Left (DeserialiseError _)) = property True
+    isLeftDeserialiseError _ = property False
 
 {-------------------------------------------------------------------------------
                                Golden Tests

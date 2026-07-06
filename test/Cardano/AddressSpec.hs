@@ -19,6 +19,7 @@ import Cardano.Address
     , bech32
     , fromBase58
     , fromBech32
+    , unAddress
     )
 import Cardano.Address.Derivation
     ( Depth (..), XPub )
@@ -26,10 +27,14 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Data.Function
     ( (&) )
 import Data.Text
     ( Text )
+import Data.Text.Encoding
+    ( decodeLatin1 )
 import Test.Arbitrary
     ()
 import Test.Hspec
@@ -37,8 +42,9 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Property, counterexample, label )
+    ( Property, counterexample, label, (===) )
 
+import qualified Data.ByteString as BS
 import qualified Data.Text as T
 
 spec :: Spec
@@ -54,6 +60,12 @@ spec = describe "Text Encoding Roundtrips" $ do
 
     prop "bech32 . fromBech32 - Icarus" $
         prop_roundtripTextEncoding @Icarus bech32 fromBech32
+
+    prop "fromBase58 rejects trailing bytes - Byron" $
+        prop_rejectTrailingBytesFromBase58 @Byron
+
+    prop "fromBase58 rejects trailing bytes - Icarus" $
+        prop_rejectTrailingBytesFromBase58 @Icarus
 
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.
@@ -78,3 +90,17 @@ prop_roundtripTextEncoding encode decode addXPub discrimination =
   where
     address = paymentAddress discrimination addXPub
     result  = decode (encode address)
+
+-- | Appending trailing bytes to a valid address and re-encoding in base58
+-- should be rejected by 'fromBase58'.
+prop_rejectTrailingBytesFromBase58
+    :: forall k. (PaymentAddress k)
+    => k 'PaymentK XPub
+    -> NetworkDiscriminant k
+    -> Property
+prop_rejectTrailingBytesFromBase58 addXPub discrimination =
+    fromBase58 malformedText === Nothing
+  where
+    address = paymentAddress discrimination addXPub
+    malformedBytes = unAddress address <> BS.singleton 0
+    malformedText = decodeLatin1 $ encode EBase58 malformedBytes

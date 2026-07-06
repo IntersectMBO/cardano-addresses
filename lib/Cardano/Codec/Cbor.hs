@@ -283,6 +283,7 @@ decodeProtocolMagicAttr = do
     _ <- CBOR.decodeListLenCanonicalOf 3
     _ <- CBOR.decodeBytes
     attrs <- decodeAllAttributes
+    _ <- CBOR.decodeWord8
     case find ((== 2) . fst) attrs of
         Nothing -> pure Nothing
         Just (_, bytes) -> case deserialiseCbor CBOR.decodeWord32 bytes of
@@ -377,20 +378,30 @@ decodeNestedBytes dec bytes =
             fail "Could not decode nested bytes"
 
 -- | Shortcut for deserialising a strict 'Bytestring' with the given decoder.
+--
+-- Rejects any trailing bytes after a successful CBOR decode.
 deserialiseCbor
     :: (forall s. CBOR.Decoder s a)
     -> ByteString
     -> Either CBOR.DeserialiseFailure a
-deserialiseCbor dec =
-  fmap snd . CBOR.deserialiseFromBytes dec . BL.fromStrict
+deserialiseCbor dec bytes =
+    case CBOR.deserialiseFromBytes dec (BL.fromStrict bytes) of
+        Right ("", res) ->
+            Right res
+        Right _ ->
+            Left (CBOR.DeserialiseFailure 0 "Leftovers when decoding CBOR")
+        Left err ->
+            Left err
 
 -- | CBOR deserialise without error handling - handy for prototypes or testing.
+--
+-- Rejects any trailing bytes after a successful CBOR decode.
 unsafeDeserialiseCbor
     :: HasCallStack
     => (forall s. CBOR.Decoder s a)
     -> BL.ByteString
     -> a
-unsafeDeserialiseCbor decoder bytes = either
-    (\e -> error $ "unsafeSerializeCbor: " <> show e)
-    snd
-    (CBOR.deserialiseFromBytes decoder bytes)
+unsafeDeserialiseCbor decoder bytes = case CBOR.deserialiseFromBytes decoder bytes of
+    Right ("", res) -> res
+    Right _ -> error "unsafeDeserialiseCbor: Leftovers when decoding CBOR"
+    Left e -> error $ "unsafeDeserialiseCbor: " <> show e
