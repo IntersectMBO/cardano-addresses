@@ -33,11 +33,15 @@ spec = do
         specInvalidHardIndex
         specNegativeSoftIndex
         specNegativeHardIndex
+        specStandardHardIndex
         prop "toString . fromString @ DerivationIndex"
             prop_roundtripStringDerivationIndex
 
     describe "DerivationPath" $ do
         specEmptyPath
+        specAbsoluteStandardPath
+        specRelativeStandardPath
+        specMixedNotationPath
         prop "toString . fromString @ DerivationPath"
             prop_roundtripStringDerivationPath
 
@@ -65,6 +69,29 @@ specNegativeHardIndex = it "negative hard derivation index" $ do
     left (isInfixOf "too low") (derivationIndexFromString "-1H")
         `shouldBe` (Left True)
 
+specStandardHardIndex
+    :: SpecWith ()
+specStandardHardIndex = it "standard hard derivation index with single quote" $ do
+    derivationIndexFromString "0'" `shouldBe` derivationIndexFromString "0H"
+    derivationIndexFromString "2147483647'" `shouldBe` derivationIndexFromString "2147483647H"
+
+specAbsoluteStandardPath
+    :: SpecWith ()
+specAbsoluteStandardPath = it "absolute standard derivation path with m prefix" $ do
+    derivationPathFromString "m/1852'/1815'/0'/2/0"
+        `shouldBe` derivationPathFromString "1852H/1815H/0H/2/0"
+
+specRelativeStandardPath
+    :: SpecWith ()
+specRelativeStandardPath = it "relative standard derivation path with single quotes" $ do
+    derivationPathFromString "1852'/1815'/0'/2/0"
+        `shouldBe` derivationPathFromString "1852H/1815H/0H/2/0"
+
+specMixedNotationPath
+    :: SpecWith ()
+specMixedNotationPath = it "mixed notation derivation path" $ do
+    derivationPathFromString "m/1852H/1815'/0H/2/0"
+        `shouldBe` derivationPathFromString "1852H/1815H/0H/2/0"
 
 prop_roundtripStringDerivationIndex
     :: DerivationIndex

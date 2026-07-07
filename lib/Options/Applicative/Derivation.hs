@@ -99,9 +99,12 @@ newtype DerivationPath = DerivationPath [DerivationIndex]
 derivationPathFromString :: String -> Either String DerivationPath
 derivationPathFromString str =
     DerivationPath
-        <$> mapM (derivationIndexFromString . T.unpack) (T.splitOn "/" txt)
+        <$> mapM (derivationIndexFromString . T.unpack) (T.splitOn "/" txt')
   where
-    txt = T.pack str
+    txt  = T.pack str
+    txt' = case T.stripPrefix "m/" txt of
+        Just rest -> rest
+        Nothing   -> txt
 
 derivationPathToString :: DerivationPath -> String
 derivationPathToString (DerivationPath xs) =
@@ -115,8 +118,8 @@ derivationPathArg = argument (eitherReader derivationPathFromString) $ mempty
     <> metavar "DERIVATION-PATH"
     <> help
         "Slash-separated derivation path. Hardened indexes are marked with a \
-        \'H' (e.g. 1852H/1815H/0H/0)."
-    <> completer (listCompleter ["1852H/1815H/0H/", "44H/1815H/0H/"])
+        \'H' or a single quote (e.g. 1852H/1815H/0H/0 or m/1852'/1815'/0'/2/0)."
+    <> completer (listCompleter ["1852H/1815H/0H/", "44H/1815H/0H/", "m/1852'/1815'/0'/"])
 
 --
 -- Derivation Index
@@ -145,12 +148,15 @@ mkDerivationIndex ix
         pure $ DerivationIndex $ fromIntegral ix
 
 -- | Convert a string to a derivation index. String must be followed by a
--- capital /H/ to mark hardened index. For example @0@ refers to the first soft
--- index, whereas @0H@ refers to the first hardened index.
+-- capital /H/ or a single quote /'/ to mark hardened index. For example @0@
+-- refers to the first soft index, whereas @0H@ or @0'@ refers to the first
+-- hardened index.
 derivationIndexFromString :: String -> Either String DerivationIndex
 derivationIndexFromString "" = Left "An empty string is not a derivation index!"
 derivationIndexFromString str
     | "H" `isSuffixOf` str = do
+        parseHardenedIndex (init str)
+    | "'" `isSuffixOf` str = do
         parseHardenedIndex (init str)
     | otherwise = do
         parseSoftIndex str
@@ -170,7 +176,7 @@ derivationIndexFromString str
             , show (indexToInteger (minBound @DerivationIndex))
             , " and "
             , show (indexToInteger firstHardened)
-            , " ending with a capital 'H'. For example: \"42H\","
+            , " ending with a capital 'H' or a single quote ('). For example: \"42H\" or \"42'\"."
             ]
 
     parseSoftIndex txt = do
@@ -191,7 +197,9 @@ derivationIndexFromString str
                     , " is too high to be a soft derivation index. "
                     , "Did you mean \""
                     , show (ix - indexToInteger firstHardened)
-                    , "H\"?"
+                    , "H\" or \""
+                    , show (ix - indexToInteger firstHardened)
+                    , "'?"
                     ]
             | otherwise =
                 pure ()
