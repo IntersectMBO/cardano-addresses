@@ -9,7 +9,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -45,7 +44,7 @@ module Cardano.Address.Style.Icarus
     , inspectAddress
     , inspectIcarusAddress
     , paymentAddress
-    , ErrInspectAddress
+    , ErrInspectAddress (..)
     , prettyErrInspectAddress
 
       -- * Network Discrimination
@@ -475,7 +474,9 @@ eitherInspectAddress addr = do
     decodePayload = do
         _ <- CBOR.decodeListLenCanonicalOf 3
         root <- CBOR.decodeBytes
-        (root,) <$> CBOR.decodeAllAttributes
+        attrs <- CBOR.decodeAllAttributes
+        _ <- CBOR.decodeWord8
+        pure (root, attrs)
 
 -- | The result of 'eitherInspectAddress' for Icarus addresses.
 --

@@ -19,6 +19,8 @@ module Cardano.Address.Style.ByronSpec
 
 import Prelude
 
+import Cardano.Address
+    ( Address, PaymentAddress (..), unAddress, unsafeMkAddress )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -26,10 +28,16 @@ import Cardano.Address.Derivation
     , HardDerivation (..)
     , Index
     , XPrv
+    , toXPub
     , xprvFromBytes
     )
 import Cardano.Address.Style.Byron
-    ( Byron (..), minSeedLengthBytes )
+    ( Byron (..)
+    , ErrInspectAddress (..)
+    , byronMainnet
+    , eitherInspectAddress
+    , minSeedLengthBytes
+    )
 import Cardano.Mnemonic
     ( SomeMnemonic (..) )
 import Control.Monad
@@ -60,6 +68,9 @@ spec = do
             property prop_keyDerivationFromSeed
         it "Key derivation from master key works for various indexes" $
             property prop_keyDerivationFromXPrv
+    describe "Address Inspection" $ do
+        it "eitherInspectAddress rejects trailing bytes" $
+            property prop_rejectTrailingBytes
 
 {-------------------------------------------------------------------------------
                                Properties
@@ -88,6 +99,23 @@ prop_keyDerivationFromXPrv xprv accIx addrIx =
     rootXPrv = genMasterKeyFromXPrv xprv :: Byron 'RootK XPrv
     accXPrv  = deriveAccountPrivateKey rootXPrv accIx
     addrXPrv = deriveAddressPrivateKey accXPrv () addrIx
+
+prop_rejectTrailingBytes
+    :: SomeMnemonic
+    -> Index 'WholeDomain 'AccountK
+    -> Index 'WholeDomain 'PaymentK
+    -> Property
+prop_rejectTrailingBytes mw accIx addrIx =
+    isLeftDeserialiseError $ eitherInspectAddress Nothing malformed
+  where
+    rootXPrv = genMasterKeyFromMnemonic mw () :: Byron 'RootK XPrv
+    accXPrv = deriveAccountPrivateKey rootXPrv accIx
+    addrXPrv = deriveAddressPrivateKey accXPrv () addrIx
+    address = paymentAddress byronMainnet $ toXPub <$> addrXPrv
+    malformed = unsafeMkAddress $ unAddress address <> "\NUL"
+
+    isLeftDeserialiseError (Left (DeserialiseError _)) = property True
+    isLeftDeserialiseError _ = property False
 
 {-------------------------------------------------------------------------------
                                   Golden tests

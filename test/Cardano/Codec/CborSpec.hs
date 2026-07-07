@@ -50,6 +50,8 @@ import Test.Hspec
 import Test.QuickCheck
     ( Arbitrary (..), Property, conjoin, property, vector, (===), (==>) )
 
+import Cardano.Address.Internal
+    ( DeserialiseFailure (..) )
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
@@ -118,6 +120,18 @@ spec = do
                 , addrIndex =
                     3234874775
                 }
+
+    describe "Trailing bytes are rejected" $ do
+        it "deserialiseCbor rejects trailing bytes" $ do
+            let addr = unsafeFromHex
+                    "82d818584283581ca08bcb9e5e8cd30d5aea6d434c46abd8604fe4907d\
+                    \56b9730ca28ce5a101581e581c22e25f2464ec7295b556d86d0ec33bc1\
+                    \a681e7656da92dbc0582f5e4001a3abe2aa5"
+            let malformed = addr <> "\NUL"
+            deserialiseCbor decodeAddressPayload malformed
+                `shouldBe` Left
+                    (DeserialiseFailure 0 "Leftovers when decoding CBOR")
+                
 
 {-------------------------------------------------------------------------------
                     Golden tests for Address derivation path
