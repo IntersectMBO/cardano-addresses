@@ -58,6 +58,9 @@ mod liftCmd = command "child" $
         <> progDesc "Derive child keys from a parent public/private key"
         <> footerDoc (Just $ prettyText $ mconcat
             [ "The parent key is read from stdin."
+            , " Hardened indexes can be written with the legacy 'H' suffix or the "
+            , "standard single-quote (') suffix. An optional 'm/' prefix denotes "
+            , "absolute derivation from the master key."
             ])
   where
     parser = Child

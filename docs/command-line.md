@@ -314,6 +314,15 @@ cat acct.xsk
 acct_xsk15ztha8ws7qjze5vmdkwqh0ddzvtlgstkg79swazhc5lxns2849plr3msjx082mcmd9hc24ujczk2cjnjwrcz4tjaucw9jqf8h5yc7d84rac0zdckkuhazpam0kleg4sq52ph3e0wn98a64hr8g5cpmh9zqpwtrhy
 </pre>
 
+> :information_source: Derivation paths support both the legacy `H` suffix and the **standard-compliant** single-quote (`'`) suffix for hardened indexes. An optional `m/` prefix can be used to denote absolute derivation from the master key. The following commands are all equivalent and produce the same key:
+>
+> ```console
+> cardano-address key child 1852H/1815H/0H < root.xsk > acct.xsk
+> cardano-address key child m/1852'/1815'/0' < root.xsk > acct.xsk
+> cardano-address key child 1852'/1815'/0' < root.xsk > acct.xsk
+> cardano-address key child m/1852H/1815'/0H < root.xsk > acct.xsk
+> ```
+
 ```console
 cardano-address key walletid < acct.xsk
 ```

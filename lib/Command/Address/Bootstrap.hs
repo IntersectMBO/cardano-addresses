@@ -103,7 +103,7 @@ run Cmd{networkTag,rootXPub,derivationPath} = do
                         xkey = Byron.liftXPub root path xpub
                     pure $ Byron.paymentAddress discriminant xkey
                 _ -> do
-                    fail "Byron derivation path must describe 2 levels (e.g. 0H/0H)"
+                    fail "Byron derivation path must describe 2 levels (e.g. 0H/0H or 0'/0')."
     B8.hPutStr stdout $ T.encodeUtf8 $ base58 addr
   where
     discriminant :: NetworkDiscriminant Byron -- Or Icarus, same.

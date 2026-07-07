@@ -179,7 +179,11 @@ The binary reads JSON from stdin and writes JSON to stdout. A `cmd` field select
 echo '{"cmd":"inspect","address":"addr1..."}' | wasmtime result/cardano-addresses.wasm
 
 # Key derivation (CIP-1852 Shelley)
+# Hardened indexes can use the legacy 'H' suffix or the standard single-quote (') suffix.
+# An optional 'm/' prefix denotes absolute derivation from the master key.
 echo '{"cmd":"derive","mnemonic":"word1 word2 ...","path":"1852H/1815H/0H/0/0"}' | wasmtime result/cardano-addresses.wasm
+# Equivalent with standard notation:
+# echo '{"cmd":"derive","mnemonic":"word1 word2 ...","path":"m/1852'/1815'/0'/2/0"}' | wasmtime result/cardano-addresses.wasm
 
 # Address construction
 echo '{"cmd":"make-address","type":"enterprise","network":"testnet","payment_key":"hex..."}' | wasmtime result/cardano-addresses.wasm
