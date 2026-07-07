@@ -137,6 +137,8 @@ firstHardened = DerivationIndex 0x80000000
 -- | Smart-constructor for a 'DerivationIndex'
 mkDerivationIndex :: Integer -> Either String DerivationIndex
 mkDerivationIndex ix
+    | ix < 0 =
+        Left $ show ix <> " is too low to be a derivation index."
     | ix > fromIntegral (maxBound @Word32) =
         Left $ show ix <> " is too high to be a derivation index."
     | otherwise =
@@ -155,6 +157,11 @@ derivationIndexFromString str
   where
     parseHardenedIndex txt = do
         ix <- left (const msg) $ readEitherSafe txt
+        unless (ix >= 0) $ Left $ mconcat
+            [ show ix
+            , " is too low to be a hardened derivation index. "
+            , "Hardened indexes must be non-negative."
+            ]
         mkDerivationIndex $ ix + indexToInteger firstHardened
       where
         msg = mconcat
@@ -172,6 +179,12 @@ derivationIndexFromString str
         mkDerivationIndex ix
       where
         guardSoftIndex ix
+            | ix < 0 =
+                Left $ mconcat
+                    [ show ix
+                    , " is too low to be a soft derivation index. "
+                    , "Soft indexes must be non-negative."
+                    ]
             | ix >= indexToInteger firstHardened =
                 Left $ mconcat
                     [ show ix

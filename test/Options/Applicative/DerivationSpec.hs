@@ -31,6 +31,8 @@ spec = do
     describe "DerivationIndex" $ do
         specInvalidSoftIndex
         specInvalidHardIndex
+        specNegativeSoftIndex
+        specNegativeHardIndex
         prop "toString . fromString @ DerivationIndex"
             prop_roundtripStringDerivationIndex
 
@@ -49,6 +51,18 @@ specInvalidHardIndex
     :: SpecWith ()
 specInvalidHardIndex = it "invalid hard derivation index" $ do
     left (isInfixOf "Unable to parse hardened index") (derivationIndexFromString "💩H")
+        `shouldBe` (Left True)
+
+specNegativeSoftIndex
+    :: SpecWith ()
+specNegativeSoftIndex = it "negative soft derivation index" $ do
+    left (isInfixOf "too low") (derivationIndexFromString "-1")
+        `shouldBe` (Left True)
+
+specNegativeHardIndex
+    :: SpecWith ()
+specNegativeHardIndex = it "negative hard derivation index" $ do
+    left (isInfixOf "too low") (derivationIndexFromString "-1H")
         `shouldBe` (Left True)
 
 
