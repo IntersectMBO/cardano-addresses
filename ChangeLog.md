@@ -1,5 +1,16 @@
-## [4.0.7]
+## [4.0.8]
+	
+## [4.0.7] - 2026-07-07
 
+### Fixed
+
+- Make cbor reading of byron and icarus stricter - no trailing bytes accepted
+- Do not allow indices with negative values in derivation paths	
+
+### Added
+
+- add CIP-1852 compliant key derivation in non-intrusive way to the current one	
+	
 ## [4.0.6] - 2026-06-22
 
 ### Fixed
