@@ -66,6 +66,8 @@ import Data.ByteString
     ( ByteString )
 import Data.List
     ( intercalate, isSuffixOf )
+import Data.Maybe
+    ( fromMaybe )
 import Data.Word
     ( Word32 )
 import Options.Applicative
@@ -102,9 +104,7 @@ derivationPathFromString str =
         <$> mapM (derivationIndexFromString . T.unpack) (T.splitOn "/" txt')
   where
     txt  = T.pack str
-    txt' = case T.stripPrefix "m/" txt of
-        Just rest -> rest
-        Nothing   -> txt
+    txt' = fromMaybe txt (T.stripPrefix "m/" txt)
 
 derivationPathToString :: DerivationPath -> String
 derivationPathToString (DerivationPath xs) =
