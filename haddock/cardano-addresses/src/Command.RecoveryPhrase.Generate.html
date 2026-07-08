@@ -39,7 +39,7 @@
 </span><a href="Command.RecoveryPhrase.Generate.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Options.Applicative.MnemonicSize.html#MnemonicSize"><span class="hs-identifier hs-type">MnemonicSize</span></a></span><span>
 </span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="language"><span class="annot"><span class="annottext">Cmd -&gt; SupportedDictionary
 </span><a href="Command.RecoveryPhrase.Generate.html#language"><span class="hs-identifier hs-var hs-var">language</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Cardano.Dictionary.html#SupportedDictionary"><span class="hs-identifier hs-type">SupportedDictionary</span></a></span><span>
-</span><span id="line-40"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679220258"><span id="local-6989586621679220266"><span id="local-6989586621679220270"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
+</span><span id="line-40"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679220433"><span id="local-6989586621679220441"><span id="local-6989586621679220445"><span class="annot"><span class="annottext">Int -&gt; Cmd -&gt; ShowS
 [Cmd] -&gt; ShowS
 Cmd -&gt; String
 (Int -&gt; Cmd -&gt; ShowS)
@@ -54,10 +54,10 @@ $cshowList :: [Cmd] -&gt; ShowS
 showList :: [Cmd] -&gt; ShowS
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-41"></span><span>
-</span><span id="line-42"></span><span id="local-6989586621679220064"><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679220064"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679220064"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
+</span><span id="line-42"></span><span id="local-6989586621679220239"><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-type">mod</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679220239"><span class="hs-identifier hs-type">parent</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Mod</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">CommandFields</span></span><span> </span><span class="annot"><a href="#local-6989586621679220239"><span class="hs-identifier hs-type">parent</span></a></span></span><span>
 </span><span id="line-43"></span><span id="mod"><span class="annot"><span class="annottext">mod :: forall parent. (Cmd -&gt; parent) -&gt; Mod CommandFields parent
-</span><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679220281"><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679220281"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
+</span><a href="Command.RecoveryPhrase.Generate.html#mod"><span class="hs-identifier hs-var hs-var">mod</span></a></span></span><span> </span><span id="local-6989586621679220456"><span class="annot"><span class="annottext">Cmd -&gt; parent
+</span><a href="#local-6989586621679220456"><span class="hs-identifier hs-var">liftCmd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ParserInfo parent -&gt; Mod CommandFields parent
 forall a. String -&gt; ParserInfo a -&gt; Mod CommandFields a
 </span><span class="hs-identifier hs-var">command</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;generate&quot;</span></span><span> </span><span class="annot"><span class="annottext">(ParserInfo parent -&gt; Mod CommandFields parent)
@@ -75,8 +75,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 forall a b. (a -&gt; b) -&gt; Parser a -&gt; Parser b
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#fmap"><span class="hs-identifier hs-var">fmap</span></a></span><span> </span><span class="annot"><span class="annottext">Cmd -&gt; parent
-</span><a href="#local-6989586621679220281"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
-</span><a href="#local-6989586621679220282"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
+</span><a href="#local-6989586621679220456"><span class="hs-identifier hs-var">liftCmd</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Cmd
+</span><a href="#local-6989586621679220457"><span class="hs-identifier hs-var">parser</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(InfoMod parent -&gt; ParserInfo parent)
 -&gt; InfoMod parent -&gt; ParserInfo parent
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">InfoMod parent
@@ -89,8 +89,8 @@ forall a. String -&gt; InfoMod a
 </span><span class="hs-identifier hs-var">progDesc</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;Generate a recovery phrase for a specified mnemonic size and language.&quot;</span></span><span>
 </span><span id="line-46"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-47"></span><span>    </span><span id="local-6989586621679220282"><span class="annot"><span class="annottext">parser :: Parser Cmd
-</span><a href="#local-6989586621679220282"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MnemonicSize -&gt; SupportedDictionary -&gt; Cmd
+</span><span id="line-47"></span><span>    </span><span id="local-6989586621679220457"><span class="annot"><span class="annottext">parser :: Parser Cmd
+</span><a href="#local-6989586621679220457"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MnemonicSize -&gt; SupportedDictionary -&gt; Cmd
 </span><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-var">Generate</span></a></span><span>
 </span><span id="line-48"></span><span>        </span><span class="annot"><span class="annottext">(MnemonicSize -&gt; SupportedDictionary -&gt; Cmd)
 -&gt; Parser MnemonicSize -&gt; Parser (SupportedDictionary -&gt; Cmd)
@@ -106,16 +106,16 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span id="line-50"></span><span>
 </span><span id="line-51"></span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Cmd"><span class="hs-identifier hs-type">Cmd</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-52"></span><span id="run"><span class="annot"><span class="annottext">run :: Cmd -&gt; IO ()
-</span><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-type">Generate</span></a></span><span class="hs-special">{</span><span id="local-6989586621679220286"><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="Command.RecoveryPhrase.Generate.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span class="annot"><a href="Command.RecoveryPhrase.Generate.html#Generate"><span class="hs-identifier hs-type">Generate</span></a></span><span class="hs-special">{</span><span id="local-6989586621679220461"><span class="annot"><span class="annottext">MnemonicSize
 size :: Cmd -&gt; MnemonicSize
 size :: MnemonicSize
-</span><a href="Command.RecoveryPhrase.Generate.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679220287"><span class="annot"><span class="annottext">SupportedDictionary
+</span><a href="Command.RecoveryPhrase.Generate.html#size"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679220462"><span class="annot"><span class="annottext">SupportedDictionary
 language :: Cmd -&gt; SupportedDictionary
 language :: SupportedDictionary
 </span><a href="Command.RecoveryPhrase.Generate.html#language"><span class="hs-identifier hs-var hs-var">language</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-53"></span><span>    </span><span id="local-6989586621679220288"><span class="annot"><span class="annottext">Dictionary -&gt; [Text]
-</span><a href="#local-6989586621679220288"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">MnemonicSize
-</span><a href="#local-6989586621679220286"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-53"></span><span>    </span><span id="local-6989586621679220463"><span class="annot"><span class="annottext">Dictionary -&gt; [Text]
+</span><a href="#local-6989586621679220463"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">MnemonicSize
+</span><a href="#local-6989586621679220461"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-54"></span><span>        </span><span class="annot"><span class="annottext">MnemonicSize
 </span><a href="Options.Applicative.MnemonicSize.html#MS_9"><span class="hs-identifier hs-var">MS_9</span></a></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">forall (mw :: Nat). Mnemonic mw -&gt; Dictionary -&gt; [Text]
 </span><a href="Cardano.Mnemonic.html#mnemonicToTextWithDict"><span class="hs-identifier hs-var">mnemonicToTextWithDict</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-number">9</span></span><span>  </span><span class="annot"><span class="annottext">(Mnemonic 9 -&gt; Dictionary -&gt; [Text])
@@ -255,9 +255,9 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/text-2.0.2/src/Data.Text.html#unwords"><span class="hs-identifier hs-var">T.unwords</span></a></span><span> </span><span class="annot"><span class="annottext">([Text] -&gt; Text) -&gt; [Text] -&gt; Text
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Dictionary -&gt; [Text]
-</span><a href="#local-6989586621679220288"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">(Dictionary -&gt; [Text]) -&gt; Dictionary -&gt; [Text]
+</span><a href="#local-6989586621679220463"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">(Dictionary -&gt; [Text]) -&gt; Dictionary -&gt; [Text]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary -&gt; Dictionary
 </span><a href="Cardano.Dictionary.html#dictionaryFromLanguage"><span class="hs-identifier hs-var">dictionaryFromLanguage</span></a></span><span> </span><span class="annot"><span class="annottext">SupportedDictionary
-</span><a href="#local-6989586621679220287"><span class="hs-identifier hs-var">language</span></a></span><span>
+</span><a href="#local-6989586621679220462"><span class="hs-identifier hs-var">language</span></a></span><span>
 </span><span id="line-61"></span></pre></body></html>

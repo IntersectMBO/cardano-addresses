@@ -5,7 +5,7 @@
 -- | Please see the README on GitHub at
 --   <a>https://github.com/IntersectMBO/cardano-addresses</a>
 @package cardano-addresses
-@version 4.0.6
+@version 4.0.7
 
 
 -- | Vendored from <tt>cardano-crypto</tt> (Apache-2.0). Original:
@@ -780,10 +780,14 @@ decodeAllAttributes :: Decoder s [(Word8, ByteString)]
 
 -- | Shortcut for deserialising a strict <tt>Bytestring</tt> with the given
 --   decoder.
+--   
+--   Rejects any trailing bytes after a successful CBOR decode.
 deserialiseCbor :: (forall s. Decoder s a) -> ByteString -> Either DeserialiseFailure a
 
 -- | CBOR deserialise without error handling - handy for prototypes or
 --   testing.
+--   
+--   Rejects any trailing bytes after a successful CBOR decode.
 unsafeDeserialiseCbor :: HasCallStack => (forall s. Decoder s a) -> ByteString -> a
 
 
@@ -1899,6 +1903,8 @@ paymentAddress :: NetworkDiscriminant Icarus -> Icarus 'PaymentK XPub -> Address
 
 -- | Possible errors from inspecting a Shelley address
 data ErrInspectAddress
+UnexpectedDerivationPath :: ErrInspectAddress
+DeserialiseError :: DeserialiseFailure -> ErrInspectAddress
 
 -- | Pretty-print an <a>ErrInspectAddress</a>
 prettyErrInspectAddress :: ErrInspectAddress -> String

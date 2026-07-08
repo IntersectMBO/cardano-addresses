@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679195379"><span id="local-6989586621679195380"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621679195544"><span id="local-6989586621679195545"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
 </span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
 </span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
 </span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span><span>
@@ -31,7 +31,7 @@
 </span><span id="line-31"></span><span class="hs-keyword">type</span><span> </span><span id="DerivationIndex"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationIndex"><span class="hs-identifier hs-var">DerivationIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Word.html#Word32"><span class="hs-identifier hs-type">Word32</span></a></span><span>
 </span><span id="line-32"></span><span>
 </span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="DerivationScheme"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme"><span class="hs-identifier hs-var">DerivationScheme</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DerivationScheme1"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme1"><span class="hs-identifier hs-var">DerivationScheme1</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="DerivationScheme2"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-var">DerivationScheme2</span></a></span></span><span>
-</span><span id="line-34"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195386"><span id="local-6989586621679195388"><span id="local-6989586621679195392"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme -&gt; ShowS
+</span><span id="line-34"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195551"><span id="local-6989586621679195553"><span id="local-6989586621679195557"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme -&gt; ShowS
 [DerivationScheme] -&gt; ShowS
 DerivationScheme -&gt; String
 (Int -&gt; DerivationScheme -&gt; ShowS)
@@ -46,7 +46,7 @@ $cshow :: DerivationScheme -&gt; String
 show :: DerivationScheme -&gt; String
 $cshowList :: [DerivationScheme] -&gt; ShowS
 showList :: [DerivationScheme] -&gt; ShowS
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195396"><span id="local-6989586621679195398"><span class="annot"><span class="annottext">DerivationScheme -&gt; DerivationScheme -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195561"><span id="local-6989586621679195563"><span class="annot"><span class="annottext">DerivationScheme -&gt; DerivationScheme -&gt; Bool
 (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
 -&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
 -&gt; Eq DerivationScheme
@@ -55,7 +55,7 @@ $c== :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
 == :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
 $c/= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
 /= :: DerivationScheme -&gt; DerivationScheme -&gt; Bool
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195405"><span id="local-6989586621679195407"><span id="local-6989586621679195409"><span id="local-6989586621679195413"><span id="local-6989586621679195416"><span id="local-6989586621679195419"><span id="local-6989586621679195422"><span class="annot"><span class="annottext">Eq DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195570"><span id="local-6989586621679195572"><span id="local-6989586621679195574"><span id="local-6989586621679195578"><span id="local-6989586621679195581"><span id="local-6989586621679195584"><span id="local-6989586621679195587"><span class="annot"><span class="annottext">Eq DerivationScheme
 Eq DerivationScheme =&gt;
 (DerivationScheme -&gt; DerivationScheme -&gt; Ordering)
 -&gt; (DerivationScheme -&gt; DerivationScheme -&gt; Bool)
@@ -92,7 +92,7 @@ $cmax :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
 max :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
 $cmin :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
 min :: DerivationScheme -&gt; DerivationScheme -&gt; DerivationScheme
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195426"><span id="local-6989586621679195434"><span id="local-6989586621679195440"><span id="local-6989586621679195450"><span id="local-6989586621679195452"><span id="local-6989586621679195456"><span id="local-6989586621679195460"><span id="local-6989586621679195464"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195591"><span id="local-6989586621679195599"><span id="local-6989586621679195605"><span id="local-6989586621679195615"><span id="local-6989586621679195617"><span id="local-6989586621679195621"><span id="local-6989586621679195625"><span id="local-6989586621679195629"><span class="annot"><span class="annottext">Int -&gt; DerivationScheme
 DerivationScheme -&gt; Int
 DerivationScheme -&gt; [DerivationScheme]
 DerivationScheme -&gt; DerivationScheme
@@ -137,14 +137,14 @@ $cenumFromThenTo :: DerivationScheme
 -&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
 enumFromThenTo :: DerivationScheme
 -&gt; DerivationScheme -&gt; DerivationScheme -&gt; [DerivationScheme]
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195468"><span id="local-6989586621679195470"><span class="annot"><span class="annottext">DerivationScheme
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195633"><span id="local-6989586621679195635"><span class="annot"><span class="annottext">DerivationScheme
 DerivationScheme -&gt; DerivationScheme -&gt; Bounded DerivationScheme
 forall a. a -&gt; a -&gt; Bounded a
 $cminBound :: DerivationScheme
 minBound :: DerivationScheme
 $cmaxBound :: DerivationScheme
 maxBound :: DerivationScheme
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195474"><span id="local-6989586621679195476"><span class="annot"><span class="annottext">(forall x. DerivationScheme -&gt; Rep DerivationScheme x)
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195639"><span id="local-6989586621679195641"><span class="annot"><span class="annottext">(forall x. DerivationScheme -&gt; Rep DerivationScheme x)
 -&gt; (forall x. Rep DerivationScheme x -&gt; DerivationScheme)
 -&gt; Generic DerivationScheme
 forall x. Rep DerivationScheme x -&gt; DerivationScheme
@@ -156,7 +156,7 @@ from :: forall x. DerivationScheme -&gt; Rep DerivationScheme x
 $cto :: forall x. Rep DerivationScheme x -&gt; DerivationScheme
 to :: forall x. Rep DerivationScheme x -&gt; DerivationScheme
 </span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-35"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span id="local-6989586621679195480"><span class="annot"><span class="annottext">DerivationScheme -&gt; ()
+</span><span id="line-35"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span id="local-6989586621679195645"><span class="annot"><span class="annottext">DerivationScheme -&gt; ()
 (DerivationScheme -&gt; ()) -&gt; NFData DerivationScheme
 forall a. (a -&gt; ()) -&gt; NFData a
 $crnf :: DerivationScheme -&gt; ()
@@ -169,7 +169,7 @@ $bLatestScheme :: DerivationScheme
 </span><a href="Cardano.Address.Crypto.Wallet.Types.html#LatestScheme"><span class="hs-identifier hs-var hs-var hs-var">LatestScheme</span></a></span></span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#DerivationScheme2"><span class="hs-identifier hs-type">DerivationScheme2</span></a></span><span>
 </span><span id="line-39"></span><span>
 </span><span id="line-40"></span><span class="hs-keyword">newtype</span><span> </span><span id="ChainCode"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ChainCode"><span class="annot"><a href="Cardano.Address.Crypto.Wallet.Types.html#ChainCode"><span class="hs-identifier hs-var">ChainCode</span></a></span></span><span> </span><span class="annot"><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/bytestring-0.11.5.4/src/Data.ByteString.Internal.Type.html#ByteString"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
-</span><span id="line-41"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195498"><span id="local-6989586621679195503"><span id="local-6989586621679195507"><span class="annot"><span class="annottext">Int -&gt; ChainCode -&gt; ShowS
+</span><span id="line-41"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679195663"><span id="local-6989586621679195668"><span id="local-6989586621679195672"><span class="annot"><span class="annottext">Int -&gt; ChainCode -&gt; ShowS
 [ChainCode] -&gt; ShowS
 ChainCode -&gt; String
 (Int -&gt; ChainCode -&gt; ShowS)
@@ -184,7 +184,7 @@ $cshow :: ChainCode -&gt; String
 show :: ChainCode -&gt; String
 $cshowList :: [ChainCode] -&gt; ShowS
 showList :: [ChainCode] -&gt; ShowS
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195512"><span id="local-6989586621679195517"><span class="annot"><span class="annottext">ChainCode -&gt; ChainCode -&gt; Bool
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/base-4.18.3.0/src/GHC.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195677"><span id="local-6989586621679195682"><span class="annot"><span class="annottext">ChainCode -&gt; ChainCode -&gt; Bool
 (ChainCode -&gt; ChainCode -&gt; Bool)
 -&gt; (ChainCode -&gt; ChainCode -&gt; Bool) -&gt; Eq ChainCode
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -192,7 +192,7 @@ $c== :: ChainCode -&gt; ChainCode -&gt; Bool
 == :: ChainCode -&gt; ChainCode -&gt; Bool
 $c/= :: ChainCode -&gt; ChainCode -&gt; Bool
 /= :: ChainCode -&gt; ChainCode -&gt; Bool
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195524"><span id="local-6989586621679195529"><span id="local-6989586621679195533"><span id="local-6989586621679195537"><span id="local-6989586621679195541"><span id="local-6989586621679195545"><span id="local-6989586621679195549"><span class="annot"><span class="annottext">Eq ChainCode
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195689"><span id="local-6989586621679195694"><span id="local-6989586621679195698"><span id="local-6989586621679195702"><span id="local-6989586621679195706"><span id="local-6989586621679195710"><span id="local-6989586621679195714"><span class="annot"><span class="annottext">Eq ChainCode
 Eq ChainCode =&gt;
 (ChainCode -&gt; ChainCode -&gt; Ordering)
 -&gt; (ChainCode -&gt; ChainCode -&gt; Bool)
@@ -229,7 +229,7 @@ $cmax :: ChainCode -&gt; ChainCode -&gt; ChainCode
 max :: ChainCode -&gt; ChainCode -&gt; ChainCode
 $cmin :: ChainCode -&gt; ChainCode -&gt; ChainCode
 min :: ChainCode -&gt; ChainCode -&gt; ChainCode
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195554"><span id="local-6989586621679195559"><span id="local-6989586621679195563"><span class="annot"><span class="annottext">ChainCode -&gt; Int
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/ghc-prim-0.10.0/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195719"><span id="local-6989586621679195724"><span id="local-6989586621679195728"><span class="annot"><span class="annottext">ChainCode -&gt; Int
 (ChainCode -&gt; Int)
 -&gt; (forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a)
 -&gt; (forall p. ChainCode -&gt; Ptr p -&gt; IO ())
@@ -247,12 +247,12 @@ $cwithByteArray :: forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a
 withByteArray :: forall p a. ChainCode -&gt; (Ptr p -&gt; IO a) -&gt; IO a
 $ccopyByteArrayToPtr :: forall p. ChainCode -&gt; Ptr p -&gt; IO ()
 copyByteArrayToPtr :: forall p. ChainCode -&gt; Ptr p -&gt; IO ()
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ByteArrayAccess</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195569"><span class="annot"><span class="annottext">ChainCode -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ByteArrayAccess</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195734"><span class="annot"><span class="annottext">ChainCode -&gt; ()
 (ChainCode -&gt; ()) -&gt; NFData ChainCode
 forall a. (a -&gt; ()) -&gt; NFData a
 $crnf :: ChainCode -&gt; ()
 rnf :: ChainCode -&gt; ()
-</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195577"><span id="local-6989586621679195582"><span class="annot"><span class="annottext">Eq ChainCode
+</span><a href="file:///nix/store/1lnya8zhgvzms3vhpzv5j0w5cwa8ld9x-ghc-9.6.7-doc/share/doc/ghc-9.6.7/html/libraries/deepseq-1.4.8.1/src/Control.DeepSeq.html#NFData"><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679195742"><span id="local-6989586621679195747"><span class="annot"><span class="annottext">Eq ChainCode
 Eq ChainCode =&gt;
 (Int -&gt; ChainCode -&gt; Int)
 -&gt; (ChainCode -&gt; Int) -&gt; Hashable ChainCode
