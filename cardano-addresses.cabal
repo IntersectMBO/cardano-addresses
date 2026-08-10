@@ -21,6 +21,28 @@ extra-source-files:
     README.md
     SECURITY.md
     ./schemas/address-inspect.json
+    cbits/crypton_pbkdf2.h
+    cbits/crypton_sha512.h
+    cbits/hmac.h
+    cbits/ed25519/curve25519-donna-32bit.h
+    cbits/ed25519/curve25519-donna-64bit.h
+    cbits/ed25519/curve25519-donna-helpers.h
+    cbits/ed25519/ed25519-donna-32bit-sse2.h
+    cbits/ed25519/ed25519-donna-32bit-tables.h
+    cbits/ed25519/ed25519-donna-64bit-tables.h
+    cbits/ed25519/ed25519-donna-64bit-x86-32bit.h
+    cbits/ed25519/ed25519-donna-64bit-x86.h
+    cbits/ed25519/ed25519-donna-basepoint-table.h
+    cbits/ed25519/ed25519-donna-batchverify.h
+    cbits/ed25519/ed25519-donna-impl-base.h
+    cbits/ed25519/ed25519-donna-portable-identify.h
+    cbits/ed25519/ed25519-donna-portable.h
+    cbits/ed25519/ed25519-donna.h
+    cbits/ed25519/ed25519-hash.h
+    cbits/ed25519/ed25519-randombytes.h
+    cbits/ed25519/ed25519.h
+    cbits/ed25519/modm-donna-32bit.h
+    cbits/ed25519/modm-donna-64bit.h
 
 source-repository head
   type: git
