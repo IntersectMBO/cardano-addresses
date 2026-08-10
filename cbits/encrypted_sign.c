@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <ed25519.h>
-#include <hmac.h>
+#include "ed25519/ed25519.h"
+#include "hmac.h"
 
 #include "crypton_pbkdf2.h"
 
