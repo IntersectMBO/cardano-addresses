@@ -20,7 +20,10 @@ extra-source-files:
     NOTICE
     README.md
     SECURITY.md
-    ./schemas/address-inspect.json
+    schemas/address-inspect.json
+    cbits/*.h
+    cbits/ed25519/*.h
+
 
 source-repository head
   type: git
