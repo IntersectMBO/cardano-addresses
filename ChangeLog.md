@@ -1,5 +1,9 @@
 ## [4.0.8]
-	
+
+### Fixed
+
+- Reject script templates whose cosigners object contains two entries resolving to the same cosigner index, and reject non-canonical cosigner labels such as `cosigner#00`. Previously `Map.fromList` silently dropped one participant's extended public key, letting a template that reads as requiring multiple signatures be satisfied by a single party.
+
 ## [4.0.7] - 2026-07-07
 
 ### Fixed

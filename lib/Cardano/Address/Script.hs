@@ -813,6 +813,8 @@ instance FromJSON Cosigner where
                 let maxBoundInt = toInteger (maxBound @Int)
                 when (num > maxBoundInt) $
                         fail "Cosigner number is out of bounds"
+                when (numTxt /= T.pack (show num)) $
+                        fail "Cosigner number should be in its canonical form without leading zeros"
                 pure $ Cosigner (fromInteger num)
             _ -> fail "Cosigner should be enumerated with number"
         _ -> fail "Cosigner should be of the form: cosigner#num"
@@ -858,14 +860,19 @@ instance FromJSON (Script Cosigner) where
                         "Found object with unknown key. Expecting 'any', 'all', 'some' or 'cosigner'"
                     (      _,       _,      _,       _)  -> fail
                         "Found multiple keys 'any', 'all', 'cosigner' and/or 'some' at the same level"
+            String{} -> parserCosigner v
             _ ->
-                Json.typeMismatch "Object only" v
+                Json.typeMismatch "Object or String" v
 
 instance FromJSON ScriptTemplate where
     parseJSON = withObject "ScriptTemplate" $ \o -> do
-        template' <- parseJSON <$> o .: "template"
-        cosigners' <- parseCosignerPairs <$> o .: "cosigners"
-        ScriptTemplate . Map.fromList <$> cosigners' <*> template'
+        templateValue <- o .: "template"
+        template' <- parseJSON templateValue
+        cosignerPairs <- parseCosignerPairs =<< o .: "cosigners"
+        let cosignersMap = Map.fromList cosignerPairs
+        when (Map.size cosignersMap /= length cosignerPairs) $
+            fail "Duplicate cosigner: two entries resolve to the same cosigner index"
+        pure $ ScriptTemplate cosignersMap template'
       where
         parseCosignerPairs = withObject "Cosigner pairs" $ \o ->
             case KeyMap.toList o of
