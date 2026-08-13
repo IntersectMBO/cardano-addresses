@@ -68,7 +68,14 @@ import Numeric.Natural
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec, describe, expectationFailure, it, shouldBe, shouldContain )
+    ( Spec
+    , describe
+    , expectationFailure
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldSatisfy
+    )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
@@ -775,6 +782,80 @@ spec = do
             case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
                 Left _ -> pure ()
                 Right _ -> expectationFailure "Expected JSON parse failure"
+
+    describe "FromJSON ScriptTemplate - cosigner uniqueness" $ do
+        let accXpub0 =
+                "7eebe6dfa9a1530248400eb6a1adaca166ab1d723e9618d989d22a9219a364\
+                \cb4c745e128fdc98a5039893f704cf67f58c59cea97241a5c7ec7b4606253e5523"
+        let accXpub1 =
+                "417236c94b3ad73557a4df690527f77bebd203de7a208fb3be9c5efa675aaa\
+                \967ca13a50a2f2e95364d0b7fdc75a82e8cc97b499ecd6b9ba12529dd63a2ca7d5"
+        let accXpub2 =
+                "ebf69a16263b741240d3a3d67b44be3a70516adc1a7422b214d0e379314692\
+                \9eb053c9d5500fdcc4088b6a2c3b20b145d84ca77d5ad59343ddf4ba6c9b482d7c"
+
+        it "rejects a cosigner label with leading zeros in the cosigners map" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#0\":\"" <> accXpub0
+                    <> "\",\"cosigner#00\":\"" <> accXpub1
+                    <> "\",\"cosigner#1\":\"" <> accXpub2
+                    <> "\"},\"template\":{\"all\":[\"cosigner#0\",\"cosigner#1\"]}}"
+            Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json)
+                `shouldSatisfy` isLeft
+
+        it "rejects a cosigner label with leading zeros in the template" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#0\":\"" <> accXpub0
+                    <> "\",\"cosigner#1\":\"" <> accXpub1
+                    <> "\"},\"template\":{\"all\":[\"cosigner#00\",\"cosigner#1\"]}}"
+            Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json)
+                `shouldSatisfy` isLeft
+
+        it "rejects a nested template where cosigner#00 aliases cosigner#0" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#0\":\"" <> accXpub0
+                    <> "\",\"cosigner#00\":\"" <> accXpub1
+                    <> "\",\"cosigner#1\":\"" <> accXpub2
+                    <> "\"},\"template\":{\"all\":["
+                    <> "{\"any\":[\"cosigner#00\",\"cosigner#1\"]},"
+                    <> "\"cosigner#0\"]}}"
+            Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json)
+                `shouldSatisfy` isLeft
+
+        it "rejects a cosigner label with a negative index" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#-1\":\"" <> accXpub0
+                    <> "\"},\"template\":{\"all\":[\"cosigner#-1\"]}}"
+            Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json)
+                `shouldSatisfy` isLeft
+
+        it "accepts the same document with canonical cosigner labels" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#0\":\"" <> accXpub0
+                    <> "\",\"cosigner#2\":\"" <> accXpub1
+                    <> "\",\"cosigner#1\":\"" <> accXpub2
+                    <> "\"},\"template\":{\"all\":["
+                    <> "{\"any\":[\"cosigner#2\",\"cosigner#1\"]},"
+                    <> "\"cosigner#0\"]}}"
+            Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json)
+                `shouldSatisfy` (not . isLeft)
+
+        -- NOTE: aeson collapses duplicate object keys before 'FromJSON' runs,
+        -- so a repeated literal key cannot be detected at the parse level. The
+        -- decoded result is deterministic (aeson keeps the first entry) and is
+        -- indistinguishable from the equivalent single-key document.
+        it "collapses a repeated literal cosigner key before parsing (known limitation)" $ do
+            let json =
+                    "{\"cosigners\":{\"cosigner#0\":\"" <> accXpub0
+                    <> "\",\"cosigner#0\":\"" <> accXpub1
+                    <> "\",\"cosigner#1\":\"" <> accXpub2
+                    <> "\"},\"template\":{\"all\":[\"cosigner#0\",\"cosigner#1\"]}}"
+            case Json.eitherDecodeStrict @ScriptTemplate (T.encodeUtf8 json) of
+                Right (ScriptTemplate cosignersMap _) ->
+                    Map.lookup (Cosigner 0) cosignersMap
+                        `shouldBe` Just (encodeXPubFromTxtUnsafe accXpub0)
+                Left _ ->
+                    expectationFailure "Expected the duplicate key to be collapsed by aeson"
 
     describe "some JSON parsing error" $ do
         it "Invalid type" $ do
