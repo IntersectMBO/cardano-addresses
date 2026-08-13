@@ -68,7 +68,14 @@ import Numeric.Natural
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec, describe, expectationFailure, it, shouldBe, shouldContain, shouldSatisfy )
+    ( Spec
+    , describe
+    , expectationFailure
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldSatisfy
+    )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
