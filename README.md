@@ -40,7 +40,8 @@ Powered by <a href="https://docusaurus.io/"><img src="https://images.icon-icons.
 
 CLI documentation is available [here](https://intersectmbo.github.io/cardano-addresses/command-line)
 
-### Ownership proving using ZKP (experimental)
+<details>
+<summary><b>Ownership proving using ZKP (experimental)</b></summary>
 
 > ⚠️ **Experimental.** The circuits, CLIs, and workflows below are developed in the
 > [`cardano-foundation/bls`](https://github.com/cardano-foundation/bls) repository and are **not**
@@ -229,6 +230,46 @@ In short: use **CardanoKeyOwnership** to prove "I own this specific key `A`", an
 **CardanoKeyOwnershipSMT** to prove "I own a key that is authorized in this set" — the set being
 committed by a single Merkle root that the verifier must trust.
 
+#### Implementation trade-offs: monolithic Groth16 vs Nova step-chain
+
+Independently of the circuit family, the same statement can be proven as a single monolithic Groth16
+proof (Implementation 7) or decomposed into 255 small steps and folded with Nova IVC (Implementation
+8). The two paths have very different trade-offs, measured on the same machine with the same key:
+
+| Phase | Monolithic Groth16 | Nova step-chain |
+|---|---|---|
+| Circuit | 1,967,405 constraints | 255 × 7,724 constraints |
+| Witness generation | ~10 s | 255 steps: ~133 s (sequential) |
+| Ceremony (one-time, reusable) | ~8 min | ~3 s |
+| Prove / fold | ~74 s | ~179 s |
+| Verify | ~1.5 s (one pairing) | ~3.2 s (255 pairings, `O(N)`) |
+| **e2e first run (incl. ceremony)** | **~9.7 min** | **~5.2 min** |
+| **e2e steady state (ceremony amortized)** | **~86 s** | **~312 s** |
+| Proving key | 1.2 GB | 5 MB |
+| Verifying key | 178 MB | 719 KB |
+| Peak memory | ~4.5 GiB | per-step |
+
+Takeaways:
+
+- **First run — Nova wins.** The monolithic ceremony dominates (~8 min) and needs ~4.5 GiB of RAM,
+  while the Nova ceremony is ~3 s and the fold uses per-step memory. The proving key shrinks from
+  1.2 GB to 5 MB.
+- **Steady state — monolithic Groth16 wins (~3.6×).** Once the ceremony is amortized, a new key
+  costs ~86 s (one witness + one proof) vs ~312 s (255 step witnesses + fold). The step chain is
+  inherently sequential — each step feeds the next — so it cannot be parallelized.
+- **Verification.** The monolithic proof verifies with a single Groth16 pairing in ~1.5 s and is a
+  standalone, constant-size artifact — the natural fit for on-chain verification. Nova verification
+  is `O(N)`: it re-checks all 255 pairings plus the state chain and the transcript (~3.2 s), and the
+  bundle grows linearly with the number of steps.
+- **Deployment footprint.** Nova's ceremony is trivial but verification is not constant-time;
+  Groth16's ceremony is heavy but is run once per circuit and then amortized across unlimited keys.
+- **Both prove the same statement.** The point-compression and `addOut == 2·PointA` checks are done
+  by the application outside the Nova fold; a single monolithic proof encodes them in-circuit.
+
+Rule of thumb: **Nova** if you prove a fresh key once (or run on constrained hardware), **monolithic
+Groth16** if you prove many keys against a pre-computed ceremony or need constant-size, cheap
+on-chain verification.
+
 #### Further reading
 
 - [`CardanoKeyOwnership` reference](https://github.com/cardano-foundation/bls/tree/main/circom/CardanoKeyOwnership) — full end-to-end flows, Implementation 7 (monolithic) and Implementation 8 (Nova step-chain), plus benchmarks
@@ -238,6 +279,8 @@ committed by a single Merkle root that the verifier must trust.
 - [`nova` CLI](https://github.com/cardano-foundation/bls/tree/main/clis/nova) — Nova IVC step-chain and NIFS compression flow
 
 Also available as a [dedicated documentation page](https://intersectmbo.github.io/cardano-addresses/zkp-ownership).
+
+</details>
 
 ### Supported platforms
 
