@@ -4,6 +4,7 @@ const sidebars = {
     'index',
     'command-line',
     'webassembly-app',
+    'zkp-ownership',
   ],
 };
 
