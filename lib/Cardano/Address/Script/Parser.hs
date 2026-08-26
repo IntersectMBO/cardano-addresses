@@ -22,6 +22,7 @@ module Cardano.Address.Script.Parser
     , requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
+    , naturalParser
     , requireCosignerOfParser
     ) where
 
@@ -134,11 +135,11 @@ requireCosignerOfParser :: ReadP (Script Cosigner)
 requireCosignerOfParser = do
     P.skipSpaces
     _identifier <- P.string "cosigner#"
-    cosignerid <- fromInteger . read <$> P.munch1 isDigit
+    n <- (read :: String -> Integer) <$> P.munch1 isDigit
     let maxInt = fromIntegral (maxBound @Int)
-    when (cosignerid > maxInt) $
+    when (n > maxInt) $
         fail $ "Cosigner number exceeds maxBound Int: " <> show maxInt
-    pure $ RequireSignatureOf $ Cosigner cosignerid
+    pure $ RequireSignatureOf $ Cosigner (fromInteger n)
 
 requireAllOfParser :: ReadP (Script a) -> ReadP (Script a)
 requireAllOfParser parser = do
@@ -173,11 +174,11 @@ activeUntilSlotParser = do
 naturalParser :: ReadP Word
 naturalParser = do
     P.skipSpaces
-    num <- fromInteger . read <$> P.munch1 isDigit
+    n <- (read :: String -> Integer) <$> P.munch1 isDigit
     let maxInt = fromIntegral (maxBound @Int)
-    when (num > maxInt) $
+    when (n > maxInt) $
         fail $ "Number exceeds maxBound Int: " <> show maxInt
-    pure num
+    pure (fromInteger n)
 
 slotParser :: ReadP Natural
 slotParser = do
