@@ -15,7 +15,8 @@ import Cardano.Address.KeyHash
 import Cardano.Address.Script
     ( Cosigner (..), ErrValidateScript (..), Script (..) )
 import Cardano.Address.Script.Parser
-    ( requireAllOfParser
+    ( naturalParser
+    , requireAllOfParser
     , requireAnyOfParser
     , requireAtLeastOfParser
     , requireCosignerOfParser
@@ -68,6 +69,8 @@ spec = do
         (kh1,verKeyH1)
     slotBoundaryTests @Cosigner requireCosignerOfParser
         (cosigner0,cosigner0Txt)
+
+    integerWrapTests
   where
     verKeyH1 = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
     kh1 = KeyHash PaymentShared (unBech32 verKeyH1)
@@ -308,3 +311,38 @@ unBech32 :: Text -> ByteString
 unBech32 = either (error "Incorrect bech32 in test data") snd
     . E.fromBech32 (const id)
     . T.encodeUtf8
+
+integerWrapTests :: Spec
+integerWrapTests = do
+    describe "naturalParser integer wrap" $ do
+        it "2^64 is rejected instead of wrapping" $
+            readP_to_S naturalParser "18446744073709551616" `shouldBe` []
+        it "2^64+2 is rejected instead of wrapping to 2" $
+            readP_to_S naturalParser "18446744073709551618" `shouldBe` []
+
+        it "maxBound @Int is accepted" $ do
+            let [(res, _)] = readP_to_S naturalParser "9223372036854775807"
+            show res `shouldBe` "9223372036854775807"
+
+        it "maxBound @Int + 1 is rejected" $
+            readP_to_S naturalParser "9223372036854775808" `shouldBe` []
+
+    describe "requireCosignerOfParser integer wrap" $ do
+        it "cosigner#2^64+1 is rejected instead of wrapping to cosigner#1" $
+            readP_to_S requireCosignerOfParser "cosigner#18446744073709551617" `shouldBe` []
+
+        it "cosigner#2^64+2 is rejected instead of wrapping to cosigner#2" $
+            readP_to_S requireCosignerOfParser "cosigner#18446744073709551618" `shouldBe` []
+
+    describe "at_least with oversized threshold rejected via scriptParser" $ do
+        let kh = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq" :: Text
+        it "at_least 2^64+2 [key] is rejected" $
+            scriptFromString (scriptParser requireSignatureOfParser)
+                ("at_least 18446744073709551618 [" <> T.unpack kh <> "]")
+                `shouldBe` Left Malformed
+
+    describe "cosigner with oversized id rejected via scriptParser" $ do
+        it "cosigner#2^64+1 is rejected" $
+            scriptFromString (scriptParser requireCosignerOfParser)
+                "cosigner#18446744073709551617"
+                `shouldBe` Left Malformed
