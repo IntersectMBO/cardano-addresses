@@ -18,6 +18,7 @@ import Cardano.Address
     , PaymentAddress (..)
     , base58
     , bech32
+    , bech32With
     , fromBase58
     , fromBech32
     , unAddress
@@ -29,6 +30,8 @@ import Cardano.Address.Style.Byron
     ( Byron )
 import Cardano.Address.Style.Icarus
     ( Icarus )
+import Cardano.Codec.Bech32.Prefixes
+    ( addr, addr_test )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode )
 import Data.Function
@@ -87,6 +90,44 @@ spec = describe "Text Encoding Roundtrips" $ do
     it "fromBase58 rejects mutated Byron control" $ do
         fromBase58 "KjgoiXEdBrKbPJXtVLzpChsXvvj5FDS3jnjBLuPPRSQcTpbNEme4QBbvQCopCDNKVunvXRibDdSgk9pzKpX9Vz8QnyhCsoCBpDujrYqXaRpD"
             `shouldBe` Nothing
+
+    describe "fromBech32 - HRP / address-type discrimination" $ do
+        -- Regression for the bug where fromBech32 discarded the human-readable
+        -- prefix and therefore accepted any bech32 string regardless of its
+        -- prefix (e.g. a stake/drep string), and accepted an addr/addr_test
+        -- prefix inconsistent with the payload's network tag.
+
+        it "accepts a mainnet addr1 payload" $ do
+            let Just addrM = fromBech32 mainnetAddr
+            bech32 addrM `shouldBe` mainnetAddr
+
+        it "accepts a testnet addr_test1 payload" $ do
+            let Just addrT = fromBech32 testnetAddr
+            bech32 addrT `shouldBe` testnetAddr
+
+        it "rejects a testnet payload serialized with the mainnet addr prefix" $ do
+            let Just addrT = fromBech32 testnetAddr
+            fromBech32 (bech32With addr addrT) `shouldBe` Nothing
+
+        it "rejects a mainnet payload serialized with the addr_test prefix" $ do
+            let Just addrM = fromBech32 mainnetAddr
+            fromBech32 (bech32With addr_test addrM) `shouldBe` Nothing
+
+        it "rejects a stake1 payload (non-address HRP)" $
+            fromBech32 stakeAddr `shouldBe` Nothing
+
+        it "rejects a drep1 payload (non-address HRP)" $
+            fromBech32 drepAddr `shouldBe` Nothing
+
+        it "rejects an invalid bech32 string" $
+            fromBech32 "not a bech32 address" `shouldBe` Nothing
+
+  where
+    -- CIP-5 example addresses (see Command/Address/*Spec.hs)
+    mainnetAddr = "addr1v9u5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0kvk0f"
+    testnetAddr = "addr_test1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg57c2qv"
+    stakeAddr = "stake1u0a3dk68y6echdmfmnvm8mej8u5truwv8ufmv830w5a45tchw5z0e"
+    drepAddr = "drep1y2jmg4g450lced7q9n34rq6d5vjwkm0ugx6h0894u6ur92s9txn3a"
 
 -- Ensure that any address public key can be encoded to an address and that the
 -- address can be encoded and decoded without issues.

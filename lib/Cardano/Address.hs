@@ -126,12 +126,19 @@ bech32With hrp = T.decodeLatin1 . encode (EBech32 hrp) . unAddress
 
 -- | Decode a bech32-encoded 'Text' into an 'Address'
 --
+-- The encoded payload is wrapped as-is into an 'Address' and validated for
+-- structural correctness by the style-specific inspection functions (see
+-- @Cardano.Address.Style.*@) rather than here. This function only guarantees
+-- that the payload decodes as bech32 and that the human-readable prefix is
+-- consistent with the payload's network tag, i.e. one of the address prefixes
+-- @addr@ and @addr_test@.
+--
 -- @since 1.0.0
 fromBech32 :: Text -> Maybe Address
-fromBech32 = eitherToMaybe
-    . fmap (unsafeMkAddress . snd)
-    . E.fromBech32 (const id)
-    . T.encodeUtf8
+fromBech32 txt = do
+    (hrp, bytes) <- eitherToMaybe $ E.fromBech32 (const id) (T.encodeUtf8 txt)
+    let addr = unsafeMkAddress bytes
+    if hrp == addressHrp addr then Just addr else Nothing
 
 -- | Returns the HRP for a shelley address, using the network tag.
 addressHrp :: Address -> HumanReadablePart
