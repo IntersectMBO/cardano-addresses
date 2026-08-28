@@ -446,7 +446,8 @@ requiredValidation script =
             L.any check xs
 
         RequireSomeOf m xs ->
-            m <= sum (fmap (\x -> if check x then 1 else 0) xs)
+            m /= 0
+                && m <= sum (fmap (\x -> if check x then 1 else 0) xs)
 
         ActiveFromSlot _ -> True
 
