@@ -346,3 +346,41 @@ integerWrapTests = do
             scriptFromString (scriptParser requireCosignerOfParser)
                 "cosigner#18446744073709551617"
                 `shouldBe` Left Malformed
+
+    describe "at_least 256 is NOT wrapped to 0 (no Word8 truncation)" $ do
+        it "requireAtLeastOfParser parses at_least 256 [cosigner#0,cosigner#1,cosigner#2] to RequireSomeOf 256" $ do
+            let parser = requireAtLeastOfParser requireCosignerOfParser
+            let [(res, _)] = readP_to_S parser "at_least 256 [cosigner#0,cosigner#1,cosigner#2]"
+            res `shouldBe` RequireSomeOf 256
+                [ RequireSignatureOf (Cosigner 0)
+                , RequireSignatureOf (Cosigner 1)
+                , RequireSignatureOf (Cosigner 2)
+                ]
+
+        it "scriptFromString parses at_least 256 [cosigner#0,cosigner#1,cosigner#2] to RequireSomeOf 256" $
+            scriptFromString (scriptParser requireCosignerOfParser)
+                "at_least 256 [cosigner#0,cosigner#1,cosigner#2]"
+                `shouldBe` Right (RequireSomeOf 256
+                    [ RequireSignatureOf (Cosigner 0)
+                    , RequireSignatureOf (Cosigner 1)
+                    , RequireSignatureOf (Cosigner 2)
+                    ])
+
+        it "naturalParser accepts 255 and 256 without wrapping" $ do
+            let [(res255, _)] = readP_to_S naturalParser "255"
+            res255 `shouldBe` 255
+            let [(res256, _)] = readP_to_S naturalParser "256"
+            res256 `shouldBe` 256
+
+    describe "at_least 0 is parsed but must be rejected at validation" $ do
+        it "naturalParser parses 0 to 0" $ do
+            let [(res, _)] = readP_to_S naturalParser "0"
+            res `shouldBe` 0
+
+        it "scriptFromString parses at_least 0 [cosigner#0,cosigner#1] to RequireSomeOf 0" $
+            scriptFromString (scriptParser requireCosignerOfParser)
+                "at_least 0 [cosigner#0,cosigner#1]"
+                `shouldBe` Right (RequireSomeOf 0
+                    [ RequireSignatureOf (Cosigner 0)
+                    , RequireSignatureOf (Cosigner 1)
+                    ])

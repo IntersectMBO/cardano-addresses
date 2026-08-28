@@ -335,12 +335,28 @@ spec = do
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash1, RequireAnyOf []]
             validateScript RequiredValidation script `shouldBe` Right ()
 
-        it "m=0 in RequireSomeOf is correct" $ do
+        it "m=0 in RequireSomeOf is incorrect" $ do
             let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
-            validateScript RequiredValidation script  `shouldBe` Right ()
+            validateScript RequiredValidation script  `shouldBe` Left LedgerIncompatible
 
         it "timelocks are correct if timelocks are disjoint" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
+            validateScript RequiredValidation script `shouldBe` Right ()
+
+    describe "RequireSomeOf 0 rejected (fund-loss guard)" $ do
+        it "RequireSomeOf 0 is LedgerIncompatible (always satisfiable by the ledger)" $ do
+            let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 with empty list is LedgerIncompatible" $
+            validateScript RequiredValidation (RequireSomeOf 0 []) `shouldBe` Left LedgerIncompatible
+
+        it "nested RequireSomeOf 0 is LedgerIncompatible" $ do
+            let script = RequireAllOf [verKeyHash1, RequireSomeOf 0 [verKeyHash3, verKeyHash4]]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 1 is accepted" $ do
+            let script = RequireSomeOf 1 [verKeyHash3, verKeyHash4]
             validateScript RequiredValidation script `shouldBe` Right ()
 
     describe "validateScript - expectations for RecomendedValidation" $ do
@@ -361,7 +377,7 @@ spec = do
 
         it "m=0 in RequireSomeOf" $ do
             let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
-            validateScript RecommendedValidation script `shouldBe` Left (NotRecommended MZero)
+            validateScript RecommendedValidation script `shouldBe` Left LedgerIncompatible
 
         it "duplicate content in RequireAllOf" $ do
             let script = RequireAllOf [verKeyHash1, verKeyHash2, verKeyHash1]
@@ -498,7 +514,7 @@ spec = do
 
         it "m=0 in RequireSomeOf" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 0 [cosigner0, cosigner1, cosigner2, cosigner3])
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe`Left (WrongScript $ NotRecommended MZero)
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe`Left (WrongScript LedgerIncompatible)
 
         it "wrong in nested 1" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1 [cosigner0, cosigner1, cosigner2, cosigner3, RequireAllOf [] ])
@@ -636,9 +652,9 @@ spec = do
             let script = RequireSomeOf 2 [cosigner0,  cosigner1, RequireAnyOf []]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
-        it "m=0 in RequireSomeOf is correct" $ do
+        it "m=0 in RequireSomeOf is incorrect" $ do
             let script = RequireSomeOf 0 [cosigner2, cosigner3]
-            validateScriptOfTemplate RequiredValidation script  `shouldBe` Right ()
+            validateScriptOfTemplate RequiredValidation script  `shouldBe` Left LedgerIncompatible
 
         it "timelocks are correct if timelocks are disjoint" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
@@ -661,7 +677,7 @@ spec = do
 
         it "m=0 in RequireSomeOf" $ do
             let script = RequireSomeOf 0 [cosigner2, cosigner3]
-            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended MZero)
+            validateScriptOfTemplate RecommendedValidation script `shouldBe` Left LedgerIncompatible
 
         it "duplicate content in RequireAllOf" $ do
             let script = RequireAllOf [cosigner1, cosigner2, cosigner1]

@@ -69,11 +69,19 @@ spec = do
         specScriptNotValidated (NotRecommended DuplicateSignatures) RecommendedValidation
             [iii|any [ #{verKeyH1}, #{verKeyH2}, #{verKeyH2}]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
-        specScriptNotValidated (NotRecommended MZero) RecommendedValidation
+        specScriptNotValidated LedgerIncompatible RecommendedValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
+
+        -- at_least 256 must NOT be truncated to at_least 0; with only 2 keys
+        -- it is correctly rejected as LedgerIncompatible.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 256 [ #{verKeyH1}, #{verKeyH2} ]|]
+
+        specScriptNotValidated Malformed RequiredValidation
+            [iii|at_least 18446744073709551618 [ #{verKeyH1}, #{verKeyH2} ]|]
 
         specScriptNotValidated NotUniformKeyType RequiredValidation
             [iii|any [ #{verKeyH1}, #{verKeyH4}]|]
