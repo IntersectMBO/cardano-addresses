@@ -1589,6 +1589,14 @@ bech32 :: Address -> Text
 bech32With :: HumanReadablePart -> Address -> Text
 
 -- | Decode a bech32-encoded <a>Text</a> into an <a>Address</a>
+--   
+--   The encoded payload is wrapped as-is into an <a>Address</a> and
+--   validated for structural correctness by the style-specific inspection
+--   functions (see <tt>Cardano.Address.Style.*</tt>) rather than here.
+--   This function only guarantees that the payload decodes as bech32 and
+--   that the human-readable prefix is consistent with the payload's
+--   network tag, i.e. one of the address prefixes <tt>addr</tt> and
+--   <tt>addr_test</tt>.
 fromBech32 :: Text -> Maybe Address
 
 -- | Magic constant associated with a given network. This is mainly used in
