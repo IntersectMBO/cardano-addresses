@@ -24,7 +24,6 @@ extra-source-files:
     cbits/*.h
     cbits/ed25519/*.h
 
-
 source-repository head
   type: git
   location: https://github.com/IntersectMBO/cardano-addresses
