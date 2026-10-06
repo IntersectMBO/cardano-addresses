@@ -10,8 +10,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
   actions: read
 
 concurrency:
@@ -22,7 +20,11 @@ jobs:
   docs-build:
     runs-on: ubuntu-latest
     if: >-
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      (github.event_name == 'workflow_run'
+       && github.event.workflow_run.conclusion == 'success'
+       && github.event.workflow_run.event == 'push'
+       && github.event.workflow_run.head_branch == 'master'
+       && github.event.workflow_run.head_repository.full_name == github.repository)
       || (github.event_name == 'pull_request')
       || (github.event_name == 'push')
     steps:
@@ -52,11 +54,11 @@ jobs:
               RUN_ID=${{ github.event.workflow_run.id }}
               echo "Downloading haddock from triggering Haskell CI run: $RUN_ID"
             else
-              RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              RUN_ID=$(gh run list -w "Haskell CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
               echo "Downloading haddock from latest successful Haskell CI run: $RUN_ID"
             fi
           else
-            RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            RUN_ID=$(gh run list -w "Haskell CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
             echo "Downloading haddock from latest successful Haskell CI run: $RUN_ID"
           fi
           mkdir -p build/haddock_html
@@ -91,11 +93,11 @@ jobs:
               RUN_ID=${{ github.event.workflow_run.id }}
               echo "Downloading WASM artifact from triggering WASM CI run: $RUN_ID"
             else
-              RUN_ID=$(gh run list -w "WASM CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              RUN_ID=$(gh run list -w "WASM CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
               echo "Downloading WASM artifact from latest successful WASM CI run: $RUN_ID"
             fi
           else
-            RUN_ID=$(gh run list -w "WASM CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            RUN_ID=$(gh run list -w "WASM CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
             echo "Downloading WASM artifact from latest successful WASM CI run: $RUN_ID"
           fi
           mkdir -p build/browser
@@ -142,11 +144,11 @@ jobs:
               RUN_ID=${{ github.event.workflow_run.id }}
               echo "Downloading coverage from triggering Haskell CI run: $RUN_ID"
             else
-              RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+              RUN_ID=$(gh run list -w "Haskell CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
               echo "Downloading coverage from latest successful Haskell CI run: $RUN_ID"
             fi
           else
-            RUN_ID=$(gh run list -w "Haskell CI" -s success -L 1 --json databaseId --jq '.[0].databaseId')
+            RUN_ID=$(gh run list -w "Haskell CI" -b master -e push -s success -L 1 --json databaseId --jq '.[0].databaseId')
             echo "Downloading coverage from latest successful Haskell CI run: $RUN_ID"
           fi
           mkdir -p build/coverage
@@ -199,6 +201,9 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_run'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
