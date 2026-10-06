@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Setup Haskell
         uses: haskell-actions/setup@0f8e8c99d88aeb3fbfd523f1ef2c6f762d10d64d # v2.12.1
@@ -24,19 +26,24 @@ jobs:
 
       - name: Install hlint
         run: |
-          curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s .
+          curl -sSL https://github.com/ndmitchell/hlint/releases/download/v3.10/hlint-3.10-x86_64-linux.tar.gz -o "$RUNNER_TEMP/hlint.tar.gz"
+          echo "ccabc8802a58154699a3583b8dddc5ea2e6d65753a62c45c0e80088ebb16b42b  $RUNNER_TEMP/hlint.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/hlint.tar.gz" -C "$RUNNER_TEMP"
+          "$RUNNER_TEMP"/hlint-3.10/hlint .
 
   stylish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Check stylish-haskell
         env:
           VERSION: v0.11.0.0
         run: |
-          curl -sSL https://raw.github.com/input-output-hk/adrestia/master/templates/haskell/stylish-haskell.sh | sh -s $(git ls-files '*.hs' | grep -v 'jsapi/.*/Main.hs') -i
+          curl -sSL https://raw.github.com/input-output-hk/adrestia/e6fade81cd3abcdc61cba663bb0f3774f6afe9d1/templates/haskell/stylish-haskell.sh | sh -s $(git ls-files '*.hs' | grep -v 'jsapi/.*/Main.hs') -i
           if [ -z "$(git status --porcelain)" ]; then
               echo "No style errors detected."
           else
