@@ -42,19 +42,19 @@ jobs:
         echo "CABAL_CACHE_VERSION=v1" >> $GITHUB_ENV
 
     - name: Install Haskell
-      uses: input-output-hk/actions/haskell@latest
+      uses: input-output-hk/actions/haskell@ba180de21cea2d34b37f1247ea59be406e14233c # latest
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: ${{ matrix.cabal }}
 
     - name: Install system dependencies
-      uses: input-output-hk/actions/base@latest
+      uses: input-output-hk/actions/base@ba180de21cea2d34b37f1247ea59be406e14233c # latest
       with:
         use-sodium-vrf: true
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
     - name: Cabal update
       run: cabal update
@@ -70,13 +70,13 @@ jobs:
     # From the install plan a dependency list is generated here.
     - name: Windows toolchain setup
       if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@v2
+      uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
 
     # From the dependency list the cached dependencies is restored.
     # The hash of `dependencies.txt` is used as a part of the cache key because that will be stable
     # until the `index-state` values in the `cabal.project` file changes.
     - name: Restore cached dependencies
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       id: cache
       with:
         path: |
@@ -93,7 +93,7 @@ jobs:
     # Always store the cabal cache.
     # This may benignly fail if the cache key is already populated.
     - name: Cache Cabal store
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
         path: |
           ${{ steps.setup-haskell.outputs.cabal-store }}
@@ -148,7 +148,7 @@ jobs:
 
     - name: Upload Haddock artifact
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
         path: haddock_artifacts
@@ -196,7 +196,7 @@ jobs:
 
     - name: Upload Coverage artifact
       if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
         path: |
@@ -205,7 +205,7 @@ jobs:
         retention-days: 1
 
     - name: Upload Windows artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: runner.os == 'Windows'
       with:
         name: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
@@ -245,7 +245,7 @@ jobs:
 
     - name: Upload Linux/Macos artifact
       if: runner.os != 'Windows'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: "${{ env.artifactFile }}"
         path: artifacts/${{ env.artifactName }}
@@ -260,7 +260,7 @@ jobs:
       contents: write
     steps:
     - name: Checkout the repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
     - name: Setting Release variables
       run: |
@@ -269,7 +269,7 @@ jobs:
         release_tag="${GITHUB_REF#refs/tags/}"
         echo "release-tag=$release_tag" >> $GITHUB_ENV
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
 
     - name: Pick artifacts to publish and change names
       run: |
@@ -339,7 +339,7 @@ jobs:
         cat bodyConst.txt >> release-body.txt
 
     - name: Draft Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
       with:
         draft: true
         body_path: release-body.txt
