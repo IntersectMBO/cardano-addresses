@@ -1,4 +1,12 @@
-## [4.0.9]
+## [5.0.0] (unreleased)
+
+### Breaking changes
+
+- `mkNetworkDiscriminant` now accepts only network tags 0 through 7. Payment address headers reserve bit 3 for CIP-160 protection; tags 8 through 15 would otherwise change network identity when inspected. Inspection still preserves all four network bits in reward addresses.
+
+### Added
+
+- Construct and inspect CIP-160 protected base and enterprise addresses, preserving their exact bytes and network identity. `protectAddress` rejects pointer, reward and Byron addresses. Raw reward addresses with network tags 8 through 15 remain ordinary reward addresses and retain their network identity on inspection.
 	
 ## [4.0.8] - 2026-08-14
 

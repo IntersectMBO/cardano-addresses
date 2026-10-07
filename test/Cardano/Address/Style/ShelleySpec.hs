@@ -27,6 +27,7 @@ import Cardano.Address
     ( Address
     , ChainPointer (..)
     , HasNetworkDiscriminant (..)
+    , NetworkTag (..)
     , bech32
     , bech32With
     , fromBech32
@@ -73,6 +74,7 @@ import Cardano.Address.Style.Shelley
     , mkNetworkDiscriminant
     , paymentAddress
     , pointerAddress
+    , protectAddress
     , roleFromIndex
     , roleToIndex
     )
@@ -81,19 +83,21 @@ import Cardano.Mnemonic
 import Codec.Binary.Encoding
     ( AbstractEncoding (..), encode, fromBase16 )
 import Control.Monad
-    ( (<=<) )
+    ( forM_, (<=<) )
 import Crypto.Hash
     ( hashWith )
 import Crypto.Hash.Algorithms
     ( SHA3_256 (SHA3_256) )
 import Data.Aeson
     ( ToJSON, Value (..) )
+import Data.Bits
+    ( (.|.) )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
 import Data.Either
-    ( rights )
+    ( isLeft, rights )
 import Data.Function
     ( (&) )
 import Data.Maybe
@@ -107,7 +111,7 @@ import GHC.Generics
 import Test.Arbitrary
     ()
 import Test.Hspec
-    ( Spec, SpecWith, describe, it, shouldBe )
+    ( Spec, SpecWith, describe, expectationFailure, it, shouldBe )
 import Test.Hspec.Golden
     ( Golden (..) )
 import Test.Hspec.QuickCheck
@@ -141,6 +145,50 @@ import qualified Data.Text.Lazy.IO as TL
 
 spec :: Spec
 spec = do
+    describe "Protected receiving addresses" $ do
+        forM_ [0x00, 0x10, 0x20, 0x30, 0x60, 0x70] $ \family ->
+            forM_ [0, 1] $ \network ->
+                it ("preserves vector " <> show (family, network)) $ do
+                    let payload = BS.replicate 28 0x11 <>
+                            if family < 0x40 then BS.replicate 28 0x22 else BS.empty
+                        ordinary = unsafeMkAddress $ BS.cons (family .|. network) payload
+                        protected = unsafeMkAddress $ BS.cons (family .|. network .|. 0x08) payload
+                    protectAddress ordinary `shouldBe` Right protected
+                    Shelley.inspectNetworkDiscriminant protected
+                        `shouldBe` Shelley.inspectNetworkDiscriminant ordinary
+                    case Shelley.eitherInspectAddress Nothing protected of
+                        Right (Shelley.InspectAddressShelley info) ->
+                            Shelley.infoProtected info `shouldBe` True
+                        other -> error $ show other
+                    fromBech32 (bech32 protected) `shouldBe` Just protected
+        forM_ [8..15] $ \network ->
+            it ("rejects reserved constructor network tag " <> show network) $
+                isLeft (mkNetworkDiscriminant network) `shouldBe` True
+        it "rejects protection of pointer, reward and bootstrap families" $ do
+            let pointer = unsafeMkAddress $ BS.cons 0x40 (BS.replicate 28 0x11 <> BS.pack [0, 0, 0])
+                flaggedPointer = unsafeMkAddress $ BS.cons 0x48 (BS.replicate 28 0x11 <> BS.pack [0, 0, 0])
+                reward = unsafeMkAddress $ BS.cons 0xe1 (BS.replicate 28 0x11)
+                bootstrap = unsafeMkAddress $ BS.cons 0x80 (BS.replicate 28 0x11)
+            protectAddress pointer `shouldBe` Left (Shelley.ErrShelley Shelley.InvalidProtection)
+            isLeft (Shelley.eitherInspectAddress Nothing flaggedPointer) `shouldBe` True
+            protectAddress reward `shouldBe` Left (Shelley.ErrShelley Shelley.InvalidProtection)
+            isLeft (protectAddress bootstrap) `shouldBe` True
+        it "preserves protection when extending to base and rejects pointer extension" $ do
+            let protected = unsafeMkAddress $ BS.cons 0x69 (BS.replicate 28 0x11)
+                base = unsafeMkAddress $ BS.cons 0x29 (BS.replicate 28 0x11 <> BS.replicate 28 0x22)
+            case Shelley.extendAddress protected (DelegationFromScriptHash $ ScriptHash $ BS.replicate 28 0x22) of
+                Right extended -> extended `shouldBe` base
+                Left err -> expectationFailure $ show err
+            isLeft (Shelley.extendAddress protected (DelegationFromPointer $ ChainPointer 0 0 0))
+                `shouldBe` True
+        it "does not mask the network of reward addresses" $ do
+            let reward = unsafeMkAddress $ BS.cons 0xe9 (BS.replicate 28 0x11)
+            case Shelley.eitherInspectAddress Nothing reward of
+                Right (Shelley.InspectAddressShelley info) -> do
+                    Shelley.infoProtected info `shouldBe` False
+                    Shelley.infoNetworkTag info `shouldBe` NetworkTag 9
+                other -> error $ show other
+
     describe "BIP-0044 Derivation Properties" $ do
         it "deriveAccountPrivateKey works for various indexes" $
             property prop_accountKeyDerivation
@@ -572,10 +620,10 @@ prop_pointerAddressConstruction
     :: (SomeMnemonic, SndFactor)
     -> Role
     -> Index 'Soft 'PaymentK
-    -> NetworkDiscriminant Shelley
+    -> ShelleyNetwork
     -> ChainPointer
     -> Property
-prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix net ptr =
+prop_pointerAddressConstruction (mw, (SndFactor sndFactor)) cc ix (ShelleyNetwork net) ptr =
     pointerAddr `seq` property ()
   where
     rootXPrv = genMasterKeyFromMnemonic mw sndFactor :: Shelley 'RootK XPrv
@@ -1284,10 +1332,10 @@ prop_roundtripTextEncoding
         -- ^ decode from 'Text'
     -> Shelley 'PaymentK XPub
         -- ^ An arbitrary public key
-    -> NetworkDiscriminant Shelley
+    -> ShelleyNetwork
         -- ^ An arbitrary network discriminant
     -> Property
-prop_roundtripTextEncoding encode' decode addXPub discrimination =
+prop_roundtripTextEncoding encode' decode addXPub (ShelleyNetwork discrimination) =
     (result == pure address)
         & counterexample (unlines
             [ "Address " <> T.unpack (encode' address)
@@ -1307,10 +1355,10 @@ prop_roundtripTextEncodingDelegation
         -- ^ An arbitrary address public key
     -> Shelley 'DelegationK XPub
         -- ^ An arbitrary delegation public key
-    -> NetworkDiscriminant Shelley
+    -> ShelleyNetwork
         -- ^ An arbitrary network discriminant
     -> Property
-prop_roundtripTextEncodingDelegation encode' decode addXPub delegXPub discrimination =
+prop_roundtripTextEncodingDelegation encode' decode addXPub delegXPub (ShelleyNetwork discrimination) =
     (result == pure address)
         & counterexample (unlines
             [ "Address " <> T.unpack (encode' address)
@@ -1330,10 +1378,10 @@ prop_roundtripTextEncodingPointer
         -- ^ An arbitrary address public key
     -> ChainPointer
         -- ^ An arbitrary delegation key locator
-    -> NetworkDiscriminant Shelley
+    -> ShelleyNetwork
         -- ^ An arbitrary network discriminant
     -> Property
-prop_roundtripTextEncodingPointer encode' decode addXPub ptr discrimination =
+prop_roundtripTextEncodingPointer encode' decode addXPub ptr (ShelleyNetwork discrimination) =
     (result == pure address)
         & counterexample (unlines
             [ "Address " <> T.unpack (encode' address)
@@ -1376,6 +1424,15 @@ normalizeLBS = BL.filter (/= fromIntegral (Char.ord '\r'))
 {-------------------------------------------------------------------------------
                              Arbitrary Instances
 -------------------------------------------------------------------------------}
+
+-- Shelley payment constructors reserve network bit 3 for protection.
+newtype ShelleyNetwork = ShelleyNetwork (NetworkDiscriminant Shelley)
+    deriving stock (Show)
+
+instance Arbitrary ShelleyNetwork where
+    arbitrary = ShelleyNetwork . NetworkTag <$> choose (0, 7)
+    shrink (ShelleyNetwork (NetworkTag tag)) =
+        [ShelleyNetwork (NetworkTag smaller) | smaller <- shrink tag, smaller < 8]
 
 newtype SndFactor = SndFactor ScrubbedBytes
     deriving stock (Eq, Show)

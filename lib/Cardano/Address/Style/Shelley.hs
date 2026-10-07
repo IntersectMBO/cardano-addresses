@@ -70,6 +70,7 @@ module Cardano.Address.Style.Shelley
       -- * Network Discrimination
     , MkNetworkDiscriminantError (..)
     , mkNetworkDiscriminant
+    , protectAddress
     , inspectNetworkDiscriminant
     , shelleyMainnet
     , shelleyTestnet
@@ -148,7 +149,7 @@ import Data.Binary.Get
 import Data.Binary.Put
     ( putByteString, putWord8, runPut )
 import Data.Bits
-    ( shiftR, (.&.) )
+    ( shiftR, (.&.), (.|.) )
 import Data.ByteArray
     ( ScrubbedBytes )
 import Data.ByteString
@@ -527,6 +528,7 @@ instance Exception ErrInspectAddress where
 data ErrInspectAddressOnlyShelley
     = PtrRetrieveError String -- ^ Human readable error of underlying operation
     | UnknownType Word8 -- ^ Unknown value in address type field
+    | InvalidProtection -- ^ Protection is permitted only on base and enterprise addresses
     deriving (Generic, Eq, Show)
     deriving ToJSON via WithErrorMessage ErrInspectAddressOnlyShelley
 
@@ -542,6 +544,8 @@ prettyErrInspectAddressOnlyShelley = \case
         format "Failed to retrieve pointer (underlying errors was: {})" s
     UnknownType t ->
         format "Unknown address type {}" t
+    InvalidProtection ->
+        "Protection requires a base or enterprise payment address"
 
 -- | Pretty-print an 'ErrInspectAddress'
 --
@@ -613,78 +617,82 @@ eitherInspectAddress mRootPub addr = unpackAddress addr >>= parseInfo
 -- | Returns either details about the 'Address', or
 -- 'ErrInspectAddressOnlyShelley' if it's not a valid Shelley address.
 parseAddressInfoShelley :: AddressParts -> Either ErrInspectAddressOnlyShelley AddressInfo
-parseAddressInfoShelley AddressParts{..} = case addrType of
-    -- 0000: base address: keyhash28,keyhash28
-    0b00000000 | addrRestLength == credentialHashSize + credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoSpendingKeyHash = Just addrHash1
-            , infoStakeKeyHash = Just addrHash2
-            }
-    -- 0001: base address: scripthash28,keyhash28
-    0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoSpendingScriptHash = Just addrHash1
-            , infoStakeKeyHash = Just addrHash2
-            }
-    -- 0010: base address: keyhash28,scripthash28
-    0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoSpendingKeyHash = Just addrHash1
-            , infoStakeScriptHash = Just addrHash2
-            }
-    -- 0011: base address: scripthash28,scripthash28
-    0b00110000 | addrRestLength == 2 * credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoSpendingScriptHash = Just addrHash1
-            , infoStakeScriptHash = Just addrHash2
-            }
-    -- 0100: pointer address: keyhash28, 3 variable length uint
-    0b01000000 | addrRestLength > credentialHashSize -> do
-        ptr <- getPtr addrHash2
-        pure addressInfo
-            { infoStakeReference = Just $ ByPointer ptr
-            , infoSpendingKeyHash = Just addrHash1
-            }
-    -- 0101: pointer address: scripthash28, 3 variable length uint
-    0b01010000 | addrRestLength > credentialHashSize -> do
-        ptr <- getPtr addrHash2
-        pure addressInfo
-            { infoStakeReference = Just $ ByPointer ptr
-            , infoSpendingScriptHash = Just addrHash1
-            }
-    -- 0110: enterprise address: keyhash28
-    0b01100000 | addrRestLength == credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Nothing
-            , infoSpendingKeyHash = Just addrHash1
-            }
-    -- 0111: enterprise address: scripthash28
-    0b01110000 | addrRestLength == credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Nothing
-            , infoSpendingScriptHash = Just addrHash1
-            }
-    -- 1110: reward account: keyhash28
-    0b11100000 | addrRestLength == credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoStakeKeyHash = Just addrHash1
-            }
-    -- 1111: reward account: scripthash28
-    0b11110000 | addrRestLength == credentialHashSize ->
-        Right addressInfo
-            { infoStakeReference = Just ByValue
-            , infoStakeScriptHash = Just addrHash1
-            }
-    unknown -> Left (UnknownType unknown)
-
+parseAddressInfoShelley AddressParts{..}
+    | addrNetwork .&. 0b00001000 /= 0
+    , addrType `elem` [0b01000000, 0b01010000] = Left InvalidProtection
+    | otherwise = case addrType of
+        -- 0000: base address: keyhash28,keyhash28
+        0b00000000 | addrRestLength == credentialHashSize + credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoSpendingKeyHash = Just addrHash1
+                , infoStakeKeyHash = Just addrHash2
+                }
+        -- 0001: base address: scripthash28,keyhash28
+        0b00010000 | addrRestLength == credentialHashSize + credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoSpendingScriptHash = Just addrHash1
+                , infoStakeKeyHash = Just addrHash2
+                }
+        -- 0010: base address: keyhash28,scripthash28
+        0b00100000 | addrRestLength == credentialHashSize + credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoSpendingKeyHash = Just addrHash1
+                , infoStakeScriptHash = Just addrHash2
+                }
+        -- 0011: base address: scripthash28,scripthash28
+        0b00110000 | addrRestLength == 2 * credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoSpendingScriptHash = Just addrHash1
+                , infoStakeScriptHash = Just addrHash2
+                }
+        -- 0100: pointer address: keyhash28, 3 variable length uint
+        0b01000000 | addrRestLength > credentialHashSize -> do
+            ptr <- getPtr addrHash2
+            pure addressInfo
+                { infoStakeReference = Just $ ByPointer ptr
+                , infoSpendingKeyHash = Just addrHash1
+                }
+        -- 0101: pointer address: scripthash28, 3 variable length uint
+        0b01010000 | addrRestLength > credentialHashSize -> do
+            ptr <- getPtr addrHash2
+            pure addressInfo
+                { infoStakeReference = Just $ ByPointer ptr
+                , infoSpendingScriptHash = Just addrHash1
+                }
+        -- 0110: enterprise address: keyhash28
+        0b01100000 | addrRestLength == credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Nothing
+                , infoSpendingKeyHash = Just addrHash1
+                }
+        -- 0111: enterprise address: scripthash28
+        0b01110000 | addrRestLength == credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Nothing
+                , infoSpendingScriptHash = Just addrHash1
+                }
+        -- 1110: reward account: keyhash28
+        0b11100000 | addrRestLength == credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoStakeKeyHash = Just addrHash1
+                }
+        -- 1111: reward account: scripthash28
+        0b11110000 | addrRestLength == credentialHashSize ->
+            Right addressInfo
+                { infoStakeReference = Just ByValue
+                , infoStakeScriptHash = Just addrHash1
+                }
+        unknown -> Left (UnknownType unknown)
   where
     addressInfo = AddressInfo
-        { infoNetworkTag = NetworkTag $ fromIntegral addrNetwork
+        { infoNetworkTag = NetworkTag $ fromIntegral $
+            if supportsProtection addrType then addrNetwork .&. 0b00000111 else addrNetwork
+        , infoProtected = supportsProtection addrType && addrNetwork .&. 0b00001000 /= 0
         , infoStakeReference = Nothing
         , infoSpendingKeyHash = Nothing
         , infoStakeKeyHash = Nothing
@@ -747,6 +755,7 @@ data AddressInfo = AddressInfo
     , infoSpendingScriptHash :: !(Maybe ByteString)
     , infoStakeScriptHash    :: !(Maybe ByteString)
     , infoNetworkTag         :: !NetworkTag
+    , infoProtected          :: !Bool
     , infoAddressType        :: !Word8
     } deriving (Generic, Show, Eq)
 
@@ -764,6 +773,7 @@ instance ToJSON AddressInfo where
         , "stake_reference" .= Json.String (maybe "none" refName infoStakeReference)
         , "address_type" .= toJSON @Word8 infoAddressType
         ]
+        ++ ["protected" .= True | infoProtected]
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
         ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
@@ -1034,6 +1044,8 @@ extendAddress addr infoStakeReference = do
         -- pointer address: keyhash28, 3 variable length uint    : 01000000 -> 64
         -- pointer address: scripthash28, 3 variable length uint : 01010000 -> 80
         DelegationFromPointer pointer -> do
+            when (fstByte .&. 0b00001000 /= 0) $
+                Left $ ErrInvalidAddressType "Protected payment addresses cannot use a stake pointer"
             pure $ unsafeMkAddress $ BL.toStrict $ runPut $ do
                 -- 0b01100000 .&. 0b01011111 = 64
                 -- 0b01110000 .&. 0b01011111 = 80
@@ -1073,10 +1085,12 @@ newtype MkNetworkDiscriminantError
     deriving (Eq, Show)
 
 instance Buildable MkNetworkDiscriminantError where
-  build (ErrWrongNetworkTag i) = "Invalid network tag "+|i|+". Must be between [0, 15]"
+  build (ErrWrongNetworkTag i) = "Invalid network tag "+|i|+". Must be between [0, 7]"
 
 -- | Construct 'NetworkDiscriminant' for Cardano 'Shelley' from a number.
--- If the number is invalid, ie., not between 0 and 15, then
+-- Bit 3 is reserved for protected payment addresses. Construction accepts only
+-- network tags 0 through 7; this intentionally narrows the earlier 0..15 API.
+-- If the number is outside this range, then
 -- 'MkNetworkDiscriminantError' is thrown.
 --
 -- @since 2.0.0
@@ -1084,8 +1098,23 @@ mkNetworkDiscriminant
     :: Integer
     -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 mkNetworkDiscriminant nTag
-    | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
+    | nTag >= 0 && nTag < 8 = Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
+
+-- | Opt into Dijkstra Receiving authorization. The unchanged Bech32 HRP
+-- still identifies the network; protection is encoded in the payment header.
+protectAddress :: Address -> Either ErrInspectAddress Address
+protectAddress addr = do
+    parts <- unpackAddress addr
+    _ <- eitherInspectAddress Nothing addr
+    if supportsProtection (addrType parts)
+        then let bytes = unAddress addr
+             in Right $ unsafeMkAddress $ BS.cons (BS.head bytes .|. 0b00001000) (BS.tail bytes)
+        else Left $ ErrShelley InvalidProtection
+
+supportsProtection :: Word8 -> Bool
+supportsProtection typ = typ `elem`
+    [0b00000000, 0b00010000, 0b00100000, 0b00110000, 0b01100000, 0b01110000]
 
 -- | Retrieve the network discriminant of a given 'Address'.
 -- If the 'Address' is malformed or, not a shelley address, returns Nothing.
@@ -1238,7 +1267,9 @@ constructPayload addrType discrimination bytes = unsafeMkAddress $
         putByteString bytes
   where
     firstByte =
-        let netTagLimit = 16
+        let netTagLimit = case addrType of
+                RewardAccount _ -> 16
+                _ -> 8
         in addressType addrType + invariantNetworkTag netTagLimit (networkTag @Shelley discrimination)
     expectedLength =
         let headerSizeBytes = 1

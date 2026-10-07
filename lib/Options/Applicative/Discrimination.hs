@@ -52,7 +52,7 @@ fromNetworkTag :: MonadFail m => NetworkTag -> m (NetworkDiscriminant Shelley)
 fromNetworkTag tag =
     case (Shelley.mkNetworkDiscriminant . fromIntegral . unNetworkTag) tag of
         Left Shelley.ErrWrongNetworkTag{} -> do
-            fail "Invalid network tag. Must be between [0, 15]"
+            fail "Invalid network tag. Must be between [0, 7]"
         Right discriminant ->
             pure discriminant
 
