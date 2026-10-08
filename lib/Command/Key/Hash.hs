@@ -32,7 +32,7 @@ import Options.Applicative
 import Options.Applicative.Governance
     ( governanceOpt )
 import Options.Applicative.Help.Pretty
-    ( pretty )
+    ( pretty, vsep )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -50,10 +50,12 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "hash" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the hash of a public key"
-        <> footerDoc (Just $ pretty $ mconcat
-            [ "The public key is read from stdin and" :: Text
-            , "bech32-encoded hash is returned."
-            , "To get hex-encoded output pass it to stdin of `bech32`."
+        <> footerDoc (Just $ vsep
+            [ pretty ("The public key is read from stdin and a bech32-encoded hash is returned." :: Text)
+            , pretty ("To get hex-encoded output, pipe through 'bech32'." :: Text)
+            , pretty ("" :: Text)
+            , pretty ("Example:" :: Text)
+            , pretty ("$ cat key.vk | cardano-address key hash" :: Text)
             ])
   where
     parser = Hash

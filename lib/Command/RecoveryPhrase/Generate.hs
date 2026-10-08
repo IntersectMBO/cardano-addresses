@@ -23,7 +23,9 @@ import Cardano.Dictionary
 import Cardano.Mnemonic
     ( entropyToMnemonic, genEntropy, mnemonicToTextWithDict )
 import Options.Applicative
-    ( CommandFields, Mod, command, helper, info, progDesc )
+    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
+import Options.Applicative.Help.Pretty
+    ( pretty, vsep )
 import Options.Applicative.MnemonicLanguage
     ( mnemonicLanguageOpt )
 import Options.Applicative.MnemonicSize
@@ -43,6 +45,20 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "generate" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Generate a recovery phrase for a specified mnemonic size and language."
+        <> footerDoc (Just $ vsep
+            [ pretty "Examples:"
+            , pretty "  24-word English (default):"
+            , pretty "    cardano-address recovery-phrase generate"
+            , pretty ""
+            , pretty "  15-word English:"
+            , pretty "    cardano-address recovery-phrase generate --size 15 --language en"
+            , pretty ""
+            , pretty "  15-word Spanish:"
+            , pretty "    cardano-address recovery-phrase generate --size 15 --language es"
+            , pretty ""
+            , pretty "  15-word Japanese:"
+            , pretty "    cardano-address recovery-phrase generate --size 15 --language ja"
+            ])
   where
     parser = Generate
         <$> mnemonicSizeOpt

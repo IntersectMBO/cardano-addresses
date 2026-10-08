@@ -28,7 +28,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
-    ( pretty )
+    ( pretty, vsep )
 import Options.Applicative.Public
     ( PublicType (..), publicOpt )
 import System.IO
@@ -46,10 +46,10 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "public" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the public counterpart of a private key"
-        <> footerDoc (Just $ pretty $ mconcat
-            [ "The private key is read from stdin." :: Text
-            , "To get extended public key pass '--with-chain-code'."
-            , "To get public key pass '--without-chain-code'."
+        <> footerDoc (Just $ vsep
+            [ pretty ("The private key is read from stdin." :: Text)
+            , pretty ("To get extended public key pass '--with-chain-code'." :: Text)
+            , pretty ("To get public key pass '--without-chain-code'." :: Text)
             ])
   where
     parser = Public

@@ -31,7 +31,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
-    ( pretty )
+    ( pretty, vsep )
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
@@ -51,8 +51,16 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "inspect" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Show information about a key"
-        <> footerDoc (Just $ pretty $ mconcat
-            [ "The parent key is read from stdin." :: Text
+        <> footerDoc (Just $ vsep
+            [ pretty ("The key (public or private) is read from stdin." :: Text)
+            , pretty ("" :: Text)
+            , pretty ("Example:" :: Text)
+            , pretty ("$ cardano-address key inspect <<< $(cat acct.prv)" :: Text)
+            , pretty ("{" :: Text)
+            , pretty ("    \"key_type\": \"private\"," :: Text)
+            , pretty ("    \"chain_code\": \"...\"," :: Text)
+            , pretty ("    \"extended_key\": \"...\"" :: Text)
+            , pretty ("}" :: Text)
             ])
   where
     parser = pure Inspect
