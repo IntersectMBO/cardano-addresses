@@ -48,7 +48,7 @@ data Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "script" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About scripts"
+        <> progDesc "Create, hash, validate and inspect scripts"
         <> footerDoc (Just $ vsep
             [ prettyText "Example:"
             , indent 2 $ annotate bold $ pretty $ "$ "<>progName<>" recovery-phrase generate --size 15 \\"

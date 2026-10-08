@@ -48,6 +48,11 @@ import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
 import qualified Command.Script as Script
 import qualified Command.Version as Version
+import Data.Version (showVersion)
+import Paths_cardano_addresses (version)
+
+versionStr :: String
+versionStr = showVersion version
 
 data CLI
     = RecoveryPhrase RecoveryPhrase.Cmd
@@ -61,7 +66,17 @@ cli :: ParserInfo CLI
 cli = info (helper <*> parser) $ mempty
     <> progDesc "Command-line for address and key manipulation in Cardano."
     <> footerDoc (Just $ vsep
-        [ pretty "💡 Need auto-completion?"
+        [ pretty ("This is the CLI for the cardano-addresses tool (release " <> versionStr <> ").")
+        , pretty ("Use 'cardano-address --version' to see the current version and git revision.")
+        , pretty ""
+        , pretty "Available commands (use --help on each for details and examples):"
+        , pretty "  • recovery-phrase - Generate and work with recovery phrases"
+        , pretty "  • key             - Create, derive, inspect, and hash keys"
+        , pretty "  • address         - Create and inspect addresses"
+        , pretty "  • script          - Create, hash, validate and inspect scripts"
+        , pretty "  • version         - Show version information"
+        , pretty ""
+        , pretty "💡 Need auto-completion?"
         , pretty ""
         , hsep
             [ pretty "  ↳"
