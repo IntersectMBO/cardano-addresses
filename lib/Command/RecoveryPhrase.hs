@@ -16,11 +16,19 @@ module Command.RecoveryPhrase
 import Prelude hiding
     ( mod )
 
+import qualified Command.RecoveryPhrase.Generate as Generate
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, helper, info, progDesc, subparser )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , progDesc
+    , subparser
+    )
 import Options.Applicative.Help.Pretty
     ( pretty, vsep )
-import qualified Command.RecoveryPhrase.Generate as Generate
 
 
 newtype Cmd

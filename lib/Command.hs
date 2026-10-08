@@ -48,8 +48,10 @@ import qualified Command.Key as Key
 import qualified Command.RecoveryPhrase as RecoveryPhrase
 import qualified Command.Script as Script
 import qualified Command.Version as Version
-import Data.Version (showVersion)
-import Paths_cardano_addresses (version)
+import Data.Version
+    ( showVersion )
+import Paths_cardano_addresses
+    ( version )
 
 versionStr :: String
 versionStr = showVersion version
