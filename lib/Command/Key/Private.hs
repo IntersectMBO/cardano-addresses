@@ -28,7 +28,7 @@ import Data.Text
 import Options.Applicative
     ( CommandFields, Mod, command, footerDoc, helper, info, progDesc )
 import Options.Applicative.Help.Pretty
-    ( pretty )
+    ( pretty, vsep )
 import Options.Applicative.Private
     ( PrivateType (..), privateOpt )
 import System.IO
@@ -46,12 +46,12 @@ mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "private" $
     info (helper <*> fmap liftCmd parser) $ mempty
         <> progDesc "Get the signing or chain code part of an extended private key"
-        <> footerDoc (Just $ pretty $ mconcat
-            [ "The private key is read from stdin." :: Text
-            , "To get a signing key pass '--signing-key'."
-            , "To get a chain code pass '--chain-code'."
-            , "Bech32 encoding will be used."
-            , "In order to have the signing key hex encoded pass the result to the stdin of bech32 tool."
+        <> footerDoc (Just $ vsep
+            [ pretty ("The private key is read from stdin." :: Text)
+            , pretty ("To get a signing key pass '--signing-key'." :: Text)
+            , pretty ("To get a chain code pass '--chain-code'." :: Text)
+            , pretty ("Bech32 encoding will be used." :: Text)
+            , pretty ("To get the signing key hex-encoded, pass the output to 'bech32'." :: Text)
             ])
   where
     parser = Private

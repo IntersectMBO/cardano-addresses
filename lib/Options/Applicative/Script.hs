@@ -52,9 +52,7 @@ import qualified Data.Text as T
 scriptArg :: Parser (Script KeyHash)
 scriptArg = argument (eitherReader scriptReader) $ mempty
     <> metavar "SCRIPT"
-    -- TODO: Provides a bigger help text explaining how to construct a script
-    -- address.
-    <> help "Script string."
+    <> help "Script string in the simple script syntax (e.g. 'all [vk1..., vk2...]' or 'any [vk..., at_least 1 [...]]' or 'at_least N [...]' with optional 'active_from'/'active_until' timelocks). See script subcommands for examples."
 
 scriptReader :: String -> Either String (Script KeyHash)
 scriptReader =

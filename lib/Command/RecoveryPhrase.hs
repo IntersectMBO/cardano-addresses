@@ -16,10 +16,19 @@ module Command.RecoveryPhrase
 import Prelude hiding
     ( mod )
 
-import Options.Applicative
-    ( CommandFields, Mod, command, helper, info, progDesc, subparser )
-
 import qualified Command.RecoveryPhrase.Generate as Generate
+import Options.Applicative
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , helper
+    , info
+    , progDesc
+    , subparser
+    )
+import Options.Applicative.Help.Pretty
+    ( pretty, vsep )
 
 
 newtype Cmd
@@ -29,7 +38,19 @@ newtype Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "recovery-phrase" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About recovery phrases"
+        <> progDesc "Generate and work with recovery phrases"
+        <> footerDoc (Just $ vsep
+            [ pretty "Commands:"
+            , pretty "  • generate - Generate a new recovery (mnemonic) phrase"
+            , pretty ""
+            , pretty "Examples:"
+            , pretty "  Generate a 15-word English recovery phrase:"
+            , pretty "    cardano-address recovery-phrase generate --size 15 --language en"
+            , pretty ""
+            , pretty "  Pipe to generate a root private key (Shelley style):"
+            , pretty "    cardano-address recovery-phrase generate --size 24 \\"
+            , pretty "      | cardano-address key from-recovery-phrase Shelley > root.xsk"
+            ])
   where
     parser = subparser $ mconcat
         [ Generate.mod Generate

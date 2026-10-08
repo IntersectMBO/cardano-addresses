@@ -48,7 +48,7 @@ data Cmd
 mod :: (Cmd -> parent) -> Mod CommandFields parent
 mod liftCmd = command "address" $
     info (helper <*> fmap liftCmd parser) $ mempty
-        <> progDesc "About addresses"
+        <> progDesc "Create and inspect addresses"
         <> footerDoc (Just $ vsep
             [ pretty "Integrating with Byron?"
             , hsep [ pretty "  ↳ Look at", annotate bold $ pretty "'bootstrap'", pretty "." ]

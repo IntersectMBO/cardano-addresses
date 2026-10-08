@@ -13,6 +13,12 @@ import Test.Utils
 
 spec :: Spec
 spec = describeCmd ["recovery-phrase", "generate"] $ do
+    it "help contains expected text" $ do
+        out <- cli ["recovery-phrase", "generate", "--help"] ""
+        out `shouldContain` "Generate a recovery phrase"
+        out `shouldContain` "--size"
+        out `shouldContain` "--language"
+
     specDefaultSize
     mapM_ specSpecificSize [9,12,15,18,21,24]
     mapM_ specInvalidSize ["15.5","3","6","14","abc","👌","0","~!@#%","-1000","1000"]
