@@ -163,10 +163,19 @@ encodeAddress (XPub pub (ChainCode cc)) attrs =
         <> CBOR.encodeWord8 0
         <> encodeXPub
 
+-- | The CBOR tag wrapping the payload of a Byron address.
+--
+-- This is the hard-coded tag value used by cardano-sl. The Cardano ledger
+-- enforces the very same tag when decoding a Byron address (see
+-- @decodeNestedCborTag@), so our decoders reject any other tag to remain
+-- consistent with on-chain validation.
+byronAddressTag :: Word
+byronAddressTag = 24
+
 encodeAddressPayload :: ByteString -> CBOR.Encoding
 encodeAddressPayload payload = mempty
     <> CBOR.encodeListLen 2
-    <> CBOR.encodeTag 24 -- Hard-Coded Tag value in cardano-sl
+    <> CBOR.encodeTag byronAddressTag
     <> CBOR.encodeBytes payload
     <> CBOR.encodeWord32 (crc32 payload)
 
@@ -233,15 +242,7 @@ cardanoNonce = "serokellfore"
 
 decodeAddress :: CBOR.Decoder s ByteString
 decodeAddress = do
-    _ <- CBOR.decodeListLenCanonicalOf 2
-        -- CRC Protection Wrapper
-    tag <- CBOR.decodeTag
-        -- Mysterious hard-coded tag cardano-sl seems to so much like
-    bytes <- CBOR.decodeBytes
-        -- Addr Root + Attributes + Type
-    crc <- CBOR.decodeWord32 -- CRC
-
-    when (crc /= crc32 bytes) $ fail "non-matching crc32."
+    bytes <- decodeAddressPayloadWrapper
 
     -- NOTE 1:
     -- Treating addresses as a blob here, so we just re-encode them as such
@@ -249,18 +250,37 @@ decodeAddress = do
     -- we display in a Base58 format when we have to.
     return $ CBOR.toStrictByteString $ mempty
         <> CBOR.encodeListLen 2
-        <> CBOR.encodeTag tag
+        <> CBOR.encodeTag byronAddressTag
         <> CBOR.encodeBytes bytes
-        <> CBOR.encodeWord32 crc
+        <> CBOR.encodeWord32 (crc32 bytes)
 
 decodeAddressPayload :: CBOR.Decoder s ByteString
-decodeAddressPayload = do
+decodeAddressPayload = decodeAddressPayloadWrapper
+
+-- | Decode the CRC-protected wrapper shared by all Byron addresses:
+--
+-- > [ 24, payload, crc32(payload) ]
+--
+-- The nested CBOR tag must be 'byronAddressTag' (24); any other value is
+-- rejected, mirroring the ledger's Byron address decoding.
+decodeAddressPayloadWrapper :: CBOR.Decoder s ByteString
+decodeAddressPayloadWrapper = do
     _ <- CBOR.decodeListLenCanonicalOf 2
-    _ <- CBOR.decodeTag
+        -- CRC Protection Wrapper
+    tag <- CBOR.decodeTag
+        -- Nested CBOR data item tag; must be 'byronAddressTag'
+    when (tag /= byronAddressTag) $
+        fail $ mconcat
+            [ "unexpected CBOR tag on Byron address, expected "
+            , show byronAddressTag
+            , " but got: "
+            , show tag
+            ]
     bytes <- CBOR.decodeBytes
-    crc <- CBOR.decodeWord32
+        -- Addr Root + Attributes + Type
+    crc <- CBOR.decodeWord32 -- CRC
     when (crc /= crc32 bytes) $ fail "non-matching crc32."
-    return bytes
+    pure bytes
 
 decodeAddressDerivationPath
     :: ScrubbedBytes

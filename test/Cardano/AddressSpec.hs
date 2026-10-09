@@ -47,7 +47,7 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Property, counterexample, label, (===) )
+    ( Property, conjoin, counterexample, label, (===) )
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -90,6 +90,14 @@ spec = describe "Text Encoding Roundtrips" $ do
     it "fromBase58 rejects mutated Byron control" $ do
         fromBase58 "KjgoiXEdBrKbPJXtVLzpChsXvvj5FDS3jnjBLuPPRSQcTpbNEme4QBbvQCopCDNKVunvXRibDdSgk9pzKpX9Vz8QnyhCsoCBpDujrYqXaRpD"
             `shouldBe` Nothing
+
+    -- The CBOR wrapper of a Byron/Icarus address must carry tag 24. Mutating
+    -- the tag while keeping the payload and CRC valid must be rejected.
+    prop "fromBase58 rejects Byron addresses whose CBOR tag is not 24" $
+        prop_rejectNon24Tag @Byron
+
+    prop "fromBase58 rejects Icarus addresses whose CBOR tag is not 24" $
+        prop_rejectNon24Tag @Icarus
 
     describe "fromBech32 - HRP / address-type discrimination" $ do
         -- Regression for the bug where fromBech32 discarded the human-readable
@@ -165,4 +173,23 @@ prop_rejectTrailingBytesFromBase58 addXPub discrimination =
   where
     address = paymentAddress discrimination addXPub
     malformedBytes = unAddress address <> BS.singleton 0
+    malformedText = decodeLatin1 $ encode EBase58 malformedBytes
+
+-- | Replacing the wrapper CBOR tag 24 (@d818@) with tag 25 (@d819@) in a
+-- Byron/Icarus address, while keeping the payload and CRC intact, must be
+-- rejected by 'fromBase58'.
+prop_rejectNon24Tag
+    :: forall k. (PaymentAddress k)
+    => k 'PaymentK XPub
+    -> NetworkDiscriminant k
+    -> Property
+prop_rejectNon24Tag addXPub discrimination =
+    conjoin
+        [ BS.take 3 validBytes === "\x82\xd8\x18"
+        , fromBase58 malformedText === Nothing
+        ]
+  where
+    address = paymentAddress discrimination addXPub
+    validBytes = unAddress address
+    malformedBytes = BS.take 1 validBytes <> "\xd8\x19" <> BS.drop 3 validBytes
     malformedText = decodeLatin1 $ encode EBase58 malformedBytes

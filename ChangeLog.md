@@ -1,4 +1,8 @@
 ## [4.0.9]
+
+### Fixed
+
+- Reject Byron addresses whose CBOR wrapper uses a tag other than the required tag 24, making decoding consistent with the Cardano ledger
 	
 ## [4.0.8] - 2026-08-14
 

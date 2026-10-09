@@ -18,12 +18,15 @@ module Cardano.Codec.CborSpec
 
 import Prelude
 
+import Cardano.Address.Crypto
+    ( crc32 )
 import Cardano.Address.Derivation
     ( Depth (..), GenMasterKey (..), XPrv )
 import Cardano.Address.Style.Byron
     ( Byron (..) )
 import Cardano.Codec.Cbor
-    ( decodeAddressDerivationPath
+    ( decodeAddress
+    , decodeAddressDerivationPath
     , decodeAddressPayload
     , decodeAllAttributes
     , decodeDerivationPathAttr
@@ -31,27 +34,33 @@ import Cardano.Codec.Cbor
     , encodeAttributes
     , encodeDerivationPathAttr
     , toLazyByteString
+    , toStrictByteString
     , unsafeDeserialiseCbor
     )
 import Cardano.Mnemonic
     ( mkSomeMnemonic )
+import Control.Monad
+    ( forM_ )
 import Data.ByteArray
     ( ByteArrayAccess, ScrubbedBytes )
 import Data.ByteString
     ( ByteString )
+import Data.List
+    ( isInfixOf )
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word32 )
+    ( Word, Word32, Word8 )
 import Test.Arbitrary
     ( unsafeFromHex )
 import Test.Hspec
-    ( Expectation, Spec, describe, it, shouldBe )
+    ( Expectation, Spec, describe, it, shouldBe, shouldSatisfy )
 import Test.QuickCheck
     ( Arbitrary (..), Property, conjoin, property, vector, (===), (==>) )
 
 import Cardano.Address.Internal
     ( DeserialiseFailure (..) )
+import qualified Codec.CBOR.Encoding as CBOR
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
@@ -131,11 +140,98 @@ spec = do
             deserialiseCbor decodeAddressPayload malformed
                 `shouldBe` Left
                     (DeserialiseFailure 0 "Leftovers when decoding CBOR")
-                
+
+    describe "Byron address CBOR tag validation" $ do
+        it "accepts the canonical tag 24 wrapper" $ do
+            deserialiseCbor decodeAddress byronAddressFixture
+                `shouldBe` Right byronAddressFixture
+
+        it "rejects any tag other than 24, payload and CRC intact" $ do
+            forM_
+                [ 0, 1, 23, 25, 42, 1000, 65535, 65536, 4294967296, maxBound ]
+                $ \tag -> do
+                    let malformed = rewrapTag tag byronAddressFixture
+                    deserialiseCbor decodeAddress malformed
+                        `shouldSatisfy` isTagError
+                    deserialiseCbor decodeAddressPayload malformed
+                        `shouldSatisfy` isTagError
+
+        it "still enforces the crc32 check on tag-24 wrappers" $ do
+            let malformed = BS.init byronAddressFixture <> "\NUL"
+            deserialiseCbor decodeAddress malformed
+                `shouldSatisfy` isCrcError
+            deserialiseCbor decodeAddressPayload malformed
+                `shouldSatisfy` isCrcError
+
+        it "rejects any non-24 tag on an otherwise valid wrapper (property)" $
+            property prop_wrapperTagValidation
+
+        it "accepts tag 24 on an otherwise valid wrapper (property)" $
+            property prop_wrapperTag24Decodes
+
 
 {-------------------------------------------------------------------------------
                     Golden tests for Address derivation path
 -------------------------------------------------------------------------------}
+
+-- | A structurally valid Byron address (mainnet, random scheme). Its CBOR
+-- wrapper is @[24, payload, crc32(payload)]@ with the tag encoded as the two
+-- bytes @d818@ right after the leading @82@ (list of two).
+byronAddressFixture :: ByteString
+byronAddressFixture = unsafeFromHex
+    "82d818584283581ca08bcb9e5e8cd30d5aea6d434c46abd8604fe4907d\
+    \56b9730ca28ce5a101581e581c22e25f2464ec7295b556d86d0ec33bc1\
+    \a681e7656da92dbc0582f5e4001a3abe2aa5"
+
+-- | Rewrite the CBOR tag of a Byron address wrapper, preserving its payload
+-- and CRC. Only valid when the wrapper carries tag 24 (@d818@) at bytes 1-2.
+rewrapTag :: Word -> ByteString -> ByteString
+rewrapTag tag bytes = BS.take 1 bytes <> encodedTag <> BS.drop 3 bytes
+  where
+    encodedTag = toStrictByteString $ CBOR.encodeTag tag
+
+-- | Encode an arbitrary payload as a Byron address wrapper with the given
+-- tag, mirroring 'Cardano.Codec.Cbor.encodeAddressPayload'.
+byronWrapper :: Word -> ByteString -> ByteString
+byronWrapper tag payload = toStrictByteString $ mempty
+    <> CBOR.encodeListLen 2
+    <> CBOR.encodeTag tag
+    <> CBOR.encodeBytes payload
+    <> CBOR.encodeWord32 (crc32 payload)
+
+isTagError :: Either DeserialiseFailure a -> Bool
+isTagError result = case result of
+    Left (DeserialiseFailure _ msg) -> "unexpected CBOR tag" `isInfixOf` msg
+    Right _ -> False
+
+isCrcError :: Either DeserialiseFailure a -> Bool
+isCrcError result = case result of
+    Left (DeserialiseFailure _ msg) -> "non-matching crc32" `isInfixOf` msg
+    Right _ -> False
+
+-- | A tag other than 24 must be rejected by both decoders, no matter which
+-- payload and CRC the wrapper carries.
+prop_wrapperTagValidation :: [Word8] -> Word -> Property
+prop_wrapperTagValidation payloadBytes tag =
+    conjoin
+        [ property $ isTagError (deserialiseCbor decodeAddressPayload wrapper)
+        , property $ isTagError (deserialiseCbor decodeAddress wrapper)
+        ]
+  where
+    tag' = if tag == 24 then 25 else tag
+    wrapper = byronWrapper tag' (BS.pack payloadBytes)
+
+-- | Wrappers carrying tag 24 and a valid CRC must be accepted by both
+-- decoders.
+prop_wrapperTag24Decodes :: [Word8] -> Property
+prop_wrapperTag24Decodes payloadBytes =
+    conjoin
+        [ deserialiseCbor decodeAddressPayload wrapper === Right payload
+        , deserialiseCbor decodeAddress wrapper === Right wrapper
+        ]
+  where
+    payload = BS.pack payloadBytes
+    wrapper = byronWrapper 24 payload
 
 data DecodeDerivationPath = DecodeDerivationPath
     { mnem :: [Text]
