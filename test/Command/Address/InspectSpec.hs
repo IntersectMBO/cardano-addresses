@@ -8,15 +8,25 @@ module Command.Address.InspectSpec
 
 import Prelude
 
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), encode )
 import Control.Monad
     ( forM_ )
+import Data.ByteString
+    ( ByteString )
+import Data.Text.Encoding
+    ( decodeLatin1 )
+import Test.Arbitrary
+    ( unsafeFromHex )
 import Test.Hspec
     ( Spec, SpecWith, expectationFailure, it, shouldBe, shouldContain )
 import Test.Utils
     ( SchemaRef, cli, describeCmd, validateJSON )
 
 import qualified Data.Aeson as Json
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL8
+import qualified Data.Text as T
 
 spec :: Spec
 spec = describeCmd [ "address", "inspect" ] $ do
@@ -137,6 +147,20 @@ spec = describeCmd [ "address", "inspect" ] $ do
     specInspectInvalid "Leftovers when decoding CBOR" []
         "KjgoiXEdBrKbPJXtVLzpChsXvvj5FDS3jnjBLuPPRSQcTpbNEme4QBbvQCopCDNKVunvXRibDdSgk9pzKpX9Vz8QnyhCsoCBpDujrYqXaRpD"
 
+    -- Byron address whose wrapper carries the required CBOR tag 24: must
+    -- inspect successfully.
+    specInspectAddress ["Byron", "none", "\"address_type\": 8"] []
+        (byronAddrWithWrapperTag "\xd8\x18")
+
+    -- Keeping the payload and CRC valid but using tag 25 instead of tag 24
+    -- must be rejected, matching the Cardano ledger's decoding.
+    specInspectInvalid "unexpected CBOR tag" []
+        (byronAddrWithWrapperTag "\xd8\x19")
+
+    -- Same check with a tag encoded on a single byte (tag 23, @d7@).
+    specInspectInvalid "unexpected CBOR tag" []
+        (byronAddrWithWrapperTag "\xd7")
+
 specInspectAddress :: [String] -> [String] -> String -> SpecWith ()
 specInspectAddress mustHave args addr = it addr $ do
     (out, err) <- cli ([ "address", "inspect" ] <> args) addr
@@ -161,3 +185,15 @@ specInspectInvalid errstr args str = it ("invalid: " <> str) $ do
     (out, err) <- cli ([ "address", "inspect" ] <> args) str
     out `shouldBe` ("" :: String)
     err `shouldContain` errstr
+
+-- | Re-encode a fixture Byron address (a valid mainnet address whose CBOR
+-- wrapper is @[24, payload, crc32]@) after replacing the wrapper tag bytes.
+-- The payload and CRC stay untouched, so the only difference is the tag.
+byronAddrWithWrapperTag :: ByteString -> String
+byronAddrWithWrapperTag wrapperTag = T.unpack $ decodeLatin1 $ encode EBase58 $
+    BS.take 1 fixture <> wrapperTag <> BS.drop 3 fixture
+  where
+    fixture = unsafeFromHex
+        "82d818584283581ca08bcb9e5e8cd30d5aea6d434c46abd8604fe4907d\
+        \56b9730ca28ce5a101581e581c22e25f2464ec7295b556d86d0ec33bc1\
+        \a681e7656da92dbc0582f5e4001a3abe2aa5"

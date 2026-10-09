@@ -253,6 +253,7 @@ test-suite unit
     , binary
     , bytestring >= 0.10.6 && < 0.13
     , cardano-addresses
+    , cborg >= 0.2.1 && <0.3
     , crypton
     , containers >= 0.5 && < 0.9
     , hspec >= 2.11.0 && < 2.12
