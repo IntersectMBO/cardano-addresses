@@ -27,12 +27,7 @@ import Cardano.Address.Script
 import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..)
-    , detectEncoding
-    , encode
-    , fromBase16
-    , fromBech32
-    )
+    ( AbstractEncoding (..), detectEncoding, encode, fromBase16, fromBech32 )
 import Data.Aeson
     ( (.=) )
 import Data.Bifunctor

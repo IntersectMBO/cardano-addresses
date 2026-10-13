@@ -17,11 +17,7 @@ import Cardano.Address.Derivation
     , xpubToBytes
     )
 import Cardano.Address.KeyHash
-    ( GovernanceType (..)
-    , KeyHash (..)
-    , KeyRole (..)
-    , keyHashToText
-    )
+    ( GovernanceType (..), KeyHash (..), KeyRole (..), keyHashToText )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Encoding
