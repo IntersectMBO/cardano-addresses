@@ -25,7 +25,7 @@ import Codec.Binary.Encoding
 import Data.ByteString
     ( ByteString )
 import Test.Hspec
-    ( Spec, SpecWith, it, shouldContain )
+    ( Spec, SpecWith, it, shouldBe, shouldContain )
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
@@ -98,6 +98,8 @@ spec = describeCmd [ "key", "inspect" ] $ do
     specInspectCredential CommitteeHot CIP0105
 
     specInspectHex
+
+    specInspectErrors
 
     prop "base16, base58 and bech32 extended public keys inspect identically"
         (withMaxSuccess 50 . propInspectXPubEncoding)
@@ -194,6 +196,15 @@ credentialDigest :: IO ByteString
 credentialDigest = do
     xpub <- generate arbitrary
     pure $ hashCredential (xpubPublicKey xpub)
+
+specInspectErrors :: SpecWith ()
+specInspectErrors =
+    it "surfaces a bech32 decoding error" $ do
+        let malformed =
+                "addr_xvk1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+        (out, err) <- cli [ "key", "inspect" ] malformed
+        out `shouldBe` ""
+        err `shouldContain` "Bech32 error"
 
 specInspectPrivate :: HumanReadablePart -> SpecWith ()
 specInspectPrivate hrp = it "can inspect private key" $ do

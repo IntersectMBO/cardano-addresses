@@ -114,7 +114,7 @@ hGetBytes h = do
         Just (EBase58  ) -> decodeBytes fromBase58 raw
         Nothing          -> fail
             "Couldn't detect input encoding? Data on stdin must be encoded as \
-            \bech16, bech32 or base58."
+            \bech32, base16 or base58."
 
 decodeBytes
     :: (bin -> Either String result)

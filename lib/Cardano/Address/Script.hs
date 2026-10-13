@@ -380,7 +380,8 @@ prettyErrScriptHashFromText = \case
     ErrScriptHashFromTextWrongPayload ->
         "Script hash must contain exactly 28-byte payload and one specific prepended byte."
     ErrScriptHashFromTextWrongHrp ->
-        "Invalid human-readable prefix: must be 'drep', 'cc_hot' or 'cc_cold'."
+        "Invalid human-readable prefix: must be 'script', 'drep', 'cc_cold', \
+        \'cc_hot', 'drep_script', 'cc_cold_script' or 'cc_hot_script'."
     ErrScriptHashFromTextWrongDataPart ->
         "Script hash is Bech32-encoded but has an invalid data part."
     ErrScriptHashFromTextInvalidHex ->

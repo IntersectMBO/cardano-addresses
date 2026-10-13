@@ -369,7 +369,10 @@ prettyErrKeyHashFromText = \case
     ErrKeyHashFromTextWrongPayload ->
         "Verification key hash must contain exactly 28 bytes."
     ErrKeyHashFromTextWrongHrp ->
-        "Invalid human-readable prefix: must be 'X_vkh', 'X_vk', 'X_xvk' where X is 'addr_shared', 'stake_shared' or 'policy'."
+        "Invalid human-readable prefix: must be a verification key or key hash \
+        \prefix ('X_vkh', 'X_vk' or 'X_xvk' where X is 'addr', 'addr_shared', \
+        \'stake', 'stake_shared', 'policy', 'drep', 'cc_cold' or 'cc_hot'), or a \
+        \governance credential prefix ('drep', 'cc_cold' or 'cc_hot')."
     ErrKeyHashFromTextWrongDataPart ->
         "Verification key hash is Bech32-encoded but has an invalid data part."
     ErrKeyHashFromTextInvalidHex size->

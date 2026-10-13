@@ -48,10 +48,8 @@ mod liftCmd = command "private" $
         <> progDesc "Get the signing or chain code part of an extended private key"
         <> footerDoc (Just $ vsep
             [ pretty ("The private key is read from stdin." :: Text)
-            , pretty ("To get a signing key pass '--signing-key'." :: Text)
-            , pretty ("To get a chain code pass '--chain-code'." :: Text)
-            , pretty ("Bech32 encoding will be used." :: Text)
-            , pretty ("To get the signing key hex-encoded, pass the output to 'bech32'." :: Text)
+            , pretty ("To get a signing key pass '--signing-key'. It is output as bech32 ('*_sk')." :: Text)
+            , pretty ("To get a chain code pass '--chain-code'. It is output as base16 (hex)." :: Text)
             ])
   where
     parser = Private

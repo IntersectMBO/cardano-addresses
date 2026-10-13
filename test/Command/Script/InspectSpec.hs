@@ -90,6 +90,19 @@ spec = describeCmd [ "script", "inspect" ] $ do
         "addr_vkh1dnup7vsddkycsau5ek5ulrhndastkxczpydp6jsmr8fgyfevcp3"
         "Invalid human-readable prefix"
 
+    it "surfaces a bech32 decoding error" $ do
+        let malformed =
+                "script1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+        (out, err) <- cli [ "script", "inspect" ] malformed
+        out `shouldBe` ""
+        err `shouldContain` "Bech32 error"
+
+    it "lists 'script' among the accepted prefixes on a wrong prefix" $ do
+        (out, err) <- cli [ "script", "inspect" ]
+            "addr_vkh1dnup7vsddkycsau5ek5ulrhndastkxczpydp6jsmr8fgyfevcp3"
+        out `shouldBe` ""
+        err `shouldContain` "must be 'script'"
+
     prop "a generic script hash and its hex form inspect identically"
         (withMaxSuccess 50 . propInspectScriptHashEncoding)
     prop "a CIP-0129 governance script credential and its hex form inspect identically"

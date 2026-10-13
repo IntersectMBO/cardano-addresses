@@ -121,8 +121,7 @@ parseScriptHashInput txt =
 
     parseBech32 :: Either String ScriptHashInput
     parseBech32 = do
-        (hrp, _) <- first (const unexpectedEncoding) $
-            fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
+        (hrp, _) <- fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
         h <- first prettyErrScriptHashFromText (scriptHashFromText txt)
         pure $ ScriptHashInput (roleForHrp hrp) h
 
