@@ -91,6 +91,7 @@ library
       Command.RecoveryPhrase.Generate
       Command.Script
       Command.Script.Hash
+      Command.Script.Inspect
       Command.Script.Preimage
       Command.Script.Validation
       Command.Version
@@ -225,6 +226,7 @@ test-suite unit
       Command.RecoveryPhrase.GenerateSpec
       Command.RecoveryPhraseSpec
       Command.Script.HashSpec
+      Command.Script.InspectSpec
       Command.Script.PreimageSpec
       Command.Script.ValidationSpec
       CommandSpec

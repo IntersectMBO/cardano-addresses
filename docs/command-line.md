@@ -622,12 +622,14 @@ echo addr_test1vp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f7guscp6v | cardano-a
 ```
 <pre>
 \{
-    "stake_reference": "none",
-    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
     "address_style": "Shelley",
-    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "address_type": 6,
+    "address_type_name": "enterprise",
+    "network_name": "testnet",
     "network_tag": 0,
-    "address_type": 6
+    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
+    "stake_reference": "none"
 \}
 </pre>
 
@@ -636,14 +638,16 @@ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx
 ```
 <pre>
 \{
-    "stake_reference": "by value",
-    "stake_key_hash_bech32": "stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6",
-    "stake_key_hash": "f6d2f2ef387333e15aea9333e9d908e57a2b513ec6d762884f70ae2a",
-    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
     "address_style": "Shelley",
-    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "address_type": 0,
+    "address_type_name": "base",
+    "network_name": "testnet",
     "network_tag": 0,
-    "address_type": 0
+    "spending_key_hash": "54947bcf6b760319bcec250ec225fd1ce63baface47e34b44b73e4f9",
+    "spending_key_hash_bech32": "addr_vkh12j28hnmtwcp3n08vy58vyf0arnnrhtavu3lrfdztw0j0jng3d6v",
+    "stake_key_hash": "f6d2f2ef387333e15aea9333e9d908e57a2b513ec6d762884f70ae2a",
+    "stake_key_hash_bech32": "stake_vkh17mf09mecwve7zkh2jve7nkggu4azk5f7cmtk9zz0wzhz5efq2w6",
+    "stake_reference": "by value"
 \}
 </pre>
 
@@ -661,6 +665,12 @@ Details about possible address types are following (refer also to [cddl](https:/
 |      8       |  1000          |   byron/icarus                                           |
 |      14      |  1110          |   reward account: keyhash28                              |
 |      15      |  1111          |   reward account: scripthash28                           |
+
+Note: In addition to the numeric `address_type`, the command outputs a
+human-readable `address_type_name` (`base`, `pointer`, `enterprise`, `reward`,
+`byron` or `icarus`) and a `network_name`. `network_name` is `mainnet` or
+`testnet` for Shelley addresses, the well-known network keyword for Byron and
+Icarus addresses, and `null` when the address carries no network tag.
 
 
 
@@ -1326,6 +1336,26 @@ echo drep_xsk1vpdsm49smzmdwhd4kjmm2mdyljjysm746rafjr7r8kgfanj849psw8pfm305g59wng
 \}
 </pre>
 
+`key inspect` also accepts base16 and base58 encoded input, non-extended keys
+(`*_vk` and `*_sk`), key hashes (`*_vkh`, `drep_vkh`, `cc_cold_vkh`,
+`cc_hot_vkh`) and governance credentials (`drep`, `cc_cold`, `cc_hot`, plus
+their CIP-0129 hex form). Key hashes are reported with their `role` and, for
+governance roles, both the CIP-0129 `credential` and the legacy CIP-0105
+`legacy_credential`:
+
+```console
+echo drep_vkh19j5we8gp7rwk76thsev54ns2mkx5wfhavgx405ypga08x6qj5gn | cardano-address key inspect
+```
+<pre>
+\{
+    "credential": "drep1ygk23myaq8cd6mmfw7r9jjkwptwc63exl43q647ss9r4uucr5yq0s",
+    "hash": "2ca8ec9d01f0dd6f697786594ace0add8d4726fd620d57d081475e73",
+    "key_type": "hash",
+    "legacy_credential": "drep_vkh19j5we8gp7rwk76thsev54ns2mkx5wfhavgx405ypga08x6qj5gn",
+    "role": "representative"
+\}
+</pre>
+
 
 ### How to generate script validation, preimage and script hash from script composed of drep (<strong>drep_script</strong>)
 
@@ -1362,6 +1392,21 @@ cardano-address script hash "all [$(cat drep),active_from 5001]"
 ```
 <pre>
 drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt
+</pre>
+
+The script hash (or a governance script credential) can be inspected with
+`script inspect`, which accepts both bech32 and hex input:
+
+```console
+echo drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt | cardano-address script inspect
+```
+<pre>
+\{
+    "credential": "drep1y0fu7a88hnzxa3y93hqpe9ku34tp80224gv8ftzcqwzm5gsp5y9q7",
+    "legacy_credential": "drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt",
+    "role": "representative",
+    "script_hash": "d3cf74e7bcc46ec4858dc01c96dc8d5613bd4aaa1874ac580385ba22"
+\}
 </pre>
 
 ### Correspondence between keys in cardano-addresses and cardano-cli (<strong>key.xsk key.xvk key.vk key.hash</strong>)

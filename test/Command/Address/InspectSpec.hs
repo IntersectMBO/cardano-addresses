@@ -30,7 +30,7 @@ import qualified Data.Text as T
 
 spec :: Spec
 spec = describeCmd [ "address", "inspect" ] $ do
-    specInspectAddress ["Byron", "none", "\"address_type\": 8"] []
+    specInspectAddress ["Byron", "none", "\"address_type\": 8", "\"address_type_name\": \"byron\""] []
         "37btjrVyb4KEgoGCHJ7XFaJRLBRiVuvcrQWPpp4HeaxdTxhKwQjXHNKL4\
         \3NhXaQNa862BmxSFXZFKqPqbxRc3kCUeTRMwjJevFeCKokBG7A7num5Wh"
 
@@ -42,21 +42,21 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "DdzFFzCqrht5csm2GKhnVrjzKpVHHQFNXUDhAFDyLWVY5w8ZsJRP2uhwZ\
         \q2CEAVzDZXYXa4GvggqYEegQsdKAKikFfrrCoHheLH2Jskr"
 
-    specInspectAddress ["Icarus", "none", "\"address_type\": 8"] []
+    specInspectAddress ["Icarus", "none", "\"address_type\": 8", "\"address_type_name\": \"icarus\"", "\"network_name\": null"] []
         "Ae2tdPwUPEYz6ExfbWubiXPB6daUuhJxikMEb4eXRp5oKZBKZwrbJ2k7EZe"
 
-    specInspectAddress ["Shelley", "none", "\"address_type\": 6"] []
+    specInspectAddress ["Shelley", "none", "\"address_type\": 6", "\"address_type_name\": \"enterprise\""] []
         "addr1vpu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5eg0yu80w"
 
-    specInspectAddress ["Shelley", "by value", "\"address_type\": 0"] []
+    specInspectAddress ["Shelley", "by value", "\"address_type\": 0", "\"address_type_name\": \"base\""] []
         "addr1qdu5vlrf4xkxv2qpwngf6cjhtw542ayty80v8dyr49rf5ew\
         \vxwdrt70qlcpeeagscasafhffqsxy36t90ldv06wqrk2q5ggg4z"
 
-    specInspectAddress ["Shelley", "by pointer", "\"address_type\": 4"] []
+    specInspectAddress ["Shelley", "by pointer", "\"address_type\": 4", "\"address_type_name\": \"pointer\""] []
         "addr1gw2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer5ph3wczvf2x4v58t"
 
     -- reward account: keyhash28
-    specInspectAddress ["Shelley", "by value", "stake_key_hash"] []
+    specInspectAddress ["Shelley", "by value", "stake_key_hash", "\"address_type_name\": \"reward\""] []
         "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
     specInspectAddress ["Shelley", "by value", "stake_key_hash_bech32"] []
         "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
@@ -72,7 +72,7 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
 
     -- cardano-cli generated --testnet-magic 42 addresses
-    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash"] []
+    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash", "\"network_name\": \"testnet\""] []
         "addr_test1qpwr8l57ceql23ylyprl6qgct239lxph8clwxy5w8r4qdz8ct9uut5a\
         \hmxqkgwy9ecn5carsv39frsgsq09u70wmqwhqjqcjqs"
     specInspectAddress ["\"address_type\": 0"] []
@@ -86,7 +86,7 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "stake_test1uru9j7w96wmanqty8zzuuf6vw3cxgj53cygq8j708hds8tsntl0j7"
 
     -- cardano-cli generated --mainnet addresses
-    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash"] []
+    specInspectAddress ["Shelley", "by value", "stake_key_hash", "spending_key_hash", "\"network_name\": \"mainnet\""] []
         "addr1q9777p2w2hqa3cl0ah97pdwyavjnpf0ex3muvqgttavjxhku2rp98h9drzkdf\
         \va8ea775jszmd799k59aknpvqyn6wwqwll7uw"
     specInspectAddress ["\"address_type\": 0"] []

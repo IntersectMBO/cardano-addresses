@@ -6,6 +6,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -16,6 +18,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -26,6 +30,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -38,6 +44,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -48,6 +56,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -58,6 +68,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -70,6 +82,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -80,6 +94,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -90,6 +106,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -102,6 +120,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -112,6 +132,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -122,6 +144,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -134,6 +158,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -144,6 +170,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -154,6 +182,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -166,6 +196,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -176,6 +208,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -186,6 +220,8 @@
         {
             "address_style": "Shelley",
             "address_type": 0,
+            "address_type_name": "base",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -198,6 +234,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -206,6 +244,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -214,6 +254,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "8f16cfe002da3fe175b0a29f35fe6d0aed06a41afe3d2a35792dfbf4",
             "spending_key_hash_bech32": "addr_vkh13utvlcqzmgl7zads520ntlndptksdfq6lc7j5dte9halgewhxu5",
@@ -224,6 +266,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -232,6 +276,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -240,6 +286,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "86f3f718c07d08fcb80858158bd2227f995adcdf5567e986ab243c02",
             "spending_key_hash_bech32": "addr_vkh1smelwxxq05y0ewqgtq2ch53z07v44hxl24n7np4tys7qyx8kycz",
@@ -250,6 +298,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "testnet",
             "network_tag": 0,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -258,6 +308,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 3,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -266,6 +318,8 @@
         {
             "address_style": "Shelley",
             "address_type": 6,
+            "address_type_name": "enterprise",
+            "network_name": "unknown",
             "network_tag": 6,
             "spending_key_hash": "a95eee580d48624c723fbd2acecfe6d1473c692ae9f1446908cce94e",
             "spending_key_hash_bech32": "addr_vkh1490wukqdfp3ycu3lh54vanlx69rnc6f2a8c5g6ggen55uu6kf77",
@@ -276,6 +330,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "testnet",
             "network_tag": 0,
             "pointer": {
                 "output_index": 3,
@@ -289,6 +345,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "unknown",
             "network_tag": 3,
             "pointer": {
                 "output_index": 3,
@@ -302,6 +360,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "unknown",
             "network_tag": 6,
             "pointer": {
                 "output_index": 3,
@@ -317,6 +377,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "testnet",
             "network_tag": 0,
             "pointer": {
                 "output_index": 42,
@@ -330,6 +392,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "unknown",
             "network_tag": 3,
             "pointer": {
                 "output_index": 42,
@@ -343,6 +407,8 @@
         {
             "address_style": "Shelley",
             "address_type": 4,
+            "address_type_name": "pointer",
+            "network_name": "unknown",
             "network_tag": 6,
             "pointer": {
                 "output_index": 42,
