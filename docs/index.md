@@ -33,6 +33,35 @@ mnemonic to seed for wallet restoration, and address derivation functionalities.
 
 ![](../.github/example.gif)
 
+## Feature overview
+
+`cardano-addresses` ships a Haskell library and a `cardano-address` CLI that cover
+the whole lifecycle of Cardano wallet keys and addresses — from a human-readable
+recovery phrase to a spendable on-chain address.
+
+| Capability | What it provides |
+|---|---|
+| **Recovery phrases** | Generate BIP-0039 mnemonics of any multiple of 3 words (9–24) in English, Italian, French, Spanish, Japanese or Korean, and turn them back into keys. |
+| **Key derivation** | Convert a recovery phrase into an extended root private key for the `Shelley`, `Shared`, `Byron` or `Icarus` styles, then derive child keys along CIP-1852 / CIP-1854 / CIP-1855 paths such as `1852H/1815H/0H/0/0` (hardened indexes accept the legacy `H` or the standard `'` suffix). |
+| **Key handling** | Produce extended and non-extended signing/verification keys, extract the signing key or chain code, hash public keys (`--cip-0105`), inspect keys, and compute `cardano-wallet`-compatible wallet IDs. |
+| **Address construction** | Build payment, stake, delegation (base), pointer and legacy bootstrap (Byron/Icarus) addresses from key hashes or scripts, for any network tag. |
+| **Address inspection** | Decode any address into its style, type, network tag and spending/stake credentials. |
+| **Native scripts** | Express `all` / `any` / `at_least N` multi-signature scripts with `active_from` / `active_until` timelocks, then hash, validate or compute their preimages. |
+| **Governance** | Derive DRep and Constitutional Committee (cold/hot) keys together with their CIP-0129 credentials and scripts. |
+| **Interoperability** | Round-trip keys, hashes and CBOR hex with `cardano-cli`, and pipe any output through `bech32` for hex encoding. |
+| **WebAssembly** | A single `cardano-addresses.wasm` binary (GHC WASM backend) runs address inspection, key derivation, address construction and Ed25519 signing/verification in the browser or any WASI runtime. |
+
+The functionality is exposed through four CLI command groups:
+
+- `recovery-phrase` — generate and work with recovery phrases.
+- `key` — create, derive, inspect and hash keys.
+- `address` — create and inspect addresses.
+- `script` — create, hash, validate and inspect scripts.
+
+> Proving ownership of a Cardano key with a zero-knowledge proof (experimental) is
+> documented on the
+> [ownership proving using ZKP](https://intersectmbo.github.io/cardano-addresses/zkp-ownership) page.
+
 ## Documentation
 
 ## Command-Line
