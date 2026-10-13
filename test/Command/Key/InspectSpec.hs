@@ -126,28 +126,28 @@ specInspectHex = do
         out `shouldContain` pub
 
     it "can inspect a hex-encoded key hash" $ do
-        digest <- credentialDigest
-        let hash = base16 digest
+        payload <- credentialDigest
+        let hash = base16 payload
         out <- cli [ "key", "inspect" ] hash
         out `shouldContain` "hash"
         out `shouldContain` "unknown"
         out `shouldContain` hash
 
     it "can inspect a hex-encoded CIP-0129 credential" $ do
-        digest <- credentialDigest
-        let credential = base16 $ BS.cons 0x22 digest
+        payload <- credentialDigest
+        let credential = base16 $ BS.cons 0x22 payload
         out <- cli [ "key", "inspect" ] credential
         out `shouldContain` "hash"
         out `shouldContain` "representative"
-        out `shouldContain` base16 digest
+        out `shouldContain` base16 payload
 
 specInspectCredential :: KeyRole -> GovernanceType -> SpecWith ()
 specInspectCredential role' govType = it "can inspect a key hash" $ do
-    digest <- credentialDigest
-    let encoded = T.unpack $ keyHashToText (KeyHash role' digest) govType
+    payload <- credentialDigest
+    let encoded = T.unpack $ keyHashToText (KeyHash role' payload) govType
     out <- cli [ "key", "inspect" ] encoded
     out `shouldContain` "hash"
-    out `shouldContain` base16 digest
+    out `shouldContain` base16 payload
 
 credentialDigest :: IO ByteString
 credentialDigest = do

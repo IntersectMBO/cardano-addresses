@@ -33,6 +33,7 @@ import Cardano.Address.KeyHash
     , KeyRole (..)
     , keyHashFromText
     , keyHashToText
+    , keyRoleToText
     , prettyErrKeyHashFromText
     )
 import Codec.Binary.Bech32
@@ -305,7 +306,7 @@ keyInputToJson = \case
         ]
     KeyHashInput kh@(KeyHash khRole khDigest) -> Json.object $
         [ "key_type" .= Json.String "hash"
-        , "role" .= Json.String (roleToText khRole)
+        , "role" .= Json.String (keyRoleToText khRole)
         , "hash" .= Json.String (base16 khDigest)
         ]
         <> credentialField kh
@@ -326,15 +327,3 @@ isGovernanceRole = \case
     CommitteeCold -> True
     CommitteeHot -> True
     _ -> False
-
-roleToText :: KeyRole -> Text
-roleToText = \case
-    PaymentShared -> "payment_shared"
-    DelegationShared -> "delegation_shared"
-    Payment -> "payment"
-    Delegation -> "delegation"
-    Policy -> "policy"
-    Representative -> "representative"
-    CommitteeCold -> "committee_cold"
-    CommitteeHot -> "committee_hot"
-    Unknown -> "unknown"

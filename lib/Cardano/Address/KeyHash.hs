@@ -27,6 +27,7 @@ module Cardano.Address.KeyHash
     , keyHashFromBytes
     , keyHashFromText
     , keyHashToText
+    , keyRoleToText
 
     -- * Errors
     , ErrKeyHashFromText
@@ -169,6 +170,21 @@ keyHashToText (KeyHash cred keyHash) govType = case cred of
             T.decodeUtf8 $ encode (EBech32 CIP5.cc_hot) $ keyHashAppendByteCIP0129 keyHash cred
     Unknown ->
         T.decodeUtf8 $ encode EBase16 keyHash
+
+-- | A stable, machine-readable name for a 'KeyRole', suitable for JSON output.
+--
+-- @since 4.0.8
+keyRoleToText :: KeyRole -> Text
+keyRoleToText = \case
+    PaymentShared -> "payment_shared"
+    DelegationShared -> "delegation_shared"
+    Payment -> "payment"
+    Delegation -> "delegation"
+    Policy -> "policy"
+    Representative -> "representative"
+    CommitteeCold -> "committee_cold"
+    CommitteeHot -> "committee_hot"
+    Unknown -> "unknown"
 
 -- | In accordance to CIP-0129 (https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129)
 --   one byte is prepended to vkh only in governance context. The rules how to contruct it are summarized

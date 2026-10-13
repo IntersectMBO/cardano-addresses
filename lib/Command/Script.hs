@@ -36,11 +36,13 @@ import System.IO.Extra
     ( progName )
 
 import qualified Command.Script.Hash as Hash
+import qualified Command.Script.Inspect as Inspect
 import qualified Command.Script.Preimage as Preimage
 import qualified Command.Script.Validation as Validation
 
 data Cmd
     = Hash Hash.Cmd
+    | Inspect Inspect.Cmd
     | Validation Validation.Cmd
     | Preimage Preimage.Cmd
     deriving (Show)
@@ -75,6 +77,7 @@ mod liftCmd = command "script" $
   where
     parser = subparser $ mconcat
         [ Hash.mod Hash
+        , Inspect.mod Inspect
         , Validation.mod Validation
         , Preimage.mod Preimage
         ]
@@ -85,5 +88,6 @@ mod liftCmd = command "script" $
 run :: Cmd -> IO ()
 run = \case
     Hash sub -> Hash.run sub
+    Inspect sub -> Inspect.run sub
     Validation sub -> Validation.run sub
     Preimage sub -> Preimage.run sub
