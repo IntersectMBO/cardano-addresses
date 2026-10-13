@@ -4,10 +4,34 @@ module Command.Script.InspectSpec
 
 import Prelude
 
+import Cardano.Address.Derivation
+    ( XPub, hashCredential, xpubPublicKey )
+import Cardano.Address.KeyHash
+    ( GovernanceType (..), KeyRole (..) )
+import Cardano.Address.Script
+    ( ScriptHash (..), scriptHashToText )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), Encoding, encode )
+import Data.ByteString
+    ( ByteString )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldBe, shouldContain )
+import Test.Hspec.QuickCheck
+    ( prop )
+import Test.QuickCheck
+    ( Property, withMaxSuccess )
+import Test.QuickCheck.Monadic
+    ( assert, monadicIO, run )
 import Test.Utils
     ( cli, describeCmd )
+
+import Test.Arbitrary
+    ()
+
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.ByteString as BS
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = describeCmd [ "script", "inspect" ] $ do
@@ -66,6 +90,35 @@ spec = describeCmd [ "script", "inspect" ] $ do
         "addr_vkh1dnup7vsddkycsau5ek5ulrhndastkxczpydp6jsmr8fgyfevcp3"
         "Invalid human-readable prefix"
 
+    prop "a generic script hash and its hex form inspect identically"
+        (withMaxSuccess 50 . propInspectScriptHashEncoding)
+    prop "a CIP-0129 governance script credential and its hex form inspect identically"
+        (withMaxSuccess 50 . propInspectScriptCredentialEncoding)
+
+-- | A generic script hash can be given either as bech32 (@script1...@) or as
+-- its 28-byte hex form. Both must yield the same output.
+propInspectScriptHashEncoding :: XPub -> Property
+propInspectScriptHashEncoding xpub = monadicIO $ do
+    let digest = hashCredential (xpubPublicKey xpub)
+        asBech32 = T.unpack $ scriptHashToText (ScriptHash digest) Payment Nothing
+        asBase16 = encodeBytes EBase16 digest
+    fromBech32 <- run $ inspectScript asBech32
+    fromBase16 <- run $ inspectScript asBase16
+    assert (fromBech32 == fromBase16)
+
+-- | A governance script credential can be given either as bech32 (CIP-0129) or
+-- as the 29-byte hex form (header byte + digest). Both must yield the same
+-- output.
+propInspectScriptCredentialEncoding :: XPub -> Property
+propInspectScriptCredentialEncoding xpub = monadicIO $ do
+    let digest = hashCredential (xpubPublicKey xpub)
+        asBech32 = T.unpack $ scriptHashToText
+            (ScriptHash digest) Representative (Just CIP0129)
+        asBase16 = encodeBytes EBase16 (BS.cons 0x23 digest)
+    fromBech32 <- run $ inspectScript asBech32
+    fromBase16 <- run $ inspectScript asBase16
+    assert (fromBech32 == fromBase16)
+
 specInspect :: String -> [String] -> SpecWith ()
 specInspect input needles = it (input <> " => inspect") $ do
     out <- cli [ "script", "inspect" ] input
@@ -115,3 +168,9 @@ ccHotCIP0105 = "cc_hot_script10fpewpnxmmc7x08nc5yepdyafa8arcaugf3pa37l3qmn2xu0u3
 
 ccHotHex :: String
 ccHotHex = "7a43970666def1e33cf3c50990b49d4f4fd1e3bc42621ec7df883735"
+
+encodeBytes :: Encoding -> ByteString -> String
+encodeBytes enc = T.unpack . T.decodeUtf8 . encode enc
+
+inspectScript :: String -> IO String
+inspectScript = cli [ "script", "inspect" ]

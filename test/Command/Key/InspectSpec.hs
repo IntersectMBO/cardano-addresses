@@ -7,7 +7,8 @@ module Command.Key.InspectSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( hashCredential
+    ( XPub
+    , hashCredential
     , xprvChainCode
     , xprvPrivateKey
     , xprvToBytes
@@ -24,13 +25,17 @@ import Cardano.Address.KeyHash
 import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), encode )
+    ( AbstractEncoding (..), Encoding, encode )
 import Data.ByteString
     ( ByteString )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldContain )
+import Test.Hspec.QuickCheck
+    ( prop )
 import Test.QuickCheck
-    ( arbitrary, generate )
+    ( Property, arbitrary, generate, withMaxSuccess )
+import Test.QuickCheck.Monadic
+    ( assert, monadicIO, run )
 import Test.Utils
     ( cli, describeCmd )
 
@@ -97,6 +102,46 @@ spec = describeCmd [ "key", "inspect" ] $ do
     specInspectCredential CommitteeHot CIP0105
 
     specInspectHex
+
+    prop "base16, base58 and bech32 extended public keys inspect identically"
+        (withMaxSuccess 50 . propInspectXPubEncoding)
+    prop "base16, base58 and bech32 non-extended public keys inspect identically"
+        (withMaxSuccess 50 . propInspectNonExtendedEncoding)
+    prop "a CIP-0129 governance credential and its hex form inspect identically"
+        (withMaxSuccess 50 . propInspectCredentialEncoding)
+
+-- | Whatever encoding is used to feed the same extended public key, the
+-- inspected output must be identical.
+propInspectXPubEncoding :: XPub -> Property
+propInspectXPubEncoding xpub = monadicIO $ do
+    let bytes = xpubToBytes xpub
+    fromBech32 <- run $ inspectKey $ encodeBytes (EBech32 CIP5.addr_xvk) bytes
+    fromBase16 <- run $ inspectKey $ encodeBytes EBase16 bytes
+    fromBase58 <- run $ inspectKey $ encodeBytes EBase58 bytes
+    assert (fromBech32 == fromBase16)
+    assert (fromBase16 == fromBase58)
+
+-- | Same as 'propInspectXPubEncoding' but for non-extended public keys (raw
+-- 32-byte payloads, no chain code).
+propInspectNonExtendedEncoding :: XPub -> Property
+propInspectNonExtendedEncoding xpub = monadicIO $ do
+    let bytes = xpubPublicKey xpub
+    fromBech32 <- run $ inspectKey $ encodeBytes (EBech32 CIP5.addr_vk) bytes
+    fromBase16 <- run $ inspectKey $ encodeBytes EBase16 bytes
+    fromBase58 <- run $ inspectKey $ encodeBytes EBase58 bytes
+    assert (fromBech32 == fromBase16)
+    assert (fromBase16 == fromBase58)
+
+-- | A governance credential can be given either as bech32 (CIP-0129) or as the
+-- 29-byte hex form (header byte + digest). Both must yield the same output.
+propInspectCredentialEncoding :: XPub -> Property
+propInspectCredentialEncoding xpub = monadicIO $ do
+    let digest = hashCredential (xpubPublicKey xpub)
+        asBech32 = T.unpack $ keyHashToText (KeyHash Representative digest) CIP0129
+        asBase16 = encodeBytes EBase16 (BS.cons 0x22 digest)
+    fromBech32 <- run $ inspectKey asBech32
+    fromBase16 <- run $ inspectKey asBase16
+    assert (fromBech32 == fromBase16)
 
 specInspectHex :: SpecWith ()
 specInspectHex = do
@@ -192,6 +237,12 @@ specInspectPublicNonExtended hrp = it "can inspect non-extended public key" $ do
 
 base16 :: ByteString -> String
 base16 = T.unpack . T.decodeUtf8 . encode EBase16
+
+encodeBytes :: Encoding -> ByteString -> String
+encodeBytes enc = T.unpack . T.decodeUtf8 . encode enc
+
+inspectKey :: String -> IO String
+inspectKey = cli [ "key", "inspect" ]
 
 bech32 :: HumanReadablePart -> ByteString -> String
 bech32 hrp = T.unpack . T.decodeUtf8 . encode (EBech32 hrp)
