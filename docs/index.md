@@ -46,8 +46,9 @@ recovery phrase to a spendable on-chain address.
 | **Key handling** | Produce extended and non-extended signing/verification keys, extract the signing key or chain code, hash public keys (`--cip-0105`), inspect keys, and compute `cardano-wallet`-compatible wallet IDs. |
 | **Address construction** | Build payment, stake, delegation (base), pointer and legacy bootstrap (Byron/Icarus) addresses from key hashes or scripts, for any network tag. |
 | **Address inspection** | Decode any address into its style, type, network tag and spending/stake credentials. |
-| **Native scripts** | Express `all` / `any` / `at_least N` multi-signature scripts with `active_from` / `active_until` timelocks, then hash, validate or compute their preimages. |
+| **Native scripts** | Express `all` / `any` / `at_least N` multi-signature scripts with `active_from` / `active_until` timelocks, then hash, validate or compute their preimages (the script may be given as an argument or read from stdin). |
 | **Governance** | Derive DRep and Constitutional Committee (cold/hot) keys together with their CIP-0129 credentials and scripts. |
+| **Input encodings** | Keys, key hashes, script hashes and addresses are read in bech32 (the native format), as well as raw base16 and, where unambiguous, base58. |
 | **Interoperability** | Round-trip keys, hashes and CBOR hex with `cardano-cli`, and pipe any output through `bech32` for hex encoding. |
 | **WebAssembly** | A single `cardano-addresses.wasm` binary (GHC WASM backend) runs address inspection, key derivation, address construction and Ed25519 signing/verification in the browser or any WASI runtime. |
 

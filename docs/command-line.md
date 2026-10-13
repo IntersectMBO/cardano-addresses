@@ -496,6 +496,8 @@ cardano-address key hash < addr.xvk | bech32
 </pre>
 
 > :information_source: The hashing is available for both stake and payment verification keys. Hex encoding can be achieved by redirecting to `bech32` tool.
+>
+> :information_source: `key hash` also accepts raw base16 and base58 input (a 32-byte verification key, optionally extended with a 32-byte chain code). As the bech32 human-readable prefix carries the key role, raw input yields a base16-encoded hash.
 
 
 ### How to generate a payment address from an extended payment key (<strong>payment.addr</strong>)
@@ -1395,7 +1397,7 @@ drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt
 </pre>
 
 The script hash (or a governance script credential) can be inspected with
-`script inspect`, which accepts both bech32 and hex input:
+`script inspect`, which accepts bech32, base16 or base58 input:
 
 ```console
 echo drep_script1608hfeauc3hvfpvdcqwfdhyd2cfm6j42rp62ckqrskazy57w2zt | cardano-address script inspect
@@ -1531,3 +1533,65 @@ cardano-address key public --without-chain-code < key.xsk | cardano-address key 
 <pre>
 0185545935760c5e370d01e6f4fedbb89b7fd79e115f2837cfab9ea8
 </pre>
+
+### Input encodings
+
+Most commands that read data from stdin accept it in **bech32** (the format
+produced by `cardano-address`), **base16** and — whenever the expected length
+is unambiguous — **base58**. Input is detected in the order base16, base58,
+bech32, and bech32 remains the recommended format.
+
+The following commands accept bech32, base16 and base58 input:
+
+- `key hash`
+- `address payment`
+- `address stake`
+- `address bootstrap`
+- `key inspect`
+- `script inspect`
+
+For `key hash`, `address payment`, `address stake` and `address bootstrap`, a
+raw (base16 or base58) value is interpreted according to its length:
+
+- **64 bytes** — an extended verification key, i.e. a 32-byte public key and
+  its 32-byte chain code;
+- **32 bytes** — a non-extended verification key;
+- **28 bytes** — rejected for `key hash`, `address payment` and `address stake`
+  as ambiguous: a raw credential of 28 bytes may equally be a key hash or a
+  script hash, please provide the bech32-encoded form.
+
+Raw input for `key hash` loses the role information carried by the bech32
+human-readable prefix (e.g. `addr_xvk` vs `drep_xvk`), so the resulting hash
+is printed as raw base16 with no bech32 prefix. `address bootstrap` requires a
+64-byte extended public key.
+
+The following commands deliberately keep **bech32-only** input:
+
+- `key public`, `key private`, `key child`, `key walletid` — the
+  human-readable prefix carries the role (and, for private keys, the key type)
+  needed to select the output form;
+- `address delegation`, `address pointer` — for backwards compatibility with
+  existing behaviour, malformed input keeps reporting `Bech32 error:`.
+
+`script hash`, `script preimage` and `script validate` take the script as a
+command-line argument, or read it from stdin when the argument is omitted:
+
+```console
+cardano-address script hash < script.txt
+```
+
+When a script is supplied as an argument, the command does not read stdin at
+all.
+
+For example, the following are equivalent:
+
+```console
+cardano-address script hash "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq]"
+echo "all [addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq]" | cardano-address script hash
+```
+
+Both `script hash` and `script validate` exit with a non-zero status when the
+script cannot be processed: `script validate` reports `Not validated: ...` on
+stderr when the script fails validation, and `script hash` reports a
+`NotUniformKeyType` error on stderr when the keys in the script do not have
+the same role.
