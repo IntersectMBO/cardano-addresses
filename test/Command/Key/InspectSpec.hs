@@ -7,12 +7,19 @@ module Command.Key.InspectSpec
 import Prelude
 
 import Cardano.Address.Derivation
-    ( xprvChainCode
+    ( hashCredential
+    , xprvChainCode
     , xprvPrivateKey
     , xprvToBytes
     , xpubChainCode
     , xpubPublicKey
     , xpubToBytes
+    )
+import Cardano.Address.KeyHash
+    ( GovernanceType (..)
+    , KeyHash (..)
+    , KeyRole (..)
+    , keyHashToText
     )
 import Codec.Binary.Bech32
     ( HumanReadablePart )
@@ -31,6 +38,7 @@ import Test.Arbitrary
     ()
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
@@ -76,6 +84,18 @@ spec = describeCmd [ "key", "inspect" ] $ do
     specInspectPublicNonExtended CIP5.cc_cold_vk
     specInspectPublicNonExtended CIP5.cc_hot_vk
 
+    specInspectCredential Payment CIP0129
+    specInspectCredential Delegation CIP0129
+    specInspectCredential PaymentShared CIP0129
+    specInspectCredential DelegationShared CIP0129
+    specInspectCredential Policy CIP0129
+    specInspectCredential Representative CIP0129
+    specInspectCredential Representative CIP0105
+    specInspectCredential CommitteeCold CIP0129
+    specInspectCredential CommitteeCold CIP0105
+    specInspectCredential CommitteeHot CIP0129
+    specInspectCredential CommitteeHot CIP0105
+
     specInspectHex
 
 specInspectHex :: SpecWith ()
@@ -104,6 +124,35 @@ specInspectHex = do
         out <- cli [ "key", "inspect" ] (base16 $ xpubPublicKey xpub)
         out `shouldContain` "public"
         out `shouldContain` pub
+
+    it "can inspect a hex-encoded key hash" $ do
+        digest <- credentialDigest
+        let hash = base16 digest
+        out <- cli [ "key", "inspect" ] hash
+        out `shouldContain` "hash"
+        out `shouldContain` "unknown"
+        out `shouldContain` hash
+
+    it "can inspect a hex-encoded CIP-0129 credential" $ do
+        digest <- credentialDigest
+        let credential = base16 $ BS.cons 0x22 digest
+        out <- cli [ "key", "inspect" ] credential
+        out `shouldContain` "hash"
+        out `shouldContain` "representative"
+        out `shouldContain` base16 digest
+
+specInspectCredential :: KeyRole -> GovernanceType -> SpecWith ()
+specInspectCredential role' govType = it "can inspect a key hash" $ do
+    digest <- credentialDigest
+    let encoded = T.unpack $ keyHashToText (KeyHash role' digest) govType
+    out <- cli [ "key", "inspect" ] encoded
+    out `shouldContain` "hash"
+    out `shouldContain` base16 digest
+
+credentialDigest :: IO ByteString
+credentialDigest = do
+    xpub <- generate arbitrary
+    pure $ hashCredential (xpubPublicKey xpub)
 
 specInspectPrivate :: HumanReadablePart -> SpecWith ()
 specInspectPrivate hrp = it "can inspect private key" $ do
