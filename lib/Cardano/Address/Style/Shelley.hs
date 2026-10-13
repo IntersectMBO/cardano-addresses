@@ -154,7 +154,7 @@ import Data.ByteArray
 import Data.ByteString
     ( ByteString )
 import Data.Maybe
-    ( fromMaybe, isNothing )
+    ( fromMaybe, isJust, isNothing )
 import Data.Word
     ( Word32, Word8 )
 import Data.Word7
@@ -763,6 +763,8 @@ instance ToJSON AddressInfo where
         [ "network_tag" .= infoNetworkTag
         , "stake_reference" .= Json.String (maybe "none" refName infoStakeReference)
         , "address_type" .= toJSON @Word8 infoAddressType
+        , "address_type_name" .= Json.String addressTypeName
+        , "network_name" .= Json.String (networkName infoNetworkTag)
         ]
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
@@ -774,6 +776,19 @@ instance ToJSON AddressInfo where
         getPointer ByValue = Nothing
         getPointer (ByPointer ptr) = Just ptr
 
+        hasSpending =
+            isJust infoSpendingKeyHash || isJust infoSpendingScriptHash
+        hasStake =
+            isJust infoStakeKeyHash || isJust infoStakeScriptHash
+
+        addressTypeName
+            | hasSpending = case infoStakeReference of
+                Just (ByPointer _) -> "pointer"
+                Just ByValue -> "base"
+                Nothing -> "enterprise"
+            | hasStake = "reward"
+            | otherwise = "unknown"
+
         jsonHash _ _ Nothing = []
         jsonHash key hrp (Just bs) =
             [ key .= base16 bs , (key <> "_bech32") .= bech32With hrp bs ]
@@ -783,6 +798,12 @@ instance ToJSON AddressInfo where
 
         refName ByValue = "by value"
         refName (ByPointer _) = "by pointer"
+
+-- | A human-readable name for a Shelley network tag.
+networkName :: NetworkTag -> T.Text
+networkName (NetworkTag 0) = "testnet"
+networkName (NetworkTag 1) = "mainnet"
+networkName _ = "unknown"
 
 -- | Structure containing the result of 'unpackAddress', the constituent parts
 -- of an address. Internal to this module.

@@ -491,7 +491,16 @@ instance ToJSON AddressInfo where
         [ "network_tag" .= maybe Json.Null toJSON infoNetworkTag
         , "address_root" .= T.decodeUtf8 (encode EBase16 infoAddressRoot)
         , "address_type" .= toJSON @Word8 8
+        , "address_type_name" .= Json.String "icarus"
+        , "network_name" .= maybe Json.Null (Json.String . tagName) infoNetworkTag
         ]
+      where
+        tagName (NetworkTag 764824073) = "mainnet"
+        tagName (NetworkTag 633343913) = "staging"
+        tagName (NetworkTag 1097911063) = "testnet"
+        tagName (NetworkTag 1) = "preprod"
+        tagName (NetworkTag 2) = "preview"
+        tagName (NetworkTag _) = "unknown"
 
 instance Internal.PaymentAddress Icarus where
     paymentAddress discrimination k = unsafeMkAddress
