@@ -44,14 +44,14 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
-    ( levelOpt, scriptArg )
+    ( levelOpt, scriptArg, scriptReader )
 import System.IO
-    ( stderr, stdout )
+    ( getLine, stderr, stdout )
 import System.IO.Extra
     ( hPutString, progName )
 
 data Cmd = Cmd
-    { script :: Script KeyHash
+    { script :: Maybe (Script KeyHash)
     , validationLevel :: Maybe ValidationLevel
     } deriving (Show)
 
@@ -61,7 +61,7 @@ mod liftCmd = command "validate" $
         <> progDesc "Validate a script"
         <> header "Choose a required (default) or recommended validation of a script."
         <> footerDoc (Just $ vsep
-            [ prettyText "The script is taken as argument. To have required validation pass '--required' or nothing."
+            [ prettyText "The script is taken as argument, or read from stdin when omitted. To have required validation pass '--required' or nothing."
             , prettyText "To have recommended validation pass '--recommended'. Recommended validation adds more validations"
             , prettyText "on top of the required one, in particular:"
             , prettyText " - check if 'all' is non-empty"
@@ -104,14 +104,15 @@ mod liftCmd = command "validate" $
             ])
   where
     parser = Cmd
-        <$> scriptArg
+        <$> optional scriptArg
         <*> optional levelOpt
 
     prettyText :: Text -> Doc
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script,validationLevel} =
-    case validateScript (fromMaybe RequiredValidation validationLevel) script of
+run Cmd{script=mScript,validationLevel} = do
+    scr <- maybe (getLine >>= either fail pure . scriptReader) pure mScript
+    case validateScript (fromMaybe RequiredValidation validationLevel) scr of
         Left err -> hPutString stderr $ "Not validated: " <> prettyErrValidateScript err
         Right _ -> hPutString stdout "Validated."

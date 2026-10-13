@@ -28,6 +28,10 @@ spec = do
             "008201818200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d"
             ("all    [ " <>verKeyH1<>"  ] ")
 
+        specScriptPreimageFromStdin
+            "008201818200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10d"
+            [iii|all [ #{verKeyH1} ]|]
+
         specScriptPreimageProper
             "008201838200581c1196fe3062e96b78dd959058f5adad44dd663519200f2495d17ef10\
             \d8200581c2445facc08d975d9d965d360dbe0fa63688ccc8f70fd7e1f01135380820058\
@@ -142,6 +146,12 @@ spec = do
 specScriptPreimageProper :: String -> String -> SpecWith ()
 specScriptPreimageProper expected script = it (script <> " => " <> expected) $ do
     out <- cli ["script", "preimage", script] ""
+    out `shouldBe` expected
+
+-- | The script may also be supplied on stdin when the argument is omitted.
+specScriptPreimageFromStdin :: String -> String -> SpecWith ()
+specScriptPreimageFromStdin expected script = it (script <> " (from stdin) => " <> expected) $ do
+    out <- cli ["script", "preimage"] script
     out `shouldBe` expected
 
 specScriptInvalid :: ErrValidateScript -> String -> SpecWith ()

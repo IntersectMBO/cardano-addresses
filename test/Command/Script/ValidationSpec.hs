@@ -27,6 +27,10 @@ spec = do
         specScriptValidated RequiredValidation
             [iii|#{verKeyH1}|]
 
+        -- The script may also be supplied on stdin when the argument is omitted.
+        specScriptValidatedFromStdin RequiredValidation
+            [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
+
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
@@ -115,6 +119,12 @@ levelStr = \case
 specScriptValidated :: ValidationLevel -> String -> SpecWith ()
 specScriptValidated level script = it (script <> " => Validated.") $ do
     out <- cli (["script", "validate", levelStr level, script]) ""
+    out `shouldBe` "Validated.\n"
+
+-- | The script may also be supplied on stdin when the argument is omitted.
+specScriptValidatedFromStdin :: ValidationLevel -> String -> SpecWith ()
+specScriptValidatedFromStdin level script = it (script <> " (from stdin) => Validated.") $ do
+    out <- cli (["script", "validate", levelStr level]) script
     out `shouldBe` "Validated.\n"
 
 specScriptNotValidated :: ErrValidateScript -> ValidationLevel -> String -> SpecWith ()
