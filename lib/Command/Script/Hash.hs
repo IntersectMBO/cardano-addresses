@@ -48,9 +48,9 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Script
     ( scriptArg, scriptReader )
 import System.IO
-    ( getLine, stderr, stdout )
+    ( getLine, stdout )
 import System.IO.Extra
-    ( hPutString, hPutStringNoNewLn, progName )
+    ( hPutStringNoNewLn, progName )
 
 import qualified Data.List as L
 import qualified Data.Text as T
@@ -100,4 +100,4 @@ run Cmd{script=mScript,govType} = do
             hPutStringNoNewLn stdout $ T.unpack $
             scriptHashToText scriptHash role (Just govType)
         Nothing ->
-            hPutString stderr (prettyErrValidateScript NotUniformKeyType)
+            fail (prettyErrValidateScript NotUniformKeyType)

@@ -46,7 +46,7 @@ import Options.Applicative.Help.Pretty
 import Options.Applicative.Script
     ( levelOpt, scriptArg, scriptReader )
 import System.IO
-    ( getLine, stderr, stdout )
+    ( getLine, stdout )
 import System.IO.Extra
     ( hPutString, progName )
 
@@ -114,5 +114,5 @@ run :: Cmd -> IO ()
 run Cmd{script=mScript,validationLevel} = do
     scr <- maybe (getLine >>= either fail pure . scriptReader) pure mScript
     case validateScript (fromMaybe RequiredValidation validationLevel) scr of
-        Left err -> hPutString stderr $ "Not validated: " <> prettyErrValidateScript err
+        Left err -> fail $ "Not validated: " <> prettyErrValidateScript err
         Right _ -> hPutString stdout "Validated."
