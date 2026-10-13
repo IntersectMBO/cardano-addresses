@@ -14,6 +14,7 @@ module System.IO.Extra
     -- ** Read
       hGetBytes
     , hGetBech32
+    , hGetBech32OrRaw
     , hGetXPrv
     , hGetXPub
     , hGetXP__
@@ -131,6 +132,36 @@ hGetBech32 h allowedPrefixes = do
         $ "Invalid human-readable prefix. Prefix ought to be one of: "
         <> show (showHrp <$> allowedPrefixes)
     pure (hrp, bytes)
+  where
+    showHrp :: HumanReadablePart -> String
+    showHrp = T.unpack . humanReadablePartToText
+
+-- | Read a value that may either be encoded in Bech32 (in which case only the
+-- given prefixes are allowed, and the human-readable prefix is returned), or
+-- given as raw base16- or base58-encoded bytes (in which case there is no
+-- human-readable prefix and 'Nothing' is returned).
+hGetBech32OrRaw
+    :: Handle
+    -> [HumanReadablePart]
+    -> IO (Maybe HumanReadablePart, ByteString)
+hGetBech32OrRaw h allowedPrefixes = do
+    raw <- B8.filter noNewline <$> B8.hGetContents h
+    case detectEncoding (T.unpack $ T.decodeUtf8 raw) of
+        Just (EBase16  ) -> do
+            bytes <- decodeBytes fromBase16 raw
+            pure (Nothing, bytes)
+        Just (EBase58  ) -> do
+            bytes <- decodeBytes fromBase58 raw
+            pure (Nothing, bytes)
+        Just (EBech32{}) -> do
+            (hrp, bytes) <- decodeBytes (fromBech32 markCharsRedAtIndices) raw
+            unless (hrp `elem` allowedPrefixes) $ fail
+                $ "Invalid human-readable prefix. Prefix ought to be one of: "
+                <> show (showHrp <$> allowedPrefixes)
+            pure (Just hrp, bytes)
+        Nothing -> fail
+            "Couldn't detect input encoding? Data on stdin must be encoded as \
+            \bech32, base16 or base58."
   where
     showHrp :: HumanReadablePart -> String
     showHrp = T.unpack . humanReadablePartToText

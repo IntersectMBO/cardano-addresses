@@ -54,10 +54,11 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBech32, hPutBytes, progName )
+    ( hGetBech32OrRaw, hPutBytes, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.ByteString as BS
 
 data Cmd = Cmd
     { networkTag :: NetworkTag
@@ -98,8 +99,8 @@ run Cmd{networkTag,paymentScript} = do
             let credential = PaymentFromScript script
             pure $ Shelley.paymentAddress discriminant credential
         Nothing -> do
-            (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
-            addressFromBytes discriminant bytes hrp
+            (mHrp, bytes) <- hGetBech32OrRaw stdin allowedPrefixes
+            addressFromBytes discriminant bytes mHrp
     hPutBytes stdout (unAddress addr) (EBech32 addrHrp)
   where
     addrHrp
@@ -113,8 +114,8 @@ run Cmd{networkTag,paymentScript} = do
         , CIP5.script
         ]
 
-    addressFromBytes discriminant bytes hrp
-        | hrp == CIP5.script = do
+    addressFromBytes discriminant bytes mHrp
+        | mHrp == Just CIP5.script = do
             case scriptHashFromBytes bytes of
                 Nothing ->
                     fail "Couldn't convert bytes into script hash."
@@ -122,7 +123,7 @@ run Cmd{networkTag,paymentScript} = do
                     let credential = PaymentFromScriptHash h
                     pure $ Shelley.paymentAddress discriminant credential
 
-        | hrp == CIP5.addr_vkh = do
+        | mHrp == Just CIP5.addr_vkh = do
             case keyHashFromBytes (Payment, bytes) of
                 Nothing  ->
                     fail "Couldn't convert bytes into payment key hash."
@@ -130,7 +131,7 @@ run Cmd{networkTag,paymentScript} = do
                     let credential = PaymentFromKeyHash keyhash
                     pure $ Shelley.paymentAddress discriminant credential
 
-        | hrp == CIP5.addr_vk = do
+        | mHrp == Just CIP5.addr_vk = do
             case pubFromBytes bytes of
                 Nothing  ->
                     fail "Couldn't convert bytes into non-extended public key."
@@ -138,10 +139,39 @@ run Cmd{networkTag,paymentScript} = do
                     let credential = PaymentFromKey $ Shelley.liftPub key
                     pure $ Shelley.paymentAddress discriminant credential
 
-        | otherwise = do
+        | mHrp == Just CIP5.addr_xvk = do
             case xpubFromBytes bytes of
                 Nothing  ->
                     fail "Couldn't convert bytes into extended public key."
                 Just key -> do
                     let credential = PaymentFromExtendedKey $ Shelley.liftXPub key
                     pure $ Shelley.paymentAddress discriminant credential
+
+        | otherwise = rawAddressFromBytes discriminant bytes
+
+    -- Raw (base16/base58) input carries no prefix, so the credential kind is
+    -- inferred from the byte length. A 28-byte input is ambiguous between a
+    -- key hash and a script hash, hence it must be bech32-encoded.
+    rawAddressFromBytes discriminant bytes
+        | BS.length bytes == 64 = do
+            case xpubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into extended public key."
+                Just key -> do
+                    let credential = PaymentFromExtendedKey $ Shelley.liftXPub key
+                    pure $ Shelley.paymentAddress discriminant credential
+
+        | BS.length bytes == 32 = do
+            case pubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into non-extended public key."
+                Just key -> do
+                    let credential = PaymentFromKey $ Shelley.liftPub key
+                    pure $ Shelley.paymentAddress discriminant credential
+
+        | BS.length bytes == 28 =
+            fail "A 28-byte payment credential is ambiguous (key hash or script \
+                \hash); please provide a bech32-encoded value."
+
+        | otherwise =
+            fail "Couldn't convert bytes into a payment credential."

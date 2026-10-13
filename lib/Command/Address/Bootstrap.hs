@@ -21,7 +21,7 @@ import Prelude hiding
 import Cardano.Address
     ( AddressDiscrimination (..), NetworkDiscriminant, base58 )
 import Cardano.Address.Derivation
-    ( XPub, coerceWholeDomainIndex )
+    ( XPub, coerceWholeDomainIndex, xpubFromBytes )
 import Cardano.Address.Style.Byron
     ( Byron )
 import Data.Text
@@ -48,7 +48,7 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetXPub, progName )
+    ( hGetBech32OrRaw, progName )
 
 import qualified Cardano.Address.Style.Byron as Byron
 import qualified Cardano.Address.Style.Icarus as Icarus
@@ -90,7 +90,10 @@ mod liftCmd = command "bootstrap" $
 
 run :: Cmd -> IO ()
 run Cmd{networkTag,rootXPub,derivationPath} = do
-    (_hrp, xpub) <- hGetXPub stdin [CIP5.addr_xvk]
+    (_mHrp, bytes) <- hGetBech32OrRaw stdin [CIP5.addr_xvk]
+    xpub <- case xpubFromBytes bytes of
+        Nothing  -> fail "Couldn't convert bytes into extended public key."
+        Just key -> pure key
     addr <- case derivationPath of
         Nothing ->
             pure $ Icarus.paymentAddress discriminant (Icarus.liftXPub xpub)
