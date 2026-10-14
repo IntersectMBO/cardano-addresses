@@ -1,0 +1,59 @@
+diff --git a/node_modules/braces/lib/parse.js b/node_modules/braces/lib/parse.js
+index 3a6988e..4121c19 100644
+--- a/node_modules/braces/lib/parse.js
++++ b/node_modules/braces/lib/parse.js
+@@ -39,6 +39,10 @@ const parse = (input, options = {}) => {
+     throw new SyntaxError(`Input length (${input.length}), exceeds max characters (${max})`);
+   }
+ 
++  // CVE-2026-93687: bound AST nesting depth so the recursive walkers in
++  // compile/expand/stringify cannot exhaust the call stack (CWE-674).
++  const maxDepth = typeof opts.maxDepth === 'number' && opts.maxDepth > 0 ? opts.maxDepth : 1000;
++
+   const ast = { type: 'root', input, nodes: [] };
+   const stack = [ast];
+   let block = ast;
+@@ -47,6 +51,7 @@ const parse = (input, options = {}) => {
+   const length = input.length;
+   let index = 0;
+   let depth = 0;
++  let nestingDepth = 0;
+   let value;
+ 
+   /**
+@@ -143,6 +148,9 @@ const parse = (input, options = {}) => {
+      */
+ 
+     if (value === CHAR_LEFT_PARENTHESES) {
++      if (++nestingDepth > maxDepth) {
++        throw new SyntaxError(`Input nesting depth exceeds max depth (${maxDepth})`);
++      }
+       block = push({ type: 'paren', nodes: [] });
+       stack.push(block);
+       push({ type: 'text', value });
+@@ -154,6 +162,7 @@ const parse = (input, options = {}) => {
+         push({ type: 'text', value });
+         continue;
+       }
++      nestingDepth--;
+       block = stack.pop();
+       push({ type: 'text', value });
+       block = stack[stack.length - 1];
+@@ -195,6 +204,9 @@ const parse = (input, options = {}) => {
+      */
+ 
+     if (value === CHAR_LEFT_CURLY_BRACE) {
++      if (++nestingDepth > maxDepth) {
++        throw new SyntaxError(`Input nesting depth exceeds max depth (${maxDepth})`);
++      }
+       depth++;
+ 
+       const dollar = prev.value && prev.value.slice(-1) === '$' || block.dollar === true;
+@@ -227,6 +239,7 @@ const parse = (input, options = {}) => {
+ 
+       const type = 'close';
+       block = stack.pop();
++      nestingDepth--;
+       block.close = true;
+ 
+       push({ type, value });
