@@ -43,6 +43,7 @@
       }
     },
     "tinypool": "2.2.0",
-    "http-cache-semantics": "4.3.0"
+    "http-cache-semantics": "4.3.0",
+    "serialize-javascript": "7.1.2"
   }
 }
