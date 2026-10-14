@@ -26,6 +26,9 @@ spec = do
         specScriptHashProper "script1ugvvxx2vrajnx7q4y8a3mtjgrms8a3c85zz5hjvwa2gpqpkhpzq"
             ("all    [ " <>verKeyH1<>"  ] ")
 
+        specScriptHashFromStdin "script1ugvvxx2vrajnx7q4y8a3mtjgrms8a3c85zz5hjvwa2gpqpkhpzq"
+            [iii|all [ #{verKeyH1} ]|]
+
         specScriptHashProper "script1s7uwytqrwv63wp8e8cu7jz7j0nmqfcw3lmeh8u8dujmkvafpkpf"
             [iii|all [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
@@ -386,6 +389,12 @@ spec = do
 specScriptHashProper :: String -> String -> SpecWith ()
 specScriptHashProper expected script = it (script <> " => " <> expected) $ do
     out <- cli ["script", "hash", script] ""
+    out `shouldBe` expected
+
+-- | The script may also be supplied on stdin when the argument is omitted.
+specScriptHashFromStdin :: String -> String -> SpecWith ()
+specScriptHashFromStdin expected script = it (script <> " (from stdin) => " <> expected) $ do
+    out <- cli ["script", "hash"] script
     out `shouldBe` expected
 
 specScriptHashWithoutByteProper :: String -> String -> SpecWith ()

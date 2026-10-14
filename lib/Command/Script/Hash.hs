@@ -31,23 +31,32 @@ import Cardano.Address.Script
 import Data.Text
     ( Text )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , header
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Governance
     ( governanceOpt )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
-    ( scriptArg )
+    ( scriptArg, scriptReader )
 import System.IO
-    ( stderr, stdout )
+    ( getLine, stdout )
 import System.IO.Extra
-    ( hPutString, hPutStringNoNewLn, progName )
+    ( hPutStringNoNewLn, progName )
 
 import qualified Data.List as L
 import qualified Data.Text as T
 
 data Cmd = Cmd
-    { script :: Script KeyHash
+    { script :: Maybe (Script KeyHash)
     , govType :: GovernanceType
     } deriving (Show)
 
@@ -57,7 +66,7 @@ mod liftCmd = command "hash" $
         <> progDesc "Create a script hash"
         <> header "Create a script hash that can be used in stake or payment credential in address and act as a governance credential."
         <> footerDoc (Just $ vsep
-            [ prettyText "The script is taken as argument."
+            [ prettyText "The script is taken as argument, or read from stdin when omitted."
             , prettyText ""
             , prettyText "Example:"
             , indent 2 $ annotate bold $ pretty $ progName<>" script hash 'all "
@@ -68,27 +77,27 @@ mod liftCmd = command "hash" $
             ])
   where
     parser = Cmd
-        <$> scriptArg
+        <$> optional scriptArg
         <*> governanceOpt
 
     prettyText :: Text -> Doc
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script,govType} = do
-    let scriptHash = toScriptHash script
+run Cmd{script=mScript,govType} = do
+    scr <- maybe (getLine >>= either fail pure . scriptReader) pure mScript
+    let scriptHash = toScriptHash scr
+        allKeyHashes = foldScript (:) [] scr
+        getRole (KeyHash r _) = r
+        allRoles = map getRole allKeyHashes
+        checkRoles =
+            if length (L.nub allRoles) == 1 then
+                Just $ head allRoles
+            else
+                Nothing
     case checkRoles of
         Just role ->
             hPutStringNoNewLn stdout $ T.unpack $
             scriptHashToText scriptHash role (Just govType)
         Nothing ->
-            hPutString stderr (prettyErrValidateScript NotUniformKeyType)
-  where
-    allKeyHashes = foldScript (:) [] script
-    getRole (KeyHash r _) = r
-    allRoles = map getRole allKeyHashes
-    checkRoles =
-        if length (L.nub allRoles) == 1 then
-            Just $ head allRoles
-        else
-            Nothing
+            fail (prettyErrValidateScript NotUniformKeyType)

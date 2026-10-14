@@ -52,10 +52,11 @@ import Options.Applicative.Style
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBech32, hPutBytes, progName )
+    ( hGetBech32OrRaw, hPutBytes, progName )
 
 import qualified Cardano.Address.Style.Shelley as Shelley
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.ByteString as BS
 
 data Cmd = Cmd
     { networkTag :: NetworkTag
@@ -99,8 +100,8 @@ run Cmd{networkTag,delegationScript} = do
             let credential = DelegationFromScript script
             pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
         Nothing -> do
-            (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
-            stakeAddressFromBytes discriminant bytes hrp
+            (mHrp, bytes) <- hGetBech32OrRaw stdin allowedPrefixes
+            stakeAddressFromBytes discriminant bytes mHrp
     hPutBytes stdout (unAddress addr) (EBech32 stakeHrp)
   where
     stakeHrp
@@ -114,8 +115,8 @@ run Cmd{networkTag,delegationScript} = do
         , CIP5.script
         ]
 
-    stakeAddressFromBytes discriminant bytes hrp
-        | hrp == CIP5.script = do
+    stakeAddressFromBytes discriminant bytes mHrp
+        | mHrp == Just CIP5.script = do
             case scriptHashFromBytes bytes of
                 Nothing ->
                     fail "Couldn't convert bytes into script hash."
@@ -123,7 +124,7 @@ run Cmd{networkTag,delegationScript} = do
                     let credential = DelegationFromScriptHash h
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
 
-        | hrp == CIP5.stake_vkh = do
+        | mHrp == Just CIP5.stake_vkh = do
             case keyHashFromBytes (Delegation, bytes) of
                 Nothing  ->
                     fail "Couldn't convert bytes into delegation key hash."
@@ -131,7 +132,7 @@ run Cmd{networkTag,delegationScript} = do
                     let credential = DelegationFromKeyHash keyhash
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
 
-        | hrp == CIP5.stake_vk = do
+        | mHrp == Just CIP5.stake_vk = do
             case pubFromBytes bytes of
                 Nothing  ->
                     fail "Couldn't convert bytes into non-extended public key."
@@ -139,10 +140,39 @@ run Cmd{networkTag,delegationScript} = do
                     let credential = DelegationFromKey $ Shelley.liftPub key
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
 
-        | otherwise = do
+        | mHrp == Just CIP5.stake_xvk = do
             case xpubFromBytes bytes of
                 Nothing  ->
                     fail "Couldn't convert bytes into extended public key."
                 Just key -> do
                     let credential = DelegationFromExtendedKey $ Shelley.liftXPub key
                     pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+
+        | otherwise = rawStakeAddressFromBytes discriminant bytes
+
+    -- Raw (base16/base58) input carries no prefix, so the credential kind is
+    -- inferred from the byte length. A 28-byte input is ambiguous between a
+    -- key hash and a script hash, hence it must be bech32-encoded.
+    rawStakeAddressFromBytes discriminant bytes
+        | BS.length bytes == 64 = do
+            case xpubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into extended public key."
+                Just key -> do
+                    let credential = DelegationFromExtendedKey $ Shelley.liftXPub key
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+
+        | BS.length bytes == 32 = do
+            case pubFromBytes bytes of
+                Nothing  ->
+                    fail "Couldn't convert bytes into non-extended public key."
+                Just key -> do
+                    let credential = DelegationFromKey $ Shelley.liftPub key
+                    pure $ unsafeFromRight $ Shelley.stakeAddress discriminant credential
+
+        | BS.length bytes == 28 =
+            fail "A 28-byte stake credential is ambiguous (key hash or script \
+                \hash); please provide a bech32-encoded value."
+
+        | otherwise =
+            fail "Couldn't convert bytes into a delegation credential."

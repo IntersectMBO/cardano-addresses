@@ -36,7 +36,7 @@ import Options.Applicative.Help.Pretty
 import System.IO
     ( stdin, stdout )
 import System.IO.Extra
-    ( hGetBech32, hPutStringNoNewLn )
+    ( hGetBech32OrRaw, hPutStringNoNewLn )
 
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
@@ -63,9 +63,9 @@ mod liftCmd = command "hash" $
 
 run :: Cmd -> IO ()
 run Hash{govType} = do
-    (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
-    guardBytes hrp bytes
-    let keyhash = KeyHash (prefixFor hrp) (hashCredential $ BS.take 32 bytes)
+    (mHrp, bytes) <- hGetBech32OrRaw stdin allowedPrefixes
+    guardBytes mHrp bytes
+    let keyhash = KeyHash (maybe Unknown prefixFor mHrp) (hashCredential $ BS.take 32 bytes)
     hPutStringNoNewLn stdout $ T.unpack $
         keyHashToText keyhash govType
   where
@@ -102,8 +102,13 @@ run Hash{govType} = do
         , CIP5.cc_hot_xvk
         ]
 
-    guardBytes hrp bytes
-        | hrp `elem` extendedPrefixes = do
+    guardBytes mHrp bytes
+        | Nothing <- mHrp = do
+            when (BS.length bytes /= 64 && BS.length bytes /= 32) $
+                fail "data should be a 32-byte public key, optionally extended \
+                    \with a 32-byte chain-code."
+
+        | Just hrp <- mHrp, hrp `elem` extendedPrefixes = do
             when (BS.length bytes /= 64) $
                 fail "data should be a 32-byte public key with a 32-byte chain-code appended"
 

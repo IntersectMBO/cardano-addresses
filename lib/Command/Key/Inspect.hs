@@ -138,8 +138,7 @@ parseKeyInput txt =
     decodeRaw = either Left parseRawBytes
 
     decodeBech32 = do
-        (hrp, bytes) <- first (const unexpectedEncoding) $
-            fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
+        (hrp, bytes) <- fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
         parseBech32 hrp bytes
 
     parseRawBytes :: ByteString -> Either String KeyInput

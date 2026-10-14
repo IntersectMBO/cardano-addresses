@@ -6,10 +6,29 @@ module Command.Address.BootstrapSpec
 
 import Prelude
 
+import Cardano.Address.Derivation
+    ( XPub, xpubToBytes )
+import Codec.Binary.Encoding
+    ( AbstractEncoding (..), Encoding, encode )
+import Data.ByteString
+    ( ByteString )
 import Test.Hspec
     ( Spec, SpecWith, it, shouldBe, shouldContain )
+import Test.Hspec.QuickCheck
+    ( prop )
+import Test.QuickCheck
+    ( Property, withMaxSuccess )
+import Test.QuickCheck.Monadic
+    ( assert, monadicIO, run )
 import Test.Utils
     ( cli, describeCmd )
+
+import Test.Arbitrary
+    ()
+
+import qualified Cardano.Codec.Bech32.Prefixes as CIP5
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = describeCmd [ "address", "bootstrap" ] $ do
@@ -48,6 +67,23 @@ spec = describeCmd [ "address", "bootstrap" ] $ do
         \bQtzJsHf4a6YQhPPNxtqBVP3Drsy1tdjecqq1FK1m2oAR5J8EcVe"
 
     specInvalidNetwork "💩"
+
+    prop "an extended key and its base16/base58 forms give the same bootstrap address"
+        (withMaxSuccess 20 propBootstrapRaw)
+
+propBootstrapRaw :: XPub -> Property
+propBootstrapRaw xpub = monadicIO $ do
+    let bytes = xpubToBytes xpub
+        asBech32 = T.unpack $ T.decodeUtf8 $ encode (EBech32 CIP5.addr_xvk) bytes
+        asBase16 = encodeBytes EBase16 bytes
+        asBase58 = encodeBytes EBase58 bytes
+    fromBech32 <- run (cli [ "address", "bootstrap", "--network-tag", "preview" ] asBech32 :: IO String)
+    fromBase16 <- run (cli [ "address", "bootstrap", "--network-tag", "preview" ] asBase16 :: IO String)
+    fromBase58 <- run (cli [ "address", "bootstrap", "--network-tag", "preview" ] asBase58 :: IO String)
+    assert (fromBech32 == fromBase16 && fromBech32 == fromBase58)
+
+encodeBytes :: Encoding -> ByteString -> String
+encodeBytes enc = T.unpack . T.decodeUtf8 . encode enc
 
 specIcarus :: [String] -> String -> String -> String -> SpecWith ()
 specIcarus phrase path networkTag want = it ("golden icarus " <> path <> " (" <> networkTag <> ")") $ do

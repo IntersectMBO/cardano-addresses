@@ -75,6 +75,19 @@ spec = describeCmd [ "script", "inspect" ] $ do
         , "\"credential\": \"" <> scriptHashGeneric <> "\""
         ]
 
+    specInspect scriptHashGenericBase58
+        [ "\"role\": \"unknown\""
+        , "\"script_hash\": \"" <> scriptHashGenericHex <> "\""
+        , "\"credential\": \"" <> scriptHashGeneric <> "\""
+        ]
+
+    specInspect drepBase58
+        [ "\"role\": \"representative\""
+        , "\"script_hash\": \"" <> drepHex <> "\""
+        , "\"credential\": \"" <> drepCIP0129 <> "\""
+        , "\"legacy_credential\": \"" <> drepCIP0105 <> "\""
+        ]
+
     specInspect (drepHeader <> drepHex)
         [ "\"role\": \"representative\""
         , "\"script_hash\": \"" <> drepHex <> "\""
@@ -90,10 +103,27 @@ spec = describeCmd [ "script", "inspect" ] $ do
         "addr_vkh1dnup7vsddkycsau5ek5ulrhndastkxczpydp6jsmr8fgyfevcp3"
         "Invalid human-readable prefix"
 
+    it "surfaces a bech32 decoding error" $ do
+        let malformed =
+                "script1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+        (out, err) <- cli [ "script", "inspect" ] malformed
+        out `shouldBe` ""
+        err `shouldContain` "Bech32 error"
+
+    it "lists 'script' among the accepted prefixes on a wrong prefix" $ do
+        (out, err) <- cli [ "script", "inspect" ]
+            "addr_vkh1dnup7vsddkycsau5ek5ulrhndastkxczpydp6jsmr8fgyfevcp3"
+        out `shouldBe` ""
+        err `shouldContain` "must be 'script'"
+
     prop "a generic script hash and its hex form inspect identically"
         (withMaxSuccess 50 . propInspectScriptHashEncoding)
     prop "a CIP-0129 governance script credential and its hex form inspect identically"
         (withMaxSuccess 50 . propInspectScriptCredentialEncoding)
+    prop "a generic script hash and its base58 form inspect identically"
+        (withMaxSuccess 50 . propInspectScriptHashEncodingBase58)
+    prop "a CIP-0129 governance script credential and its base58 form inspect identically"
+        (withMaxSuccess 50 . propInspectScriptCredentialEncodingBase58)
 
 -- | A generic script hash can be given either as bech32 (@script1...@) or as
 -- its 28-byte hex form. Both must yield the same output.
@@ -119,6 +149,30 @@ propInspectScriptCredentialEncoding xpub = monadicIO $ do
     fromBase16 <- run $ inspectScript asBase16
     assert (fromBech32 == fromBase16)
 
+-- | A generic script hash can be given either as bech32 (@script1...@) or as
+-- its 28-byte base58 form. Both must yield the same output.
+propInspectScriptHashEncodingBase58 :: XPub -> Property
+propInspectScriptHashEncodingBase58 xpub = monadicIO $ do
+    let digest = hashCredential (xpubPublicKey xpub)
+        asBech32 = T.unpack $ scriptHashToText (ScriptHash digest) Payment Nothing
+        asBase58 = encodeBytes EBase58 digest
+    fromBech32 <- run $ inspectScript asBech32
+    fromBase58 <- run $ inspectScript asBase58
+    assert (fromBech32 == fromBase58)
+
+-- | A governance script credential can be given either as bech32 (CIP-0129) or
+-- as the 29-byte base58 form (header byte + digest). Both must yield the same
+-- output.
+propInspectScriptCredentialEncodingBase58 :: XPub -> Property
+propInspectScriptCredentialEncodingBase58 xpub = monadicIO $ do
+    let digest = hashCredential (xpubPublicKey xpub)
+        asBech32 = T.unpack $ scriptHashToText
+            (ScriptHash digest) Representative (Just CIP0129)
+        asBase58 = encodeBytes EBase58 (BS.cons 0x23 digest)
+    fromBech32 <- run $ inspectScript asBech32
+    fromBase58 <- run $ inspectScript asBase58
+    assert (fromBech32 == fromBase58)
+
 specInspect :: String -> [String] -> SpecWith ()
 specInspect input needles = it (input <> " => inspect") $ do
     out <- cli [ "script", "inspect" ] input
@@ -140,6 +194,10 @@ scriptHashGeneric = "script1ugvvxx2vrajnx7q4y8a3mtjgrms8a3c85zz5hjvwa2gpqpkhpzq"
 scriptHashGenericHex :: String
 scriptHashGenericHex = "e218c3194c1f6533781521fb1dae481ee07ec707a0854bc98eea9010"
 
+-- Base58 encoding of the 28-byte generic script hash above.
+scriptHashGenericBase58 :: String
+scriptHashGenericBase58 = "3KsrtoNKM7qiwKoWue3FnS39nNNdBByrrshNHv7"
+
 -- Vectors from
 -- https://github.com/cardano-foundation/CIPs/blob/master/CIP-0105/test-vectors/test-vector-1.md
 drepCIP0129 :: String
@@ -150,6 +208,11 @@ drepCIP0105 = "drep_script13hu7a632tuntrlyjkazzczrzzt7dx6e8v3rc25jd9zcgv68nx9r"
 
 drepHex :: String
 drepHex = "8df9eeea2a5f26b1fc92b7442c086212fcd36b27644785524d28b086"
+
+-- Base58 encoding of the 29-byte CIP-0129 DRep credential (header byte 0x23
+-- followed by the 28-byte DRep script hash above).
+drepBase58 :: String
+drepBase58 = "2ccju1X5siN8wRrvrMWNtXHJCp96Ze8XbHGfNxDB"
 
 ccColdCIP0129 :: String
 ccColdCIP0129 = "cc_cold1z0ty5s85w82gqy9599yltjnca6nas83xjjaw66nqv3j2j4cxpgzfw"

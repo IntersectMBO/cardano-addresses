@@ -27,7 +27,13 @@ import Cardano.Address.Script
 import Codec.Binary.Bech32
     ( HumanReadablePart )
 import Codec.Binary.Encoding
-    ( AbstractEncoding (..), detectEncoding, encode, fromBase16, fromBech32 )
+    ( AbstractEncoding (..)
+    , detectEncoding
+    , encode
+    , fromBase16
+    , fromBase58
+    , fromBech32
+    )
 import Data.Aeson
     ( (.=) )
 import Data.Bifunctor
@@ -63,7 +69,7 @@ mod liftCmd = command "inspect" $
         <> progDesc "Show information about a script hash or credential"
         <> footerDoc (Just $ vsep
             [ pretty ("The script hash or credential is read from stdin." :: Text)
-            , pretty ("It can be bech32- or base16-encoded." :: Text)
+            , pretty ("It can be bech32-, base16- or base58-encoded." :: Text)
             , pretty ("" :: Text)
             , pretty ("Bech32 input can be a generic script hash (script) or a" :: Text)
             , pretty ("governance script credential (drep, cc_cold, cc_hot and" :: Text)
@@ -91,14 +97,15 @@ run Inspect = do
 data ScriptHashInput = ScriptHashInput (Maybe KeyRole) ScriptHash
 
 -- | Parse a script hash from text. Bech32 input is decoded using the
--- human-readable prefix to recover the governance role, if any. Base16 input
--- lacks this information, so it is interpreted by size: 28 bytes is a generic
--- script hash and 29 bytes (with the CIP-0129 header byte) is a governance
--- script credential.
+-- human-readable prefix to recover the governance role, if any. Base16 and
+-- base58 input lacks this information, so it is interpreted by size: 28 bytes
+-- is a generic script hash and 29 bytes (with the CIP-0129 header byte) is a
+-- governance script credential.
 parseScriptHashInput :: Text -> Either String ScriptHashInput
 parseScriptHashInput txt =
     case detectEncoding (unpack txt) of
         Just EBase16 -> parseRaw (fromBase16 $ T.encodeUtf8 txt)
+        Just EBase58 -> parseRaw (fromBase58 $ T.encodeUtf8 txt)
         Just (EBech32 ()) -> parseBech32
         _ -> Left unexpectedEncoding
   where
@@ -121,8 +128,7 @@ parseScriptHashInput txt =
 
     parseBech32 :: Either String ScriptHashInput
     parseBech32 = do
-        (hrp, _) <- first (const unexpectedEncoding) $
-            fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
+        (hrp, _) <- fromBech32 (\_ s -> s) (T.encodeUtf8 txt)
         h <- first prettyErrScriptHashFromText (scriptHashFromText txt)
         pure $ ScriptHashInput (roleForHrp hrp) h
 
@@ -131,7 +137,7 @@ parseScriptHashInput txt =
         \committee cold or committee hot script credential."
     unexpectedEncoding =
         "Couldn't detect input encoding? Data on stdin must be encoded as \
-        \bech32 or base16."
+        \bech32, base16 or base58."
 
 -- | Governance role implied by a bech32 human-readable prefix. A generic
 -- script hash (\"script\") carries no governance role.

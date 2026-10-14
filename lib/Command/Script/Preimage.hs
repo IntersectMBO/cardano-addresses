@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-# OPTIONS_HADDOCK hide #-}
@@ -27,18 +26,27 @@ import Codec.Binary.Encoding
 import Data.Text
     ( Text )
 import Options.Applicative
-    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
+    ( CommandFields
+    , Mod
+    , command
+    , footerDoc
+    , header
+    , helper
+    , info
+    , optional
+    , progDesc
+    )
 import Options.Applicative.Help.Pretty
     ( Doc, annotate, bold, indent, pretty, vsep )
 import Options.Applicative.Script
-    ( scriptArg )
+    ( scriptArg, scriptReader )
 import System.IO
-    ( stdout )
+    ( getLine, stdout )
 import System.IO.Extra
     ( hPutBytes, progName )
 
 newtype Cmd = Cmd
-    { script :: Script KeyHash
+    { script :: Maybe (Script KeyHash)
     } deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -47,7 +55,7 @@ mod liftCmd = command "preimage" $
         <> progDesc "Create a script preimage"
         <> header "Create a script preimage that is CBOR-encoded script."
         <> footerDoc (Just $ vsep
-            [ prettyText "The script is taken as argument."
+            [ prettyText "The script is taken as argument, or read from stdin when omitted."
             , prettyText ""
             , prettyText "Example:"
             , indent 2 $ annotate bold $ pretty $ progName<>" script preimage 'all "
@@ -64,11 +72,12 @@ mod liftCmd = command "preimage" $
             ])
   where
     parser = Cmd
-        <$> scriptArg
+        <$> optional scriptArg
 
     prettyText :: Text -> Doc
     prettyText = pretty
 
 run :: Cmd -> IO ()
-run Cmd{script} = do
-    hPutBytes stdout (serializeScript script) EBase16
+run Cmd{script=mScript} = do
+    scr <- maybe (getLine >>= either fail pure . scriptReader) pure mScript
+    hPutBytes stdout (serializeScript scr) EBase16
