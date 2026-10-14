@@ -1,0 +1,13 @@
+diff --git a/node_modules/serve-handler/src/index.js b/node_modules/serve-handler/src/index.js
+index 564f012..0da710e 100644
+--- a/node_modules/serve-handler/src/index.js
++++ b/node_modules/serve-handler/src/index.js
+@@ -7,7 +7,7 @@ const {realpath, lstat, createReadStream, readdir} = require('fs');
+ // Packages
+ const url = require('url');
+ const slasher = require('./glob-slash');
+-const minimatch = require('minimatch');
++const minimatch = require('minimatch').minimatch;
+ const pathToRegExp = require('path-to-regexp');
+ const mime = require('mime-types');
+ const bytes = require('bytes');

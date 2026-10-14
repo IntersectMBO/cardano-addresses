@@ -36,12 +36,7 @@
     ]
   },
   "overrides": {
-    "minimatch": "3.1.5",
-    "serve-handler": {
-      "dependencies": {
-        "minimatch": "3.1.5"
-      }
-    },
+    "minimatch": "10.2.6",
     "tinypool": "2.2.0",
     "http-cache-semantics": "4.3.0",
     "serialize-javascript": "7.1.2"
