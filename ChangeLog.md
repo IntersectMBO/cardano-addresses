@@ -1,16 +1,40 @@
-## [4.0.9]
+## [4.1.1]
+
+## [4.1.0] - 2026-10-14
 
 ### Fixed
 
 - Reject Byron addresses whose CBOR wrapper uses a tag other than the required tag 24, making decoding consistent with the Cardano ledger
+- `Cardano.Address.fromBech32` now validates the human-readable prefix against the payload, rejecting non-address prefixes (e.g. `stake`, `drep`) and an `addr`/`addr_test` prefix inconsistent with the payload's network tag
+- Reject `RequireSomeOf 0` scripts (i.e. `at_least 0`) as `LedgerIncompatible`, as such a script is trivially satisfiable (fund-loss guard)
+- Reject script and `cosigner#` numbers outside the `Int` range instead of silently truncating them, e.g. `at_least 256` is no longer wrapped to `0`
 - `key hash` and `script validate` now exit with a non-zero status when the input cannot be processed: `script hash` reports a `NotUniformKeyType` error on stderr instead of exiting 0, and `script validate` does the same for `Not validated: ...` failures
 
 ### Added
 
-- `script inspect` accepts base58 input in addition to bech32 and base16
+- `key inspect` accepts raw base16 and base58 input as well as non-extended keys, and now inspects key hashes and governance credentials
+- New `script inspect` command that inspects script hashes and governance script credentials; it accepts bech32, base16 and base58 input
+- `address inspect` now reports human-readable address and network names
 - `key hash`, `address payment`, `address stake` and `address bootstrap` accept raw base16 and base58 input in addition to bech32; a raw 28-byte value is rejected as ambiguous because it may be a key hash or a script hash
 - `script hash`, `script preimage` and `script validate` read the script from stdin when the script argument is omitted
 - Errors on unparsable stdin are now unambiguous: they clearly state the accepted encodings (bech32, base16 and base58), and `key inspect` / `script inspect` surface the underlying `Bech32 error` instead of a generic message
+- Enriched command-line help: standardized group help text and leaf commands documented with usage details and examples, backed by help-content tests. The documentation front page now highlights the exposed features.
+
+### Security
+
+- Remediated advisories in the documentation toolchain:
+  - `braces` stack-exhaustion DoS in the recursive AST walkers (GHSA-vfj7-8cjw-p6xm / CVE-2026-93687) — no upstream fix exists, so a `patch-package` patch bounds the AST nesting depth
+  - `serialize-javascript` code-injection/DoS/XSS (CVE-2026-34043, CVE-2026-97711) — override to 7.1.2
+  - `minimatch` nested-extglob ReDoS (GHSA-23c5-xmqv-rm74 / CVE-2026-27904) — override to 10.2.6 with a `serve-handler` patch
+  - `uuid` out-of-bounds buffer write in v3/v5/v6 (GHSA-w5hq-g745-h8pq / CVE-2026-41907) — override to 11.1.1
+  - `tinypool` prototype-pollution RCE (GHSA-5gmw-xhrv-c9v3 / CVE-2026-104848) — override to 2.2.0
+  - `http-cache-semantics` cross-user cache disclosure (GHSA-ch52-4w7c-c8xp / CVE-2026-93748) — override to 4.3.0
+  - `postcss-selector-parser` quadratic-time flat-selector parsing DoS (GHSA-rj75-hqrm-r3gf) — override to 7.1.6
+
+### Changed
+
+- CI hardening: pinned third-party actions and remote scripts, disabled persisted checkout credentials and prevented artifact poisoning; added grouped Dependabot configuration
+- Numerous JS dependency bumps
 	
 ## [4.0.8] - 2026-08-14
 
