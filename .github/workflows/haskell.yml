@@ -41,6 +41,21 @@ jobs:
         echo "release-ghc=9.6" >> $GITHUB_ENV
         echo "CABAL_CACHE_VERSION=v1" >> $GITHUB_ENV
 
+    # The macos-26-arm64 runner image (20261013.0424.1) installs Command Line
+    # Tools 27 (macOS 27 SDK) while Xcode 26.6 stays the selected toolchain.
+    # GHC links against the Command Line Tools SDK, but Xcode's ld cannot read
+    # the SDK 27 .tbd stubs ("tapi error: malformed file ... unknown
+    # architecture arm64e.x1"), so every link step fails.
+    # Select the Command Line Tools toolchain so that the linker and the SDK
+    # match.
+    # Workaround for https://github.com/actions/runner-images/issues/14940;
+    # remove once https://github.com/actions/runner-images/pull/15002 is deployed.
+    - name: Use Command Line Tools toolchain on macOS
+      if: runner.os == 'macOS'
+      run: |
+        sudo xcode-select -s /Library/Developer/CommandLineTools
+        xcode-select -p
+
     - name: Install Haskell
       uses: input-output-hk/actions/haskell@ba180de21cea2d34b37f1247ea59be406e14233c # latest
       id: setup-haskell
