@@ -63,27 +63,21 @@ jobs:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: ${{ matrix.cabal }}
 
-    - name: Install system dependencies
-      if: runner.os != 'Windows'
-      uses: input-output-hk/actions/base@ba180de21cea2d34b37f1247ea59be406e14233c # latest
-      with:
-        use-sodium-vrf: true
-
     # The shared IOG base action installs `mingw-w64-x86_64-lmdb`, a package
     # MSYS2 has dropped from the mingw64 repository (it is published as
     # `mingw-w64-lmdb` for the clang64/ucrt64 repositories only nowadays), so
     # `pacman -S` aborts with "target not found: mingw-w64-x86_64-lmdb" on
     # current Windows images.
     # cardano-addresses needs none of the libraries the base action installs
-    # (the bundled `cbits` are self-contained and `crypton` ships its own C
-    # sources) and the C toolchain is already part of the runner image, so on
-    # Windows we only install the packages that are still available.
-    - name: Windows system dependencies
-      if: runner.os == 'Windows'
-      shell: 'C:/msys64/usr/bin/bash.exe -e {0}'
-      run: |
-        pacman --noconfirm -Sy
-        pacman --noconfirm -S mingw-w64-x86_64-openssl mingw-w64-x86_64-zlib
+    # (the bundled `cbits` are self-contained, `crypton` ships its own C
+    # sources and no package of the build plan has `pkgconfig-depends` or
+    # `extra-libraries`), and the C toolchain is already part of the runner
+    # image, so there is nothing to install on Windows.
+    - name: Install system dependencies
+      if: runner.os != 'Windows'
+      uses: input-output-hk/actions/base@ba180de21cea2d34b37f1247ea59be406e14233c # latest
+      with:
+        use-sodium-vrf: true
 
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -105,6 +99,14 @@ jobs:
     - name: Windows toolchain setup
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
+
+    # The C toolchain is provided by the runner image (and by the MSYS2 setup
+    # above), no additional system dependencies have to be installed.
+    - name: Check Windows toolchain
+      if: runner.os == 'Windows'
+      shell: 'C:/msys64/usr/bin/bash.exe -e {0}'
+      run: |
+        gcc --version
 
     # From the dependency list the cached dependencies is restored.
     # The hash of `dependencies.txt` is used as a part of the cache key because that will be stable
