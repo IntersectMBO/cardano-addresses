@@ -12,28 +12,24 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.sys.os }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         ghc: ["9.6", "9.10", "9.12", "9.14"]
         cabal: ["3.14"]
-        sys:
-          - { os: windows-latest, shell: 'C:/msys64/usr/bin/bash.exe -e {0}' }
-          - { os: ubuntu-latest, shell: bash }
+        os: [windows-latest, ubuntu-latest]
         include:
           # Using include, to make sure there will only be one macOS job, even if the matrix gets expanded later on.
           # We want a single job, because macOS runners are scarce.
           - cabal: "3.12"
             ghc: "9.6"
-            sys:
-              os: macos-latest
-              shell: bash
+            os: macos-latest
 
     defaults:
         run:
-          shell: ${{ matrix.sys.shell }}
+          shell: bash
 
     steps:
     - name: Setting toolchain variables
@@ -63,11 +59,6 @@ jobs:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: ${{ matrix.cabal }}
 
-    # The shared IOG base action installs `mingw-w64-x86_64-lmdb`, a package
-    # MSYS2 has dropped from the mingw64 repository (it is published as
-    # `mingw-w64-lmdb` for the clang64/ucrt64 repositories only nowadays), so
-    # `pacman -S` aborts with "target not found: mingw-w64-x86_64-lmdb" on
-    # current Windows images.
     # cardano-addresses needs none of the libraries the base action installs
     # (the bundled `cbits` are self-contained, `crypton` ships its own C
     # sources and no package of the build plan has `pkgconfig-depends` or
@@ -75,7 +66,7 @@ jobs:
     # image, so there is nothing to install on Windows.
     - name: Install system dependencies
       if: runner.os != 'Windows'
-      uses: input-output-hk/actions/base@ba180de21cea2d34b37f1247ea59be406e14233c # latest
+      uses: input-output-hk/actions/base@6217329012a2fd613c8eec9a3f523684a8e91720 # latest
       with:
         use-sodium-vrf: true
 
@@ -94,19 +85,6 @@ jobs:
 
     - name: Record dependencies
       run: cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
-
-    # From the install plan a dependency list is generated here.
-    - name: Windows toolchain setup
-      if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
-
-    # The C toolchain is provided by the runner image (and by the MSYS2 setup
-    # above), no additional system dependencies have to be installed.
-    - name: Check Windows toolchain
-      if: runner.os == 'Windows'
-      shell: 'C:/msys64/usr/bin/bash.exe -e {0}'
-      run: |
-        gcc --version
 
     # From the dependency list the cached dependencies is restored.
     # The hash of `dependencies.txt` is used as a part of the cache key because that will be stable
@@ -145,7 +123,7 @@ jobs:
       run: cabal build all
   
     - name: Clean coverage data
-      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: find . -name "*.tix" -delete 2>/dev/null || true
 
     - name: Run tests
@@ -155,7 +133,7 @@ jobs:
         KEEP_WORKSPACE: 1
         GHC_RTS_OPTS: --read-tix-file=no
       run: |
-        if [ "${{ matrix.sys.os }}" == "ubuntu-latest" ] && [ "${{ matrix.ghc }}" == "9.10" ]; then
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ] && [ "${{ matrix.ghc }}" == "9.10" ]; then
           cabal test all --enable-tests --enable-coverage --test-show-details=direct
         else
           cabal test all --enable-tests --test-show-details=direct
@@ -165,7 +143,7 @@ jobs:
       run: cabal haddock
 
     - name: Prepare Haddock artifact
-      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p haddock_artifacts
         echo "=== Finding haddock directories ==="
@@ -183,15 +161,15 @@ jobs:
         fi
 
     - name: Upload Haddock artifact
-      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: haddock-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        name: haddock-${{ matrix.ghc }}-${{ matrix.os }}
         path: haddock_artifacts
         retention-days: 1
 
     - name: Generate Coverage Report
-      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       run: |
         mkdir -p coverage_html badges
 
@@ -231,10 +209,10 @@ jobs:
         curl -sL "$BADGE_URL" -o badges/badge.svg
 
     - name: Upload Coverage artifact
-      if: matrix.sys.os == 'ubuntu-latest' && matrix.ghc == '9.10'
+      if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.10'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: coverage-${{ matrix.ghc }}-${{ matrix.sys.os }}
+        name: coverage-${{ matrix.ghc }}-${{ matrix.os }}
         path: |
           coverage_html
           badges
@@ -244,14 +222,14 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: runner.os == 'Windows'
       with:
-        name: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
+        name: "cardano-address-${{ matrix.ghc }}-${{ matrix.os }}"
         path: '**/cardano-address.exe'
         retention-days: 1
 
     - name: Preparing Linux/Macos artifact
       if: runner.os != 'Windows'
       env:
-        artifactFile: "cardano-address-${{ matrix.ghc }}-${{ matrix.sys.os }}"
+        artifactFile: "cardano-address-${{ matrix.ghc }}-${{ matrix.os }}"
         artifactName: "cardano-address.tar.gz"
       run: |
         mkdir -p artifacts
