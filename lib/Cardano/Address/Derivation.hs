@@ -406,7 +406,12 @@ nextIndex
     :: forall ix derivationType depth.
        (ix ~ Index derivationType depth, Bounded ix)
     => ix -> Maybe ix
-nextIndex (Index ix) = indexFromWord32 (ix + 1)
+nextIndex (Index ix)
+    -- Guard against Word32 overflow. This is needed for 'WholeDomain' indices,
+    -- whose maxBound equals the maximum 'Word32' value: @ix + 1@ would wrap to
+    -- 0 and pass the bounds check in 'indexFromWord32'.
+    | ix == maxBound = Nothing
+    | otherwise = indexFromWord32 (ix + 1)
 
 -- | Constructs a full domain 'Index'. This can't fail, unlike 'fromWord32'.
 --
