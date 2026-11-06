@@ -43,7 +43,7 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
     ( prop )
 import Test.QuickCheck
-    ( Arbitrary (..), Property, property, (===) )
+    ( Arbitrary (..), Property, counterexample, property, (===) )
 
 import Test.Arbitrary
     ()
@@ -55,9 +55,16 @@ spec = describe "Checking auxiliary address derivations types" $ do
             nextIndex (maxBound @(Index 'Hardened _)) `shouldBe` Nothing
         it "nextIndex maxBound for Soft indices should result in failure" $
             nextIndex (maxBound @(Index 'Soft _)) `shouldBe` Nothing
+        it "nextIndex maxBound for WholeDomain indices should result in failure" $
+            nextIndex (maxBound @(Index 'WholeDomain _)) `shouldBe` Nothing
+
+    describe "nextIndex behaviour" $ do
+        it "Index @'Hardened _" (property $ prop_nextIndex @'Hardened @_)
+        it "Index @'Soft _" (property $ prop_nextIndex @'Soft @_)
+        it "Index @'WholeDomain _" (property $ prop_nextIndex @'WholeDomain @_)
 
     describe "Indexed Roundtrip" $ do
-        it "Index @'Hardened _" (property prop_roundtripIndexedHard)
+        it "Index @'WholeDomain _" (property prop_roundtripIndexedWholeDomain)
         it "Index @'Soft _" (property prop_roundtripIndexedSoft)
 
     describe "XPub / XPrv properties" $ do
@@ -96,8 +103,21 @@ prop_roundtripBytes
 prop_roundtripBytes encode decode a =
     decode (encode a) === pure a
 
-prop_roundtripIndexedHard :: Index 'WholeDomain 'AccountK -> Property
-prop_roundtripIndexedHard ix = (indexFromWord32 . indexToWord32) ix === Just ix
+prop_nextIndex
+    :: forall derivationType depth.
+       Bounded (Index derivationType depth)
+    => Index derivationType depth
+    -> Property
+prop_nextIndex ix =
+    case nextIndex ix of
+        Nothing ->
+            ix === maxBound
+        Just ix' ->
+            counterexample ("ix' = " ++ show ix') $
+                indexToWord32 ix' === indexToWord32 ix + 1
+
+prop_roundtripIndexedWholeDomain :: Index 'WholeDomain 'AccountK -> Property
+prop_roundtripIndexedWholeDomain ix = (indexFromWord32 . indexToWord32) ix === Just ix
 
 prop_roundtripIndexedSoft :: Index 'Soft 'PaymentK -> Property
 prop_roundtripIndexedSoft ix = (indexFromWord32 . indexToWord32) ix === Just ix
