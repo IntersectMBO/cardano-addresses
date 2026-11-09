@@ -355,6 +355,32 @@ spec = do
             let script = RequireAllOf [verKeyHash1, RequireSomeOf 0 [verKeyHash3, verKeyHash4]]
             validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
 
+        it "RequireSomeOf 0 hidden under RequireAnyOf is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireSomeOf 0 [verKeyHash3, verKeyHash4], verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 hidden under RequireSomeOf is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [RequireSomeOf 0 [verKeyHash3, verKeyHash4], verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 hidden under RequireAnyOf inside RequireAllOf is LedgerIncompatible" $ do
+            let script = RequireAllOf [RequireAnyOf [RequireSomeOf 0 [verKeyHash3, verKeyHash4], verKeyHash1], verKeyHash2]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 disguised as 2-of-3 is LedgerIncompatible" $ do
+            let script = RequireSomeOf 2 [RequireSomeOf 0 [verKeyHash3, verKeyHash4], verKeyHash1, verKeyHash2]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "deeply nested RequireSomeOf 0 is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireAnyOf [RequireSomeOf 0 [verKeyHash3, verKeyHash4]], verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "property: RequireSomeOf 0 under RequireAnyOf is always rejected" $
+            property $ \script ->
+                validateScriptOfTemplate RequiredValidation
+                    (RequireAnyOf [RequireSomeOf 0 [RequireSignatureOf (Cosigner 0)], script :: Script Cosigner])
+                    === Left LedgerIncompatible
+
         it "RequireSomeOf 1 is accepted" $ do
             let script = RequireSomeOf 1 [verKeyHash3, verKeyHash4]
             validateScript RequiredValidation script `shouldBe` Right ()
@@ -655,6 +681,22 @@ spec = do
         it "m=0 in RequireSomeOf is incorrect" $ do
             let script = RequireSomeOf 0 [cosigner2, cosigner3]
             validateScriptOfTemplate RequiredValidation script  `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 hidden under RequireAnyOf is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireSomeOf 0 [cosigner2, cosigner3], cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 hidden under RequireSomeOf is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [RequireSomeOf 0 [cosigner2, cosigner3], cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 hidden under RequireAnyOf inside RequireAllOf is LedgerIncompatible" $ do
+            let script = RequireAllOf [RequireAnyOf [RequireSomeOf 0 [cosigner2, cosigner3], cosigner0], cosigner1]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "RequireSomeOf 0 disguised as 2-of-3 is LedgerIncompatible" $ do
+            let script = RequireSomeOf 2 [RequireSomeOf 0 [cosigner2, cosigner3], cosigner0, cosigner1]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
         it "timelocks are correct if timelocks are disjoint" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]

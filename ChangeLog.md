@@ -1,5 +1,9 @@
 ## [4.1.1]
 
+### Fixed
+
+- Reject nested `RequireSomeOf 0` scripts (i.e. `at_least 0`) as `LedgerIncompatible` regardless of context; previously the fund-loss guard only fired at the top level and under `all`, so an always-satisfied `at_least 0` branch could be hidden under `any` or a sibling `at_least`.
+
 ## [4.1.0] - 2026-10-14
 
 ### Fixed
