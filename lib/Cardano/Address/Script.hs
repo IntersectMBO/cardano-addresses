@@ -434,9 +434,22 @@ validateScript level script = do
 requiredValidation
     :: Script elem
     -> Either ErrValidateScript ()
-requiredValidation script =
+requiredValidation script = do
+    -- A RequireSomeOf 0 subterm is always satisfied by the ledger, no matter
+    -- where it occurs. Reject it structurally before checking satisfiability so
+    -- it cannot be hidden under RequireAnyOf or a sibling RequireSomeOf.
+    unless (noMZero script) $ Left LedgerIncompatible
     unless (check script) $ Left LedgerIncompatible
   where
+    noMZero = \case
+        RequireSignatureOf _ -> True
+        RequireAllOf xs -> all noMZero xs
+        RequireAnyOf xs -> all noMZero xs
+        RequireSomeOf 0 _ -> False
+        RequireSomeOf _ xs -> all noMZero xs
+        ActiveFromSlot _ -> True
+        ActiveUntilSlot _ -> True
+
     check = \case
         RequireSignatureOf _ -> True
 
@@ -447,8 +460,7 @@ requiredValidation script =
             L.any check xs
 
         RequireSomeOf m xs ->
-            m /= 0
-                && m <= sum (fmap (\x -> if check x then 1 else 0) xs)
+            m <= sum (fmap (\x -> if check x then 1 else 0) xs)
 
         ActiveFromSlot _ -> True
 

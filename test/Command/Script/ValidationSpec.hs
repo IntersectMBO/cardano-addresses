@@ -79,6 +79,20 @@ spec = do
         specScriptNotValidated LedgerIncompatible RecommendedValidation
             [iii|at_least 0 [ #{verKeyH1}, #{verKeyH2} ]|]
 
+        -- RequireSomeOf 0 is ledger-incompatible even when nested under any or
+        -- at_least; these shapes must not pass required validation.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH3}]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 1 [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH3}]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 2 [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH1}, #{verKeyH3}]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|all [any [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH3}], #{verKeyH1}]|]
+
         -- at_least 256 must NOT be truncated to at_least 0; with only 2 keys
         -- it is correctly rejected as LedgerIncompatible.
         specScriptNotValidated LedgerIncompatible RequiredValidation
