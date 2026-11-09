@@ -2,7 +2,7 @@
 
 ### Added
 
-- New `Cardano.Address.Discovery` module providing pure, chain-free discovery of Shelley payment addresses (external and internal chains) and governance credentials from an account public key. See `discover`, `DiscoveryResult`, `DiscoveryAddressType`, `DiscoveredAddress`, `DiscoveredCredential`, and `ErrDiscovery`.
+- New `Cardano.Address.Discovery` module providing pure, chain-free discovery of Shelley payment addresses (external and internal chains) and governance credentials from an account public key. See `discover`, `discoverFrom`, `DiscoveryResult`, `DiscoveryAddressType`, `DiscoveredAddress`, `DiscoveredCredential`, and `ErrDiscovery`. `DiscoveryResult` is a `Semigroup` so partial ranges can be coalesced.
 
 ### Fixed
 

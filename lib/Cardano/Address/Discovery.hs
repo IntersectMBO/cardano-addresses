@@ -48,6 +48,7 @@ module Cardano.Address.Discovery
     , ErrDiscovery (..)
     , prettyErrDiscovery
     , discover
+    , discoverFrom
     ) where
 
 import Prelude
@@ -97,15 +98,20 @@ data DiscoveryAddressType
     deriving (Generic, Show, Eq)
 instance NFData DiscoveryAddressType
 
--- | Result of 'discover': a snapshot of the addresses and credentials that can
--- be derived from a single account key without querying the chain.
+-- | Result of 'discover' / 'discoverFrom': a snapshot of the addresses and
+-- credentials that can be derived from a single account key without querying
+-- the chain.
+--
+-- Two results for the same account can be coalesced with '<>(Semigroup)'.
+-- Payment address lists are concatenated and credentials are merged using a
+-- left-biased strategy.
 --
 -- @since 4.1.1
 data DiscoveryResult = DiscoveryResult
     { paymentExternal :: ![DiscoveredAddress]
-      -- ^ Payment addresses for the external chain (role 0), indices @[0, N)@.
+      -- ^ Payment addresses for the external chain (role 0).
     , paymentInternal :: ![DiscoveredAddress]
-      -- ^ Payment addresses for the internal / change chain (role 1), indices @[0, N)@.
+      -- ^ Payment addresses for the internal / change chain (role 1).
     , stakeCredential :: !(Maybe DiscoveredCredential)
       -- ^ The account's stake credential (role 2, index 0).
     , drepCredential :: !(Maybe DiscoveredCredential)
@@ -116,6 +122,21 @@ data DiscoveryResult = DiscoveryResult
       -- ^ The account's constitutional committee hot credential (role 5, index 0).
     } deriving (Generic, Show, Eq)
 instance NFData DiscoveryResult
+
+instance Semigroup DiscoveryResult where
+    a <> b = DiscoveryResult
+        { paymentExternal = paymentExternal a <> paymentExternal b
+        , paymentInternal = paymentInternal a <> paymentInternal b
+        , stakeCredential = firstJust (stakeCredential a) (stakeCredential b)
+        , drepCredential = firstJust (drepCredential a) (drepCredential b)
+        , committeeColdCredential =
+            firstJust (committeeColdCredential a) (committeeColdCredential b)
+        , committeeHotCredential =
+            firstJust (committeeHotCredential a) (committeeHotCredential b)
+        }
+      where
+        firstJust (Just x) _ = Just x
+        firstJust Nothing y = y
 
 -- | A discovered address together with its derivation index.
 --
@@ -148,6 +169,9 @@ data ErrDiscovery
       -- ^ The requested gap is larger than the soft derivation range allows.
     | ErrInvalidNetworkTag !NetworkTag
       -- ^ The network tag is not a valid 4-bit network discriminator.
+    | ErrDiscoveryRangeOutOfBounds !Word32 !Word32
+      -- ^ The requested discovery range @[start, start + gap)@ exceeds the
+      -- soft derivation range.
     deriving (Generic, Show, Eq)
 instance NFData ErrDiscovery
 
@@ -158,6 +182,8 @@ instance NFData ErrDiscovery
 -- "Network tag 16 is invalid: must be between 0 and 15."
 -- >>> prettyErrDiscovery (ErrGapTooLarge 2147483649)
 -- "Discovery gap 2147483649 exceeds the maximum soft derivation range."
+-- >>> prettyErrDiscovery (ErrDiscoveryRangeOutOfBounds 10 2147483640)
+-- "Discovery range [10, 2147483650) exceeds the maximum soft derivation range."
 -- @
 --
 -- @since 4.1.1
@@ -167,6 +193,10 @@ prettyErrDiscovery = \case
         "Discovery gap " <> show gap <> " exceeds the maximum soft derivation range."
     ErrInvalidNetworkTag (NetworkTag tag) ->
         "Network tag " <> show tag <> " is invalid: must be between 0 and 15."
+    ErrDiscoveryRangeOutOfBounds start gap ->
+        "Discovery range [" <> show start <> ", "
+        <> show (fromIntegral start + fromIntegral gap :: Integer)
+        <> ") exceeds the maximum soft derivation range."
 
 -- | Discover all addresses and credentials derivable from an account public key
 -- within the given gap, for the given network and address type.
@@ -217,6 +247,44 @@ discover networkTag addrType gap accXPub
     | fromIntegral gap > maxSoftGap =
         Left $ ErrGapTooLarge gap
     | otherwise =
+        discoverFrom networkTag addrType 0 gap accXPub
+  where
+    maxSoftGap :: Integer
+    maxSoftGap =
+        fromIntegral (indexToWord32 (maxBound @(Index 'Soft 'PaymentK))) + 1
+
+-- | Like 'discover', but start deriving payment addresses from a given soft
+-- index rather than from @0@. The discovered payment indices are
+-- @[start, start + gap)@ for both external and internal chains.
+--
+-- The account's stake and governance credentials are still derived at index @0@
+-- regardless of @start@, so two results for the same account can be coalesced
+-- with '<>(Semigroup)'.
+--
+-- === Example
+--
+-- @
+-- >>> let Right part1 = discoverFrom (NetworkTag 1) Base 0 1 accXPub
+-- >>> let Right part2 = discoverFrom (NetworkTag 1) Base 1 1 accXPub
+-- >>> let combined = part1 <> part2
+-- >>> map (addressIndex) (paymentExternal combined)
+-- [0,1]
+-- @
+--
+-- @since 4.1.1
+discoverFrom
+    :: NetworkTag
+    -> DiscoveryAddressType
+    -> Word32
+    -> Word32
+    -> Shelley 'AccountK XPub
+    -> Either ErrDiscovery DiscoveryResult
+discoverFrom networkTag addrType start gap accXPub
+    | unNetworkTag networkTag >= 16 =
+        Left $ ErrInvalidNetworkTag networkTag
+    | rangeEnd > maxSoftGap =
+        Left $ ErrDiscoveryRangeOutOfBounds start gap
+    | otherwise =
         Right $ DiscoveryResult
             { paymentExternal = derivePaymentAddresses UTxOExternal stakeHash
             , paymentInternal = derivePaymentAddresses UTxOInternal stakeHash
@@ -230,6 +298,9 @@ discover networkTag addrType gap accXPub
     maxSoftGap =
         fromIntegral (indexToWord32 (maxBound @(Index 'Soft 'PaymentK))) + 1
 
+    rangeEnd :: Integer
+    rangeEnd = fromIntegral start + fromIntegral gap
+
     stakeHash :: Maybe KeyHash
     stakeHash = Just $ credential $ deriveCredential Stake 0 Delegation
 
@@ -238,7 +309,7 @@ discover networkTag addrType gap accXPub
         | gap == 0 = []
         | otherwise =
             [ DiscoveredAddress ix (mkAddress ix)
-            | ix <- [0 .. gap - 1]
+            | ix <- [start .. start + gap - 1]
             ]
       where
         mkAddress :: Word32 -> Address
@@ -269,6 +340,6 @@ discover networkTag addrType gap accXPub
         deriveAddressPublicKeyShelley accPub role index'
       where
         accPub = getKey accXPub
-        -- Safe because 'gap' and the governance/stake index 0 are within the
-        -- soft derivation range validated above.
+        -- Safe because the indices are within the soft derivation range
+        -- validated above.
         index' = fromJust $ indexFromWord32 @(Index 'Soft 'PaymentK) ix

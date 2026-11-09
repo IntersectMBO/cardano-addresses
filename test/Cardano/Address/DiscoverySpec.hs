@@ -33,6 +33,7 @@ import Cardano.Address.Discovery
     , DiscoveryResult (..)
     , ErrDiscovery (..)
     , discover
+    , discoverFrom
     )
 import Cardano.Address.KeyHash
     ( GovernanceType (..), KeyRole (..), keyHashToText )
@@ -201,6 +202,21 @@ spec = do
 
         prop "gaps above the soft range are rejected" $
             property prop_invalidGapFails
+
+        prop "discoverFrom 0 gap equals discover gap" $
+            property prop_discoverFromStartsAtZero
+
+        prop "discoverFrom start gap matches manual derivation indices" $
+            property prop_discoverFromIndicesMatch
+
+        prop "two adjacent discoverFrom ranges coalesce to discover" $
+            property prop_discoverFromCoalesces
+
+        prop "DiscoveryResult semigroup is associative" $
+            property prop_discoveryResultAssociative
+
+        prop "discoverFrom rejects ranges exceeding the soft derivation range" $
+            property prop_discoverFromRangeRejected
 
 --
 -- Golden test helpers
@@ -373,6 +389,85 @@ prop_invalidGapFails =
         discover (NetworkTag tag) typ gap accXPub === Left (ErrGapTooLarge gap)
   where
     maxSoftGap = indexToWord32 (maxBound @(Index 'Soft 'PaymentK)) + 1
+
+prop_discoverFromStartsAtZero :: Property
+prop_discoverFromStartsAtZero =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 30) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        discover (NetworkTag tag) typ gap accXPub
+            === discoverFrom (NetworkTag tag) typ 0 gap accXPub
+
+prop_discoverFromIndicesMatch :: Property
+prop_discoverFromIndicesMatch =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 30) :: Gen Word32) $ \start ->
+    forAll (choose (0, 30) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let end = fromIntegral start + fromIntegral gap :: Integer
+            maxSoftGap = fromIntegral (indexToWord32 (maxBound @(Index 'Soft 'PaymentK))) + 1
+        in end <= maxSoftGap ==>
+            let Right result = discoverFrom (NetworkTag tag) typ start gap accXPub
+                ixs = if gap == 0 then [] else [start .. start + gap - 1]
+                expected role =
+                    map (bech32 . mkPaymentAddress (NetworkTag tag) typ accXPub role) ixs
+            in counterexample "external addresses mismatch" (
+                map (bech32 . address) (paymentExternal result) === expected UTxOExternal)
+               .&&.
+               counterexample "internal addresses mismatch" (
+                map (bech32 . address) (paymentInternal result) === expected UTxOInternal)
+
+prop_discoverFromCoalesces :: Property
+prop_discoverFromCoalesces =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 25) :: Gen Word32) $ \halfGap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let gap = halfGap * 2
+            Right full = discover (NetworkTag tag) typ gap accXPub
+            Right part1 = discoverFrom (NetworkTag tag) typ 0 halfGap accXPub
+            Right part2 = discoverFrom (NetworkTag tag) typ halfGap halfGap accXPub
+        in counterexample "coalesced result mismatch" (
+            full === (part1 <> part2))
+
+prop_discoveryResultAssociative :: Property
+prop_discoveryResultAssociative =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 15) :: Gen Word32) $ \g1 ->
+    forAll (choose (0, 15) :: Gen Word32) $ \g2 ->
+    forAll (choose (0, 15) :: Gen Word32) $ \g3 ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let Right r1 = discoverFrom (NetworkTag tag) typ 0 g1 accXPub
+            Right r2 = discoverFrom (NetworkTag tag) typ g1 g2 accXPub
+            Right r3 = discoverFrom (NetworkTag tag) typ (g1 + g2) g3 accXPub
+        in (r1 <> r2) <> r3 === r1 <> (r2 <> r3)
+
+prop_discoverFromRangeRejected :: Property
+prop_discoverFromRangeRejected =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, fromIntegral maxSoftGap) :: Gen Word32) $ \start ->
+    forAll (choose (1, 100) :: Gen Word32) $ \delta ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let gap = maxSoftGap - fromIntegral start + fromIntegral delta
+        in discoverFrom (NetworkTag tag) typ start (fromIntegral gap) accXPub
+            === Left (ErrDiscoveryRangeOutOfBounds start (fromIntegral gap))
+  where
+    maxSoftGap :: Integer
+    maxSoftGap = fromIntegral (indexToWord32 (maxBound @(Index 'Soft 'PaymentK))) + 1
 
 mkPaymentAddress
     :: NetworkTag
