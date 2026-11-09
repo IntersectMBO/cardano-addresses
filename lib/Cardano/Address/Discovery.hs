@@ -26,16 +26,18 @@ import Prelude
 import Cardano.Address
     ( Address, NetworkTag (..), unNetworkTag )
 import Cardano.Address.Derivation
-    ( Depth (..), Index, XPub, indexFromWord32, indexToWord32 )
+    ( Depth (..), DerivationType (..), Index, XPub, indexFromWord32, indexToWord32 )
 import Cardano.Address.KeyHash
     ( KeyHash, KeyRole (..) )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
     , Role (..)
-    , Shelley (..)
+    , Shelley
     , delegationAddress
     , deriveAddressPublicKeyShelley
+    , getKey
     , hashKey
+    , liftXPub
     , paymentAddress
     )
 
@@ -169,7 +171,7 @@ discover networkTag addrType gap accXPub
       where
         mkAddress :: Word32 -> Address
         mkAddress ix =
-            let paymentXPub = Shelley (deriveXPub role ix) :: Shelley 'PaymentK XPub
+            let paymentXPub = liftXPub (deriveXPub role ix) :: Shelley 'PaymentK XPub
                 paymentCred = PaymentFromExtendedKey paymentXPub
             in case addrType of
                 Enterprise ->
@@ -188,13 +190,13 @@ discover networkTag addrType gap accXPub
         -- XPub bytes. We pick 'PaymentK' as a convenient concrete witness.
         DiscoveredCredential ix (hashKey keyRole (xpub :: Shelley 'PaymentK XPub))
       where
-        xpub = Shelley $ deriveXPub role ix
+        xpub = liftXPub (deriveXPub role ix)
 
     deriveXPub :: Role -> Word32 -> XPub
     deriveXPub role ix =
         deriveAddressPublicKeyShelley accPub role index'
       where
-        Shelley accPub = accXPub
+        accPub = getKey accXPub
         -- Safe because 'gap' and the governance/stake index 0 are within the
         -- soft derivation range validated above.
-        index' = fromJust $ indexFromWord32 ix
+        index' = fromJust $ indexFromWord32 @(Index 'Soft 'PaymentK) ix
