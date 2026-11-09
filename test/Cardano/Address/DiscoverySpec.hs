@@ -27,9 +27,9 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Discovery
-    ( DiscoveryAddressType (..)
-    , DiscoveredAddress (..)
+    ( DiscoveredAddress (..)
     , DiscoveredCredential (..)
+    , DiscoveryAddressType (..)
     , DiscoveryResult (..)
     , ErrDiscovery (..)
     , discover
@@ -69,7 +69,6 @@ import Test.QuickCheck
     ( Arbitrary (..)
     , Gen
     , Property
-    , (==>)
     , choose
     , counterexample
     , elements
@@ -78,6 +77,7 @@ import Test.QuickCheck
     , withNumTests
     , (.&&.)
     , (===)
+    , (==>)
     )
 
 import qualified Data.Text as T

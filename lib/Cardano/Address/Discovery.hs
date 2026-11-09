@@ -55,7 +55,13 @@ import Prelude
 import Cardano.Address
     ( Address, NetworkTag (..), unNetworkTag )
 import Cardano.Address.Derivation
-    ( Depth (..), DerivationType (..), Index, XPub, indexFromWord32, indexToWord32 )
+    ( Depth (..)
+    , DerivationType (..)
+    , Index
+    , XPub
+    , indexFromWord32
+    , indexToWord32
+    )
 import Cardano.Address.KeyHash
     ( KeyHash, KeyRole (..) )
 import Cardano.Address.Style.Shelley
