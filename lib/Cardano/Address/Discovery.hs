@@ -164,10 +164,12 @@ discover networkTag addrType gap accXPub
     stakeHash = Just $ credential $ deriveCredential Stake 0 Delegation
 
     derivePaymentAddresses :: Role -> Maybe KeyHash -> [DiscoveredAddress]
-    derivePaymentAddresses role mStake =
-        [ DiscoveredAddress ix (mkAddress ix)
-        | ix <- [0 .. gap - 1]
-        ]
+    derivePaymentAddresses role mStake
+        | gap == 0 = []
+        | otherwise =
+            [ DiscoveredAddress ix (mkAddress ix)
+            | ix <- [0 .. gap - 1]
+            ]
       where
         mkAddress :: Word32 -> Address
         mkAddress ix =
