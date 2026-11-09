@@ -27,7 +27,7 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Discovery
-    ( DiscoverAddressType (..)
+    ( DiscoveryAddressType (..)
     , DiscoveredAddress (..)
     , DiscoveredCredential (..)
     , DiscoveryResult (..)
@@ -49,6 +49,10 @@ import Cardano.Address.Style.Shelley
     )
 import Cardano.Mnemonic
     ( SomeMnemonic, mkSomeMnemonic )
+import Data.Either
+    ( isRight )
+import Data.List
+    ( isPrefixOf )
 import Data.Maybe
     ( fromJust )
 import Data.Text
@@ -71,6 +75,7 @@ import Test.QuickCheck
     , elements
     , forAll
     , property
+    , withNumTests
     , (.&&.)
     , (===)
     )
@@ -179,6 +184,24 @@ spec = do
         prop "discovered credentials match manual derivation" $
             property prop_credentialsMatch
 
+        prop "valid inputs always succeed" $
+            property prop_validInputsSucceed
+
+        prop "payment lists have exactly gap entries" $
+            property prop_lengthsMatchGap
+
+        prop "increasing gap extends the prefix" $
+            property prop_prefixMonotonic
+
+        prop "discover is deterministic" $
+            property prop_deterministic
+
+        prop "invalid network tags are rejected" $
+            property prop_invalidNetworkTagFails
+
+        prop "gaps above the soft range are rejected" $
+            property prop_invalidGapFails
+
 --
 -- Golden test helpers
 --
@@ -197,7 +220,7 @@ data Golden = Golden
 goldenDiscover
     :: Text
     -> NetworkTag
-    -> DiscoverAddressType
+    -> DiscoveryAddressType
     -> Word32
     -> Golden
     -> Spec
@@ -272,9 +295,88 @@ prop_credentialsMatch =
   where
     credText = flip keyHashToText CIP0129 . credential
 
+prop_validInputsSucceed :: Property
+prop_validInputsSucceed =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 30) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        isRight (discover (NetworkTag tag) typ gap accXPub) === True
+
+prop_lengthsMatchGap :: Property
+prop_lengthsMatchGap =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 50) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let Right result = discover (NetworkTag tag) typ gap accXPub
+            expected = fromIntegral gap :: Int
+        in length (paymentExternal result) === expected
+           .&&. length (paymentInternal result) === expected
+
+prop_prefixMonotonic :: Property
+prop_prefixMonotonic =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 25) :: Gen Word32) $ \gapSmall ->
+    forAll (choose (gapSmall, 50) :: Gen Word32) $ \gapLarge ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let Right rSmall = discover (NetworkTag tag) typ gapSmall accXPub
+            Right rLarge = discover (NetworkTag tag) typ gapLarge accXPub
+            bech32s = map (bech32 . address)
+            prefix small large = isPrefixOf small large === True
+        in counterexample "external prefix mismatch" (
+            prefix (bech32s $ paymentExternal rSmall)
+                   (bech32s $ paymentExternal rLarge))
+           .&&.
+           counterexample "internal prefix mismatch" (
+            prefix (bech32s $ paymentInternal rSmall)
+                   (bech32s $ paymentInternal rLarge))
+
+prop_deterministic :: Property
+prop_deterministic =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 30) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        let args = ((NetworkTag tag), typ, gap, accXPub)
+        in uncurry4 discover args === uncurry4 discover args
+  where
+    uncurry4 f (a, b, c, d) = f a b c d
+
+prop_invalidNetworkTagFails :: Property
+prop_invalidNetworkTagFails =
+    withNumTests 50 $
+    forAll (choose (16, 100) :: Gen Word32) $ \tag ->
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (0, 10) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        discover (NetworkTag tag) typ gap accXPub
+            === Left (ErrInvalidNetworkTag (NetworkTag tag))
+
+prop_invalidGapFails :: Property
+prop_invalidGapFails =
+    withNumTests 50 $
+    forAll arbitrary $ \(NetworkTag tag) ->
+    tag < 16 ==>
+    forAll (elements [Base, Enterprise]) $ \typ ->
+    forAll (choose (maxSoftGap + 1, maxBound) :: Gen Word32) $ \gap ->
+    forAll arbitrary $ \(accXPub :: Shelley 'AccountK XPub) ->
+        discover (NetworkTag tag) typ gap accXPub === Left (ErrGapTooLarge gap)
+  where
+    maxSoftGap = indexToWord32 (maxBound @(Index 'Soft 'PaymentK)) + 1
+
 mkPaymentAddress
     :: NetworkTag
-    -> DiscoverAddressType
+    -> DiscoveryAddressType
     -> Shelley 'AccountK XPub
     -> Role
     -> Word32

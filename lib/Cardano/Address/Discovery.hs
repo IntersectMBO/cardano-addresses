@@ -41,7 +41,7 @@
 
 module Cardano.Address.Discovery
     ( -- * Address discovery
-      DiscoverAddressType (..)
+      DiscoveryAddressType (..)
     , DiscoveryResult (..)
     , DiscoveredAddress (..)
     , DiscoveredCredential (..)
@@ -82,14 +82,14 @@ import GHC.Generics
 -- | Address type to generate during discovery.
 --
 -- @since 4.1.1
-data DiscoverAddressType
+data DiscoveryAddressType
     = Base
       -- ^ Produce base addresses, pairing each payment key with the account's
       -- stake key.
     | Enterprise
       -- ^ Produce enterprise (payment-only) addresses.
     deriving (Generic, Show, Eq)
-instance NFData DiscoverAddressType
+instance NFData DiscoveryAddressType
 
 -- | Result of 'discover': a snapshot of the addresses and credentials that can
 -- be derived from a single account key without querying the chain.
@@ -201,7 +201,7 @@ prettyErrDiscovery = \case
 -- @since 4.1.1
 discover
     :: NetworkTag
-    -> DiscoverAddressType
+    -> DiscoveryAddressType
     -> Word32
     -> Shelley 'AccountK XPub
     -> Either ErrDiscovery DiscoveryResult
