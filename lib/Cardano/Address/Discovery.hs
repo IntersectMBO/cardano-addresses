@@ -10,8 +10,37 @@
 -- Copyright: 2020 Input Output (Hong Kong) Ltd., 2021-2022 Input Output Global Inc. (IOG), 2023-2025 Intersect
 -- License: Apache-2.0
 
+-- | Pure address and credential discovery for Shelley-style accounts.
+--
+-- 'discover' derives a contiguous batch of payment addresses for both the
+-- external and internal (change) chains, together with the single stake and
+-- governance credentials that belong to an account public key. It does /not/
+-- query the chain; callers are expected to narrow the result themselves if
+-- they already know the last used address index.
+--
+-- === Example
+--
+-- @
+-- >>> import Cardano.Address (NetworkTag (..), bech32)
+-- >>> import Cardano.Address.Derivation (Depth (..), GenMasterKey (..), HardDerivation (..), XPrv, XPub, toXPub)
+-- >>> import Cardano.Address.Discovery
+-- >>> import Cardano.Address.Style.Shelley (Shelley)
+-- >>> import Cardano.Mnemonic (mkSomeMnemonic)
+-- >>> :set -XDataKinds
+-- >>> :set -XOverloadedStrings
+-- >>> :set -XTypeApplications
+-- >>> let (Right mw) = mkSomeMnemonic @'[12] ["test","walk","nut","penalty","hip","pave","soap","entry","language","right","filter","choice"]
+-- >>> let rootK = genMasterKeyFromMnemonic mw mempty :: Shelley 'RootK XPrv
+-- >>> let accXPub = toXPub <$> deriveAccountPrivateKey rootK minBound :: Shelley 'AccountK XPub
+-- >>> let Right result = discover (NetworkTag 1) Base 1 accXPub
+-- >>> length (paymentExternal result)
+-- 1
+-- >>> bech32 . address . head $ paymentExternal result
+-- "addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwqfjkjv7"
+-- @
+
 module Cardano.Address.Discovery
-    ( -- * Discovery
+    ( -- * Address discovery
       DiscoverAddressType (..)
     , DiscoveryResult (..)
     , DiscoveredAddress (..)
@@ -118,6 +147,13 @@ instance NFData ErrDiscovery
 
 -- | Pretty-print a discovery error.
 --
+-- @
+-- >>> prettyErrDiscovery (ErrInvalidNetworkTag (NetworkTag 16))
+-- "Network tag 16 is invalid: must be between 0 and 15."
+-- >>> prettyErrDiscovery (ErrGapTooLarge 2147483649)
+-- "Discovery gap 2147483649 exceeds the maximum soft derivation range."
+-- @
+--
 -- @since 4.1.1
 prettyErrDiscovery :: ErrDiscovery -> String
 prettyErrDiscovery = \case
@@ -133,6 +169,34 @@ prettyErrDiscovery = \case
 -- range of payment indices @[0, N)@ for both external and internal chains, plus
 -- the single stake and governance credentials at index 0. Callers are expected
 -- to know the "last used index" themselves if they wish to narrow the result.
+--
+-- === Examples
+--
+-- Generate one mainnet enterprise address from the account:
+--
+-- @
+-- >>> let Right result = discover (NetworkTag 1) Enterprise 1 accXPub
+-- >>> bech32 . address . head $ paymentExternal result
+-- "addr1vx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzers66hrl8"
+-- @
+--
+-- A gap of zero yields no payment addresses but still derives credentials:
+--
+-- @
+-- >>> let Right gap0 = discover (NetworkTag 1) Base 0 accXPub
+-- >>> null (paymentExternal gap0) && null (paymentInternal gap0)
+-- True
+-- @
+--
+-- Invalid inputs are rejected:
+--
+-- @
+-- >>> discover (NetworkTag 16) Base 1 accXPub
+-- Left (ErrInvalidNetworkTag (NetworkTag {unNetworkTag = 16}))
+-- >>> let maxGap = 2147483648 -- 2^31
+-- >>> discover (NetworkTag 1) Base (maxGap + 1) accXPub
+-- Left (ErrGapTooLarge 2147483649)
+-- @
 --
 -- @since 4.1.1
 discover
