@@ -51,6 +51,7 @@ library
       Cardano.Address.Crypto.Wallet.Encrypted
       Cardano.Address.Crypto.Wallet.Types
       Cardano.Address.Derivation
+      Cardano.Address.Discovery
       Cardano.Address.Internal
       Cardano.Address.KeyHash
       Cardano.Address.Script
@@ -199,6 +200,7 @@ test-suite unit
       AutoDiscover
       Cardano.Address.CryptoSpec
       Cardano.Address.DerivationSpec
+      Cardano.Address.DiscoverySpec
       Cardano.Address.Script.ParserSpec
       Cardano.Address.ScriptSpec
       Cardano.Address.Style.ByronSpec

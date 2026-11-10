@@ -237,6 +237,15 @@ instance Arbitrary (Shelley 'PaymentK XPub) where
         addrK <- deriveAddressPrivateKey acctK <$> arbitrary <*> arbitrary
         pure $ toXPub <$> addrK
 
+instance Arbitrary (Shelley 'AccountK XPub) where
+    shrink _ = []
+    arbitrary = do
+        mw <- SomeMnemonic <$> genMnemonic @15
+        bytes <- BA.convert . BS.pack <$> (choose (0, 32) >>= vector)
+        let rootK = genMasterKeyFromMnemonic mw bytes
+        acctK <- deriveAccountPrivateKey rootK <$> arbitrary
+        pure $ toXPub <$> acctK
+
 instance Arbitrary (Shelley 'DelegationK XPub) where
     shrink _ = []
     arbitrary = do

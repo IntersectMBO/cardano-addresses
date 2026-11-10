@@ -1,5 +1,9 @@
 ## [4.1.1]
 
+### Added
+
+- New `Cardano.Address.Discovery` module providing pure, chain-free discovery of Shelley payment addresses (external and internal chains) and governance credentials from an account public key. See `discover`, `discoverFrom`, `DiscoveryResult`, `DiscoveryAddressType`, `DiscoveredAddress`, `DiscoveredCredential`, and `ErrDiscovery`. `DiscoveryResult` is a `Semigroup` so partial ranges can be coalesced.
+
 ### Fixed
 
 - Reject nested `RequireSomeOf 0` scripts (i.e. `at_least 0`) as `LedgerIncompatible` regardless of context; previously the fund-loss guard only fired at the top level and under `all`, so an always-satisfied `at_least 0` branch could be hidden under `any` or a sibling `at_least`.
