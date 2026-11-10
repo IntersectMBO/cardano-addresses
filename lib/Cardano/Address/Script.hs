@@ -439,6 +439,12 @@ requiredValidation script = do
     -- where it occurs. Reject it structurally before checking satisfiability so
     -- it cannot be hidden under RequireAnyOf or a sibling RequireSomeOf.
     unless (noMZero script) $ Left LedgerIncompatible
+    -- A subterm that is always ledger-satisfied (vacuous timelocks such as
+    -- active_from 0 or active_until maxBound) must not be the only thing
+    -- satisfying the threshold of a RequireAnyOf or RequireSomeOf. Otherwise
+    -- the script can be spent without any signature by choosing an appropriate
+    -- transaction validity interval.
+    unless (noHiddenAlwaysTrue script) $ Left LedgerIncompatible
     unless (check script) $ Left LedgerIncompatible
   where
     noMZero = \case
@@ -449,6 +455,34 @@ requiredValidation script = do
         RequireSomeOf _ xs -> all noMZero xs
         ActiveFromSlot _ -> True
         ActiveUntilSlot _ -> True
+
+    noHiddenAlwaysTrue = \case
+        RequireSignatureOf _ -> True
+        RequireAllOf xs -> all noHiddenAlwaysTrue xs
+        RequireAnyOf xs ->
+            not (any isAlwaysTrue xs) && all noHiddenAlwaysTrue xs
+        RequireSomeOf m xs ->
+            m > fromIntegral (length (filter isAlwaysTrue xs))
+            && all noHiddenAlwaysTrue xs
+        ActiveFromSlot _ -> True
+        ActiveUntilSlot _ -> True
+
+    -- A subterm is "always true" when the ledger will satisfy it for some
+    -- choice of transaction validity interval, without needing a signature.
+    -- Vacuous timelocks (active_from 0 / active_until maxBound) are the primary
+    -- concern. We intentionally do NOT treat an empty 'all' as always true here
+    -- because the project explicitly allows 'all []' at RequiredValidation; that
+    -- case is already handled by RecommendedValidation.
+    isAlwaysTrue = \case
+        RequireSignatureOf _ -> False
+        RequireAllOf xs -> not (null xs) && all isAlwaysTrue xs
+        RequireAnyOf xs -> any isAlwaysTrue xs
+        RequireSomeOf m xs ->
+            m <= fromIntegral (length (filter isAlwaysTrue xs))
+        ActiveFromSlot 0 -> True
+        ActiveFromSlot _ -> False
+        ActiveUntilSlot s ->
+            s == fromIntegral (maxBound @Word64)
 
     check = \case
         RequireSignatureOf _ -> True

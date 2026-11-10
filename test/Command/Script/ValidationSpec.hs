@@ -93,6 +93,35 @@ spec = do
         specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|all [any [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH3}], #{verKeyH1}]|]
 
+        -- Vacuous timelocks (active_from 0 / active_until maxBound) are
+        -- always ledger-satisfiable and must not be usable to meet the
+        -- threshold of an 'any' or 'at_least' without a signature.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_from 0]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_from 0, #{verKeyH1}]|]
+
+        specScriptNotValidated LedgerIncompatible RecommendedValidation
+            [iii|any [active_from 0, #{verKeyH1}]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 1 [ #{verKeyH1}, active_from 0 ]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|all [any [active_from 0], #{verKeyH1}]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_until 18446744073709551615]|]
+
+        -- Controls: vacuous timelocks are harmless inside 'all' or when the
+        -- threshold genuinely requires keys.
+        specScriptValidated RequiredValidation
+            [iii|all [ #{verKeyH1}, active_from 0]|]
+
+        specScriptValidated RequiredValidation
+            [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 0 ]|]
+
         -- at_least 256 must NOT be truncated to at_least 0; with only 2 keys
         -- it is correctly rejected as LedgerIncompatible.
         specScriptNotValidated LedgerIncompatible RequiredValidation

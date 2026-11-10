@@ -385,6 +385,62 @@ spec = do
             let script = RequireSomeOf 1 [verKeyHash3, verKeyHash4]
             validateScript RequiredValidation script `shouldBe` Right ()
 
+    describe "vacuous timelocks rejected (fund-loss guard)" $ do
+        let maxWord64 = fromIntegral (maxBound @Word64) :: Natural
+
+        it "any [active_from 0] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveFromSlot 0]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_from 0, key] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveFromSlot 0, verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 1 [key, active_from 0] is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 0]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "nested any [any [active_from 0]] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireAnyOf [ActiveFromSlot 0]]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "all [any [active_from 0], key] is LedgerIncompatible" $ do
+            let script = RequireAllOf [RequireAnyOf [ActiveFromSlot 0], verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_until maxBound] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveUntilSlot maxWord64]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 1 [key, active_until maxBound] is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveUntilSlot maxWord64]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [all [active_from 0]] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireAllOf [ActiveFromSlot 0]]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 2 [key1, key2, active_from 0] is accepted (threshold needs two keys)" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, ActiveFromSlot 0]
+            validateScript RequiredValidation script `shouldBe` Right ()
+
+        it "all [active_from 0, key] is accepted (still requires the key)" $ do
+            let script = RequireAllOf [ActiveFromSlot 0, verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Right ()
+
+        it "active_from 0 alone is accepted (top-level always-true, like all [])" $ do
+            validateScript RequiredValidation (ActiveFromSlot 0) `shouldBe` Right ()
+
+        it "active_from 100 is accepted" $ do
+            validateScript RequiredValidation (ActiveFromSlot 100) `shouldBe` Right ()
+
+        it "active_until 0 is accepted" $ do
+            validateScript RequiredValidation (ActiveUntilSlot 0) `shouldBe` Right ()
+
+        it "vacuous timelock is also rejected at RecommendedValidation" $ do
+            let script = RequireAnyOf [ActiveFromSlot 0, verKeyHash1]
+            validateScript RecommendedValidation script `shouldBe` Left LedgerIncompatible
+
     describe "validateScript - expectations for RecomendedValidation" $ do
         it "incorrect RequireAllOf []" $ do
             let script = RequireAllOf []
@@ -700,6 +756,27 @@ spec = do
 
         it "timelocks are correct if timelocks are disjoint" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
+
+        it "any [active_from 0] in template is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveFromSlot 0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 1 [cosigner, active_from 0] in template is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [cosigner0, ActiveFromSlot 0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "all [any [active_from 0], cosigner] in template is LedgerIncompatible" $ do
+            let script = RequireAllOf [RequireAnyOf [ActiveFromSlot 0], cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_until maxBound] in template is LedgerIncompatible" $ do
+            let maxWord64 = fromIntegral (maxBound @Word64) :: Natural
+            let script = RequireAnyOf [ActiveUntilSlot maxWord64]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "all [active_from 0, cosigner] in template is accepted" $ do
+            let script = RequireAllOf [ActiveFromSlot 0, cosigner0]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
         it "incorrect RequireAllOf []" $ do
