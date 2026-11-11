@@ -164,7 +164,7 @@ serializeScript script =
             encodeMultiscriptCtr 2 2 <> encodeFoldable toCBOR contents
         RequireSomeOf m contents -> mconcat
             [ encodeMultiscriptCtr 3 3
-            , CBOR.encodeInt (fromInteger $ toInteger m)
+            , CBOR.encodeWord m
             , encodeFoldable toCBOR contents
             ]
         ActiveFromSlot slotNum ->
@@ -439,6 +439,10 @@ requiredValidation script = do
     -- where it occurs. Reject it structurally before checking satisfiability so
     -- it cannot be hidden under RequireAnyOf or a sibling RequireSomeOf.
     unless (noMZero script) $ Left LedgerIncompatible
+    -- Native scripts are parsed by the ledger as signed integers for the
+    -- 'at_least' threshold. Reject thresholds that do not fit into a signed
+    -- 'Int' so that they cannot be serialized into a negative CBOR integer.
+    unless (noBigM script) $ Left LedgerIncompatible
     -- A subterm that is always ledger-satisfied (vacuous timelocks such as
     -- active_from 0 or active_until maxBound) must not be the only thing
     -- satisfying the threshold of a RequireAnyOf or RequireSomeOf. Otherwise
@@ -453,6 +457,15 @@ requiredValidation script = do
         RequireAnyOf xs -> all noMZero xs
         RequireSomeOf 0 _ -> False
         RequireSomeOf _ xs -> all noMZero xs
+        ActiveFromSlot _ -> True
+        ActiveUntilSlot _ -> True
+
+    noBigM = \case
+        RequireSignatureOf _ -> True
+        RequireAllOf xs -> all noBigM xs
+        RequireAnyOf xs -> all noBigM xs
+        RequireSomeOf m xs ->
+            toInteger m <= toInteger (maxBound @Int) && all noBigM xs
         ActiveFromSlot _ -> True
         ActiveUntilSlot _ -> True
 
@@ -826,7 +839,11 @@ parseAtLeast
     -> Parser (Script elem)
 parseAtLeast = withObject "Script SomeOf" $ \o -> do
     some <- o .: "some"
-    RequireSomeOf <$> some .: "at_least" <*> some .: "from"
+    atLeastVal <- some .: "at_least" :: Parser Integer
+    let maxBoundInt = toInteger (maxBound @Int)
+    when (atLeastVal < 0 || atLeastVal > maxBoundInt) $
+        fail $ "at_least must be between 0 and " <> show (maxBound @Int)
+    RequireSomeOf (fromInteger atLeastVal) <$> some .: "from"
 
 parseActiveFrom
     :: Value
