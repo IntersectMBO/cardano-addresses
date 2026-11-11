@@ -385,6 +385,67 @@ spec = do
             let script = RequireSomeOf 1 [verKeyHash3, verKeyHash4]
             validateScript RequiredValidation script `shouldBe` Right ()
 
+    describe "RequireSomeOf threshold bounds (maxBound @Int)" $ do
+        let maxBoundInt = fromIntegral (maxBound @Int)
+        let maxBoundIntTxt = T.pack (show (maxBound @Int))
+        let key1Txt = "addr_shared_vkh1zxt0uvrza94h3hv4jpv0ttddgnwkvdgeyq8jf9w30mcs6y8w3nq"
+        let key2Txt = "addr_shared_vkh1y3zl4nqgm96ankt96dsdhc86vd5geny0wr7hu8cpzdfcqskq2cp"
+
+        describe "JSON at_least boundary" $ do
+            it "JSON at_least maxBound @Int accepted" $ do
+                let json = "{\"some\": {\"at_least\": " <> maxBoundIntTxt
+                        <> ", \"from\": [\"" <> key1Txt <> "\", \"" <> key2Txt <> "\"]}}"
+                case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                    Left err -> expectationFailure err
+                    Right (RequireSomeOf m _) -> m `shouldBe` maxBoundInt
+                    Right _ -> expectationFailure "Expected RequireSomeOf"
+
+            it "JSON at_least maxBound @Int + 1 rejected" $ do
+                let json = "{\"some\": {\"at_least\": 9223372036854775808"
+                        <> ", \"from\": [\"" <> key1Txt <> "\", \"" <> key2Txt <> "\"]}}"
+                case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                    Left _ -> pure ()
+                    Right _ -> expectationFailure "Expected JSON parse failure"
+
+            it "JSON at_least 2^64 - 1 rejected" $ do
+                let json = "{\"some\": {\"at_least\": 18446744073709551615"
+                        <> ", \"from\": [\"" <> key1Txt <> "\", \"" <> key2Txt <> "\"]}}"
+                case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                    Left _ -> pure ()
+                    Right _ -> expectationFailure "Expected JSON parse failure"
+
+            it "JSON at_least negative rejected" $ do
+                let json = "{\"some\": {\"at_least\": -1"
+                        <> ", \"from\": [\"" <> key1Txt <> "\", \"" <> key2Txt <> "\"]}}"
+                case Json.eitherDecodeStrict @(Script KeyHash) (T.encodeUtf8 json) of
+                    Left _ -> pure ()
+                    Right _ -> expectationFailure "Expected JSON parse failure"
+
+        describe "validateScript rejects oversized threshold" $ do
+            it "RequireSomeOf (maxBound @Int + 1) is LedgerIncompatible" $ do
+                let mBig = maxBoundInt + 1
+                let script = RequireSomeOf mBig [verKeyHash1]
+                validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+            it "nested RequireSomeOf (maxBound @Int + 1) is LedgerIncompatible" $ do
+                let mBig = maxBoundInt + 1
+                let script = RequireAllOf [verKeyHash1, RequireSomeOf mBig [verKeyHash2]]
+                validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        describe "serializeScript encodes threshold as unsigned CBOR" $ do
+            it "RequireSomeOf maxBound @Int encodes unsigned" $ do
+                let script = RequireSomeOf maxBoundInt [verKeyHash1]
+                let serialized = serializeScript script
+                -- CBOR unsigned integer major type 0 has initial byte < 0x20.
+                BS.index serialized 3 `shouldSatisfy` (< 0x20)
+
+            it "RequireSomeOf (maxBound @Int + 1) encodes unsigned, not negative" $ do
+                let script = RequireSomeOf (maxBoundInt + 1) [verKeyHash1]
+                let serialized = serializeScript script
+                -- Old code encoded this as CBOR negative integer (0x3b...).
+                -- With encodeWord it must remain unsigned (initial byte < 0x20).
+                BS.index serialized 3 `shouldSatisfy` (< 0x20)
+
     describe "vacuous timelocks rejected (fund-loss guard)" $ do
         let maxWord64 = fromIntegral (maxBound @Word64) :: Natural
 
