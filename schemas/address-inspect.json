@@ -3,6 +3,7 @@
   "$id": "https://raw.githubusercontent.com/IntersectMBO/cardano-addresses/master/command-line/schemas/address-inspect.json",
   "description": "JSON specification for address inspection.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "address_style",
     "stake_reference",
@@ -28,6 +29,12 @@
           "type": "null"
         }
       ]
+    },
+    "address_type": {
+      "description": "The numeric address type as encoded in the address header.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 15
     },
     "address_type_name": {
       "description": "A human-readable name for the address type.",
@@ -58,13 +65,23 @@
       "type": "string",
       "format": "bech32"
     },
-    "script_hash": {
+    "spending_script_hash": {
       "type": "string",
       "format": "base16",
       "minimum_length": "56",
       "maximum_length": "56"
     },
-    "script_key_hash_bech32": {
+    "spending_script_hash_bech32": {
+      "type": "string",
+      "format": "bech32"
+    },
+    "stake_script_hash": {
+      "type": "string",
+      "format": "base16",
+      "minimum_length": "56",
+      "maximum_length": "56"
+    },
+    "stake_script_hash_bech32": {
       "type": "string",
       "format": "bech32"
     },

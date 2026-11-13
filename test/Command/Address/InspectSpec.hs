@@ -19,7 +19,7 @@ import Data.Text.Encoding
 import Test.Arbitrary
     ( unsafeFromHex )
 import Test.Hspec
-    ( Spec, SpecWith, expectationFailure, it, shouldBe, shouldContain )
+    ( Spec, SpecWith, expectationFailure, it, shouldBe, shouldContain, shouldNotContain )
 import Test.Utils
     ( SchemaRef, cli, describeCmd, validateJSON )
 
@@ -64,9 +64,22 @@ spec = describeCmd [ "address", "inspect" ] $ do
         "stake1upshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mqcjv83c"
 
     -- reward account: scripthash28
-    specInspectAddress ["Shelley", "by value", "stake_shared_hash"] []
+    -- Regression test for using the wrong CIP5 bech32 prefix for script
+    -- hashes (stake_vkh instead of script). The buggy output would allow
+    -- re-feeding the hash to `address stake` and creating an unspendable
+    -- key-hash reward address.
+    specInspectAddress
+        [ "Shelley", "by value"
+        , "stake_script_hash"
+        , "\"stake_script_hash_bech32\": \"script1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcsq9sd9\""
+        , "\"address_type_name\": \"reward\""
+        ]
+        []
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
-    specInspectAddress ["Shelley", "by value", "stake_shared_hash_bech32"] []
+    specInspectAddressNotContain
+        [ "stake_vkh1v9mx2unede5kxetpv3j8yun9wdekcmmvdakx7mr0d3hkcjpqtv8"
+        , "stake_shared_hash"
+        ]
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
     specInspectAddress ["\"address_type\": 15"] []
         "stake17pshvetj09hxjcm9v9jxgunjv4ehxmr0d3hkcmmvdakx7mq36s8xc"
@@ -106,8 +119,40 @@ spec = describeCmd [ "address", "inspect" ] $ do
     -- $ cardano-address key child 1854H/1815H/0H/2/0 < root_shared.xsk | cardano-address key public --without-chain-code > stake_shared.vk
     -- $ cardano-address script hash "all [$(cat addr_shared.vk), $(cat stake_shared.vk)]" > script.hash
     -- $ cardano-address address payment --network-tag testnet < script.hash
-    specInspectAddress ["Shelley", "none", "\"address_type\": 7"] []
+    specInspectAddress
+        [ "Shelley", "none"
+        , "\"address_type\": 7"
+        , "spending_script_hash"
+        , "\"spending_script_hash_bech32\": \"script1vm623wxs8da7wg0lvxudtfqx53klnzmc2cpk2uff8exxgyw60f0\""
+        ]
+        []
         "addr_test1wpn0f29c6qahheeplasm34dyq6jxm7vt0ptqxet39ylyceqjwaqmt"
+    specInspectAddressNotContain
+        [ "addr_shared_vkh"
+        , "spending_shared_hash"
+        ]
+        "addr_test1wpn0f29c6qahheeplasm34dyq6jxm7vt0ptqxet39ylyceqjwaqmt"
+
+    -- Base address with both payment and stake credentials coming from a
+    -- script hash (address type 3). Both script hashes must use the CIP5
+    -- 'script' prefix, not any verification-key-hash prefix.
+    specInspectAddress
+        [ "Shelley", "by value"
+        , "\"address_type\": 3"
+        , "spending_script_hash"
+        , "stake_script_hash"
+        , "\"spending_script_hash_bech32\": \"script1vm623wxs8da7wg0lvxudtfqx53klnzmc2cpk2uff8exxgyw60f0\""
+        , "\"stake_script_hash_bech32\": \"script1vm623wxs8da7wg0lvxudtfqx53klnzmc2cpk2uff8exxgyw60f0\""
+        ]
+        []
+        "addr_test1xpn0f29c6qahheeplasm34dyq6jxm7vt0ptqxet39ylycerx7j5t35pm00njrlmphr26gp4ydhuck7zkqdjhz2f7f3jqjapjfr"
+    specInspectAddressNotContain
+        [ "addr_shared_vkh"
+        , "stake_shared_vkh"
+        , "spending_shared_hash"
+        , "stake_shared_hash"
+        ]
+        "addr_test1xpn0f29c6qahheeplasm34dyq6jxm7vt0ptqxet39ylycerx7j5t35pm00njrlmphr26gp4ydhuck7zkqdjhz2f7f3jqjapjfr"
 
     specInspectMalformed
         "💩"
@@ -169,6 +214,21 @@ specInspectAddress mustHave args addr = it addr $ do
         Left e -> expectationFailure $ "malformed JSON: " <> show e
         Right json -> validateJSON schema json >>= \case
             [] -> forM_ mustHave (shouldContain out)
+            es -> expectationFailure $ "invalid JSON: " <> unlines es
+  where
+    schema :: SchemaRef
+    schema = "./schemas/address-inspect.json"
+
+-- | Verify that 'address inspect' succeeds and that its output does NOT
+-- contain any of the given substrings.
+specInspectAddressNotContain :: [String] -> String -> SpecWith ()
+specInspectAddressNotContain mustNotHave addr = it (addr <> " (negative checks)") $ do
+    (out, err) <- cli [ "address", "inspect" ] addr
+    err `shouldBe` ("" :: String)
+    case Json.eitherDecode (BL8.pack out) of
+        Left e -> expectationFailure $ "malformed JSON: " <> show e
+        Right json -> validateJSON schema json >>= \case
+            [] -> forM_ mustNotHave (shouldNotContain out)
             es -> expectationFailure $ "invalid JSON: " <> unlines es
   where
     schema :: SchemaRef

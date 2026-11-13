@@ -7,6 +7,7 @@
 ### Fixed
 
 - Reject nested `RequireSomeOf 0` scripts (i.e. `at_least 0`) as `LedgerIncompatible` regardless of context; previously the fund-loss guard only fired at the top level and under `all`, so an always-satisfied `at_least 0` branch could be hidden under `any` or a sibling `at_least`.
+- Fixed `address inspect` (and `Shelley.inspectAddress` / `Shelley.eitherInspectAddress`) encoding script hashes with verification-key Bech32 prefixes instead of the CIP-5 `script` prefix. Previously `stake_script_hash_bech32` was emitted as `stake_vkh1…`, and spending/stake script hashes were also exposed as `spending_shared_hash_bech32` / `stake_shared_hash_bech32` using `addr_shared_vkh1…` / `stake_shared_vkh1…`. These values could be fed back into `address stake` and silently rebuild an unspendable key-hash reward address from a script reward account. Script hashes are now correctly encoded with the `script1…` prefix, and the misleading `*_shared_hash` fields have been removed.
 
 ## [4.1.0] - 2026-10-14
 
