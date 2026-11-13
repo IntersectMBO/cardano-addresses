@@ -19,7 +19,14 @@ import Data.Text.Encoding
 import Test.Arbitrary
     ( unsafeFromHex )
 import Test.Hspec
-    ( Spec, SpecWith, expectationFailure, it, shouldBe, shouldContain, shouldNotContain )
+    ( Spec
+    , SpecWith
+    , expectationFailure
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldNotContain
+    )
 import Test.Utils
     ( SchemaRef, cli, describeCmd, validateJSON )
 
