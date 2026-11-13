@@ -769,9 +769,8 @@ instance ToJSON AddressInfo where
         ++ maybe [] (\ptr -> ["pointer" .= ptr]) (infoStakeReference >>= getPointer)
         ++ jsonHash "spending_key_hash" CIP5.addr_vkh infoSpendingKeyHash
         ++ jsonHash "stake_key_hash" CIP5.stake_vkh infoStakeKeyHash
-        ++ jsonHash "spending_shared_hash" CIP5.addr_shared_vkh infoSpendingScriptHash
-        ++ jsonHash "stake_shared_hash" CIP5.stake_shared_vkh infoStakeScriptHash
-        ++ jsonHash "stake_script_hash" CIP5.stake_vkh infoStakeScriptHash
+        ++ jsonHash "spending_script_hash" CIP5.script infoSpendingScriptHash
+        ++ jsonHash "stake_script_hash" CIP5.script infoStakeScriptHash
       where
         getPointer ByValue = Nothing
         getPointer (ByPointer ptr) = Just ptr
