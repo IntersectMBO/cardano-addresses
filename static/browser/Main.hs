@@ -53,6 +53,8 @@ import Data.Word
     ( Word32 )
 import System.Exit
     ( exitFailure )
+import Text.Read
+    ( readMaybe )
 
 import qualified Cardano.Address as CA
 import qualified Cardano.Address.Style.Byron as Byron
@@ -234,9 +236,9 @@ parseNetwork
 parseNetwork = \case
     "mainnet" -> pure Shelley.shelleyMainnet
     "testnet" -> pure Shelley.shelleyTestnet
-    other -> case Shelley.mkNetworkDiscriminant (read (T.unpack other)) of
-        Right n -> pure n
-        Left _ -> die' ("Invalid network: " <> T.unpack other)
+    other -> case readMaybe (T.unpack other) >>= either (const Nothing) Just . Shelley.mkNetworkDiscriminant of
+        Just n -> pure n
+        Nothing -> die' ("Invalid network: " <> T.unpack other)
             >> error "unreachable"
 
 parseXPub :: T.Text -> IO XPub

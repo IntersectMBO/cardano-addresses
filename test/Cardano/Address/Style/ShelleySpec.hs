@@ -27,6 +27,7 @@ import Cardano.Address
     ( Address
     , ChainPointer (..)
     , HasNetworkDiscriminant (..)
+    , NetworkTag (..)
     , bech32
     , bech32With
     , fromBech32
@@ -61,6 +62,7 @@ import Cardano.Address.Script
     ( Script (..), ScriptHash (..), toScriptHash )
 import Cardano.Address.Style.Shelley
     ( Credential (..)
+    , MkNetworkDiscriminantError (..)
     , Role (..)
     , Shelley (..)
     , delegationAddress
@@ -151,6 +153,21 @@ spec = do
         it "Calling indexFromWord32 for invalid value fails)" $
             property prop_fromWord32Role
         it "Roundtrip index" $ property prop_roundtripIndexRole
+
+    describe "mkNetworkDiscriminant" $ do
+        it "accepts 0" $
+            mkNetworkDiscriminant 0 `shouldBe` Right (NetworkTag 0)
+        it "accepts 15" $
+            mkNetworkDiscriminant 15 `shouldBe` Right (NetworkTag 15)
+        it "rejects 16" $
+            mkNetworkDiscriminant 16 `shouldBe` Left (ErrWrongNetworkTag 16)
+        it "rejects -1" $
+            mkNetworkDiscriminant (-1) `shouldBe` Left (ErrWrongNetworkTag (-1))
+        it "rejects negative tags that would wrap to a valid network tag" $ do
+            mkNetworkDiscriminant (-4294967295) `shouldBe` Left (ErrWrongNetworkTag (-4294967295))
+            mkNetworkDiscriminant (-4294967296) `shouldBe` Left (ErrWrongNetworkTag (-4294967296))
+        it "rejects very large positive tags" $
+            mkNetworkDiscriminant 4294967295 `shouldBe` Left (ErrWrongNetworkTag 4294967295)
 
     describe "Proper pointer addresses construction" $ do
         it "Using different numbers in DelegationPointerAddress does not fail"
