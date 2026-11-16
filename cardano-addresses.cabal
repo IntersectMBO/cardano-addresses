@@ -21,6 +21,7 @@ extra-source-files:
     README.md
     SECURITY.md
     schemas/address-inspect.json
+    schemas/address-discover.json
     cbits/*.h
     cbits/ed25519/*.h
 
