@@ -21,6 +21,7 @@ extra-source-files:
     README.md
     SECURITY.md
     schemas/address-inspect.json
+    schemas/address-discover.json
     cbits/*.h
     cbits/ed25519/*.h
 
@@ -76,6 +77,7 @@ library
       Command.Address
       Command.Address.Bootstrap
       Command.Address.Delegation
+      Command.Address.Discover
       Command.Address.Inspect
       Command.Address.Payment
       Command.Address.Pointer
@@ -99,6 +101,7 @@ library
       Data.Word7
       Options.Applicative.Credential
       Options.Applicative.Derivation
+      Options.Applicative.Discovery
       Options.Applicative.Discrimination
       Options.Applicative.Governance
       Options.Applicative.MnemonicLanguage
@@ -213,6 +216,7 @@ test-suite unit
       Codec.Binary.EncodingSpec
       Command.Address.BootstrapSpec
       Command.Address.DelegationSpec
+      Command.Address.DiscoverSpec
       Command.Address.InspectSpec
       Command.Address.PaymentSpec
       Command.Address.PointerSpec
