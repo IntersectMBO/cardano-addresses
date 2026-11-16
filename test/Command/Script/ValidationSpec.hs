@@ -34,14 +34,21 @@ spec = do
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, #{verKeyH3} ]|]
 
-        specScriptValidated RequiredValidation
+        -- Thresholds that could be met solely by timelocks (without a
+        -- signature) must be rejected, even when keys are also present.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 10, active_until 25]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 6, active_until 15]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 6, active_until 25]|]
+
+        -- A higher threshold still requires every available key, so the
+        -- timelocks cannot be used to bypass the signature requirement.
+        specScriptValidated RequiredValidation
+            [iii|at_least 3 [ #{verKeyH1}, #{verKeyH2}, active_from 10, active_until 25]|]
 
         specScriptValidated RequiredValidation
             [iii|all []|]
@@ -52,19 +59,21 @@ spec = do
         specScriptNotValidated (NotRecommended EmptyList) RecommendedValidation
             [iii|all []|]
 
-        specScriptValidated RequiredValidation
+        -- Timelock-only thresholds are rejected: they impose no signature
+        -- requirement and can be satisfied by choosing a validity interval.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ active_from 11, active_until 25]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
-        specScriptNotValidated (NotRecommended ListTooSmall) RecommendedValidation
+        specScriptNotValidated LedgerIncompatible RecommendedValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 2 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
-        specScriptNotValidated (NotRecommended RedundantTimelocks) RecommendedValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|at_least 1 [ #{verKeyH1},  active_from 11, active_until 25, active_until 30]|]
 
         specScriptValidated RequiredValidation
@@ -93,9 +102,10 @@ spec = do
         specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|all [any [at_least 0 [ #{verKeyH1}, #{verKeyH2} ], #{verKeyH3}], #{verKeyH1}]|]
 
-        -- Vacuous timelocks (active_from 0 / active_until maxBound) are
-        -- always ledger-satisfiable and must not be usable to meet the
-        -- threshold of an 'any' or 'at_least' without a signature.
+        -- Any timelock can be ledger-satisfied without a signature by choosing
+        -- an appropriate validity interval, so timelocks must not be usable to
+        -- meet the threshold of an 'any' or 'at_least' without a signature.
+        -- This covers both the original sentinel values and non-sentinel bypasses.
         specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|any [active_from 0]|]
 
@@ -114,13 +124,35 @@ spec = do
         specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|any [active_until 18446744073709551615]|]
 
-        -- Controls: vacuous timelocks are harmless inside 'all' or when the
-        -- threshold genuinely requires keys.
+        -- Non-sentinel bypasses that previously slipped past the guard.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_from 1]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_until 18446744073709551614]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|any [active_until 1000000000000]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 1 [ #{verKeyH1}, active_from 1 ]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|at_least 1 [ #{verKeyH1}, active_until 1000000000000 ]|]
+
+        specScriptNotValidated LedgerIncompatible RequiredValidation
+            [iii|all [any [active_from 1], #{verKeyH1}]|]
+
+        -- Controls: timelocks are harmless inside 'all' or when the threshold
+        -- genuinely requires more signatures than timelock-only branches.
         specScriptValidated RequiredValidation
             [iii|all [ #{verKeyH1}, active_from 0]|]
 
         specScriptValidated RequiredValidation
             [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 0 ]|]
+
+        specScriptValidated RequiredValidation
+            [iii|at_least 2 [ #{verKeyH1}, #{verKeyH2}, active_from 1 ]|]
 
         -- at_least 256 must NOT be truncated to at_least 0; with only 2 keys
         -- it is correctly rejected as LedgerIncompatible.
@@ -145,13 +177,15 @@ spec = do
         specScriptValidated RequiredValidation
             [iii|all [ #{verKeyH7}, active_from 5001]|]
 
-        specScriptValidated RequiredValidation
+        -- The inner 'all' is satisfied solely by timelocks, so it must not be
+        -- an alternative to the signature-bearing branch of the outer 'any'.
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|any [ #{verKeyH5}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|any [ #{verKeyH6}, all [ active_from 5001, active_until 6001]]|]
 
-        specScriptValidated RequiredValidation
+        specScriptNotValidated LedgerIncompatible RequiredValidation
             [iii|any [ #{verKeyH7}, all [ active_from 5001, active_until 6001]]|]
 
 levelStr :: ValidationLevel -> String
