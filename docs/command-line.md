@@ -653,6 +653,40 @@ echo addr_test1qp2fg770ddmqxxduasjsas39l5wwvwa04nj8ud95fde7f70k6tew7wrnx0s4465nx
 \}
 </pre>
 
+### How to discover addresses and credentials for an account
+
+The `address discover` command derives a contiguous batch of payment addresses
+(external and internal) plus the account's stake, DRep and committee credentials.
+It reads an extended account key (`acct_xvk` / `acct_xsk`) or an extended root
+key (`root_xsk`) from stdin. When a root key is supplied, the default account
+(index `0H`) is derived automatically.
+
+```console
+cardano-address key child 1852H/1815H/0H < root.xsk | cardano-address key public --with-chain-code > acct.xvk
+```
+<pre>
+acct_xvk1eame4ge0x5yrwpuqs5eyw89kfmjpgfkfh02xzdx6c2k9k2swcr5clf0u634tm82x6nv2j750x3j7938g70ya4k0lv6pr59s7etw2vpqgfmule
+</pre>
+
+```console
+cardano-address address discover --gap 1 --type base --network-tag testnet < acct.xvk
+```
+<pre>
+payment_external	0	addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp
+payment_internal	0	addr_test1qz4kjk0as0x7ptt54l6cnfyzejqg22cku0qhqx6al4g2xepjcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq5hxe5g
+stake_credential	0	stake_vkh1xtrj35uxrctye2egew8sqezgzwwg796ql7uw02572gedc78jpfa
+drep_credential	0	drep1y2jmg4g450lced7q9n34rq6d5vjwkm0ugx6h0894u6ur92s9txn3a
+committee_cold_credential	0	cc_cold1ztl0h9vka4ns45kfj7xh3ljwkd46yn9m5znzlfxd6rpdeagw6p59q
+committee_hot_credential	0	cc_hot1qtmd98q0w9jdxasse0m8kyn2nya7kf9qwmgx20cl5p543rcdtr4dz
+</pre>
+
+Use `--json` to emit a JSON document instead of tab-separated values. The
+`--from` option changes the soft index where payment derivation starts.
+
+> :information_source: `--gap` controls how many consecutive payment indices are
+> produced for both the external and internal chains. Credentials are always
+> derived once at index 0.
+
 Details about possible address types are following (refer also to [cddl](https://github.com/input-output-hk/cardano-ledger/blob/master/eras/alonzo/test-suite/cddl-files/alonzo.cddl) )
 | address_type | binary prefix  |   Meaning                                                |
 | ------------ |:--------------:|:--------------------------------------------------------:|
@@ -1572,6 +1606,9 @@ The following commands deliberately keep **bech32-only** input:
   needed to select the output form;
 - `address delegation`, `address pointer` — for backwards compatibility with
   existing behaviour, malformed input keeps reporting `Bech32 error:`.
+- `address discover` — the bech32 prefix (`acct_xvk`, `acct_xsk` or `root_xsk`)
+  is required to know which key role was supplied and whether to derive the
+  default account.
 
 `script hash`, `script preimage` and `script validate` take the script as a
 command-line argument, or read it from stdin when the argument is omitted:

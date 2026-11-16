@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://raw.githubusercontent.com/IntersectMBO/cardano-addresses/master/command-line/schemas/address-discover.json",
+  "description": "JSON specification for address discovery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "payment_external",
+    "payment_internal",
+    "stake_credential",
+    "drep_credential",
+    "committee_cold_credential",
+    "committee_hot_credential"
+  ],
+  "properties": {
+    "payment_external": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "address"],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payment_internal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "address"],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stake_credential": {
+      "$ref": "#/definitions/credential"
+    },
+    "drep_credential": {
+      "$ref": "#/definitions/credential"
+    },
+    "committee_cold_credential": {
+      "$ref": "#/definitions/credential"
+    },
+    "committee_hot_credential": {
+      "$ref": "#/definitions/credential"
+    }
+  },
+  "definitions": {
+    "credential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "credential"],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "credential": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
