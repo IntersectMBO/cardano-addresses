@@ -54,7 +54,7 @@ module Cardano.Address.Discovery
 import Prelude
 
 import Cardano.Address
-    ( Address, NetworkTag (..), unNetworkTag )
+    ( Address, NetworkTag (..), bech32, unNetworkTag )
 import Cardano.Address.Derivation
     ( Depth (..)
     , DerivationType (..)
@@ -79,6 +79,8 @@ import Cardano.Address.Style.Shelley
 
 import Control.DeepSeq
     ( NFData )
+import Data.Aeson
+    ( ToJSON (..), object, (.=) )
 import Data.Maybe
     ( fromJust )
 import Data.Word
@@ -123,6 +125,16 @@ data DiscoveryResult = DiscoveryResult
     } deriving (Generic, Show, Eq)
 instance NFData DiscoveryResult
 
+instance ToJSON DiscoveryResult where
+    toJSON result = object
+        [ "payment_external" .= paymentExternal result
+        , "payment_internal" .= paymentInternal result
+        , "stake_credential" .= stakeCredential result
+        , "drep_credential" .= drepCredential result
+        , "committee_cold_credential" .= committeeColdCredential result
+        , "committee_hot_credential" .= committeeHotCredential result
+        ]
+
 instance Semigroup DiscoveryResult where
     a <> b = DiscoveryResult
         { paymentExternal = paymentExternal a <> paymentExternal b
@@ -149,6 +161,12 @@ data DiscoveredAddress = DiscoveredAddress
     } deriving (Generic, Show, Eq)
 instance NFData DiscoveredAddress
 
+instance ToJSON DiscoveredAddress where
+    toJSON addr = object
+        [ "index" .= addressIndex addr
+        , "address" .= bech32 (address addr)
+        ]
+
 -- | A discovered on-chain credential (a 28-byte key hash) together with its
 -- derivation index.
 --
@@ -160,6 +178,12 @@ data DiscoveredCredential = DiscoveredCredential
       -- ^ The discovered credential.
     } deriving (Generic, Show, Eq)
 instance NFData DiscoveredCredential
+
+instance ToJSON DiscoveredCredential where
+    toJSON cred = object
+        [ "index" .= credentialIndex cred
+        , "credential" .= credential cred
+        ]
 
 -- | Errors that can occur during discovery.
 --
