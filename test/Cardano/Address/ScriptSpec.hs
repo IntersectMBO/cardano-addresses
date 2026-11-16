@@ -339,9 +339,12 @@ spec = do
             let script = RequireSomeOf 0 [verKeyHash3, verKeyHash4]
             validateScript RequiredValidation script  `shouldBe` Left LedgerIncompatible
 
-        it "timelocks are correct if timelocks are disjoint" $ do
+        -- A threshold satisfied solely by timelocks is rejected even when the
+        -- timelocks are disjoint, because timelocks impose no signature
+        -- requirement.
+        it "some 2 [active_from 9, active_until 8] is LedgerIncompatible" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
-            validateScript RequiredValidation script `shouldBe` Right ()
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
 
     describe "RequireSomeOf 0 rejected (fund-loss guard)" $ do
         it "RequireSomeOf 0 is LedgerIncompatible (always satisfiable by the ledger)" $ do
@@ -446,9 +449,11 @@ spec = do
                 -- With encodeWord it must remain unsigned (initial byte < 0x20).
                 BS.index serialized 3 `shouldSatisfy` (< 0x20)
 
-    describe "vacuous timelocks rejected (fund-loss guard)" $ do
+    describe "timelock-only threshold satisfaction rejected (fund-loss guard)" $ do
         let maxWord64 = fromIntegral (maxBound @Word64) :: Natural
+        let farFutureSlot = 1000000000000 :: Natural
 
+        -- Sentinel values that were always rejected.
         it "any [active_from 0] is LedgerIncompatible" $ do
             let script = RequireAnyOf [ActiveFromSlot 0]
             validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
@@ -481,12 +486,54 @@ spec = do
             let script = RequireAnyOf [RequireAllOf [ActiveFromSlot 0]]
             validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
 
+        -- Non-sentinel values that previously bypassed the guard. Any
+        -- timelock can be ledger-satisfied without a signature by choosing an
+        -- appropriate validity interval, so it must not meet an 'any' or
+        -- 'at_least' threshold.
+        it "any [active_from 1] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveFromSlot 1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_until maxBound - 1] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveUntilSlot (maxWord64 - 1)]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_until far-future slot] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveUntilSlot farFutureSlot]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 1 [key, active_from 1] is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 1]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 1 [key, active_until far-future slot] is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [verKeyHash1, ActiveUntilSlot farFutureSlot]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "nested any [all [active_from 1, active_until far-future slot]] is LedgerIncompatible" $ do
+            let script = RequireAnyOf [RequireAllOf [ActiveFromSlot 1, ActiveUntilSlot farFutureSlot]]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "some 2 [key1, key2, active_from 1, active_until far-future slot] is LedgerIncompatible" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, ActiveFromSlot 1, ActiveUntilSlot farFutureSlot]
+            validateScript RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        -- Controls: timelocks are harmless inside 'all' or when the threshold
+        -- genuinely requires more signatures than timelock-only branches.
         it "some 2 [key1, key2, active_from 0] is accepted (threshold needs two keys)" $ do
             let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, ActiveFromSlot 0]
             validateScript RequiredValidation script `shouldBe` Right ()
 
+        it "some 2 [key1, key2, active_from 1] is accepted (threshold needs two keys)" $ do
+            let script = RequireSomeOf 2 [verKeyHash1, verKeyHash2, ActiveFromSlot 1]
+            validateScript RequiredValidation script `shouldBe` Right ()
+
         it "all [active_from 0, key] is accepted (still requires the key)" $ do
             let script = RequireAllOf [ActiveFromSlot 0, verKeyHash1]
+            validateScript RequiredValidation script `shouldBe` Right ()
+
+        it "all [active_from far-future slot, key] is accepted (still requires the key)" $ do
+            let script = RequireAllOf [ActiveUntilSlot farFutureSlot, verKeyHash1]
             validateScript RequiredValidation script `shouldBe` Right ()
 
         it "active_from 0 alone is accepted (top-level always-true, like all [])" $ do
@@ -500,6 +547,10 @@ spec = do
 
         it "vacuous timelock is also rejected at RecommendedValidation" $ do
             let script = RequireAnyOf [ActiveFromSlot 0, verKeyHash1]
+            validateScript RecommendedValidation script `shouldBe` Left LedgerIncompatible
+
+        it "non-sentinel timelock is also rejected at RecommendedValidation" $ do
+            let script = RequireAnyOf [ActiveFromSlot 1, verKeyHash1]
             validateScript RecommendedValidation script `shouldBe` Left LedgerIncompatible
 
     describe "validateScript - expectations for RecomendedValidation" $ do
@@ -543,15 +594,18 @@ spec = do
                     ]
             validateScript RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
+        -- Three or more timelocks as direct children are redundant. The
+        -- signature-bearing branch ensures the fund-loss guard does not reject
+        -- the script before the recommended check is reached.
         it "redundant timelocks - too many" $ do
-            let script = RequireSomeOf 1 [verKeyHash1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
+            let script = RequireAllOf [verKeyHash1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
             validateScript RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
         it "redundant timelocks - nested" $ do
             let script = RequireSomeOf 1
                     [ verKeyHash1
                     , RequireAnyOf [ verKeyHash2
-                                   , RequireSomeOf 2 [verKeyHash3, verKeyHash4, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, verKeyHash1]
+                                   , RequireAllOf [verKeyHash3, verKeyHash4, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, verKeyHash1]
                                    ]
                     ]
             validateScript RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
@@ -620,7 +674,7 @@ spec = do
         let cosigner4 = RequireSignatureOf (Cosigner 4)
 
         it "no cosigners in script of script template" $ do
-            let scriptTemplate = ScriptTemplate Map.empty (RequireAnyOf [ActiveFromSlot 21, ActiveUntilSlot 10])
+            let scriptTemplate = ScriptTemplate Map.empty (ActiveFromSlot 21)
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` (Left NoCosignerInScript)
 
         it "no cosigners xpub in script template" $ do
@@ -735,32 +789,35 @@ spec = do
                     ])
             validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended TimelockTrap)
 
-        it "valid timelocks when using any" $ do
+        -- An 'any' whose branch is satisfied solely by timelocks is a fund-loss
+        -- path; these shapes are now caught at RequiredValidation before the
+        -- RecommendedValidation redundant-timelock checks are reached.
+        it "any with timelock-only branches inside threshold is LedgerIncompatible" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 25, ActiveUntilSlot 21]
                                    ]
                     ])
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Right ()
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript LedgerIncompatible)
 
-        it "invalid timelocks when using any 1" $ do
+        it "any with overlapping timelock-only branches is LedgerIncompatible" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 25]
                                    ]
                     ])
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript LedgerIncompatible)
 
-        it "invalid timelocks when using any 2" $ do
+        it "any with coincident timelock-only branches is LedgerIncompatible" $ do
             let scriptTemplate = ScriptTemplate cosigners' (RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
                                    , RequireAnyOf [cosigner0, cosigner1, cosigner2 ,cosigner3, ActiveFromSlot 21, ActiveUntilSlot 21]
                                    ]
                     ])
-            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript $ NotRecommended RedundantTimelocks)
+            validateScriptTemplate RecommendedValidation scriptTemplate `shouldBe` Left (WrongScript LedgerIncompatible)
 
         it "big cosigner number in script template" $ do
             let bigCosigner = Cosigner (fromIntegral (maxBound @Int) + 1)
@@ -815,20 +872,35 @@ spec = do
             let script = RequireSomeOf 2 [RequireSomeOf 0 [cosigner2, cosigner3], cosigner0, cosigner1]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
-        it "timelocks are correct if timelocks are disjoint" $ do
+        -- A threshold satisfied solely by timelocks is a fund-loss path even
+        -- when the timelocks are disjoint, because timelocks impose no
+        -- signature requirement.
+        it "some 2 [active_from 9, active_until 8] in template is LedgerIncompatible" $ do
             let script = RequireSomeOf 2 [ActiveFromSlot 9, ActiveUntilSlot 8 ]
-            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
         it "any [active_from 0] in template is LedgerIncompatible" $ do
             let script = RequireAnyOf [ActiveFromSlot 0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "any [active_from 1] in template is LedgerIncompatible" $ do
+            let script = RequireAnyOf [ActiveFromSlot 1]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
         it "some 1 [cosigner, active_from 0] in template is LedgerIncompatible" $ do
             let script = RequireSomeOf 1 [cosigner0, ActiveFromSlot 0]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
+        it "some 1 [cosigner, active_from 1] in template is LedgerIncompatible" $ do
+            let script = RequireSomeOf 1 [cosigner0, ActiveFromSlot 1]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
         it "all [any [active_from 0], cosigner] in template is LedgerIncompatible" $ do
             let script = RequireAllOf [RequireAnyOf [ActiveFromSlot 0], cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
+        it "all [any [active_from 1], cosigner] in template is LedgerIncompatible" $ do
+            let script = RequireAllOf [RequireAnyOf [ActiveFromSlot 1], cosigner0]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
         it "any [active_until maxBound] in template is LedgerIncompatible" $ do
@@ -836,8 +908,17 @@ spec = do
             let script = RequireAnyOf [ActiveUntilSlot maxWord64]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
 
+        it "any [active_until maxBound - 1] in template is LedgerIncompatible" $ do
+            let maxWord64 = fromIntegral (maxBound @Word64) :: Natural
+            let script = RequireAnyOf [ActiveUntilSlot (maxWord64 - 1)]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Left LedgerIncompatible
+
         it "all [active_from 0, cosigner] in template is accepted" $ do
             let script = RequireAllOf [ActiveFromSlot 0, cosigner0]
+            validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
+
+        it "some 2 [cosigner0, cosigner1, active_from 1] in template is accepted" $ do
+            let script = RequireSomeOf 2 [cosigner0, cosigner1, ActiveFromSlot 1]
             validateScriptOfTemplate RequiredValidation script `shouldBe` Right ()
 
         it "incorrect RequireAllOf []" $ do
@@ -881,14 +962,14 @@ spec = do
             validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended DuplicateSignatures)
 
         it "redundant timelocks - too many" $ do
-            let script = RequireSomeOf 1 [cosigner1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
+            let script = RequireAllOf [cosigner1, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120]
             validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)
 
         it "redundant timelocks - nested" $ do
             let script = RequireSomeOf 1
                     [ cosigner1
                     , RequireAnyOf [ cosigner2
-                                   , RequireSomeOf 2 [cosigner2, cosigner3, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, cosigner1]
+                                   , RequireAllOf [cosigner2, cosigner3, ActiveFromSlot 1, ActiveFromSlot 2, ActiveUntilSlot 120, ActiveUntilSlot 125, cosigner1]
                                    ]
                     ]
             validateScriptOfTemplate RecommendedValidation script `shouldBe` Left (NotRecommended RedundantTimelocks)

@@ -443,11 +443,13 @@ requiredValidation script = do
     -- 'at_least' threshold. Reject thresholds that do not fit into a signed
     -- 'Int' so that they cannot be serialized into a negative CBOR integer.
     unless (noBigM script) $ Left LedgerIncompatible
-    -- A subterm that is always ledger-satisfied (vacuous timelocks such as
-    -- active_from 0 or active_until maxBound) must not be the only thing
-    -- satisfying the threshold of a RequireAnyOf or RequireSomeOf. Otherwise
-    -- the script can be spent without any signature by choosing an appropriate
-    -- transaction validity interval.
+    -- A subterm that can be ledger-satisfied without a signature must not be
+    -- the only thing satisfying the threshold of a RequireAnyOf or
+    -- RequireSomeOf. Timelocks alone (active_from _ / active_until _) do not
+    -- authorize a spend; an attacker can satisfy them by choosing an
+    -- appropriate transaction validity interval, so they must not count toward
+    -- the threshold of an 'any' or 'at_least'. Otherwise the script can be
+    -- spent without any signature.
     unless (noHiddenAlwaysTrue script) $ Left LedgerIncompatible
     unless (check script) $ Left LedgerIncompatible
   where
@@ -473,29 +475,30 @@ requiredValidation script = do
         RequireSignatureOf _ -> True
         RequireAllOf xs -> all noHiddenAlwaysTrue xs
         RequireAnyOf xs ->
-            not (any isAlwaysTrue xs) && all noHiddenAlwaysTrue xs
+            not (any canSatisfyWithoutSignature xs)
+            && all noHiddenAlwaysTrue xs
         RequireSomeOf m xs ->
-            m > fromIntegral (length (filter isAlwaysTrue xs))
+            m > fromIntegral (length (filter canSatisfyWithoutSignature xs))
             && all noHiddenAlwaysTrue xs
         ActiveFromSlot _ -> True
         ActiveUntilSlot _ -> True
 
-    -- A subterm is "always true" when the ledger will satisfy it for some
-    -- choice of transaction validity interval, without needing a signature.
-    -- Vacuous timelocks (active_from 0 / active_until maxBound) are the primary
-    -- concern. We intentionally do NOT treat an empty 'all' as always true here
-    -- because the project explicitly allows 'all []' at RequiredValidation; that
-    -- case is already handled by RecommendedValidation.
-    isAlwaysTrue = \case
+    -- A subterm "can be satisfied without a signature" when it contains no
+    -- RequireSignatureOf and can be ledger-satisfied for some choice of
+    -- transaction validity interval. Every timelock (active_from _ /
+    -- active_until _) is treated as such, because validity intervals are chosen
+    -- by the transaction author and a timelock imposes no cryptographic
+    -- authorization. We intentionally do NOT treat an empty 'all' as always
+    -- true here because the project explicitly allows 'all []' at
+    -- RequiredValidation; that case is already handled by RecommendedValidation.
+    canSatisfyWithoutSignature = \case
         RequireSignatureOf _ -> False
-        RequireAllOf xs -> not (null xs) && all isAlwaysTrue xs
-        RequireAnyOf xs -> any isAlwaysTrue xs
+        RequireAllOf xs -> not (null xs) && all canSatisfyWithoutSignature xs
+        RequireAnyOf xs -> any canSatisfyWithoutSignature xs
         RequireSomeOf m xs ->
-            m <= fromIntegral (length (filter isAlwaysTrue xs))
-        ActiveFromSlot 0 -> True
-        ActiveFromSlot _ -> False
-        ActiveUntilSlot s ->
-            s == fromIntegral (maxBound @Word64)
+            m <= fromIntegral (length (filter canSatisfyWithoutSignature xs))
+        ActiveFromSlot _ -> True
+        ActiveUntilSlot _ -> True
 
     check = \case
         RequireSignatureOf _ -> True
