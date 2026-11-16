@@ -30,6 +30,7 @@ import Prelude hiding
 
 import qualified Command.Address.Bootstrap as Bootstrap
 import qualified Command.Address.Delegation as Delegation
+import qualified Command.Address.Discover as Discover
 import qualified Command.Address.Inspect as Inspect
 import qualified Command.Address.Payment as Payment
 import qualified Command.Address.Pointer as Pointer
@@ -43,6 +44,7 @@ data Cmd
     | Delegation Delegation.Cmd
     | Pointer Pointer.Cmd
     | Inspect Inspect.Cmd
+    | Discover Discover.Cmd
     deriving (Show)
 
 mod :: (Cmd -> parent) -> Mod CommandFields parent
@@ -64,6 +66,7 @@ mod liftCmd = command "address" $
         , Delegation.mod Delegation
         , Pointer.mod Pointer
         , Inspect.mod Inspect
+        , Discover.mod Discover
         ]
 
 run :: Cmd -> IO ()
@@ -74,3 +77,4 @@ run = \case
     Delegation sub -> Delegation.run sub
     Pointer sub -> Pointer.run sub
     Inspect sub -> Inspect.run sub
+    Discover sub -> Discover.run sub

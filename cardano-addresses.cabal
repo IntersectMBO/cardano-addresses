@@ -76,6 +76,7 @@ library
       Command.Address
       Command.Address.Bootstrap
       Command.Address.Delegation
+      Command.Address.Discover
       Command.Address.Inspect
       Command.Address.Payment
       Command.Address.Pointer
@@ -99,6 +100,7 @@ library
       Data.Word7
       Options.Applicative.Credential
       Options.Applicative.Derivation
+      Options.Applicative.Discovery
       Options.Applicative.Discrimination
       Options.Applicative.Governance
       Options.Applicative.MnemonicLanguage
