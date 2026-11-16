@@ -1104,7 +1104,7 @@ mkNetworkDiscriminant
     :: Integer
     -> Either MkNetworkDiscriminantError (NetworkDiscriminant Shelley)
 mkNetworkDiscriminant nTag
-    | nTag < 16 =  Right $ NetworkTag $ fromIntegral nTag
+    | nTag >= 0 && nTag < 16 = Right $ NetworkTag $ fromIntegral nTag
     | otherwise = Left $ ErrWrongNetworkTag nTag
 
 -- | Retrieve the network discriminant of a given 'Address'.
