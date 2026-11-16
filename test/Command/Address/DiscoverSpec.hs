@@ -11,7 +11,15 @@ import Prelude
 import Data.Word
     ( Word32 )
 import Test.Hspec
-    ( Spec, SpecWith, describe, expectationFailure, it, shouldBe, shouldContain, shouldNotContain )
+    ( Spec
+    , SpecWith
+    , describe
+    , expectationFailure
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldNotContain
+    )
 import Test.Utils
     ( SchemaRef, cli, describeCmd, validateJSON )
 

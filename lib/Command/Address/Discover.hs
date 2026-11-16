@@ -33,20 +33,17 @@ import Cardano.Address.Derivation
     , toXPub
     )
 import Cardano.Address.Discovery
-    ( DiscoveryAddressType (..)
-    , DiscoveryResult (..)
-    , DiscoveredAddress (..)
+    ( DiscoveredAddress (..)
     , DiscoveredCredential (..)
+    , DiscoveryAddressType (..)
+    , DiscoveryResult (..)
     , discoverFrom
     , prettyErrDiscovery
     )
 import Cardano.Address.KeyHash
     ( GovernanceType (..), keyHashToText )
 import Cardano.Address.Style.Shelley
-    ( Shelley
-    , liftXPub
-    , liftXPrv
-    )
+    ( Shelley, liftXPrv, liftXPub )
 import Codec.Binary.Bech32
     ( humanReadablePartToText )
 import Data.Text
@@ -54,15 +51,7 @@ import Data.Text
 import Data.Word
     ( Word32 )
 import Options.Applicative
-    ( CommandFields
-    , Mod
-    , command
-    , footerDoc
-    , header
-    , helper
-    , info
-    , progDesc
-    )
+    ( CommandFields, Mod, command, footerDoc, header, helper, info, progDesc )
 import Options.Applicative.Discovery
     ( discoveryAddressTypeOpt
     , discoveryFromOpt

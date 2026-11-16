@@ -22,15 +22,7 @@ import Cardano.Address.Discovery
 import Data.Word
     ( Word32 )
 import Options.Applicative
-    ( Parser
-    , eitherReader
-    , help
-    , long
-    , metavar
-    , option
-    , switch
-    , value
-    )
+    ( Parser, eitherReader, help, long, metavar, option, switch, value )
 import Text.Read
     ( readEither )
 
