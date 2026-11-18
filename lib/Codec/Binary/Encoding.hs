@@ -104,16 +104,22 @@ detectEncoding str = isBase16 <|> isBech32  <|> isBase58
         pure EBase16
 
     isBech32 = do
+        guard ('1' `elem` str)
         guard (not (null humanpart))
         guard (all (\c -> ord c >= 33 && ord c <= 126) humanpart)
         guard (length datapart >= 6)
-        guard (all (`elem` Bech32.dataCharList) datapart)
+        guard (all ((`elem` Bech32.dataCharList) . toLower) datapart)
         guard (all isUpper alpha || all isLower alpha)
         pure (EBech32 ())
       where
-        datapart  = reverse . takeWhile (/= '1') . reverse $ str
-        humanpart = takeWhile (/= '1') str
+        (humanpart, datapart) = splitAtLastSeparator '1' str
         alpha = filter isLetter str
+
+        splitAtLastSeparator :: Eq a => a -> [a] -> ([a], [a])
+        splitAtLastSeparator sep xs =
+            case break (== sep) (reverse xs) of
+                (_after, []) -> (xs, [])
+                (after, _:before) -> (reverse before, reverse after)
 
     isBase58 = do
         guard (all (`elem` T.unpack (T.decodeUtf8 $ unAlphabet bitcoinAlphabet)) str)
