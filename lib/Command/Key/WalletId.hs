@@ -13,6 +13,7 @@ module Command.Key.WalletId
     ( Cmd (..)
     , mod
     , run
+    , payloadToHash
     ) where
 
 import Prelude hiding
@@ -24,10 +25,14 @@ import Cardano.Address.Script
     ( Cosigner, Script )
 import Cardano.Address.Style.Shared
     ( sharedWalletId )
+import Codec.Binary.Bech32
+    ( HumanReadablePart )
 import Codec.Binary.Encoding
     ( AbstractEncoding (..) )
 import Control.Monad
     ( when )
+import Data.ByteString
+    ( ByteString )
 import Data.Maybe
     ( fromJust, isNothing )
 import Data.Text
@@ -87,33 +92,28 @@ run :: Cmd -> IO ()
 run WalletId{spending,staking} = do
     (hrp, bytes) <- hGetBech32 stdin allowedPrefixes
     guardBytes hrp bytes
-    let bs = payloadToHash hrp bytes
+    payload <- case payloadToHash hrp bytes of
+        Left err -> fail err
+        Right bs -> pure bs
     when ( hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] &&
            isNothing spending ) $
         fail "shared wallet needs to have at least spending script specified"
     let walletid =
             if hrp `elem` [CIP5.acct_shared_xvk, CIP5.acct_shared_xsk] then
-                sharedWalletId bs (fromJust spending) staking
+                sharedWalletId payload (fromJust spending) staking
             else
-                hashWalletId bs
+                hashWalletId payload
     hPutBytes stdout walletid EBase16
   where
     allowedPrefixes =
         [ CIP5.root_xsk
+        , CIP5.root_shared_xsk
         , CIP5.root_xvk
         , CIP5.acct_xvk
         , CIP5.acct_xsk
         , CIP5.acct_shared_xvk
         , CIP5.acct_shared_xsk
         ]
-
-    payloadToHash hrp bs
-        | hrp `elem` [CIP5.root_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] =
-              case xprvFromBytes bs of
-                  Just xprv ->  xpubToBytes . toXPub $ xprv
-                  Nothing -> "96-byte extended private key is invalid due to 'scalarDecodeLong' failure from cryptonite"
-        | otherwise =
-              bs
 
     guardBytes hrp bytes
         | hrp `elem` [CIP5.root_xsk, CIP5.root_shared_xsk, CIP5.acct_xsk, CIP5.acct_shared_xsk] = do
@@ -123,3 +123,22 @@ run WalletId{spending,staking} = do
         | otherwise = do
             when (BS.length bytes /= 64) $
                 fail "data should be a 32-byte public key with a 32-byte chain-code appended."
+
+-- | Convert the raw bytes read from stdin into the payload that is hashed to
+-- produce a wallet id.  For extended private keys this means decoding the
+-- bytes and extracting the corresponding extended public key; any decoding
+-- failure is returned as a 'Left' so that the command can abort instead of
+-- silently hashing an error message.
+payloadToHash :: HumanReadablePart -> ByteString -> Either String ByteString
+payloadToHash hrp bs
+    | hrp `elem`
+        [ CIP5.root_xsk
+        , CIP5.root_shared_xsk
+        , CIP5.acct_xsk
+        , CIP5.acct_shared_xsk
+        ] =
+          case xprvFromBytes bs of
+              Just xprv -> Right $ xpubToBytes . toXPub $ xprv
+              Nothing -> Left "Invalid extended private key."
+    | otherwise =
+          Right bs
