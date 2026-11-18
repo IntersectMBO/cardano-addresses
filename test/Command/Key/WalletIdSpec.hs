@@ -38,7 +38,7 @@ import Command.Key.WalletId
 import qualified Cardano.Codec.Bech32.Prefixes as CIP5
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TEnc
+import qualified Data.Text.Encoding as T
 
 spec :: Spec
 spec = describeCmd [ "key", "walletid" ] $ do
@@ -98,7 +98,7 @@ spec = describeCmd [ "key", "walletid" ] $ do
 
 -- | Encode raw bytes as a bech32 string with the given prefix.
 bech32String :: HumanReadablePart -> BS.ByteString -> String
-bech32String hrp = T.unpack . TEnc.decodeUtf8 . encode (EBech32 hrp)
+bech32String hrp = T.unpack . T.decodeUtf8 . encode (EBech32 hrp)
 
 specKeyNeitherRootNorAcct :: String -> String -> String -> SpecWith ()
 specKeyNeitherRootNorAcct style path cc = it "fails if key is nether root nor account" $ do
