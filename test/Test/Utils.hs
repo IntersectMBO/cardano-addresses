@@ -27,6 +27,8 @@ import JSONSchema.Draft4
 #endif
 import System.Environment
     ( lookupEnv )
+import System.Exit
+    ( ExitCode )
 import System.Process
     ( readProcess, readProcessWithExitCode )
 import Test.Hspec
@@ -58,6 +60,11 @@ instance CommandLine (String, String) where
         dropFirst <$> readProcessWithExitCode exe' args' input
       where
         dropFirst (_,b,c) = (b, c)
+
+instance CommandLine (ExitCode, String, String) where
+    cli args input = do
+        (exe', args') <- getWrappedCLI args
+        readProcessWithExitCode exe' args' input
 
 exe :: String
 exe = "cardano-address"
