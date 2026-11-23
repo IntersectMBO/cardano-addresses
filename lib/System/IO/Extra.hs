@@ -66,8 +66,6 @@ import Data.List
     ( nub, sort )
 import Data.Text
     ( Text )
-import Data.Word
-    ( Word8 )
 import Options.Applicative.Style
     ( PassphraseInfo (..), PassphraseInput (..), PassphraseInputMode (..) )
 import System.Console.ANSI
@@ -95,6 +93,8 @@ import System.IO
     )
 import System.IO.Unsafe
     ( unsafePerformIO )
+import Text.Read
+    ( readMaybe )
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
@@ -333,6 +333,19 @@ hGetPassphraseBytes (hstdin, hstderr) mode input prompt info =
         FromFile path ->
             hGetPassphraseBytesFromFile path info
 
+-- | Parse a textual octet array, e.g. @[1, 2, 3]@.
+--
+-- Values are parsed as 'Integer' before being range-checked so that inputs
+-- outside of the 'Word8' range (e.g. @[256]@ or @[-1]@) are rejected rather
+-- than silently wrapped by the 'Word8' 'Read' instance.
+parseOctets :: String -> Maybe ByteString
+parseOctets txt = case readMaybe @[Integer] txt of
+    Just octets
+        | all isOctet octets -> Just $ BS.pack (fromIntegral <$> octets)
+    _ -> Nothing
+  where
+    isOctet n = n >= 0 && n <= 255
+
 -- | Read some bytes from the file, and decode them accoring to passphrase info.
 hGetPassphraseBytesFromFile
     :: FilePath
@@ -349,8 +362,11 @@ hGetPassphraseBytesFromFile path = \case
        B8.filter noNewline . T.encodeUtf8 <$> TIO.readFile path
     Octets -> do
        txt <- TIO.readFile path
-       let bytes = read @[Word8] (T.unpack txt)
-       pure $ BS.pack bytes
+       case parseOctets (T.unpack txt) of
+           Nothing -> fail
+               "Passphrase file must be an octet array of integers in \
+               \[0,255], e.g. [1, 2, 3]."
+           Just bytes -> pure bytes
     _          -> fail
             "Data in file must be encoded as hex, base64, utf8 or octet array."
 
@@ -373,8 +389,11 @@ hGetPassphraseBytesInteractively (hstdin, hstderr) mode prompt = \case
        pure $ T.encodeUtf8 txt
     Octets -> do
        txt <- hGetSensitiveLine (hstdin, hstderr) mode prompt
-       let bytes = read @[Word8] (T.unpack txt)
-       pure $ BS.pack bytes
+       case parseOctets (T.unpack txt) of
+           Nothing -> fail
+               "Passphrase must be an octet array of integers in [0,255], \
+               \e.g. [1, 2, 3]."
+           Just bytes -> pure bytes
     _          -> fail
             "Data on stdin must be encoded as hex, base64, utf8 or octet array."
 

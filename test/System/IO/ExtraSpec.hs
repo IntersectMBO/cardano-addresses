@@ -25,10 +25,21 @@ import Data.Function
     ( (&) )
 import Data.List
     ( nub )
+import Options.Applicative.Style
+    ( PassphraseInfo (..), PassphraseInput (..), PassphraseInputMode (..) )
 import System.IO
-    ( BufferMode (..), Handle, IOMode (..), hClose, hSetBuffering, withFile )
+    ( BufferMode (..)
+    , Handle
+    , IOMode (..)
+    , hClose
+    , hSetBuffering
+    , stderr
+    , stdin
+    , withFile
+    )
 import System.IO.Extra
     ( hGetBytes
+    , hGetPassphraseBytes
     , hGetXP__
     , hGetXPrv
     , hGetXPub
@@ -45,6 +56,7 @@ import Test.Hspec
     , it
     , shouldBe
     , shouldContain
+    , shouldNotContain
     )
 import Test.Hspec.QuickCheck
     ( prop )
@@ -68,6 +80,7 @@ import Test.QuickCheck.Monadic
 import Test.Arbitrary
     ()
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Set as Set
 import qualified Data.Text as T
@@ -86,6 +99,35 @@ spec = do
             (`shouldContain` "Couldn't detect input encoding")
         specInvalidEncodedString "\NUL\NUL"
             (`shouldContain` "Couldn't detect input encoding")
+
+    describe "hGetPassphraseBytes (from-octets)" $ do
+        let valid input expected = it ("accepts " <> show input) $ do
+                result <- try $ readOctetsFromFile input
+                (result :: Either IOException ByteString) `shouldBe` Right expected
+        let invalid input = it ("rejects " <> show input) $ do
+                result <- try $ readOctetsFromFile input
+                case (result :: Either IOException ByteString) of
+                    Left (e :: IOException) -> do
+                        show e `shouldContain` "octet array"
+                        show e `shouldNotContain` "Prelude.read"
+                    Right bytes -> expectationFailure $
+                        "expected " <> show input <> " to be rejected, got "
+                        <> show bytes
+
+        valid "[1,2,3]" (BS.pack [1, 2, 3])
+        valid "[0,255]" (BS.pack [0, 255])
+        valid "[]" BS.empty
+        valid "[1, 2, 3]\n" (BS.pack [1, 2, 3])
+        valid " [1, 2, 3] " (BS.pack [1, 2, 3])
+
+        invalid "hello"
+        invalid "[256]"
+        invalid "[-1]"
+        invalid "[1,2"
+        invalid ""
+        invalid "0x0102"
+        invalid "[1,2]trailing"
+        invalid "[1, 2, 300]"
 
     describe "markCharsRedAtIndices" $ do
         prop "generates strings of expected length"
@@ -250,6 +292,13 @@ withHandle writeOp readOp = withSystemTempFile "System.IO.Extra" $ \file h -> do
     hSetBuffering h NoBuffering
     writeOp h *> hClose h
     withFile file ReadMode readOp
+
+-- | Read an octet-array passphrase from a temporary file.
+readOctetsFromFile :: String -> IO ByteString
+readOctetsFromFile input = withSystemTempFile "System.IO.Extra" $ \path h -> do
+    B8.hPutStr h (bytes input)
+    hClose h
+    hGetPassphraseBytes (stdin, stderr) Explicit (FromFile path) "" Octets
 
 bytes :: String -> ByteString
 bytes = T.encodeUtf8 . T.pack

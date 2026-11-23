@@ -6,10 +6,19 @@ module Command.Key.FromRecoveryPhraseSpec
 
 import Prelude
 
+import System.Exit
+    ( ExitCode (..) )
 import System.IO.Temp
     ( withSystemTempDirectory, writeTempFile )
 import Test.Hspec
-    ( Spec, SpecWith, it, shouldBe, shouldContain )
+    ( Spec
+    , SpecWith
+    , it
+    , shouldBe
+    , shouldContain
+    , shouldNotContain
+    , shouldSatisfy
+    )
 import Test.Utils
     ( cli, describeCmd )
 
@@ -71,6 +80,20 @@ spec = describeCmd [ "key", "from-recovery-phrase" ] $ do
     specGoldenWithMnemonicPassphrase "shared" defaultPhrase "from-octets"
         sndFactorPhraseOctets rootXPrvSharedWithPassphrase
 
+    specValidOctetsInteractively sndFactorPhraseOctets rootXPrvWithPassphrase
+
+    specInvalidOctetsFromFile "hello"
+    specInvalidOctetsFromFile "[256]"
+    specInvalidOctetsFromFile "[-1]"
+    specInvalidOctetsFromFile "[1,2"
+    specInvalidOctetsFromFile ""
+    specInvalidOctetsFromFile "0x0102"
+
+    specInvalidOctetsInteractively "hello"
+    specInvalidOctetsInteractively "[256]"
+    specInvalidOctetsInteractively "[-1]"
+    specInvalidOctetsInteractively "[1,2"
+
     specInvalidStyle "patate" defaultPhrase
     specInvalidStyle "💩" defaultPhrase
 
@@ -108,6 +131,40 @@ specGoldenWithMnemonicPassphrase style phrase method sndfactor want =
     out <-  cli [ "key", "from-recovery-phrase",  style, "--passphrase"
                 , method, "--from-file", filepath] (unwords phrase)
     out `shouldBe` want
+
+specValidOctetsInteractively :: String -> String -> SpecWith ()
+specValidOctetsInteractively sndfactor want =
+    it "golden shelley from-octets interactively" $ do
+        out <- cli [ "key", "from-recovery-phrase", "shelley", "--passphrase"
+                   , "from-octets" ]
+                   (unwords defaultPhrase <> "\n" <> sndfactor <> "\n")
+        out `shouldBe` want
+
+specInvalidOctetsFromFile :: String -> SpecWith ()
+specInvalidOctetsFromFile sndfactor =
+    it ("invalid octets from file " <> show sndfactor) $
+    withSystemTempDirectory "tmpdir" $ \dir -> do
+        filepath <- writeTempFile dir "passphrase" sndfactor
+        (exitCode, out, err) <- cli
+            [ "key", "from-recovery-phrase", "shelley", "--passphrase"
+            , "from-octets", "--from-file", filepath ]
+            (unwords defaultPhrase)
+        exitCode `shouldSatisfy` (/= ExitSuccess)
+        out `shouldBe` ""
+        err `shouldContain` "octet array"
+        err `shouldNotContain` "Prelude.read"
+
+specInvalidOctetsInteractively :: String -> SpecWith ()
+specInvalidOctetsInteractively sndfactor =
+    it ("invalid octets interactively " <> show sndfactor) $ do
+        (exitCode, out, err) <- cli
+            [ "key", "from-recovery-phrase", "shelley", "--passphrase"
+            , "from-octets" ]
+            (unwords defaultPhrase <> "\n" <> sndfactor <> "\n")
+        exitCode `shouldSatisfy` (/= ExitSuccess)
+        out `shouldBe` ""
+        err `shouldContain` "octet array"
+        err `shouldNotContain` "Prelude.read"
 
 defaultPhrase :: [String]
 defaultPhrase =
