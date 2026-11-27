@@ -1,8 +1,12 @@
-## [4.1.1]
+## [4.2.1]
+
+## [4.2.0]  - 2026-11-27
 
 ### Added
 
-- New `Cardano.Address.Discovery` module providing pure, chain-free discovery of Shelley payment addresses (external and internal chains) and governance credentials from an account public key. See `discover`, `discoverFrom`, `DiscoveryResult`, `DiscoveryAddressType`, `DiscoveredAddress`, `DiscoveredCredential`, and `ErrDiscovery`. `DiscoveryResult` is a `Semigroup` so partial ranges can be coalesced.
+- New `Cardano.Address.Discovery` module providing pure, chain-free discovery of Shelley payment addresses (external and internal chains) and governance credentials from an account public key. See `discover`, `discoverFrom`, `prettyErrDiscovery`, `DiscoveryResult`, `DiscoveryAddressType`, `DiscoveredAddress`, `DiscoveredCredential`, and `ErrDiscovery`. `DiscoveryResult`, `DiscoveredAddress` and `DiscoveredCredential` have `ToJSON` instances, and `DiscoveryResult` is a `Semigroup` so partial ranges can be coalesced.
+- New `address discover` command that derives base or enterprise payment addresses on the external and internal chains, plus stake, DRep and committee credentials, from an `acct_xvk`, `acct_xsk` or `root_xsk` key. It supports `--gap`, `--from`, `--type`, `--network-tag` and TSV or `--json` output, with a published JSON schema.
+- `key walletid` now accepts `root_shared_xsk` keys.
 
 ### Fixed
 
@@ -10,6 +14,17 @@
 - Fixed `address inspect` (and `Shelley.inspectAddress` / `Shelley.eitherInspectAddress`) encoding script hashes with verification-key Bech32 prefixes instead of the CIP-5 `script` prefix. Previously `stake_script_hash_bech32` was emitted as `stake_vkh1…`, and spending/stake script hashes were also exposed as `spending_shared_hash_bech32` / `stake_shared_hash_bech32` using `addr_shared_vkh1…` / `stake_shared_vkh1…`. These values could be fed back into `address stake` and silently rebuild an unspendable key-hash reward address from a script reward account. Script hashes are now correctly encoded with the `script1…` prefix, and the misleading `*_shared_hash` fields have been removed.
 - Fixed `Codec.Binary.Encoding.detectEncoding` so that Base58 strings without a Bech32 separator (`1`) are no longer misclassified as Bech32, uppercase Bech32 strings are recognised correctly, and the separator is always taken to be the last `1` in the string (BIP-0173). This affects `address inspect`, `key inspect`, `script inspect` and the browser WASM entry points that rely on encoding detection.
 - `--passphrase from-octets` now reports a clean error on malformed input instead of crashing with `Prelude.read: no parse`. Values outside the byte range (e.g. `[256]` or `[-1]`) are also rejected instead of being silently wrapped to a different passphrase.
+- Required script validation now rejects `any` and `at_least` branches whose threshold can be satisfied solely by timelock conditions without a signature; timelocks remain allowed where a signature is still required, such as inside `all` or under higher thresholds.
+- Script JSON parsing now rejects `at_least` values outside `0..maxBound @Int` instead of wrapping them; `RequireSomeOf` thresholds are serialized as unsigned CBOR and rejected during required validation when they exceed `maxBound @Int`.
+- `Cardano.Address.Derivation.nextIndex` now returns `Nothing` at `maxBound` for `Index 'WholeDomain` instead of wrapping to index 0.
+- `Shelley.mkNetworkDiscriminant` now rejects negative network tags instead of wrapping them to valid `Word32` tags; browser/WASM network parsing reports `Invalid network` for non-numeric or negative input instead of throwing a partial `read` exception.
+- `key walletid` now fails on invalid 96-byte extended private keys instead of hashing the internal error string and emitting a deterministic bogus wallet ID.
+
+### Changed
+
+- The `address inspect` JSON schema now matches emitted output by declaring `address_type`, using `spending_script_hash` / `stake_script_hash` property names, and disallowing undeclared properties.
+- CI now runs Windows Haskell jobs with Git Bash and without MSYS2/base-action system installs, and selects Command Line Tools on macOS to avoid the SDK/Xcode linker mismatch; matrix and artifact naming was simplified.
+- Numerous JS and GitHub Actions dependency bumps.
 
 ## [4.1.0] - 2026-10-14
 
@@ -46,53 +61,53 @@
 
 - CI hardening: pinned third-party actions and remote scripts, disabled persisted checkout credentials and prevented artifact poisoning; added grouped Dependabot configuration
 - Numerous JS dependency bumps
-	
+
 ## [4.0.8] - 2026-08-14
 
 ### Fixed
 
 - Reject script templates whose cosigners object contains two entries resolving to the same cosigner index
 - Numerous JS dependency bumps
-	
+
 ### Added
 
-- Adding experimental ZKP powered key ownership proving instructions 
+- Adding experimental ZKP powered key ownership proving instructions
 
 ## [4.0.7] - 2026-07-07
 
 ### Fixed
 
 - Make cbor reading of byron and icarus stricter - no trailing bytes accepted
-- Do not allow indices with negative values in derivation paths	
+- Do not allow indices with negative values in derivation paths
 
 ### Added
 
-- add CIP-1852 compliant key derivation in non-intrusive way to the current one	
-	
+- add CIP-1852 compliant key derivation in non-intrusive way to the current one
+
 ## [4.0.6] - 2026-06-22
 
 ### Fixed
 
-- Handle timelock script boundaries in the secure way	
-	
+- Handle timelock script boundaries in the secure way
+
 ## [4.0.5] - 2026-06-05
 
 ### Fixed
-	
-- Full Word domain is no longer allowed for RequireSomeOf coefficient and Cosigner number — the upper bound is now maxBound @Int everywhere	
-	
+
+- Full Word domain is no longer allowed for RequireSomeOf coefficient and Cosigner number — the upper bound is now maxBound @Int everywhere
+
 ## [4.0.4] - 2026-05-28
 
 ### Added
 
 - Relax N in RequiredSomeOf in Script to accommodate the possible number of participants above 255. Add data constructor `BigNInRequiredSomeOf` to `ErrRecommendedValidateScrip`
 - Relax the number of `Cosigner` to accommodate the possible number of participants above 255. Add `BigCosignerNumber` constructor to `ErrValidateScriptTemplate`
-	
+
 ## [4.0.3] - 2026-05-22
 
 ### Added
 
-- Automated draft release preparation by creating fixed part and extracting the latest entries from `Changelog.md`	
+- Automated draft release preparation by creating fixed part and extracting the latest entries from `Changelog.md`
 - Fix `spanish` last word in dictionary
 - Fixed cross-compilation (from Linux to Windows) by replacing runtime `git` call in `System.Git.TH` with CPP macro (ie., `GITREV`) defaulting to "unknown" but allowing overriding via `-DGITREV`
 - Fix `nix develop` to work smoothly, adding darwin to packages when `nix build`, adding `nix-build` for docker plus docs how to do everything
